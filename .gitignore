@@ -1,0 +1,28 @@
+# CodeGraph local index (repo-local; do not share with sugudasu)
+.codegraph/
+
+# AI ball source dumps (huge; processed PNGs are kept)
+public/balls/raw/
+
+# Dependencies / build
+node_modules/
+dist/
+.vite/
+*.local
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*

@@ -1,0 +1,554 @@
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { loadBallImage } from "../assets/ballImages";
+import {
+  drawBoard,
+  hitTestBall,
+  hitTestObject,
+  hitTestPiece,
+  hitTestWatermark,
+  pitchToWorld,
+} from "../canvas/drawBoard";
+import { fitField, toNorm, zoomAt } from "../canvas/layout";
+import type { AppState } from "../hooks/useAppState";
+import type { Viewport } from "../models/types";
+
+type Props = {
+  state: AppState;
+  watermarkImage: HTMLImageElement | null;
+  /** PNG プレビュー時の画角（設定中・current 以外） */
+  viewOverride?: Viewport | null;
+};
+
+type DragState =
+  | {
+      mode: "piece";
+      id: string;
+      lastX: number;
+      lastY: number;
+      recorded: boolean;
+      boost: number;
+    }
+  | { mode: "ball"; recorded: boolean; boost: number }
+  | { mode: "watermark"; recorded: boolean }
+  | {
+      mode: "pan";
+      lastClientX: number;
+      lastClientY: number;
+    }
+  | {
+      mode: "line";
+      kind: import("../models/types").LineKind;
+      points: { x: number; y: number }[];
+    }
+  | {
+      mode: "zone" | "pen";
+      x0: number;
+      y0: number;
+      points?: { x: number; y: number }[];
+    };
+
+export function BoardCanvas({
+  state,
+  watermarkImage,
+  viewOverride = null,
+}: Props) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const boardSurfaceRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<DragState | null>(null);
+  const [dragTick, setDragTick] = useState(0);
+  const [ballImage, setBallImage] = useState<HTMLImageElement | null>(null);
+  const raf = useRef<number | null>(null);
+
+  const { board, scene } = state;
+  const view = board ? (viewOverride ?? board.viewport) : null;
+  const viewLocked = viewOverride != null;
+
+  useEffect(() => {
+    if (!board) return;
+    let cancelled = false;
+    loadBallImage(board.sport).then((img) => {
+      if (!cancelled) setBallImage(img);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [board?.sport]);
+
+  /** タブレット / 大型タッチ: ピンチズーム・2本指パン（ホットキー不要） */
+  useEffect(() => {
+    const el = boardSurfaceRef.current;
+    if (!el || !board || !view || viewLocked) return;
+
+    let lastDist = 0;
+    let lastMidX = 0;
+    let lastMidY = 0;
+
+    const touchDist = (a: Touch, b: Touch) =>
+      Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    const touchMid = (a: Touch, b: Touch) => ({
+      x: (a.clientX + b.clientX) / 2,
+      y: (a.clientY + b.clientY) / 2,
+    });
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        drag.current = null;
+        lastDist = touchDist(e.touches[0], e.touches[1]);
+        const mid = touchMid(e.touches[0], e.touches[1]);
+        lastMidX = mid.x;
+        lastMidY = mid.y;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2 || !board) return;
+      e.preventDefault();
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const dist = touchDist(e.touches[0], e.touches[1]);
+      const mid = touchMid(e.touches[0], e.touches[1]);
+      const { pitch } = fitField(
+        canvas.clientWidth,
+        canvas.clientHeight,
+        board,
+        4,
+        view,
+      );
+
+      if (lastDist > 0) {
+        const factor = dist / lastDist;
+        const focus = toNorm(mid.x, mid.y, canvas, pitch);
+        const fx = focus?.x ?? view.cx;
+        const fy = focus?.y ?? view.cy;
+        let vp = zoomAt(view, fx, fy, factor);
+        const dx = (mid.x - lastMidX) / pitch.w;
+        const dy = (mid.y - lastMidY) / pitch.h;
+        vp = {
+          ...vp,
+          cx: vp.cx - dx,
+          cy: vp.cy - dy,
+        };
+        state.setViewport(vp);
+      }
+      lastDist = dist;
+      lastMidX = mid.x;
+      lastMidY = mid.y;
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+    };
+  }, [board, state, view, viewLocked]);
+
+  const paint = () => {
+    const canvas = canvasRef.current;
+    const surface = boardSurfaceRef.current;
+    if (!canvas || !surface || !board || !scene || !view) return;
+    const dpr = window.devicePixelRatio || 1;
+    const { clientWidth: w, clientHeight: h } = surface;
+    canvas.width = Math.max(1, Math.floor(w * dpr));
+    canvas.height = Math.max(1, Math.floor(h * dpr));
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const { outer, pitch } = fitField(w, h, board, 4, view);
+    const d = drag.current;
+    const pitchArea = (pitch.w * pitch.h) / (w * h);
+    drawBoard(ctx, pitch, board, scene, {
+      selectedPieceId: state.selectedPieceId,
+      selectedObjectId: state.selectedObjectId,
+      selectedBall: state.selectedBall,
+      selectionColor: state.selectionColor,
+      watermark: state.watermark,
+      watermarkImage,
+      outer,
+      background: "#e8e8e8",
+      dragVisual:
+        d?.mode === "piece"
+          ? { pieceId: d.id, boost: d.boost }
+          : d?.mode === "ball"
+            ? { ball: true, boost: d.boost }
+            : null,
+      previewLine:
+        d?.mode === "line" && d.points.length >= 2
+          ? { kind: d.kind, points: d.points }
+          : null,
+      ballImage,
+    });
+    surface.dataset.pitchRatio = String(pitchArea);
+  };
+
+  useEffect(() => {
+    const surface = boardSurfaceRef.current;
+    if (!surface || !board || !scene) return;
+    paint();
+    const ro = new ResizeObserver(() => paint());
+    ro.observe(surface);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    board,
+    scene,
+    state.selectedPieceId,
+    state.selectedObjectId,
+    state.selectedBall,
+    state.selectionColor,
+    state.watermark,
+    watermarkImage,
+    ballImage,
+    state.broadcast,
+    dragTick,
+    view,
+  ]);
+
+  if (!board || !scene || !view) return null;
+
+  const getNorm = (e: ReactPointerEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const { pitch } = fitField(
+      canvas.clientWidth,
+      canvas.clientHeight,
+      board,
+      4,
+      view,
+    );
+    return { norm: toNorm(e.clientX, e.clientY, canvas, pitch), pitch };
+  };
+
+  const bumpDragVisual = () => {
+    if (raf.current) return;
+    raf.current = requestAnimationFrame(() => {
+      raf.current = null;
+      setDragTick((n) => n + 1);
+    });
+  };
+
+  const onWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    if (viewLocked) return;
+    const canvas = canvasRef.current;
+    if (!canvas || !board) return;
+    const { pitch } = fitField(
+      canvas.clientWidth,
+      canvas.clientHeight,
+      board,
+      4,
+      view,
+    );
+    const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
+    const focusX = norm?.x ?? view.cx;
+    const focusY = norm?.y ?? view.cy;
+    const factor = e.deltaY > 0 ? 1 / 1.12 : 1.12;
+    state.setViewport(zoomAt(view, focusX, focusY, factor));
+  };
+
+  const pieceAtEvent = (e: { clientX: number; clientY: number }) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const { pitch } = fitField(
+      canvas.clientWidth,
+      canvas.clientHeight,
+      board,
+      4,
+      view,
+    );
+    const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
+    if (!norm) return null;
+    return hitTestPiece(board, scene, pitch, norm.x, norm.y);
+  };
+
+  /** ダブルクリックは移動操作と衝突しやすいのでトリプルクリック */
+  const onClick = (e: ReactMouseEvent) => {
+    if (state.broadcast || state.tool !== "select") return;
+    if (e.detail !== 3) return;
+    const piece = pieceAtEvent(e);
+    if (piece) {
+      e.preventDefault();
+      state.openPieceInspector(piece.id);
+    }
+  };
+
+  const onContextMenu = (e: ReactMouseEvent) => {
+    if (state.broadcast) return;
+    const piece = pieceAtEvent(e);
+    if (piece) {
+      e.preventDefault();
+      state.openPieceInspector(piece.id);
+    }
+  };
+
+  const onPointerDown = (e: ReactPointerEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const hit = getNorm(e);
+    if (!hit?.norm) return;
+    const { norm, pitch } = hit;
+    const world = pitchToWorld(norm.x, norm.y, board);
+
+    // 中ボタン or Alt+ドラッグ = パン
+    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+      e.preventDefault();
+      drag.current = {
+        mode: "pan",
+        lastClientX: e.clientX,
+        lastClientY: e.clientY,
+      };
+      canvas.setPointerCapture(e.pointerId);
+      return;
+    }
+
+    if (state.tool === "ball") {
+      state.moveBall(world.x, world.y, true);
+      state.setSelectedBall(true);
+      state.setSelectedPieceId(null);
+      drag.current = { mode: "ball", recorded: true, boost: 1.2 };
+      canvas.setPointerCapture(e.pointerId);
+      bumpDragVisual();
+      return;
+    }
+
+    if (state.tool === "select") {
+      // ボール → 駒 → 描画（パス等）→ ロゴ
+      if (hitTestBall(board, scene, pitch, norm.x, norm.y)) {
+        state.setSelectedBall(true);
+        state.setSelectedPieceId(null);
+        state.setSelectedObjectId(null);
+        drag.current = { mode: "ball", recorded: false, boost: 1.2 };
+        canvas.setPointerCapture(e.pointerId);
+        bumpDragVisual();
+        return;
+      }
+      const piece = hitTestPiece(board, scene, pitch, norm.x, norm.y);
+      if (piece) {
+        state.setSelectedBall(false);
+        state.setSelectedPieceId(piece.id);
+        state.setSelectedObjectId(null);
+        drag.current = {
+          mode: "piece",
+          id: piece.id,
+          lastX: world.x,
+          lastY: world.y,
+          recorded: false,
+          boost: 1.18,
+        };
+        canvas.setPointerCapture(e.pointerId);
+        bumpDragVisual();
+        return;
+      }
+      const obj = hitTestObject(board, scene, norm.x, norm.y);
+      if (obj) {
+        state.setSelectedBall(false);
+        state.setSelectedPieceId(null);
+        state.setSelectedObjectId(obj.id);
+        return;
+      }
+      if (
+        hitTestWatermark(pitch, state.watermark, norm.x, norm.y, watermarkImage)
+      ) {
+        state.setSelectedBall(false);
+        state.setSelectedPieceId(null);
+        state.setSelectedObjectId(null);
+        drag.current = { mode: "watermark", recorded: false };
+        canvas.setPointerCapture(e.pointerId);
+        return;
+      }
+      state.setSelectedBall(false);
+      state.setSelectedPieceId(null);
+      state.setSelectedObjectId(null);
+      return;
+    }
+
+    if (state.tool === "piece-home") {
+      state.addPieceAt(world.x, world.y, "home");
+      return;
+    }
+    if (state.tool === "piece-away") {
+      state.addPieceAt(world.x, world.y, "away");
+      return;
+    }
+
+    if (state.tool === "pass" || state.tool === "run" || state.tool === "dribble") {
+      drag.current = {
+        mode: "line",
+        kind: state.tool,
+        points: [{ x: world.x, y: world.y }],
+      };
+      canvas.setPointerCapture(e.pointerId);
+      return;
+    }
+
+    if (state.tool === "zone") {
+      drag.current = { mode: "zone", x0: world.x, y0: world.y };
+      canvas.setPointerCapture(e.pointerId);
+      return;
+    }
+
+    if (state.tool === "pen") {
+      drag.current = {
+        mode: "pen",
+        x0: world.x,
+        y0: world.y,
+        points: [{ x: world.x, y: world.y }],
+      };
+      canvas.setPointerCapture(e.pointerId);
+      return;
+    }
+
+    if (state.tool === "text") {
+      const text = window.prompt("Text", "");
+      if (text) state.addText(world.x, world.y, text);
+    }
+  };
+
+  const onPointerMove = (e: ReactPointerEvent) => {
+    const d = drag.current;
+    if (!d) return;
+
+    if (d.mode === "pan") {
+      if (viewLocked) return;
+      const canvas = canvasRef.current;
+      if (!canvas || !board) return;
+      const { pitch } = fitField(
+        canvas.clientWidth,
+        canvas.clientHeight,
+        board,
+        4,
+        view,
+      );
+      const dx = (e.clientX - d.lastClientX) / pitch.w;
+      const dy = (e.clientY - d.lastClientY) / pitch.h;
+      d.lastClientX = e.clientX;
+      d.lastClientY = e.clientY;
+      state.setViewport({
+        ...view,
+        cx: view.cx - dx,
+        cy: view.cy - dy,
+      });
+      return;
+    }
+
+    const hit = getNorm(e);
+    if (!hit?.norm) return;
+    const world = pitchToWorld(hit.norm.x, hit.norm.y, board);
+
+    if (d.mode === "watermark") {
+      state.updateWatermark({
+        ...state.watermark,
+        x: Math.min(1, Math.max(0, hit.norm.x)),
+        y: Math.min(1, Math.max(0, hit.norm.y)),
+      });
+      return;
+    }
+
+    if (d.mode === "ball") {
+      const prev = scene.ball;
+      const dist = Math.hypot(world.x - prev.x, world.y - prev.y);
+      if (dist > 0.003) d.boost = Math.min(1.32, 1.14 + dist * 10);
+      state.moveBall(world.x, world.y, !d.recorded);
+      d.recorded = true;
+      bumpDragVisual();
+      return;
+    }
+
+    if (d.mode === "piece") {
+      const dx = world.x - d.lastX;
+      const dy = world.y - d.lastY;
+      const dist = Math.hypot(dx, dy);
+      let facing: number | undefined;
+      if (dist > 0.004) {
+        facing = (Math.atan2(dy, dx) * 180) / Math.PI;
+        d.lastX = world.x;
+        d.lastY = world.y;
+        d.boost = Math.min(1.28, 1.12 + dist * 8);
+      }
+      state.movePiece(d.id, world.x, world.y, !d.recorded, facing);
+      d.recorded = true;
+      bumpDragVisual();
+      return;
+    }
+
+    if (d.mode === "line") {
+      const last = d.points[d.points.length - 1];
+      const dist = Math.hypot(world.x - last.x, world.y - last.y);
+      // 近すぎる点は間引いて自然な弧にする
+      if (dist >= 0.012) {
+        d.points.push({ x: world.x, y: world.y });
+        bumpDragVisual();
+      }
+      return;
+    }
+
+    if (d.mode === "pen" && d.points) {
+      d.points.push({ x: world.x, y: world.y });
+      bumpDragVisual();
+    }
+  };
+
+  const onPointerUp = (e: ReactPointerEvent) => {
+    const d = drag.current;
+    drag.current = null;
+    bumpDragVisual();
+    if (!d) return;
+    const hit = getNorm(e);
+    if (!hit?.norm) return;
+    const world = pitchToWorld(hit.norm.x, hit.norm.y, board);
+
+    if (d.mode === "ball") {
+      // 駒の近くにドロップするとくっつく（マルチ選択不要）
+      state.dropBall(world.x, world.y);
+      return;
+    }
+
+    if (d.mode === "line") {
+      const last = d.points[d.points.length - 1];
+      if (
+        Math.hypot(world.x - last.x, world.y - last.y) >= 0.008
+      ) {
+        d.points.push({ x: world.x, y: world.y });
+      }
+      if (d.points.length >= 2) {
+        state.addLine(d.kind, d.points);
+      }
+    } else if (d.mode === "zone") {
+      const x = Math.min(d.x0, world.x);
+      const y = Math.min(d.y0, world.y);
+      const w = Math.abs(world.x - d.x0);
+      const h = Math.abs(world.y - d.y0);
+      if (w > 0.01 && h > 0.01) state.addZone(x, y, w, h);
+    } else if (d.mode === "pen" && d.points) {
+      state.addPen(d.points);
+    }
+  };
+
+  return (
+    <div
+      className={`board-surface${state.broadcast ? " broadcast" : ""}`}
+      ref={boardSurfaceRef}
+      data-board-surface="true"
+    >
+      <canvas
+        ref={canvasRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onWheel={onWheel}
+        onClick={onClick}
+        onContextMenu={onContextMenu}
+      />
+    </div>
+  );
+}
