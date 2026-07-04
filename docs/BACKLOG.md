@@ -100,6 +100,7 @@
 | B-021 | セットの import / export 形式公開 | コミュニティ流通の前提 |
 | B-022 | FAQ「共有のしかた」 | 自ドメインにマーケットは置かない |
 | B-023 | 課金・Pro ゲート | 相場メモのみ。実装未 |
+| B-024 | PL 外部データセット調査 | 下記 §6。FPL は背番号欠落・データ権利に注意 |
 
 ### P3 — 競技拡張（v1.1+）
 
@@ -147,7 +148,43 @@
 
 ---
 
-## 5. 関連ドキュメント
+## 6. 調査メモ — Premier League 外部データ（2026-07-04）
+
+対象:
+
+- [vaastav/Fantasy-Premier-League](https://github.com/vaastav/Fantasy-Premier-League)（FPL 履歴 CSV）
+- [kedarghule/Premier-League-Player-Statistics-Dashboard](https://github.com/kedarghule/Premier-League-Player-Statistics-Dashboard)（チーム別スタッツ CSV）
+
+### ZoneBoard スキーマとの対応
+
+| ZoneBoard カラム | FPL (`players_raw`) | kedarghule (例 Arsenal.csv) |
+|------------------|---------------------|-----------------------------|
+| `number`（**必須**） | `squad_number` 列はあるが **2024-25 / 2025-26 とも全件 `None`（0% 充填）** | **列なし** |
+| `label` | `web_name` / 姓名 | `Player` |
+| `preferredFoot` | **なし** | **なし** |
+| チーム分割 | `team` ID | フォルダ名（クラブ単位） |
+| その他 | FPL ポイント・xG 等（ボード不要） | Nation, Pos, Age, タックル・xG 等（百科寄り） |
+
+### 結論
+
+| 問い | 答え |
+|------|------|
+| **そのままインポート可能か** | **不可に近い。** 背番号ファーストの必須カラムが埋まらない |
+| 名前だけのセットとして？ | 技術的には可（番号はプレースホルダ or ユーザ追記）。価値は薄い |
+| Pro で「PL データセット同梱」？ | **そのまま再販は非推奨。** FPL リポ LICENSE はコード MIT だが、**データは fantasy.premierleague.com / understat のプロパティ**と明記。運営が公式データを売る形になる |
+| 何ならアリか | Pro は **import/export 形式**と「ユーザ／コミュニティが作ったセット」。運営がやるなら **番号入りを自前でメンテした静的パック**（出典明記・更新責任あり）。ライブ同期パイプラインは「選手 DB」化で方針違反 |
+
+### Pro への落とし込み（推奨）
+
+1. **売らない:** FPL / FBref 系スクレイプのライブ同梱
+2. **売る:** 複数セット保有 + ファイル import（CSV: `number,label,preferredFoot`）
+3. **任意の付加価値:** シーズン頭に運営が手メンテした「PL 20 クラブ・番号＋名前」静的パック（権利クリアな出典のみ）。FPL は名前の下書き参考に留め、**背番号は別ソース必須**
+4. kedarghule 側は **スタッツ可視化用の一季スナップショット**で、名簿インポート向きではない
+
+---
+
+## 7. 関連ドキュメント
+
 
 | パス | 役割 |
 |------|------|
