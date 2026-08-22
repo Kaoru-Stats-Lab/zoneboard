@@ -19,7 +19,7 @@
 | 駒カード（トリプルクリック / 右クリック） | 実装あり |
 | フットサル・ビーチ（別競技ページ） | v1.1 最小構成。リサーチは [`FUTSAL_BEACH_RESEARCH.md`](FUTSAL_BEACH_RESEARCH.md) |
 | Pro / 選手セット / 課金 | 未実装（方針のみ） |
-| GitHub 専用リポ | https://github.com/Cozy762/zoneboard （他リポと非共有） |
+| GitHub 専用リポ | https://github.com/Kaoru-Stats-Lab/zoneboard |
 
 ---
 

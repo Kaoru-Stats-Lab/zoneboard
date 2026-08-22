@@ -15,6 +15,7 @@ import {
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import type { Locale } from "../i18n/messages";
+import { useFeedback } from "./FeedbackProvider";
 
 type Props = {
   state: AppState;
@@ -49,6 +50,7 @@ export function SettingsModal({
   exportFocus,
   setExportFocus,
 }: Props) {
+  const { openFeedback } = useFeedback();
   const fileRef = useRef<HTMLInputElement>(null);
   const [bakeCaption, setBakeCaption] = useState(true);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
@@ -350,7 +352,16 @@ export function SettingsModal({
           </button>
         </section>
 
-        <footer>{t("version")}</footer>
+        <footer className="modal-footer-row">
+          <span>{t("version")}</span>
+          <button
+            type="button"
+            className="modal-footer-fb"
+            onClick={() => openFeedback("settings")}
+          >
+            {t("feedbackOpen")}
+          </button>
+        </footer>
       </div>
     </div>
   );

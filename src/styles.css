@@ -919,3 +919,153 @@ button.danger {
 .modal-danger h3 {
   color: #999;
 }
+
+.modal-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.modal-footer-fb {
+  border: none;
+  background: transparent;
+  color: #666;
+  padding: 0;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+
+.landing-fb,
+.topbar-fb {
+  margin-top: 0.75rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
+
+.topbar-fb {
+  margin-top: 0;
+  width: auto;
+}
+
+.zb-feedback-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.zb-feedback-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 0.35);
+}
+
+.zb-feedback-panel__card {
+  width: min(28rem, 100%);
+  padding: 1rem 1.1rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.12);
+}
+
+.zb-feedback-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.zb-feedback-panel__title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.zb-feedback-panel__x {
+  border: 0;
+  background: transparent;
+  color: #666;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.zb-feedback-panel__hint {
+  margin: 0.5rem 0 0.85rem;
+  color: #666;
+  font-size: 0.75rem;
+}
+
+.zb-feedback-panel__kinds {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+}
+
+.zb-feedback-panel__kind {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.zb-feedback-panel__label {
+  display: block;
+  margin: 0.85rem 0 0.35rem;
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.zb-feedback-panel__ta {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.875rem;
+  resize: vertical;
+}
+
+.zb-feedback-panel__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.zb-feedback-panel__submit {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+
+.zb-feedback-panel__ghost {
+  border: none;
+  background: transparent;
+  color: #666;
+}
+
+.zb-feedback-panel__status {
+  margin: 0.65rem 0 0;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.zb-feedback-panel__status--err {
+  color: #c0392b;
+}

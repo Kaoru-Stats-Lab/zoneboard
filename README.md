@@ -28,7 +28,7 @@ npm run dev
 | Build output | `dist` |
 | Node | 20 推奨 |
 
-1. [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → `Cozy762/zoneboard`
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → `Kaoru-Stats-Lab/zoneboard`
 2. 上記 Build 設定でデプロイ（`public/_redirects` で SPA ルーティング）
 3. **Custom domains** → `zoneboard.app` / `www.zoneboard.app` を追加
 4. お名前.com で DNS を Cloudflare に向ける（**ネームサーバー移管** または **CNAME**）

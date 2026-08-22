@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { Editor } from "./components/Editor";
+import { FeedbackProvider } from "./components/FeedbackProvider";
 import { Landing } from "./components/Landing";
 import { useAppState } from "./hooks/useAppState";
 import type { Locale } from "./i18n/messages";
@@ -9,8 +10,7 @@ import { useMemo, useState } from "react";
 function detectLocale(): Locale {
   const prefs = loadPrefs();
   if (prefs.locale === "ja" || prefs.locale === "en") return prefs.locale;
-  const lang = navigator.language.toLowerCase();
-  return lang.startsWith("ja") ? "ja" : "en";
+  return "en";
 }
 
 function BoardRoute() {
@@ -24,13 +24,21 @@ function BoardRoute() {
     navigate(`/${l}/board`, { replace: true });
   };
 
-  return <Editor state={state} locale={locale} onLocale={onLocale} />;
+  return (
+    <FeedbackProvider>
+      <Editor state={state} locale={locale} onLocale={onLocale} />
+    </FeedbackProvider>
+  );
 }
 
 function LandingRoute() {
   const { locale: localeParam } = useParams();
   const locale: Locale = localeParam === "en" ? "en" : "ja";
-  return <Landing locale={locale} boardPath={`/${locale}/board`} />;
+  return (
+    <FeedbackProvider>
+      <Landing locale={locale} boardPath={`/${locale}/board`} />
+    </FeedbackProvider>
+  );
 }
 
 export default function App() {

@@ -31,6 +31,7 @@ import { ExportPreviewFrame } from "./ExportPreviewFrame";
 import { PieceInspector } from "./PieceInspector";
 import { SettingsModal } from "./SettingsModal";
 import { ToolRail } from "./ToolRail";
+import { useFeedback } from "./FeedbackProvider";
 
 type Props = {
   state: AppState;
@@ -40,6 +41,7 @@ type Props = {
 
 export function Editor({ state, locale, onLocale }: Props) {
   const t = (k: MessageKey) => messages[locale][k];
+  const { openFeedback } = useFeedback();
   const [wmImage, setWmImage] = useState<HTMLImageElement | null>(null);
   const [exportPreset, setExportPreset] = useState<ExportPresetId>("ig45");
   const [exportFocus, setExportFocus] = useState<ExportFocusId>("current");
@@ -226,6 +228,13 @@ export function Editor({ state, locale, onLocale }: Props) {
             placeholder={t(sceneLabelPhKey(state.board?.sport))}
           />
           <div className="topbar-right">
+            <button
+              type="button"
+              className="topbar-fb"
+              onClick={() => openFeedback("editor")}
+            >
+              {t("feedbackOpen")}
+            </button>
             <button
               type="button"
               className="broadcast-btn"
