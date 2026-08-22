@@ -40,18 +40,18 @@ export function PieceInspector({ state, t }: Props) {
         <span className="piece-inspector-title">{t("pieceProps")}</span>
         <button
           type="button"
-          className="piece-inspector-close"
+          className="modal-close-btn modal-close-btn--compact"
           aria-label={t("close")}
           onClick={() => state.closePieceInspector()}
         >
-          ×
+          {t("close")}
         </button>
       </div>
       <label>
         {t("number")}
         <input
           value={selected.number}
-          placeholder="18"
+          placeholder={t("pieceNumberPh")}
           onChange={(e) =>
             state.patchPiece(selected.id, { number: e.target.value })
           }
@@ -92,7 +92,7 @@ export function PieceInspector({ state, t }: Props) {
           <input
             inputMode="numeric"
             value={selected.heightCm ?? ""}
-            placeholder="186"
+            placeholder={t("pieceHeightPh")}
             onChange={(e) =>
               state.patchPiece(selected.id, {
                 heightCm: parseMetric(e.target.value),
@@ -107,7 +107,7 @@ export function PieceInspector({ state, t }: Props) {
           <input
             inputMode="numeric"
             value={selected.weightKg ?? ""}
-            placeholder="88"
+            placeholder={t("pieceWeightPh")}
             onChange={(e) =>
               state.patchPiece(selected.id, {
                 weightKg: parseMetric(e.target.value),

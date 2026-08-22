@@ -764,6 +764,10 @@ button.danger {
 }
 
 .modal-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -804,6 +808,13 @@ button.danger {
   white-space: nowrap;
 }
 
+.modal-drag-handle h2 {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 1.1rem;
+}
+
 .modal header h2 {
   margin: 0;
   font-size: 1.1rem;
@@ -831,6 +842,34 @@ button.danger {
 .modal footer {
   color: #999;
   font-size: 0.8rem;
+}
+
+.modal-close-btn {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.modal-close-btn:hover {
+  background: #f5f5f5;
+  border-color: #bbb;
+}
+
+.modal-close-btn--compact {
+  min-height: 28px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.pitch-surface-row {
+  margin-bottom: 0.35rem;
 }
 
 .modal-close {

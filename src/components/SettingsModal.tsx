@@ -149,11 +149,11 @@ export function SettingsModal({
           <h2>{t("settings")}</h2>
           <button
             type="button"
-            className="modal-close"
-            aria-label="Close"
+            className="modal-close-btn"
+            aria-label={t("close")}
             onClick={() => state.setSettingsOpen(false)}
           >
-            ×
+            {t("close")}
           </button>
         </header>
 
@@ -308,6 +308,32 @@ export function SettingsModal({
 
         <section>
           <h3>{t("appearance")}</h3>
+          {state.board.sport === "soccer" && (
+            <>
+              <span className="field-label">{t("pitchSurface")}</span>
+              <div className="preset-row pitch-surface-row">
+                <button
+                  type="button"
+                  className={!state.board.showGrassPitch ? "active" : ""}
+                  onClick={() =>
+                    state.updateBoard((b) => ({ ...b, showGrassPitch: false }), false)
+                  }
+                >
+                  {t("pitchSurfaceWhite")}
+                </button>
+                <button
+                  type="button"
+                  className={state.board.showGrassPitch ? "active" : ""}
+                  onClick={() =>
+                    state.updateBoard((b) => ({ ...b, showGrassPitch: true }), false)
+                  }
+                >
+                  {t("pitchSurfaceGrass")}
+                </button>
+              </div>
+              <p className="hint-muted">{t("grassPitchHint")}</p>
+            </>
+          )}
           <label>
             {t("selectionColor")}
             <input

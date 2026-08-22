@@ -17,7 +17,9 @@ import {
 } from "../presets/bench";
 import { formationPieces } from "../presets/formations";
 import { emptyRoster } from "../presets/roster";
-import { DEFAULT_VIEWPORT, defaultSceneLabel } from "../presets/viewport";
+import { DEFAULT_VIEWPORT } from "../presets/viewport";
+import { defaultBoardTitle, defaultSceneLabel } from "../i18n/localeDefaults";
+import type { Locale } from "../i18n/messages";
 import { roleFromPosition } from "./pieceRole";
 import { createScene } from "./scene";
 
@@ -54,10 +56,11 @@ function normalizeObjects(objects: DrawObject[]): DrawObject[] {
 
 export function createBoard(
   sport: SportId = "soccer",
-  title = "ボード 1",
+  title?: string,
+  locale?: Locale,
 ): BoardDocument {
   const benchCount = DEFAULT_BENCH_COUNT;
-  const scene = createScene(defaultSceneLabel(sport), "pre", {
+  const scene = createScene(defaultSceneLabel(sport, locale), "pre", {
     pieces: formationPieces(sport, true, benchCount),
     ball: { x: 0.5, y: 0.5 },
     objects: [],
@@ -66,7 +69,7 @@ export function createBoard(
     schemaVersion: 2,
     id: uid(),
     sport,
-    title,
+    title: title ?? defaultBoardTitle(1, locale),
     matchLabel: "",
     homeTeam: "",
     awayTeam: "",
@@ -96,7 +99,7 @@ export function createBoard(
 }
 
 export function emptyStore(): BoardStore {
-  const board = createBoard("soccer", "ボード 1");
+  const board = createBoard("soccer");
   return { boards: [board], activeBoardId: board.id };
 }
 

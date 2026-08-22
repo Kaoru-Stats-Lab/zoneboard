@@ -129,21 +129,6 @@ export function viewPresetsForSport(sport: SportId): ViewPresetEntry[] {
   ];
 }
 
-/** 新規ボード／競技切替時の既定局面名 */
-export function defaultSceneLabel(sport: SportId): string {
-  switch (sport) {
-    case "basketball":
-      return "セットオフェンス";
-    case "volleyball":
-      return "レセプション";
-    case "futsal":
-    case "beach_soccer":
-      return "キックオフ";
-    default:
-      return "キックオフ";
-  }
-}
-
 export function clampViewport(vp: Viewport): Viewport {
   const zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, vp.zoom));
   return {

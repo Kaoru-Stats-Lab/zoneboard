@@ -40,9 +40,13 @@ import {
 import {
   DEFAULT_VIEWPORT,
   VIEW_PRESETS,
-  defaultSceneLabel,
   type ViewPresetId,
 } from "../presets/viewport";
+import {
+  defaultBoardTitle,
+  defaultSceneLabel,
+  detectLocaleForDefaults,
+} from "../i18n/localeDefaults";
 import type { Viewport } from "../models/types";
 import { clampViewport } from "../presets/viewport";
 import {
@@ -189,9 +193,11 @@ export function useAppState() {
 
   const addBoard = useCallback(() => {
     if (store.boards.length >= MAX_BOARDS) return false;
+    const loc = detectLocaleForDefaults();
     const b = createBoard(
       board?.sport ?? "soccer",
-      `ボード ${store.boards.length + 1}`,
+      defaultBoardTitle(store.boards.length + 1, loc),
+      loc,
     );
     history.current = [];
     future.current = [];
@@ -206,7 +212,7 @@ export function useAppState() {
     (id: string) => {
       let boards = store.boards.filter((b) => b.id !== id);
       if (boards.length === 0) {
-        const b = createBoard("soccer", "ボード 1");
+        const b = createBoard("soccer", defaultBoardTitle(1), detectLocaleForDefaults());
         boards = [b];
         persist({ boards, activeBoardId: b.id });
         return;
@@ -279,6 +285,7 @@ export function useAppState() {
     (sport: SportId) => {
       const fiveAside = sport === "futsal" || sport === "beach_soccer";
       updateBoard((b) => {
+        const loc = detectLocaleForDefaults();
         const wasFive =
           b.sport === "futsal" || b.sport === "beach_soccer";
         const benchCount = fiveAside
@@ -310,7 +317,7 @@ export function useAppState() {
           },
           (s) => ({
             ...s,
-            label: defaultSceneLabel(sport),
+            label: defaultSceneLabel(sport, loc),
             hideHalf: "none",
             pieces: formationPieces(sport, true, benchCount),
             objects: [],
