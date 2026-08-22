@@ -421,11 +421,11 @@ function drawSoccerMarkings(
     ctx.beginPath();
     ctx.arc(cx, cy, cr, 0, Math.PI * 2);
     ctx.lineWidth = lw;
-    ctx.strokeStyle = LINE;
+    ctx.strokeStyle = activePitchInk;
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(cx, cy, Math.max(2, lw), 0, Math.PI * 2);
-    ctx.fillStyle = LINE;
+    ctx.fillStyle = activePitchInk;
     ctx.fill();
 
     drawPenaltyBoxAccurate(ctx, pitch, lw, "left");
@@ -439,7 +439,7 @@ function drawSoccerMarkings(
     ctx.beginPath();
     ctx.arc(x, y + h / 2, cr, -Math.PI / 2, Math.PI / 2);
     ctx.lineWidth = lw;
-    ctx.strokeStyle = LINE;
+    ctx.strokeStyle = activePitchInk;
     ctx.stroke();
     drawGoalPosts(ctx, pitch, lw, "right", true);
   }
@@ -528,7 +528,7 @@ function drawGoalPosts(
   const goalLineX = left ? x : x + w;
   const backX = left ? goalLineX - depth : goalLineX + depth - postThick;
 
-  ctx.fillStyle = LINE;
+  ctx.fillStyle = activePitchInk;
   ctx.fillRect(
     left ? backX : goalLineX,
     top - postThick / 2,
@@ -572,7 +572,7 @@ function drawPenaltyBoxAccurate(
   const spotY = y + h / 2;
   ctx.beginPath();
   ctx.arc(spotX, spotY, Math.max(2, lw * 1.2), 0, Math.PI * 2);
-  ctx.fillStyle = LINE;
+  ctx.fillStyle = activePitchInk;
   ctx.fill();
 
   const arcR = N.centerR * h;
@@ -590,7 +590,7 @@ function drawPenaltyBoxAccurate(
     ctx.arc(spotX, spotY, arcR, Math.PI - ang, Math.PI + ang);
   }
   ctx.lineWidth = lw;
-  ctx.strokeStyle = LINE;
+  ctx.strokeStyle = activePitchInk;
   ctx.stroke();
 }
 
@@ -611,7 +611,7 @@ function drawCorners(
     ctx.beginPath();
     ctx.arc(cx, cy, r, a0, a1);
     ctx.lineWidth = lw;
-    ctx.strokeStyle = LINE;
+    ctx.strokeStyle = activePitchInk;
     ctx.stroke();
   }
 }
