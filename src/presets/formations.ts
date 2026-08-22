@@ -2,6 +2,7 @@ import { DEFAULT_BENCH_COUNT } from "./bench";
 import type { Piece, SportId } from "../models/types";
 import { AWAY_COLOR, HOME_COLOR } from "../models/types";
 import { uid } from "../models/id";
+import { FIVE_A_SIDE_DEFAULT_BENCH } from "./smallPitches";
 
 type Spot = { x: number; y: number; number: string };
 
@@ -74,13 +75,41 @@ export function formationPieces(
     return [...home, ...homeBench, ...away, ...awayBench];
   }
 
+  if (sport === "futsal" || sport === "beach_soccer") {
+    const spots: Spot[] = [
+      { x: 0.12, y: 0.5, number: "1" },
+      { x: 0.32, y: 0.28, number: "2" },
+      { x: 0.32, y: 0.72, number: "3" },
+      { x: 0.52, y: 0.5, number: "4" },
+      { x: 0.72, y: 0.5, number: "5" },
+    ];
+    const n = Math.min(benchN, FIVE_A_SIDE_DEFAULT_BENCH);
+    const home = toPieces(spots, "home", 0, "starter");
+    const homeBench = toPieces(benchSpots(n, "home"), "home", 0, "bench");
+    if (!bothTeams) return [...home, ...homeBench];
+    return [
+      ...home,
+      ...homeBench,
+      ...toPieces(mirrorAway(spots), "away", 180, "starter"),
+      ...toPieces(benchSpots(n, "away"), "away", 180, "bench"),
+    ];
+  }
+
   if (sport === "basketball") {
+    // 右ゴール側ハーフに攻守とも配置（既定ビューがハーフ）
     const homeSpots: Spot[] = [
-      { x: 0.2, y: 0.5, number: "1" },
-      { x: 0.35, y: 0.25, number: "2" },
-      { x: 0.35, y: 0.75, number: "3" },
-      { x: 0.5, y: 0.35, number: "4" },
-      { x: 0.5, y: 0.65, number: "5" },
+      { x: 0.58, y: 0.5, number: "1" },
+      { x: 0.72, y: 0.2, number: "2" },
+      { x: 0.72, y: 0.8, number: "3" },
+      { x: 0.88, y: 0.35, number: "4" },
+      { x: 0.88, y: 0.65, number: "5" },
+    ];
+    const awaySpots: Spot[] = [
+      { x: 0.7, y: 0.5, number: "1" },
+      { x: 0.8, y: 0.22, number: "2" },
+      { x: 0.8, y: 0.78, number: "3" },
+      { x: 0.92, y: 0.38, number: "4" },
+      { x: 0.92, y: 0.62, number: "5" },
     ];
     const home = toPieces(homeSpots, "home", 0, "starter");
     const homeBench = toPieces(
@@ -93,7 +122,7 @@ export function formationPieces(
     return [
       ...home,
       ...homeBench,
-      ...toPieces(mirrorAway(homeSpots), "away", 180, "starter"),
+      ...toPieces(awaySpots, "away", 180, "starter"),
       ...toPieces(benchSpots(Math.min(benchN, 7), "away"), "away", 180, "bench"),
     ];
   }

@@ -35,10 +35,11 @@ export function fitField(
   board: BoardDocument,
   pad = 4,
   viewport?: Viewport,
+  topReserve = 0,
 ): FieldLayout {
   const aspect = aspectFor(board.sport, board.pitchView);
   const availW = Math.max(1, canvasW - pad * 2);
-  const availH = Math.max(1, canvasH - pad * 2);
+  const availH = Math.max(1, canvasH - pad * 2 - topReserve);
   let ow = availW;
   let oh = ow / aspect;
   if (oh > availH) {
@@ -46,7 +47,7 @@ export function fitField(
     ow = oh * aspect;
   }
   const ox = (canvasW - ow) / 2;
-  const oy = (canvasH - oh) / 2;
+  const oy = topReserve + pad + (availH - oh) / 2;
 
   const vp = clampViewport(viewport ?? board.viewport ?? DEFAULT_VIEWPORT);
   const B = FIELD_BUFFER;

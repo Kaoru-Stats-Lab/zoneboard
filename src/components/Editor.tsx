@@ -8,6 +8,22 @@ import {
 import type { AppState } from "../hooks/useAppState";
 import type { Locale, MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
+import type { SportId } from "../models/types";
+
+function sceneLabelPhKey(sport: SportId | undefined): MessageKey {
+  switch (sport) {
+    case "basketball":
+      return "sceneLabelPhBasket";
+    case "futsal":
+      return "sceneLabelPhFutsal";
+    case "beach_soccer":
+      return "sceneLabelPhBeach";
+    case "volleyball":
+      return "sceneLabelPhVolley";
+    default:
+      return "sceneLabelPhSoccer";
+  }
+}
 import { BoardCanvas } from "./BoardCanvas";
 import { BroadcastToolMenu } from "./BroadcastToolMenu";
 import { Drawer } from "./Drawer";
@@ -53,8 +69,13 @@ export function Editor({ state, locale, onLocale }: Props) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      const typing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
+      const typing =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        !!el?.isContentEditable;
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
@@ -91,6 +112,26 @@ export function Editor({ state, locale, onLocale }: Props) {
         }
       }
 
+      // ボード選択中の Delete は入力フォーカスより優先
+      // （キャンバスをクリックしてもフォーカスがパネル入力に残るケースがある）
+      const hasBoardSelection = !!(
+        state.selectedPieceId ||
+        state.selectedObjectId ||
+        state.selectedBall
+      );
+      if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        hasBoardSelection
+      ) {
+        if (typing && e.key === "Backspace") {
+          // 入力中の文字削除は邪魔しない
+          return;
+        }
+        e.preventDefault();
+        state.deleteSelected();
+        return;
+      }
+
       if (typing) return;
 
       if (e.key.toLowerCase() === "b") {
@@ -109,6 +150,7 @@ export function Editor({ state, locale, onLocale }: Props) {
         return;
       }
       if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
         state.deleteSelected();
         return;
       }
@@ -123,6 +165,9 @@ export function Editor({ state, locale, onLocale }: Props) {
       if (e.key === "1") state.setTool("pass");
       if (e.key === "2") state.setTool("run");
       if (e.key === "3") state.setTool("dribble");
+      if (state.board?.sport === "basketball" && e.key === "4") {
+        state.setTool("screen");
+      }
       if (e.key === "z" || e.key === "Z") state.setTool("zone");
       if (e.key === "p" || e.key === "P") state.setTool("pen");
       if (e.key === "t" || e.key === "T") state.setTool("text");
@@ -140,6 +185,7 @@ export function Editor({ state, locale, onLocale }: Props) {
       pass: "pass",
       run: "run",
       dribble: "dribble",
+      screen: "screen",
       zone: "zone",
       pen: "pen",
       text: "text",
@@ -177,7 +223,7 @@ export function Editor({ state, locale, onLocale }: Props) {
               state.updateScene((s) => ({ ...s, label: e.target.value }), false)
             }
             aria-label={t("sceneLabel")}
-            placeholder={t("sceneLabel")}
+            placeholder={t(sceneLabelPhKey(state.board?.sport))}
           />
           <div className="topbar-right">
             <button

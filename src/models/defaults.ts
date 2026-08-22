@@ -2,6 +2,7 @@ import type {
   BoardDocument,
   BoardStore,
   DrawObject,
+  GoalEntry,
   LineObject,
   Scene,
   SportId,
@@ -16,7 +17,7 @@ import {
 } from "../presets/bench";
 import { formationPieces } from "../presets/formations";
 import { emptyRoster } from "../presets/roster";
-import { DEFAULT_VIEWPORT } from "../presets/viewport";
+import { DEFAULT_VIEWPORT, defaultSceneLabel } from "../presets/viewport";
 import { roleFromPosition } from "./pieceRole";
 import { createScene } from "./scene";
 
@@ -56,7 +57,7 @@ export function createBoard(
   title = "ボード 1",
 ): BoardDocument {
   const benchCount = DEFAULT_BENCH_COUNT;
-  const scene = createScene("キックオフ", "pre", {
+  const scene = createScene(defaultSceneLabel(sport), "pre", {
     pieces: formationPieces(sport, true, benchCount),
     ball: { x: 0.5, y: 0.5 },
     objects: [],
@@ -67,9 +68,22 @@ export function createBoard(
     sport,
     title,
     matchLabel: "",
-    pitchView: "full",
+    homeTeam: "",
+    awayTeam: "",
+    goals: [],
+    showMatchBanner: sport === "soccer",
+    pitchView: sport === "basketball" ? "half" : "full",
     pitchFlipped: false,
     showLanes5: sport === "soccer",
+    showCorridors3: sport === "futsal",
+    showPressLines: sport === "futsal",
+    showShotCorridor: sport === "beach_soccer",
+    showPaintHighlight: sport === "basketball",
+    showThreePointEmphasis: sport === "basketball",
+    showSpotMarkers: sport === "basketball",
+    showMiddleLine: false,
+    showSlotLines: false,
+    showWoodCourt: false,
     pieceScale: PIECE_SCALE.balanced,
     benchCount,
     scenes: [scene],
@@ -156,9 +170,37 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     sport: raw.sport,
     title: raw.title,
     matchLabel: raw.matchLabel ?? "",
+    homeTeam: (raw as { homeTeam?: string }).homeTeam ?? "",
+    awayTeam: (raw as { awayTeam?: string }).awayTeam ?? "",
+    goals: (raw as { goals?: GoalEntry[] }).goals ?? [],
+    showMatchBanner:
+      (raw as { showMatchBanner?: boolean }).showMatchBanner ??
+      raw.sport === "soccer",
     pitchView: raw.pitchView ?? "full",
     pitchFlipped: raw.pitchFlipped ?? false,
     showLanes5: raw.showLanes5 ?? raw.sport === "soccer",
+    showCorridors3:
+      raw.showCorridors3 ?? raw.sport === "futsal",
+    showPressLines:
+      raw.showPressLines ?? raw.sport === "futsal",
+    showShotCorridor:
+      (raw as { showShotCorridor?: boolean }).showShotCorridor ??
+      raw.sport === "beach_soccer",
+    showPaintHighlight:
+      (raw as { showPaintHighlight?: boolean }).showPaintHighlight ??
+      raw.sport === "basketball",
+    showThreePointEmphasis:
+      (raw as { showThreePointEmphasis?: boolean }).showThreePointEmphasis ??
+      raw.sport === "basketball",
+    showSpotMarkers:
+      (raw as { showSpotMarkers?: boolean }).showSpotMarkers ??
+      raw.sport === "basketball",
+    showMiddleLine:
+      (raw as { showMiddleLine?: boolean }).showMiddleLine ?? false,
+    showSlotLines:
+      (raw as { showSlotLines?: boolean }).showSlotLines ?? false,
+    showWoodCourt:
+      (raw as { showWoodCourt?: boolean }).showWoodCourt ?? false,
     pieceScale: raw.pieceScale ?? PIECE_SCALE.balanced,
     benchCount,
     scenes,

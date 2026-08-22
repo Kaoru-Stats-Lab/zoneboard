@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { TOOL_COLORS } from "../models/types";
-import { TOOL_ITEMS } from "./tools";
+import { toolItemsForSport } from "./tools";
 
 type Props = {
   state: AppState;
@@ -36,7 +36,7 @@ export function BroadcastToolMenu({ state, t, toolLabel }: Props) {
     <div className="broadcast-tool-menu" ref={rootRef}>
       {open && (
         <div className="broadcast-tool-pop" role="menu" aria-label={t("tools")}>
-          {TOOL_ITEMS.map((tool) => {
+          {toolItemsForSport(state.board?.sport).map((tool) => {
             const color = TOOL_COLORS[tool.id];
             const active = state.tool === tool.id;
             return (

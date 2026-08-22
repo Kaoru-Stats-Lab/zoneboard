@@ -11,12 +11,16 @@ import {
   hitTestBall,
   hitTestObject,
   hitTestPiece,
+  hitTestPieceFacing,
   hitTestWatermark,
   pitchToWorld,
 } from "../canvas/drawBoard";
 import { fitField, toNorm, zoomAt } from "../canvas/layout";
+import { drawMatchBanner, matchBannerHeight } from "../canvas/matchBanner";
+import { smoothLinePath } from "../canvas/smoothPath";
 import type { AppState } from "../hooks/useAppState";
 import type { Viewport } from "../models/types";
+import { isLineTool } from "../models/types";
 
 type Props = {
   state: AppState;
@@ -31,8 +35,16 @@ type DragState =
       id: string;
       lastX: number;
       lastY: number;
+      /** ドロップ入れ替え用の開始位置 */
+      startX: number;
+      startY: number;
       recorded: boolean;
       boost: number;
+    }
+  | {
+      mode: "piece-rotate";
+      id: string;
+      recorded: boolean;
     }
   | { mode: "ball"; recorded: boolean; boost: number }
   | { mode: "watermark"; recorded: boolean }
@@ -163,7 +175,8 @@ export function BoardCanvas({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const { outer, pitch } = fitField(w, h, board, 4, view);
+    const bannerH = matchBannerHeight(w, h, board);
+    const { outer, pitch } = fitField(w, h, board, 4, view, bannerH);
     const d = drag.current;
     const pitchArea = (pitch.w * pitch.h) / (w * h);
     drawBoard(ctx, pitch, board, scene, {
@@ -183,10 +196,13 @@ export function BoardCanvas({
             : null,
       previewLine:
         d?.mode === "line" && d.points.length >= 2
-          ? { kind: d.kind, points: d.points }
+          ? { kind: d.kind, points: smoothLinePath(d.points) }
           : null,
       ballImage,
     });
+    if (bannerH > 0) {
+      drawMatchBanner(ctx, w, bannerH, board);
+    }
     surface.dataset.pitchRatio = String(pitchArea);
   };
 
@@ -293,6 +309,18 @@ export function BoardCanvas({
   const onPointerDown = (e: ReactPointerEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    // パネルの input にフォーカスが残ると Delete が効かないことがある
+    const ae = document.activeElement as HTMLElement | null;
+    if (
+      ae &&
+      ae !== canvas &&
+      (ae.tagName === "INPUT" ||
+        ae.tagName === "TEXTAREA" ||
+        ae.tagName === "SELECT" ||
+        ae.isContentEditable)
+    ) {
+      ae.blur();
+    }
     const hit = getNorm(e);
     if (!hit?.norm) return;
     const { norm, pitch } = hit;
@@ -331,6 +359,32 @@ export function BoardCanvas({
         bumpDragVisual();
         return;
       }
+      // 向き三角／外周 → その場回転。本体 → 移動
+      const facingPiece = hitTestPieceFacing(
+        board,
+        scene,
+        pitch,
+        norm.x,
+        norm.y,
+      );
+      if (facingPiece) {
+        state.setSelectedBall(false);
+        state.setSelectedPieceId(facingPiece.id);
+        state.setSelectedObjectId(null);
+        const facing =
+          (Math.atan2(world.y - facingPiece.y, world.x - facingPiece.x) *
+            180) /
+          Math.PI;
+        state.patchPiece(facingPiece.id, { facing }, true);
+        drag.current = {
+          mode: "piece-rotate",
+          id: facingPiece.id,
+          recorded: true,
+        };
+        canvas.setPointerCapture(e.pointerId);
+        bumpDragVisual();
+        return;
+      }
       const piece = hitTestPiece(board, scene, pitch, norm.x, norm.y);
       if (piece) {
         state.setSelectedBall(false);
@@ -341,6 +395,8 @@ export function BoardCanvas({
           id: piece.id,
           lastX: world.x,
           lastY: world.y,
+          startX: piece.x,
+          startY: piece.y,
           recorded: false,
           boost: 1.18,
         };
@@ -380,7 +436,7 @@ export function BoardCanvas({
       return;
     }
 
-    if (state.tool === "pass" || state.tool === "run" || state.tool === "dribble") {
+    if (isLineTool(state.tool)) {
       drag.current = {
         mode: "line",
         kind: state.tool,
@@ -463,6 +519,17 @@ export function BoardCanvas({
       return;
     }
 
+    if (d.mode === "piece-rotate") {
+      const piece = scene.pieces.find((p) => p.id === d.id);
+      if (piece) {
+        const facing =
+          (Math.atan2(world.y - piece.y, world.x - piece.x) * 180) / Math.PI;
+        state.patchPiece(d.id, { facing }, false);
+        bumpDragVisual();
+      }
+      return;
+    }
+
     if (d.mode === "piece") {
       const dx = world.x - d.lastX;
       const dy = world.y - d.lastY;
@@ -483,8 +550,8 @@ export function BoardCanvas({
     if (d.mode === "line") {
       const last = d.points[d.points.length - 1];
       const dist = Math.hypot(world.x - last.x, world.y - last.y);
-      // 近すぎる点は間引いて自然な弧にする
-      if (dist >= 0.012) {
+      // 近すぎる点は間引く（離すと平滑化で弧を描く）
+      if (dist >= 0.008) {
         d.points.push({ x: world.x, y: world.y });
         bumpDragVisual();
       }
@@ -512,6 +579,26 @@ export function BoardCanvas({
       return;
     }
 
+    if (d.mode === "piece") {
+      // 別の駒の上にドロップ → 位置入れ替え（交代・解説用）
+      const target = hitTestPiece(
+        board,
+        scene,
+        hit.pitch,
+        hit.norm.x,
+        hit.norm.y,
+        d.id,
+      );
+      if (target) {
+        state.swapPieces(d.id, target.id, {
+          x: d.startX,
+          y: d.startY,
+        });
+        state.setSelectedPieceId(d.id);
+      }
+      return;
+    }
+
     if (d.mode === "line") {
       const last = d.points[d.points.length - 1];
       if (
@@ -520,7 +607,7 @@ export function BoardCanvas({
         d.points.push({ x: world.x, y: world.y });
       }
       if (d.points.length >= 2) {
-        state.addLine(d.kind, d.points);
+        state.addLine(d.kind, smoothLinePath(d.points));
       }
     } else if (d.mode === "zone") {
       const x = Math.min(d.x0, world.x);

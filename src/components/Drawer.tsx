@@ -1,10 +1,37 @@
 import { useState } from "react";
+import { scoreForTeam } from "../canvas/matchBanner";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { BENCH_COUNT_OPTIONS } from "../presets/bench";
-import type { HideHalf } from "../models/types";
-import { MAX_BOARDS, MAX_SCENES, PIECE_SCALE } from "../models/types";
-import type { ViewPresetId } from "../presets/viewport";
+import type { HideHalf, SportId } from "../models/types";
+import {
+  MAX_BOARDS,
+  MAX_SCENES,
+  PIECE_SCALE,
+  usesPreferredFoot,
+} from "../models/types";
+import { STARTER_COUNT } from "../presets/roster";
+import { viewPresetsForSport } from "../presets/viewport";
+
+function startersPlaceholder(sport: SportId): string {
+  const n = STARTER_COUNT[sport];
+  return Array.from({ length: n }, (_, i) => String(i + 1)).join(",");
+}
+
+function sceneLabelPhKey(sport: SportId): MessageKey {
+  switch (sport) {
+    case "basketball":
+      return "sceneLabelPhBasket";
+    case "futsal":
+      return "sceneLabelPhFutsal";
+    case "beach_soccer":
+      return "sceneLabelPhBeach";
+    case "volleyball":
+      return "sceneLabelPhVolley";
+    default:
+      return "sceneLabelPhSoccer";
+  }
+}
 
 type Props = {
   state: AppState;
@@ -14,25 +41,14 @@ type Props = {
 type PanelTab = "match" | "scenes" | "roster";
 type TeamSide = "home" | "away";
 
-const VIEW_PRESETS: { id: ViewPresetId; key: MessageKey }[] = [
-  { id: "full", key: "viewFull" },
-  { id: "final-third-left", key: "viewFtL" },
-  { id: "final-third-right", key: "viewFtR" },
-  { id: "corner-bl", key: "viewCkBl" },
-  { id: "corner-br", key: "viewCkBr" },
-  { id: "corner-tl", key: "viewCkTl" },
-  { id: "corner-tr", key: "viewCkTr" },
-  { id: "throw-top", key: "viewThrowTop" },
-  { id: "throw-bottom", key: "viewThrowBot" },
-  { id: "pen-left", key: "viewPenL" },
-  { id: "pen-right", key: "viewPenR" },
-];
-
 export function Drawer({ state, t }: Props) {
   const [tab, setTab] = useState<PanelTab>("scenes");
   const [teamSide, setTeamSide] = useState<TeamSide>("home");
   const [rosterText, setRosterText] = useState({ home: "", away: "" });
   const [xiText, setXiText] = useState({ home: "", away: "" });
+  const [goalTeam, setGoalTeam] = useState<TeamSide>("home");
+  const [goalScorer, setGoalScorer] = useState("");
+  const [goalMinute, setGoalMinute] = useState("");
 
   if (!state.drawerOpen || state.broadcast || !state.board || !state.scene)
     return null;
@@ -110,33 +126,36 @@ export function Drawer({ state, t }: Props) {
                     false,
                   )
                 }
+                placeholder={t(sceneLabelPhKey(board.sport))}
               />
             </label>
-            <label>
-              {t("hideHalf")}
-              <select
-                value={scene.hideHalf}
-                onChange={(e) =>
-                  state.setHideHalf(e.target.value as HideHalf)
-                }
-              >
-                <option value="none">{t("hideNone")}</option>
-                <option value="left">{t("hideLeft")}</option>
-                <option value="right">{t("hideRight")}</option>
-              </select>
-            </label>
+            {board.sport === "soccer" && (
+              <label>
+                {t("hideHalf")}
+                <select
+                  value={scene.hideHalf}
+                  onChange={(e) =>
+                    state.setHideHalf(e.target.value as HideHalf)
+                  }
+                >
+                  <option value="none">{t("hideNone")}</option>
+                  <option value="left">{t("hideLeft")}</option>
+                  <option value="right">{t("hideRight")}</option>
+                </select>
+              </label>
+            )}
 
             <details className="drawer-details">
               <summary>{t("viewFocus")}</summary>
               <p className="hint-muted">{t("viewFocusHint")}</p>
               <div className="tool-grid">
-                {VIEW_PRESETS.map(({ id, key }) => (
+                {viewPresetsForSport(board.sport).map(({ id, key }) => (
                   <button
                     key={id}
                     type="button"
                     onClick={() => state.applyViewPreset(id)}
                   >
-                    {t(key)}
+                    {t(key as MessageKey)}
                   </button>
                 ))}
               </div>
@@ -149,7 +168,17 @@ export function Drawer({ state, t }: Props) {
 
         {tab === "roster" && (
           <section className="drawer-panel">
-            <p className="hint-muted">{t("rosterHint")}</p>
+            <p className="hint-muted">
+              {t(
+                board.sport === "basketball"
+                  ? "rosterHintBasket"
+                  : board.sport === "volleyball"
+                    ? "rosterHintVolley"
+                    : usesPreferredFoot(board.sport)
+                      ? "rosterHint"
+                      : "rosterHintNoFoot",
+              )}
+            </p>
             <div className="team-segment" role="tablist">
               <button
                 type="button"
@@ -181,7 +210,15 @@ export function Drawer({ state, t }: Props) {
                     [teamSide]: e.target.value,
                   }))
                 }
-                placeholder={"1\n2\n3\n…"}
+                placeholder={t(
+                  board.sport === "basketball"
+                    ? "rosterPlaceholderBasket"
+                    : board.sport === "volleyball"
+                      ? "rosterPlaceholderVolley"
+                      : usesPreferredFoot(board.sport)
+                        ? "rosterPlaceholder"
+                        : "rosterPlaceholderNoFoot",
+                )}
               />
             </label>
             <button
@@ -204,7 +241,7 @@ export function Drawer({ state, t }: Props) {
                     [teamSide]: e.target.value,
                   }))
                 }
-                placeholder="1,2,3,4,5,6,7,8,9,10,11"
+                placeholder={startersPlaceholder(board.sport)}
               />
             </label>
             <button
@@ -277,6 +314,120 @@ export function Drawer({ state, t }: Props) {
                 placeholder={t("matchLabelPh")}
               />
             </label>
+
+            {board.sport === "soccer" && (
+              <div className="stack match-banner-panel">
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showMatchBanner}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showMatchBanner: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("showMatchBanner")}
+                </label>
+                <p className="hint-muted">{t("matchBannerHint")}</p>
+                <div className="row">
+                  <label className="grow">
+                    {t("homeTeam")}
+                    <input
+                      value={board.homeTeam}
+                      onChange={(e) =>
+                        state.updateBoard(
+                          (b) => ({ ...b, homeTeam: e.target.value }),
+                          false,
+                        )
+                      }
+                      placeholder={t("homeTeamPh")}
+                    />
+                  </label>
+                  <label className="grow">
+                    {t("awayTeam")}
+                    <input
+                      value={board.awayTeam}
+                      onChange={(e) =>
+                        state.updateBoard(
+                          (b) => ({ ...b, awayTeam: e.target.value }),
+                          false,
+                        )
+                      }
+                      placeholder={t("awayTeamPh")}
+                    />
+                  </label>
+                </div>
+                <p className="score-summary">
+                  {t("scoreLabel")}: {scoreForTeam(board.goals, "home")} -{" "}
+                  {scoreForTeam(board.goals, "away")}
+                  <span className="hint-muted"> ({t("scoreFromGoals")})</span>
+                </p>
+                {board.goals.length > 0 && (
+                  <ul className="goal-list">
+                    {board.goals.map((g) => (
+                      <li key={g.id}>
+                        <span
+                          className={
+                            g.team === "home" ? "goal-home" : "goal-away"
+                          }
+                        >
+                          {g.minute ? `${g.minute}' ` : ""}
+                          {g.scorer}
+                        </span>
+                        <button
+                          type="button"
+                          className="goal-remove"
+                          onClick={() => state.removeGoal(g.id)}
+                          aria-label={t("removeGoal")}
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="goal-add row">
+                  <select
+                    value={goalTeam}
+                    onChange={(e) =>
+                      setGoalTeam(e.target.value as TeamSide)
+                    }
+                  >
+                    <option value="home">{t("homeTeam")}</option>
+                    <option value="away">{t("awayTeam")}</option>
+                  </select>
+                  <input
+                    value={goalScorer}
+                    onChange={(e) => setGoalScorer(e.target.value)}
+                    placeholder={t("goalScorerPh")}
+                    aria-label={t("goalScorer")}
+                  />
+                  <input
+                    className="goal-minute"
+                    value={goalMinute}
+                    onChange={(e) => setGoalMinute(e.target.value)}
+                    placeholder={t("goalMinutePh")}
+                    aria-label={t("goalMinute")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      state.addGoal(goalTeam, goalScorer, goalMinute);
+                      setGoalScorer("");
+                      setGoalMinute("");
+                    }}
+                  >
+                    {t("addGoal")}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <label>
               {t("title")}
               <input
@@ -287,6 +438,7 @@ export function Drawer({ state, t }: Props) {
                     false,
                   )
                 }
+                placeholder={t("titlePh")}
               />
             </label>
 
@@ -300,6 +452,8 @@ export function Drawer({ state, t }: Props) {
                 }}
               >
                 <option value="soccer">{t("soccer")}</option>
+                <option value="futsal">{t("futsal")}</option>
+                <option value="beach_soccer">{t("beachSoccer")}</option>
                 <option value="basketball">{t("basketball")}</option>
                 <option value="volleyball">{t("volleyball")}</option>
               </select>
@@ -362,6 +516,211 @@ export function Drawer({ state, t }: Props) {
                     {t("flip")}
                   </button>
                 )}
+              </div>
+            )}
+
+            {board.sport === "futsal" && (
+              <div className="stack">
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showCorridors3}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showCorridors3: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("corridors3")}
+                </label>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showPressLines}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showPressLines: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("pressLines")}
+                </label>
+                <p className="hint-muted">{t("futsalOverlayHint")}</p>
+              </div>
+            )}
+
+            {board.sport === "beach_soccer" && (
+              <div className="stack">
+                <p className="hint-muted">{t("beachOverlayHint")}</p>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showShotCorridor}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showShotCorridor: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("shotCorridor")}
+                </label>
+                <p className="hint-muted">{t("shotCorridorHint")}</p>
+              </div>
+            )}
+
+            {board.sport === "basketball" && (
+              <div className="stack">
+                <div className="row">
+                  <button
+                    type="button"
+                    className={board.pitchView === "full" ? "active" : ""}
+                    onClick={() =>
+                      state.updateBoard(
+                        (b) => ({ ...b, pitchView: "full" }),
+                        false,
+                      )
+                    }
+                  >
+                    {t("full")}
+                  </button>
+                  <button
+                    type="button"
+                    className={board.pitchView === "half" ? "active" : ""}
+                    onClick={() =>
+                      state.updateBoard(
+                        (b) => ({ ...b, pitchView: "half" }),
+                        false,
+                      )
+                    }
+                  >
+                    {t("half")}
+                  </button>
+                </div>
+                {board.pitchView === "half" && (
+                  <>
+                    <p className="hint-muted">{t("basketHalfHint")}</p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        state.updateBoard((b) => ({
+                          ...b,
+                          pitchFlipped: !b.pitchFlipped,
+                        }))
+                      }
+                    >
+                      {t("flip")}
+                    </button>
+                  </>
+                )}
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showPaintHighlight}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showPaintHighlight: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("paintHighlight")}
+                </label>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showThreePointEmphasis}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showThreePointEmphasis: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("threePointEmphasis")}
+                </label>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showSpotMarkers}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showSpotMarkers: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("spotMarkers")}
+                </label>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showMiddleLine}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showMiddleLine: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("middleLine")}
+                </label>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showSlotLines}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showSlotLines: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("slotLines")}
+                </label>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={board.showWoodCourt}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showWoodCourt: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("woodCourt")}
+                </label>
+                <p className="hint-muted">{t("woodCourtHint")}</p>
               </div>
             )}
 

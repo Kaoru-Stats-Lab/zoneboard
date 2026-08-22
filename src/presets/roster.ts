@@ -6,9 +6,19 @@ import { DEFAULT_BENCH_COUNT } from "./bench";
 /** 競技ごとのスタメン人数 */
 export const STARTER_COUNT: Record<SportId, number> = {
   soccer: 11,
+  futsal: 5,
+  beach_soccer: 5,
   basketball: 5,
   volleyball: 6,
 };
+
+const FIVE_A_SIDE_SPOTS = [
+  { x: 0.12, y: 0.5 },
+  { x: 0.32, y: 0.28 },
+  { x: 0.32, y: 0.72 },
+  { x: 0.52, y: 0.5 },
+  { x: 0.72, y: 0.5 },
+];
 
 /** フォーメーション座標（背番号は後から上書き） */
 export function starterSpots(sport: SportId): { x: number; y: number }[] {
@@ -27,13 +37,16 @@ export function starterSpots(sport: SportId): { x: number; y: number }[] {
       { x: 0.62, y: 0.62 },
     ];
   }
+  if (sport === "futsal" || sport === "beach_soccer") {
+    return FIVE_A_SIDE_SPOTS.map((s) => ({ ...s }));
+  }
   if (sport === "basketball") {
     return [
-      { x: 0.2, y: 0.5 },
-      { x: 0.35, y: 0.25 },
-      { x: 0.35, y: 0.75 },
-      { x: 0.5, y: 0.35 },
-      { x: 0.5, y: 0.65 },
+      { x: 0.58, y: 0.5 },
+      { x: 0.72, y: 0.2 },
+      { x: 0.72, y: 0.8 },
+      { x: 0.88, y: 0.35 },
+      { x: 0.88, y: 0.65 },
     ];
   }
   return [
@@ -58,9 +71,15 @@ function parseFoot(token: string): "L" | "R" | "B" | null {
   return null;
 }
 
+function parseMetricToken(token: string): number | null {
+  const n = Number(token.replace(/[^\d.]/g, ""));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return Math.round(n);
+}
+
 /**
  * 名簿テキストをパース。
- * `番号` / `番号,名前` / `番号,名前,R` / `番号,,L` / `番号,R`
+ * `番号` / `番号,名前` / `番号,名前,R` / `番号,名前,188,88`（バスケ身長体重）
  */
 export function parseRosterText(text: string): RosterPlayer[] {
   const lines = text
@@ -91,8 +110,16 @@ export function parseRosterText(text: string): RosterPlayer[] {
     seen.add(number);
     let label = parts[1] ?? "";
     let preferredFoot: "L" | "R" | "B" | null = null;
+    let heightCm: number | null = null;
+    let weightKg: number | null = null;
     if (parts.length >= 3) {
-      preferredFoot = parseFoot(parts[2]);
+      const foot = parseFoot(parts[2]);
+      if (foot) {
+        preferredFoot = foot;
+      } else {
+        heightCm = parseMetricToken(parts[2]);
+        if (parts.length >= 4) weightKg = parseMetricToken(parts[3]);
+      }
     } else {
       const footOnly = parseFoot(label);
       if (footOnly) {
@@ -100,7 +127,7 @@ export function parseRosterText(text: string): RosterPlayer[] {
         label = "";
       }
     }
-    out.push({ number, label, preferredFoot });
+    out.push({ number, label, preferredFoot, heightCm, weightKg });
   }
   return out;
 }
@@ -160,6 +187,8 @@ export function piecesFromRoster(
       facing,
       role: "starter",
       preferredFoot: p.preferredFoot ?? null,
+      heightCm: p.heightCm ?? null,
+      weightKg: p.weightKg ?? null,
     });
   });
 
@@ -182,6 +211,8 @@ export function piecesFromRoster(
       facing,
       role: "bench",
       preferredFoot: p.preferredFoot ?? null,
+      heightCm: p.heightCm ?? null,
+      weightKg: p.weightKg ?? null,
     });
   });
 

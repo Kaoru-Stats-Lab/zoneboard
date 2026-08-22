@@ -40,6 +40,7 @@ import {
 import {
   DEFAULT_VIEWPORT,
   VIEW_PRESETS,
+  defaultSceneLabel,
   type ViewPresetId,
 } from "../presets/viewport";
 import type { Viewport } from "../models/types";
@@ -276,23 +277,48 @@ export function useAppState() {
 
   const changeSport = useCallback(
     (sport: SportId) => {
-      updateBoard((b) =>
-        mapActiveScene(
+      const fiveAside = sport === "futsal" || sport === "beach_soccer";
+      updateBoard((b) => {
+        const wasFive =
+          b.sport === "futsal" || b.sport === "beach_soccer";
+        const benchCount = fiveAside
+          ? wasFive
+            ? b.benchCount
+            : 7
+          : b.benchCount;
+        return mapActiveScene(
           {
             ...b,
             sport,
-            pitchView: "full",
+            pitchView: sport === "basketball" ? "half" : "full",
             showLanes5: sport === "soccer",
+            showCorridors3: sport === "futsal",
+            showPressLines: sport === "futsal",
+            showShotCorridor: sport === "beach_soccer",
+            showPaintHighlight: sport === "basketball",
+            showThreePointEmphasis: sport === "basketball",
+            showSpotMarkers: sport === "basketball",
+            showMiddleLine: false,
+            showSlotLines: false,
+            showWoodCourt: false,
+            homeTeam: "",
+            awayTeam: "",
+            goals: [],
+            showMatchBanner: sport === "soccer",
+            benchCount,
           },
           (s) => ({
             ...s,
-            pieces: formationPieces(sport, true, b.benchCount),
+            label: defaultSceneLabel(sport),
+            hideHalf: "none",
+            pieces: formationPieces(sport, true, benchCount),
             objects: [],
             ball: { x: 0.5, y: 0.5 },
           }),
-        ),
-      );
+        );
+      });
       setSelectedPieceId(null);
+      setTool((t) => (t === "screen" && sport !== "basketball" ? "select" : t));
     },
     [updateBoard],
   );
@@ -475,6 +501,7 @@ export function useAppState() {
       record: boolean,
       facing?: number,
     ) => {
+      // コート上の人数上限は設けない（解説で「Aの動き／Bの動き」を並べるため）
       const role = roleFromPosition(x, y);
       updateScene(
         (s) => {
@@ -497,8 +524,47 @@ export function useAppState() {
     [updateScene],
   );
 
+  /**
+   * 駒同士のドロップ入れ替え（交代・位置交換）。
+   * a を b の位置へ、b を a のドラッグ開始位置へ。role は位置から再計算。
+   */
+  const swapPieces = useCallback(
+    (
+      idA: string,
+      idB: string,
+      startA: { x: number; y: number },
+    ) => {
+      updateScene((s) => {
+        const a = s.pieces.find((p) => p.id === idA);
+        const b = s.pieces.find((p) => p.id === idB);
+        if (!a || !b) return s;
+        const ax = startA.x;
+        const ay = startA.y;
+        const bx = b.x;
+        const by = b.y;
+        const roleA = roleFromPosition(bx, by);
+        const roleB = roleFromPosition(ax, ay);
+        const pieces = s.pieces.map((p) => {
+          if (p.id === idA) return { ...p, x: bx, y: by, role: roleA };
+          if (p.id === idB) return { ...p, x: ax, y: ay, role: roleB };
+          return p;
+        });
+        let ball = s.ball;
+        const movedA = pieces.find((p) => p.id === idA);
+        const movedB = pieces.find((p) => p.id === idB);
+        if (movedA && ball.attachedTo === idA) {
+          ball = { ...ball, x: movedA.x, y: movedA.y };
+        } else if (movedB && ball.attachedTo === idB) {
+          ball = { ...ball, x: movedB.x, y: movedB.y };
+        }
+        return { ...s, pieces, ball };
+      });
+    },
+    [updateScene],
+  );
+
   const patchPiece = useCallback(
-    (id: string, patch: Partial<Piece>) => {
+    (id: string, patch: Partial<Piece>, record = true) => {
       updateScene((s) => {
         const pieces = s.pieces.map((p) =>
           p.id === id ? { ...p, ...patch } : p,
@@ -510,7 +576,7 @@ export function useAppState() {
           if (followed) ball = followed;
         }
         return { ...s, pieces, ball };
-      });
+      }, record);
     },
     [updateScene],
   );
@@ -618,8 +684,22 @@ export function useAppState() {
         objects: s.objects.filter((o) => o.id !== selectedObjectId),
       }));
       setSelectedObjectId(null);
+      return;
     }
-  }, [selectedPieceId, selectedObjectId, setSelectedPieceId, updateScene]);
+    if (selectedBall) {
+      updateScene((s) => ({
+        ...s,
+        ball: { x: 0.5, y: 0.5, attachedTo: null },
+      }));
+      setSelectedBall(false);
+    }
+  }, [
+    selectedPieceId,
+    selectedObjectId,
+    selectedBall,
+    setSelectedPieceId,
+    updateScene,
+  ]);
 
   const clearDrawings = useCallback(() => {
     updateScene((s) => ({ ...s, objects: [] }));
@@ -631,6 +711,36 @@ export function useAppState() {
     setSelectedPieceId(null);
     setSelectedObjectId(null);
   }, [setSelectedPieceId, updateScene]);
+
+  const addGoal = useCallback(
+    (team: "home" | "away", scorer: string, minute?: string) => {
+      const name = scorer.trim();
+      if (!name) return;
+      updateBoard((b) => ({
+        ...b,
+        goals: [
+          ...b.goals,
+          {
+            id: uid(),
+            team,
+            scorer: name,
+            minute: minute?.trim() || undefined,
+          },
+        ],
+      }));
+    },
+    [updateBoard],
+  );
+
+  const removeGoal = useCallback(
+    (goalId: string) => {
+      updateBoard((b) => ({
+        ...b,
+        goals: b.goals.filter((g) => g.id !== goalId),
+      }));
+    },
+    [updateBoard],
+  );
 
   const openPieceInspector = useCallback((id: string) => {
     setSelectedPieceIdState(id);
@@ -700,6 +810,7 @@ export function useAppState() {
     exitBroadcast,
     addPieceAt,
     movePiece,
+    swapPieces,
     patchPiece,
     addLine,
     addZone,
@@ -708,6 +819,8 @@ export function useAppState() {
     deleteSelected,
     clearDrawings,
     clearBoard,
+    addGoal,
+    removeGoal,
     flushSave,
   };
 }

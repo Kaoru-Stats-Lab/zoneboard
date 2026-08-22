@@ -1,5 +1,30 @@
-export type SportId = "soccer" | "basketball" | "volleyball";
-export type LineKind = "pass" | "run" | "dribble";
+export type SportId =
+  | "soccer"
+  | "futsal"
+  | "beach_soccer"
+  | "basketball"
+  | "volleyball";
+
+/** 協会サッカー派生（記号・ツール流用） */
+export function isSoccerFamily(sport: SportId): boolean {
+  return sport === "soccer" || sport === "futsal" || sport === "beach_soccer";
+}
+
+/** 利き足表示・編集（バスケ／バレーでは使わない） */
+export function usesPreferredFoot(sport: SportId): boolean {
+  return isSoccerFamily(sport);
+}
+
+/** 身長（バスケ・バレーのマッチアップ説明） */
+export function usesHeight(sport: SportId): boolean {
+  return sport === "basketball" || sport === "volleyball";
+}
+
+/** 体重（バスケ向け。バレー公式プロフィールでは身長が主） */
+export function usesWeight(sport: SportId): boolean {
+  return sport === "basketball";
+}
+export type LineKind = "pass" | "run" | "dribble" | "screen";
 export type PitchView = "full" | "half";
 export type ToolId =
   | "select"
@@ -9,6 +34,7 @@ export type ToolId =
   | "pass"
   | "run"
   | "dribble"
+  | "screen"
   | "zone"
   | "pen"
   | "text";
@@ -28,8 +54,12 @@ export interface BallState {
 export interface RosterPlayer {
   number: string;
   label: string;
-  /** 利き足（任意）L / R / B */
+  /** 利き足（任意）L / R / B — サカ系 */
   preferredFoot?: "L" | "R" | "B" | null;
+  /** 身長 cm（任意・バスケ） */
+  heightCm?: number | null;
+  /** 体重 kg（任意・バスケ） */
+  weightKg?: number | null;
 }
 
 export interface TeamRoster {
@@ -41,6 +71,18 @@ export interface TeamRoster {
 export interface MatchRoster {
   home: TeamRoster;
   away: TeamRoster;
+}
+
+/** 得点記録（スコアは goals から自動集計） */
+export interface GoalEntry {
+  id: string;
+  team: "home" | "away";
+  /** 得点者（背番号 or 名前） */
+  scorer: string;
+  /** 例: "23" / "45+2" */
+  minute?: string;
+  /** Later: アシスト（UI 非表示） */
+  assist?: string;
 }
 
 /**
@@ -87,9 +129,13 @@ export interface Piece {
   visible?: boolean;
   /**
    * 利き足（任意）。解説・VTuber 同時視聴向け。
-   * L / R / B（両利き）。未設定なら表示しない。
+   * L / R / B（両利き）。未設定なら表示しない。サカ系のみ。
    */
   preferredFoot?: "L" | "R" | "B" | null;
+  /** 身長 cm（任意・バスケのマッチアップ説明向け） */
+  heightCm?: number | null;
+  /** 体重 kg（任意・バスケのマッチアップ説明向け） */
+  weightKg?: number | null;
 }
 
 export interface LineObject {
@@ -170,11 +216,37 @@ export interface BoardDocument {
   id: string;
   sport: SportId;
   title: string;
-  /** 試合の人間用ラベル（例: W杯 R32 ブラジル vs 日本） */
+  /** 試合の人間用ラベル（例: Premier League 第1節） */
   matchLabel: string;
+  /** ホーム／アウェイ表示名（スコア帯用） */
+  homeTeam: string;
+  awayTeam: string;
+  /** 得点一覧（スコア = 件数） */
+  goals: GoalEntry[];
+  /** 画面上部の試合帯（配信・編集プレビュー） */
+  showMatchBanner: boolean;
   pitchView: PitchView;
   pitchFlipped: boolean;
+  /** サッカー: 5レーン（ハーフスペース） */
   showLanes5: boolean;
+  /** フットサル: 縦3廊下（3 Carriles） */
+  showCorridors3: boolean;
+  /** フットサル: 横プレス線（1/4・1/2・3/4） */
+  showPressLines: boolean;
+  /** ビーチ: 射線ガイド（ボール〜両ゴールポスト） */
+  showShotCorridor: boolean;
+  /** バスケ: ペイント強調 */
+  showPaintHighlight: boolean;
+  /** バスケ: 3Pライン強調 */
+  showThreePointEmphasis: boolean;
+  /** バスケ: トップ・ウイング・コーナー・エルボー */
+  showSpotMarkers: boolean;
+  /** バスケ: ミドルライン（ストロング／ヘルプ） */
+  showMiddleLine: boolean;
+  /** バスケ: スロット線 */
+  showSlotLines: boolean;
+  /** バスケ: 木目コート面（白面の代わり） */
+  showWoodCourt: boolean;
   pieceScale: number;
   /** 控え人数（片チーム）。大会カテゴリではなく人数そのもの */
   benchCount: number;
@@ -224,7 +296,23 @@ export const LINE_COLORS = {
   pass: "#2563eb",
   run: "#059669",
   dribble: "#ea580c",
+  /** スクリーン（T字）。FastDraw 系の図式 */
+  screen: "#7c3aed",
 } as const;
+
+/** バスケ専用のスクリーン線ツール */
+export function usesScreenTool(sport: SportId): boolean {
+  return sport === "basketball";
+}
+
+export function isLineTool(tool: ToolId): tool is LineKind {
+  return (
+    tool === "pass" ||
+    tool === "run" ||
+    tool === "dribble" ||
+    tool === "screen"
+  );
+}
 
 export const ZONE_COLORS = {
   fill: "rgba(14, 165, 233, 0.22)",
@@ -239,6 +327,7 @@ export const TOOL_COLORS: Record<ToolId, string> = {
   pass: LINE_COLORS.pass,
   run: LINE_COLORS.run,
   dribble: LINE_COLORS.dribble,
+  screen: LINE_COLORS.screen,
   zone: ZONE_COLORS.stroke,
   pen: "#404040",
   text: "#404040",

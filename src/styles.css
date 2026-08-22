@@ -560,6 +560,75 @@ button.danger {
   color: #888;
 }
 
+.match-banner-panel {
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid #eee;
+}
+
+.score-summary {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.goal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.goal-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.35rem;
+  background: #f6f6f6;
+  border-radius: 4px;
+}
+
+.goal-home {
+  color: #c0392b;
+}
+
+.goal-away {
+  color: #2980b9;
+}
+
+.goal-remove {
+  padding: 0 0.35rem;
+  min-width: 1.5rem;
+  line-height: 1.2;
+  font-size: 1rem;
+}
+
+.goal-add {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.goal-add select,
+.goal-add input {
+  flex: 1;
+  min-width: 4rem;
+}
+
+.goal-minute {
+  max-width: 3.5rem;
+  flex: 0 0 3.5rem !important;
+}
+
+.row .grow {
+  flex: 1;
+  min-width: 0;
+}
+
 .title-input,
 .drawer input,
 .drawer select,

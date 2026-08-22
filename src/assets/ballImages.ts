@@ -12,6 +12,8 @@ const inflight = new Map<string, Promise<HTMLImageElement | null>>();
 const BALL_SRC: Partial<Record<SportId | "rugby", string[]>> = {
   // 不透明な SVG を優先（PNG は背景除去で穴が残ることがある）
   soccer: ["balls/soccer_ball2.svg", "balls/soccer.png"],
+  futsal: ["balls/futsal.png", "balls/soccer_ball2.svg"],
+  beach_soccer: ["balls/soccer.png", "balls/soccer_ball2.svg"],
   basketball: ["balls/basketball.png"],
   volleyball: ["balls/volleyball.png"],
   // rugby: ["balls/rugby.png"],

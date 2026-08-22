@@ -9,6 +9,7 @@
 | `basketball.png` | バスケ | PNG 256px | 背景除去済み |
 | `volleyball.png` | バレー | PNG 256px | ミカサ配色・背景除去済み |
 | `futsal.png` | フットサル | PNG 256px | 白＋赤緑青ベタ・背景除去済み |
+| （ビーチ） | ビーチサッカー | — | 当面 `soccer.png` を流用 |
 
 ## なぜ PNG か
 

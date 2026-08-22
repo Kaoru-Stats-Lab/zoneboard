@@ -20,6 +20,21 @@ npm run dev
 | `npm run build` | 本番ビルド（`dist/`） |
 | `npm run preview` | ビルド結果のプレビュー |
 
+## 本番（Cloudflare Pages）
+
+| 項目 | 値 |
+|------|-----|
+| Build command | `npm run build` |
+| Build output | `dist` |
+| Node | 20 推奨 |
+
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → `Cozy762/zoneboard`
+2. 上記 Build 設定でデプロイ（`public/_redirects` で SPA ルーティング）
+3. **Custom domains** → `zoneboard.app` / `www.zoneboard.app` を追加
+4. お名前.com で DNS を Cloudflare に向ける（**ネームサーバー移管** または **CNAME**）
+
+公開 URL: `https://zoneboard.app/ja/board`
+
 ## ドキュメント
 
 | パス | 内容 |
@@ -35,6 +50,10 @@ npm run dev
 | [`docs/SPORTS_SCOPE.md`](docs/SPORTS_SCOPE.md) | スポーツ市場 MECE と v1 対象競技 |
 | [`docs/UI_UX.md`](docs/UI_UX.md) | chrome・パネル・カードの指針 |
 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | 未着手・Later・決定済み方針の駐車場 |
+| [`docs/FUTSAL_BEACH_RESEARCH.md`](docs/FUTSAL_BEACH_RESEARCH.md) | フットサル・ビーチの戦術ボード／配信リサーチ |
+| [`docs/FUTSAL_BEACH_OVERSEAS_BRIEF.md`](docs/FUTSAL_BEACH_OVERSEAS_BRIEF.md) | 海外強豪国・言語圏（Gemini 用プロンプト） |
+| [`docs/BASKETBALL_RESEARCH_BRIEF.md`](docs/BASKETBALL_RESEARCH_BRIEF.md) | バスケ戦術ボード／配信リサーチ用プロンプト |
+| [`docs/BASKETBALL_RESEARCH.md`](docs/BASKETBALL_RESEARCH.md) | バスケ調査統合・実装対応 |
 
 ## 主な操作
 

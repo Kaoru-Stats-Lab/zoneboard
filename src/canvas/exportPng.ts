@@ -10,6 +10,7 @@ import {
 } from "../presets/viewport";
 import { drawBoard } from "./drawBoard";
 import { fitField } from "./layout";
+import { drawMatchBanner, matchBannerHeight } from "./matchBanner";
 
 /** SNS 逆算プリセット（docs/SOCIAL_OUTPUT.md） */
 export type ExportPresetId =
@@ -115,7 +116,15 @@ export async function exportBoardPng(
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   const boardH = canvasH - captionH;
-  const { outer, pitch } = fitField(canvasW, boardH, board, 24, viewport);
+  const bannerH = matchBannerHeight(canvasW, boardH, board);
+  const { outer, pitch } = fitField(
+    canvasW,
+    boardH,
+    board,
+    24,
+    viewport,
+    bannerH,
+  );
   // fitField は y=0 基準なので、キャプション分は下に残すだけ（上から配置）
   const scene = getActiveScene(board);
   drawBoard(ctx, pitch, board, scene, {
@@ -126,6 +135,9 @@ export async function exportBoardPng(
     watermarkImage: options.bakeWatermark ? watermarkImage : null,
     ballImage,
   });
+  if (bannerH > 0) {
+    drawMatchBanner(ctx, canvasW, bannerH, board);
+  }
 
   if (caption) {
     ctx.fillStyle = "#111111";

@@ -8,11 +8,13 @@ import type {
   Scene,
   WatermarkSettings,
 } from "../models/types";
-import { LINE_COLORS, UI_FONT_STACK } from "../models/types";
+import { LINE_COLORS, UI_FONT_STACK, usesPreferredFoot } from "../models/types";
+import { BASKET_HALF_START } from "../presets/sports";
 import {
   drawPitchLanes,
   drawPitchMarkings,
   drawPitchSurface,
+  drawShotCorridor,
 } from "./drawPitch";
 import { fromNorm, pointerHitSlop, type PitchRect } from "./layout";
 
@@ -23,7 +25,23 @@ export function worldToPitch(
 ): { x: number; y: number } | null {
   // バッファ（サブ・ゴール裏・タッチ外）は常に表示
   if (y < 0 || y > 1 || x < 0 || x > 1) return { x, y };
-  if (board.sport !== "soccer" || board.pitchView === "full") {
+  if (board.pitchView !== "half") {
+    return { x, y };
+  }
+  if (board.sport === "basketball") {
+    const start = BASKET_HALF_START;
+    const end = 1 - BASKET_HALF_START;
+    if (board.pitchFlipped) {
+      if (x < -0.02 || x > end + 0.02) return null;
+      return { x: Math.min(1, Math.max(0, x / end)), y };
+    }
+    if (x < start - 0.02 || x > 1.02) return null;
+    return {
+      x: Math.min(1, Math.max(0, (x - start) / (1 - start))),
+      y,
+    };
+  }
+  if (board.sport !== "soccer") {
     return { x, y };
   }
   const visX = board.pitchFlipped ? (0.5 - x) * 2 : (x - 0.5) * 2;
@@ -37,7 +55,18 @@ export function pitchToWorld(
   board: BoardDocument,
 ): { x: number; y: number } {
   if (y < 0 || y > 1 || x < 0 || x > 1) return { x, y };
-  if (board.sport !== "soccer" || board.pitchView === "full") {
+  if (board.pitchView !== "half") {
+    return { x, y };
+  }
+  if (board.sport === "basketball") {
+    const start = BASKET_HALF_START;
+    const end = 1 - BASKET_HALF_START;
+    if (board.pitchFlipped) {
+      return { x: x * end, y };
+    }
+    return { x: start + x * (1 - start), y };
+  }
+  if (board.sport !== "soccer") {
     return { x, y };
   }
   if (board.pitchFlipped) {
@@ -106,7 +135,7 @@ export function drawBoard(
   const sel = opts.selectionColor ?? "#111111";
 
   // 下から: 面 → 5レーン → ロゴ → ピッチ線 → 描画 → 駒 → ボール
-  drawPitchSurface(ctx, pitch);
+  drawPitchSurface(ctx, pitch, board);
   drawPitchLanes(ctx, pitch, board);
 
   if (
@@ -118,6 +147,10 @@ export function drawBoard(
   }
 
   drawPitchMarkings(ctx, pitch, board);
+
+  if (board.sport === "beach_soccer" && board.showShotCorridor) {
+    drawShotCorridor(ctx, pitch, scene.ball);
+  }
 
   for (const obj of scene.objects) {
     drawObject(
@@ -222,6 +255,17 @@ function drawPiece(
     ctx.setLineDash([]);
   }
 
+  // 選択時: 駒との隙間を空けたリング（アクティブ認識＋回転ハンドル）
+  if (selected && !dragging) {
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.72, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(0,0,0,0.28)";
+    ctx.lineWidth = 1.75;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
   const rad = (piece.facing * Math.PI) / 180;
   const fx = x + Math.cos(rad) * r;
   const fy = y + Math.sin(rad) * r;
@@ -236,8 +280,8 @@ function drawPiece(
   ctx.closePath();
   ctx.fillStyle = piece.color;
   ctx.fill();
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = selected ? selectionColor : "#fff";
+  ctx.lineWidth = selected ? 2 : 1;
   ctx.stroke();
 
   if (dragging) ctx.restore();
@@ -251,8 +295,8 @@ function drawPiece(
     ctx.fillText(piece.number, x, y);
   }
 
-  // 利き足（任意・解説向け）。向きに対して L=左足側 / R=右足側に小さく表示
-  const foot = piece.preferredFoot;
+  // 利き足（サカ系のみ・解説向け）。向きに対して L=左足側 / R=右足側に小さく表示
+  const foot = usesPreferredFoot(board.sport) ? piece.preferredFoot : null;
   if (foot === "L" || foot === "R" || foot === "B") {
     const mark = foot === "B" ? "B" : foot;
     const footRad =
@@ -490,6 +534,11 @@ function drawObject(
       ctx.lineCap = "round";
       strokePolyline(ctx, pts);
       drawArrowHead(ctx, pts, lw);
+    } else if (obj.kind === "screen") {
+      ctx.setLineDash([]);
+      ctx.lineCap = "round";
+      strokePolyline(ctx, pts);
+      drawScreenBar(ctx, pts, lw);
     } else {
       ctx.setLineDash([]);
       ctx.lineCap = "round";
@@ -734,6 +783,32 @@ function drawArrowHead(
   ctx.fill();
 }
 
+/** スクリーン（T字）— 線先端に走行方向へ垂直なバー */
+function drawScreenBar(
+  ctx: CanvasRenderingContext2D,
+  pts: { x: number; y: number }[],
+  lw: number,
+) {
+  if (pts.length < 2) return;
+  const p2 = pts[pts.length - 1];
+  const p1 = pts[pts.length - 2];
+  const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+  const barLen = 10 + lw * 3;
+  const perp = ang + Math.PI / 2;
+  ctx.beginPath();
+  ctx.moveTo(
+    p2.x + barLen * Math.cos(perp),
+    p2.y + barLen * Math.sin(perp),
+  );
+  ctx.lineTo(
+    p2.x - barLen * Math.cos(perp),
+    p2.y - barLen * Math.sin(perp),
+  );
+  ctx.lineWidth = lw;
+  ctx.lineCap = "butt";
+  ctx.stroke();
+}
+
 /** 白背景 PNG の白を透過扱いにしたキャンバス／画素をキャッシュ */
 const knockoutCache = new WeakMap<HTMLImageElement, HTMLCanvasElement>();
 const knockoutPixels = new WeakMap<HTMLImageElement, ImageData>();
@@ -788,8 +863,42 @@ export function hitTestPiece(
   pitch: PitchRect,
   normX: number,
   normY: number,
+  excludeId?: string | null,
 ): Piece | null {
   const scale = board.pieceScale ?? 1;
+  let best: Piece | null = null;
+  let bestD = Infinity;
+  for (let i = scene.pieces.length - 1; i >= 0; i--) {
+    const p = scene.pieces[i];
+    if (excludeId && p.id === excludeId) continue;
+    if (!isPieceDrawn(p, scene.hideHalf)) continue;
+    const m = worldToPitch(p.x, p.y, board);
+    if (!m) continue;
+    // ドロップ先はベンチ駒も拾いやすいよう少し広め
+    const r = pieceRadius(pitch, scale, p.role);
+    const rn = (r / Math.min(pitch.w, pitch.h)) * 1.45 * pointerHitSlop();
+    const d = Math.hypot(m.x - normX, m.y - normY);
+    if (d <= rn && d < bestD) {
+      bestD = d;
+      best = p;
+    }
+  }
+  return best;
+}
+
+/**
+ * 向き三角〜外周リングのヒット（その場回転用）。
+ * 本体より外側を優先して拾う。
+ */
+export function hitTestPieceFacing(
+  board: BoardDocument,
+  scene: Scene,
+  pitch: PitchRect,
+  normX: number,
+  normY: number,
+): Piece | null {
+  const scale = board.pieceScale ?? 1;
+  const minSide = Math.min(pitch.w, pitch.h);
   let best: Piece | null = null;
   let bestD = Infinity;
   for (let i = scene.pieces.length - 1; i >= 0; i--) {
@@ -798,10 +907,20 @@ export function hitTestPiece(
     const m = worldToPitch(p.x, p.y, board);
     if (!m) continue;
     const r = pieceRadius(pitch, scale, p.role);
-    const rn = (r / Math.min(pitch.w, pitch.h)) * 1.3 * pointerHitSlop();
+    const rn = (r / minSide) * pointerHitSlop();
     const d = Math.hypot(m.x - normX, m.y - normY);
-    if (d <= rn && d < bestD) {
-      bestD = d;
+    // 外周リング（本体との隙間〜選択リング外側）
+    const inner = rn * 1.05;
+    const outer = rn * 2.05;
+    if (d < inner || d > outer) continue;
+    const rad = (p.facing * Math.PI) / 180;
+    const tipX = m.x + Math.cos(rad) * rn * 1.4;
+    const tipY = m.y + Math.sin(rad) * rn * 1.4;
+    const tipD = Math.hypot(normX - tipX, normY - tipY);
+    // 三角付近を優先、リング上なら次点
+    const score = tipD <= rn * 0.65 ? tipD : d + rn;
+    if (score < bestD) {
+      bestD = score;
       best = p;
     }
   }
