@@ -1,6 +1,10 @@
 import type { BoardDocument } from "../models/types";
 import { BEACH_NORM, FUTSAL_NORM } from "../presets/smallPitches";
-import { SOCCER_NORM, SOCCER_PITCH_M } from "../presets/soccerPitch";
+import {
+  LANE5_BOUNDARY_NORM,
+  SOCCER_NORM,
+  SOCCER_PITCH_M,
+} from "../presets/soccerPitch";
 import { BASKET_HALF_START } from "../presets/sports";
 import { fromNorm, type PitchRect } from "./layout";
 
@@ -451,15 +455,16 @@ function drawLanes5(
   lw: number,
 ) {
   const { x, y, w, h } = pitch;
+  const [lhsOuter, lhsInner, rhsInner, rhsOuter] = LANE5_BOUNDARY_NORM;
 
   ctx.fillStyle = "rgba(52, 152, 219, 0.07)";
-  ctx.fillRect(x, y + h * 0.2, w, h * 0.2);
-  ctx.fillRect(x, y + h * 0.6, w, h * 0.2);
+  ctx.fillRect(x, y + lhsOuter * h, w, (lhsInner - lhsOuter) * h);
+  ctx.fillRect(x, y + rhsInner * h, w, (rhsOuter - rhsInner) * h);
 
   ctx.setLineDash([5, 5]);
   ctx.globalAlpha = 0.45;
-  for (let i = 1; i < 5; i++) {
-    const ly = y + (h * i) / 5;
+  for (const t of LANE5_BOUNDARY_NORM) {
+    const ly = y + h * t;
     line(ctx, x, ly, x + w, ly, lw * 0.75);
   }
   ctx.setLineDash([]);
@@ -575,7 +580,7 @@ function drawPenaltyBoxAccurate(
   ctx.fillStyle = activePitchInk;
   ctx.fill();
 
-  const arcR = N.centerR * h;
+  const arcR = (SOCCER_PITCH_M.centerCircleR / SOCCER_PITCH_M.length) * w;
   const boxEdgeX = left ? bx + penW : bx;
   ctx.beginPath();
   if (left) {
