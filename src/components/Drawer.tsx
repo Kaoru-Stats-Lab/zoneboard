@@ -490,6 +490,23 @@ export function Drawer({ state, t }: Props) {
                 <label className="check">
                   <input
                     type="checkbox"
+                    checked={board.showGrassPitch}
+                    onChange={(e) =>
+                      state.updateBoard(
+                        (b) => ({
+                          ...b,
+                          showGrassPitch: e.target.checked,
+                        }),
+                        false,
+                      )
+                    }
+                  />
+                  {t("grassPitch")}
+                </label>
+                <p className="hint-muted">{t("grassPitchHint")}</p>
+                <label className="check">
+                  <input
+                    type="checkbox"
                     checked={board.showLanes5}
                     onChange={(e) =>
                       state.updateBoard(

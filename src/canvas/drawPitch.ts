@@ -5,6 +5,22 @@ import { BASKET_HALF_START } from "../presets/sports";
 import { fromNorm, type PitchRect } from "./layout";
 
 const LINE = "#1a1a1a";
+const GRASS_INK = "rgba(255, 255, 255, 0.94)";
+
+function usesGrassPitch(board?: BoardDocument): boolean {
+  return board?.sport === "soccer" && !!board.showGrassPitch;
+}
+
+function pitchInk(board?: BoardDocument): string {
+  return usesGrassPitch(board) ? GRASS_INK : LINE;
+}
+
+/** drawPitchMarkings / drawPitchLanes 中の線色（line / strokeRect が参照） */
+let activePitchInk = LINE;
+
+function setActivePitchInk(board?: BoardDocument) {
+  activePitchInk = pitchInk(board);
+}
 
 function strokeRect(
   ctx: CanvasRenderingContext2D,
@@ -15,7 +31,7 @@ function strokeRect(
   lw: number,
 ) {
   ctx.lineWidth = lw;
-  ctx.strokeStyle = LINE;
+  ctx.strokeStyle = activePitchInk;
   ctx.strokeRect(x, y, w, h);
 }
 
@@ -31,8 +47,12 @@ function line(
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.lineWidth = lw;
-  ctx.strokeStyle = LINE;
+  ctx.strokeStyle = activePitchInk;
   ctx.stroke();
+}
+
+export function outerFillForBoard(board: BoardDocument): string {
+  return usesGrassPitch(board) ? "#1f5230" : "#ffffff";
 }
 
 export function pitchLineWidth(pitch: PitchRect): number {
@@ -51,9 +71,34 @@ export function drawPitchSurface(
     ctx.fillRect(x, y, w, h);
   } else if (board?.sport === "basketball" && board.showWoodCourt) {
     drawWoodSurface(ctx, pitch);
+  } else if (usesGrassPitch(board)) {
+    drawGrassSurface(ctx, pitch);
   } else {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(x, y, w, h);
+  }
+}
+
+/** サッカー芝（刈り込みストライプ＋微細ノイズ。配信向け） */
+function drawGrassSurface(ctx: CanvasRenderingContext2D, pitch: PitchRect) {
+  const { x, y, w, h } = pitch;
+  ctx.fillStyle = "#2f6e38";
+  ctx.fillRect(x, y, w, h);
+
+  const stripes = Math.max(14, Math.ceil(w / 24));
+  for (let i = 0; i < stripes; i++) {
+    const sx = x + (i * w) / stripes;
+    const sw = w / stripes + 1;
+    ctx.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
+    ctx.fillRect(sx, y, sw, h);
+  }
+
+  const grains = Math.min(900, Math.floor((w * h) / 620));
+  for (let i = 0; i < grains; i++) {
+    const gx = x + (((i * 7919) % 997) / 997) * w;
+    const gy = y + (((i * 6271) % 991) / 991) * h;
+    ctx.fillStyle = i % 3 === 0 ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.04)";
+    ctx.fillRect(gx, gy, 1.1, 1.1);
   }
 }
 
@@ -87,6 +132,7 @@ export function drawPitchLanes(
   board: BoardDocument,
 ) {
   const lw = pitchLineWidth(pitch);
+  setActivePitchInk(board);
   if (board.sport === "soccer" && board.showLanes5) {
     drawLanes5(ctx, pitch, lw);
   }
@@ -107,6 +153,7 @@ export function drawPitchMarkings(
 ) {
   const lw = pitchLineWidth(pitch);
   const { x, y, w, h } = pitch;
+  setActivePitchInk(board);
   strokeRect(ctx, x, y, w, h, lw);
 
   if (board.sport === "soccer") {

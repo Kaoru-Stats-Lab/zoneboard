@@ -247,6 +247,8 @@ export interface BoardDocument {
   showSlotLines: boolean;
   /** バスケ: 木目コート面（白面の代わり） */
   showWoodCourt: boolean;
+  /** サッカー: 芝生テクスチャ（白面の代わり） */
+  showGrassPitch: boolean;
   pieceScale: number;
   /** 控え人数（片チーム）。大会カテゴリではなく人数そのもの */
   benchCount: number;

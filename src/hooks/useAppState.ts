@@ -301,6 +301,7 @@ export function useAppState() {
             showMiddleLine: false,
             showSlotLines: false,
             showWoodCourt: false,
+            showGrassPitch: sport === "soccer",
             homeTeam: "",
             awayTeam: "",
             goals: [],

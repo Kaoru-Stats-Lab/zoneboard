@@ -84,6 +84,7 @@ export function createBoard(
     showMiddleLine: false,
     showSlotLines: false,
     showWoodCourt: false,
+    showGrassPitch: sport === "soccer",
     pieceScale: PIECE_SCALE.balanced,
     benchCount,
     scenes: [scene],
@@ -201,6 +202,8 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
       (raw as { showSlotLines?: boolean }).showSlotLines ?? false,
     showWoodCourt:
       (raw as { showWoodCourt?: boolean }).showWoodCourt ?? false,
+    showGrassPitch:
+      (raw as { showGrassPitch?: boolean }).showGrassPitch ?? false,
     pieceScale: raw.pieceScale ?? PIECE_SCALE.balanced,
     benchCount,
     scenes,

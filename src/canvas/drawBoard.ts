@@ -15,6 +15,7 @@ import {
   drawPitchMarkings,
   drawPitchSurface,
   drawShotCorridor,
+  outerFillForBoard,
 } from "./drawPitch";
 import { fromNorm, pointerHitSlop, type PitchRect } from "./layout";
 
@@ -129,7 +130,7 @@ export function drawBoard(
       h: pitch.h * 1.28,
     } satisfies PitchRect);
 
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = outerFillForBoard(board);
   ctx.fillRect(outer.x, outer.y, outer.w, outer.h);
 
   const sel = opts.selectionColor ?? "#111111";
