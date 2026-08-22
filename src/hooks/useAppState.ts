@@ -17,6 +17,7 @@ import type {
   HideHalf,
   LineKind,
   Piece,
+  CardKind,
   ScenePhase,
   SportId,
   ToolId,
@@ -316,6 +317,7 @@ export function useAppState() {
             homeTeam: "",
             awayTeam: "",
             goals: [],
+            cards: [],
             showMatchBanner: sport === "soccer",
             benchCount,
           },
@@ -773,6 +775,42 @@ export function useAppState() {
     [updateBoard],
   );
 
+  const addCard = useCallback(
+    (
+      team: "home" | "away",
+      player: string,
+      kind: CardKind,
+      minute?: string,
+    ) => {
+      const name = player.trim();
+      if (!name) return;
+      updateBoard((b) => ({
+        ...b,
+        cards: [
+          ...(b.cards ?? []),
+          {
+            id: uid(),
+            team,
+            player: name,
+            kind,
+            minute: minute?.trim() || undefined,
+          },
+        ],
+      }));
+    },
+    [updateBoard],
+  );
+
+  const removeCard = useCallback(
+    (cardId: string) => {
+      updateBoard((b) => ({
+        ...b,
+        cards: (b.cards ?? []).filter((c) => c.id !== cardId),
+      }));
+    },
+    [updateBoard],
+  );
+
   const openPieceInspector = useCallback((id: string) => {
     setSelectedPieceIdState(id);
     setSelectedBall(false);
@@ -853,6 +891,8 @@ export function useAppState() {
     clearBoard,
     addGoal,
     removeGoal,
+    addCard,
+    removeCard,
     flushSave,
   };
 }

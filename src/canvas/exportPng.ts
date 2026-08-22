@@ -35,6 +35,7 @@ export interface ExportOptions {
   /** 投稿用の画角フォーカス */
   focus: ExportFocusId;
   selectionColor?: string;
+  y2cLabel?: string;
 }
 
 export function viewportForFocus(
@@ -136,7 +137,7 @@ export async function exportBoardPng(
     ballImage,
   });
   if (bannerH > 0) {
-    drawMatchBanner(ctx, canvasW, bannerH, board);
+    drawMatchBanner(ctx, canvasW, bannerH, board, options.y2cLabel);
   }
 
   if (caption) {

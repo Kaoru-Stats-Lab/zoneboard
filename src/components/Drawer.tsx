@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { scoreForTeam } from "../canvas/matchBanner";
+import {
+  cardsForTeam,
+  formatCardTotals,
+} from "../canvas/matchCards";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { BENCH_COUNT_OPTIONS } from "../presets/bench";
-import type { HideHalf, SportId } from "../models/types";
+import type { CardKind, HideHalf, SportId } from "../models/types";
 import {
   MAX_BOARDS,
   MAX_SCENES,
@@ -49,6 +53,10 @@ export function Drawer({ state, t }: Props) {
   const [goalTeam, setGoalTeam] = useState<TeamSide>("home");
   const [goalScorer, setGoalScorer] = useState("");
   const [goalMinute, setGoalMinute] = useState("");
+  const [cardTeam, setCardTeam] = useState<TeamSide>("home");
+  const [cardPlayer, setCardPlayer] = useState("");
+  const [cardMinute, setCardMinute] = useState("");
+  const [cardKind, setCardKind] = useState<CardKind>("YC");
 
   if (!state.drawerOpen || state.broadcast || !state.board || !state.scene)
     return null;
@@ -367,6 +375,17 @@ export function Drawer({ state, t }: Props) {
                   {scoreForTeam(board.goals, "away")}
                   <span className="hint-muted"> ({t("scoreFromGoals")})</span>
                 </p>
+                {(board.cards?.length ?? 0) > 0 && (
+                  <p className="score-summary">
+                    {t("cardsLabel")}:{" "}
+                    {formatCardTotals(cardsForTeam(board.cards ?? [], "home")) ||
+                      "🟨0 🟥0"}{" "}
+                    ·{" "}
+                    {formatCardTotals(cardsForTeam(board.cards ?? [], "away")) ||
+                      "🟨0 🟥0"}
+                    <span className="hint-muted"> ({t("cardsSummary")})</span>
+                  </p>
+                )}
                 {board.goals.length > 0 && (
                   <ul className="goal-list">
                     {board.goals.map((g) => (
@@ -423,6 +442,77 @@ export function Drawer({ state, t }: Props) {
                     }}
                   >
                     {t("addGoal")}
+                  </button>
+                </div>
+                {(board.cards?.length ?? 0) > 0 && (
+                  <ul className="goal-list card-list">
+                    {(board.cards ?? []).map((c) => (
+                      <li key={c.id}>
+                        <span
+                          className={
+                            c.team === "home" ? "goal-home" : "goal-away"
+                          }
+                        >
+                          {c.minute ? `${c.minute}' ` : ""}
+                          {c.kind === "YC" ? "🟨" : "🟥"}{" "}
+                          {c.player}
+                          {c.kind === "Y2C" ? ` (${t("cardY2CLabel")})` : ""}
+                        </span>
+                        <button
+                          type="button"
+                          className="goal-remove"
+                          onClick={() => state.removeCard(c.id)}
+                          aria-label={t("removeCard")}
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="goal-add row">
+                  <select
+                    value={cardTeam}
+                    onChange={(e) =>
+                      setCardTeam(e.target.value as TeamSide)
+                    }
+                  >
+                    <option value="home">{t("homeTeam")}</option>
+                    <option value="away">{t("awayTeam")}</option>
+                  </select>
+                  <select
+                    value={cardKind}
+                    onChange={(e) =>
+                      setCardKind(e.target.value as CardKind)
+                    }
+                    aria-label={t("cardsLabel")}
+                  >
+                    <option value="YC">{t("cardYC")}</option>
+                    <option value="RC">{t("cardRC")}</option>
+                    <option value="Y2C">{t("cardY2C")}</option>
+                  </select>
+                  <input
+                    value={cardPlayer}
+                    onChange={(e) => setCardPlayer(e.target.value)}
+                    placeholder={t("cardPlayerPh")}
+                    aria-label={t("cardPlayer")}
+                  />
+                  <input
+                    className="goal-minute"
+                    value={cardMinute}
+                    onChange={(e) => setCardMinute(e.target.value)}
+                    placeholder={t("cardMinutePh")}
+                    aria-label={t("goalMinute")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      state.addCard(cardTeam, cardPlayer, cardKind, cardMinute);
+                      setCardPlayer("");
+                      setCardMinute("");
+                    }}
+                  >
+                    {t("addCard")}
                   </button>
                 </div>
               </div>

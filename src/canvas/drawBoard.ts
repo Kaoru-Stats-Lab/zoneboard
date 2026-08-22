@@ -24,9 +24,10 @@ import {
 import {
   drawArrowHeadAt,
   endTangentAngle,
-  strokePointChain,
+  strokeWavyPath,
   wavyPathFromPolyline,
 } from "./wavyPath";
+import { pieceDiscipline, CARD_YELLOW, CARD_RED } from "./matchCards";
 import { BASKET_HALF_START } from "../presets/sports";
 import {
   drawPitchLanes,
@@ -251,6 +252,12 @@ function drawPiece(
   const mapped = worldToPitch(piece.x, piece.y, board);
   if (!mapped) return;
   const { x, y } = fromNorm(mapped.x, mapped.y, pitch);
+  const discipline = pieceDiscipline(board, piece);
+
+  if (discipline.sentOff) {
+    ctx.save();
+    ctx.globalAlpha = 0.45;
+  }
 
   if (dragging) {
     ctx.save();
@@ -266,6 +273,24 @@ function drawPiece(
   ctx.lineWidth = selected || dragging ? 3 : 1.5;
   ctx.strokeStyle = selected || dragging ? selectionColor : "#fff";
   ctx.stroke();
+
+  if (discipline.yellow) {
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.18, 0, Math.PI * 2);
+    ctx.strokeStyle = CARD_YELLOW;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+
+  if (discipline.sentOff) {
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.22, 0, Math.PI * 2);
+    ctx.strokeStyle = CARD_RED;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([3, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
 
   if (piece.role === "bench") {
     ctx.beginPath();
@@ -336,6 +361,8 @@ function drawPiece(
     ctx.textBaseline = "middle";
     ctx.fillText(mark, mx, my);
   }
+
+  if (discipline.sentOff) ctx.restore();
 }
 
 function drawBall(
@@ -615,6 +642,11 @@ function strokeLineByKind(
   kind: LineKind,
   board: BoardDocument,
 ) {
+  if (kind === "dribble") {
+    strokeDribbleLine(ctx, pts, lw, ink, board);
+    return;
+  }
+
   const draw = (color: string, width: number) => {
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
@@ -635,16 +667,6 @@ function strokeLineByKind(
       ctx.setLineDash([]);
       ctx.lineCap = "round";
       if (color === ink) drawArrowHead(ctx, pts, width);
-    } else if (kind === "dribble") {
-      ctx.lineCap = "round";
-      ctx.setLineDash([]);
-      const amp = Math.max(3, width * 1.55);
-      const wavy = wavyPathFromPolyline(pts, amp);
-      strokePointChain(ctx, wavy);
-      if (color === ink) {
-        const tip = wavy[wavy.length - 1];
-        drawArrowHeadAt(ctx, tip, endTangentAngle(pts), width);
-      }
     } else if (kind === "screen") {
       ctx.setLineDash([]);
       ctx.lineCap = "round";
@@ -657,6 +679,37 @@ function strokeLineByKind(
     draw(HALO_INK_GRASS, grassHaloWidth(lw));
   }
   draw(ink, lw);
+}
+
+/** ドリブル波線: 白ハロー二重描画はモアレになるので影のみ */
+function strokeDribbleLine(
+  ctx: CanvasRenderingContext2D,
+  pts: { x: number; y: number }[],
+  lw: number,
+  ink: string,
+  board: BoardDocument,
+) {
+  const amp = Math.max(2.2, lw * 0.72);
+  const wavy = wavyPathFromPolyline(pts, amp);
+
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.setLineDash([]);
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = lw;
+
+  if (usesGrassInk(board)) {
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
+    ctx.shadowBlur = Math.max(1.5, lw * 0.55);
+    strokeWavyPath(ctx, wavy);
+    ctx.restore();
+  } else {
+    strokeWavyPath(ctx, wavy);
+  }
+
+  const tip = wavy[wavy.length - 1];
+  drawArrowHeadAt(ctx, tip, endTangentAngle(pts), lw);
 }
 
 function strokePenPath(

@@ -85,6 +85,18 @@ export interface GoalEntry {
   assist?: string;
 }
 
+export type CardKind = "YC" | "RC" | "Y2C";
+
+/** 警告・退場（チーム累計は cards から自動集計） */
+export interface CardEntry {
+  id: string;
+  team: "home" | "away";
+  /** 背番号 or 名前 */
+  player: string;
+  minute?: string;
+  kind: CardKind;
+}
+
 /**
  * Pro 用選手セット（v1 は UI 未実装。カラムだけ先に定義）
  * 作成はユーザ任せ。公式ライブ取込はしない。
@@ -223,6 +235,8 @@ export interface BoardDocument {
   awayTeam: string;
   /** 得点一覧（スコア = 件数） */
   goals: GoalEntry[];
+  /** イエロー / レッド（累計は cards から自動集計） */
+  cards: CardEntry[];
   /** 画面上部の試合帯（配信・編集プレビュー） */
   showMatchBanner: boolean;
   pitchView: PitchView;

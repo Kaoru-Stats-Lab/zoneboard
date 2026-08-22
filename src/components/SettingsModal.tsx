@@ -14,14 +14,11 @@ import {
 } from "../canvas/exportPng";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
-import type { Locale } from "../i18n/messages";
 import { useFeedback } from "./FeedbackProvider";
 
 type Props = {
   state: AppState;
   t: (k: MessageKey) => string;
-  locale: Locale;
-  onLocale: (l: Locale) => void;
   watermarkImage: HTMLImageElement | null;
   setWatermarkImage: (img: HTMLImageElement | null) => void;
   exportPreset: ExportPresetId;
@@ -41,8 +38,6 @@ const WM_POSITIONS: { id: string; x: number; y: number; key: MessageKey }[] = [
 export function SettingsModal({
   state,
   t,
-  locale,
-  onLocale,
   watermarkImage,
   setWatermarkImage,
   exportPreset,
@@ -118,6 +113,7 @@ export function SettingsModal({
         bakeCaption,
         focus: exportFocus,
         selectionColor: state.selectionColor,
+        y2cLabel: t("cardY2CLabel"),
       },
       ballImg,
     );
@@ -342,17 +338,6 @@ export function SettingsModal({
               onChange={(e) => state.setSelectionColor(e.target.value)}
             />
           </label>
-        </section>
-
-        <section>
-          <h3>{t("language")}</h3>
-          <select
-            value={locale}
-            onChange={(e) => onLocale(e.target.value as Locale)}
-          >
-            <option value="ja">日本語</option>
-            <option value="en">English</option>
-          </select>
         </section>
 
         <section className="modal-danger">

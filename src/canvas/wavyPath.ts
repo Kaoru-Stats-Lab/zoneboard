@@ -2,104 +2,154 @@
 
 export type Point2 = { x: number; y: number };
 
+function dist(a: Point2, b: Point2): number {
+  return Math.hypot(b.x - a.x, b.y - a.y);
+}
+
 function polylineLength(pts: Point2[]): number {
   let len = 0;
   for (let i = 1; i < pts.length; i++) {
-    len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+    len += dist(pts[i - 1], pts[i]);
   }
   return len;
 }
 
-/** 弧長 t 上の点と接線（正規化） */
-function pointAtLength(
-  pts: Point2[],
-  t: number,
-): { x: number; y: number; tx: number; ty: number } {
-  if (pts.length === 1) {
-    return { x: pts[0].x, y: pts[0].y, tx: 1, ty: 0 };
+function lerp(a: Point2, b: Point2, t: number): Point2 {
+  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+}
+
+function sampleQuadratic(p0: Point2, p1: Point2, p2: Point2, spacing: number): Point2[] {
+  const chord = dist(p0, p2);
+  const steps = Math.max(2, Math.ceil(chord / spacing));
+  const out: Point2[] = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const u = 1 - t;
+    out.push({
+      x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x,
+      y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y,
+    });
   }
-  let remain = Math.max(0, t);
-  for (let i = 1; i < pts.length; i++) {
-    const ax = pts[i - 1].x;
-    const ay = pts[i - 1].y;
-    const bx = pts[i].x;
-    const by = pts[i].y;
-    const seg = Math.hypot(bx - ax, by - ay);
-    if (seg < 1e-9) continue;
-    if (remain <= seg || i === pts.length - 1) {
-      const u = seg < 1e-9 ? 0 : Math.min(1, remain / seg);
-      const tx = (bx - ax) / seg;
-      const ty = (by - ay) / seg;
-      return {
-        x: ax + (bx - ax) * u,
-        y: ay + (by - ay) * u,
-        tx,
-        ty,
-      };
+  return out;
+}
+
+/** strokePolyline と同じ二次曲線上を等間隔サンプル（角を丸めた中心線） */
+export function sampleSmoothCenterline(pts: Point2[], spacing: number): Point2[] {
+  if (pts.length < 2) return pts.map((p) => ({ ...p }));
+  if (pts.length === 2) {
+    const len = dist(pts[0], pts[1]);
+    const steps = Math.max(2, Math.ceil(len / spacing));
+    const out: Point2[] = [];
+    for (let i = 0; i <= steps; i++) {
+      out.push(lerp(pts[0], pts[1], i / steps));
     }
-    remain -= seg;
+    return out;
+  }
+
+  const out: Point2[] = [{ ...pts[0] }];
+  for (let i = 1; i < pts.length - 1; i++) {
+    const xc = (pts[i].x + pts[i + 1].x) / 2;
+    const yc = (pts[i].y + pts[i + 1].y) / 2;
+    const seg = sampleQuadratic(
+      out[out.length - 1],
+      { x: pts[i].x, y: pts[i].y },
+      { x: xc, y: yc },
+      spacing,
+    );
+    out.push(...seg.slice(1));
   }
   const last = pts[pts.length - 1];
   const prev = pts[pts.length - 2];
-  const seg = Math.hypot(last.x - prev.x, last.y - prev.y) || 1;
-  return {
-    x: last.x,
-    y: last.y,
-    tx: (last.x - prev.x) / seg,
-    ty: (last.y - prev.y) / seg,
-  };
+  const tail = sampleQuadratic(out[out.length - 1], prev, last, spacing);
+  out.push(...tail.slice(1));
+  return out;
+}
+
+function tangentAt(center: Point2[], i: number): { tx: number; ty: number } {
+  const r = 3;
+  const i0 = Math.max(0, i - r);
+  const i1 = Math.min(center.length - 1, i + r);
+  const dx = center[i1].x - center[i0].x;
+  const dy = center[i1].y - center[i0].y;
+  const len = Math.hypot(dx, dy) || 1;
+  return { tx: dx / len, ty: dy / len };
+}
+
+function bendFade(center: Point2[], i: number): number {
+  if (i <= 0) return 1;
+  const a0 = Math.atan2(tangentAt(center, i - 1).ty, tangentAt(center, i - 1).tx);
+  const a1 = Math.atan2(tangentAt(center, i).ty, tangentAt(center, i).tx);
+  let d = Math.abs(a1 - a0);
+  if (d > Math.PI) d = Math.PI * 2 - d;
+  return Math.max(0, 1 - d / 0.55);
 }
 
 /**
- * ユーザが引いた経路（直線・曲線）に沿って波線を生成。
- * FA / US Youth / Hobbit 等の「wavy arrow = dribble」慣習。
+ * ユーザが引いた経路に沿った波線。
+ * - 中心線は平滑化曲線（角の折れ波を回避）
+ * - 波数は 1〜3 に制限（配信画面で読めるサイズ）
  */
 export function wavyPathFromPolyline(
   pts: Point2[],
   amplitude: number,
 ): Point2[] {
   if (pts.length < 2) return pts;
-  const total = polylineLength(pts);
-  if (total < 2) return pts;
 
-  const waveLen = Math.max(10, amplitude * 4.2);
-  const waveCount = Math.max(1.5, total / waveLen);
-  const steps = Math.max(28, Math.ceil(waveCount * 14));
+  const spacing = Math.max(3, amplitude * 1.1);
+  const center = sampleSmoothCenterline(pts, spacing);
+  const total = polylineLength(center);
+  if (total < 4) return center;
+
+  const wavelength = Math.max(24, amplitude * 7);
+  const waveCount = Math.min(2.75, Math.max(1.1, total / wavelength));
+
+  const arc: number[] = [0];
+  for (let i = 1; i < center.length; i++) {
+    arc.push(arc[i - 1] + dist(center[i - 1], center[i]));
+  }
+  const totalS = arc[arc.length - 1] || 1;
 
   const out: Point2[] = [];
-  for (let i = 0; i <= steps; i++) {
-    const t = (i / steps) * total;
-    const { x, y, tx, ty } = pointAtLength(pts, t);
+  for (let i = 0; i < center.length; i++) {
+    const { tx, ty } = tangentAt(center, i);
     const nx = -ty;
     const ny = tx;
-    const phase = (t / total) * waveCount * Math.PI * 2;
+    const phase = (arc[i] / totalS) * waveCount * Math.PI * 2;
+    const fade = bendFade(center, i);
+    const a = amplitude * fade;
     out.push({
-      x: x + nx * amplitude * Math.sin(phase),
-      y: y + ny * amplitude * Math.sin(phase),
+      x: center[i].x + nx * a * Math.sin(phase),
+      y: center[i].y + ny * a * Math.sin(phase),
     });
   }
   return out;
 }
 
-/** 矢印向きは波の揺れではなく経路全体の終端接線を使う */
+/** 矢印向きは波の揺れではなく経路全体の終端接線 */
 export function endTangentAngle(pts: Point2[]): number {
-  const total = polylineLength(pts);
-  const tail = Math.max(0, total - Math.min(18, total * 0.15));
-  const a = pointAtLength(pts, tail);
-  const b = pointAtLength(pts, total);
+  const center = sampleSmoothCenterline(pts, 6);
+  if (center.length < 2) return 0;
+  const tail = Math.max(0, center.length - 4);
+  const a = center[tail];
+  const b = center[center.length - 1];
   return Math.atan2(b.y - a.y, b.x - a.x);
 }
 
-export function strokePointChain(
+export function strokeWavyPath(
   ctx: CanvasRenderingContext2D,
   pts: Point2[],
 ) {
   if (pts.length < 2) return;
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
-  for (let i = 1; i < pts.length; i++) {
-    ctx.lineTo(pts[i].x, pts[i].y);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const xc = (pts[i].x + pts[i + 1].x) / 2;
+    const yc = (pts[i].y + pts[i + 1].y) / 2;
+    ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
   }
+  const last = pts[pts.length - 1];
+  const prev = pts[pts.length - 2];
+  ctx.quadraticCurveTo(prev.x, prev.y, last.x, last.y);
   ctx.stroke();
 }
 

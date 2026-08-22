@@ -248,7 +248,7 @@ export function BoardCanvas({
       editingTextId: textEdit?.objectId ?? null,
     });
     if (bannerH > 0) {
-      drawMatchBanner(ctx, w, bannerH, board);
+      drawMatchBanner(ctx, w, bannerH, board, t("cardY2CLabel"));
     }
     surface.dataset.pitchRatio = String(pitchArea);
   };

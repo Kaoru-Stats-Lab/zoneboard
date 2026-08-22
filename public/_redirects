@@ -1,1 +1,5 @@
-/*    /index.html   200
+/en       /        301
+/en/board /board   301
+/ja       /        301
+/ja/board /board   301
+/*        /index.html 200

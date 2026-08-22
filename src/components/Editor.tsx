@@ -6,8 +6,9 @@ import {
   viewportForFocus,
 } from "../canvas/exportPng";
 import type { AppState } from "../hooks/useAppState";
-import type { Locale, MessageKey } from "../i18n/messages";
+import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
+import { APP_LOCALE } from "../i18n/locale";
 import type { SportId } from "../models/types";
 
 function sceneLabelPhKey(sport: SportId | undefined): MessageKey {
@@ -35,12 +36,10 @@ import { useFeedback } from "./FeedbackProvider";
 
 type Props = {
   state: AppState;
-  locale: Locale;
-  onLocale: (l: Locale) => void;
 };
 
-export function Editor({ state, locale, onLocale }: Props) {
-  const t = (k: MessageKey) => messages[locale][k];
+export function Editor({ state }: Props) {
+  const t = (k: MessageKey) => messages[APP_LOCALE][k];
   const { openFeedback } = useFeedback();
   const [wmImage, setWmImage] = useState<HTMLImageElement | null>(null);
   const [exportPreset, setExportPreset] = useState<ExportPresetId>("ig45");
@@ -286,8 +285,6 @@ export function Editor({ state, locale, onLocale }: Props) {
       <SettingsModal
         state={state}
         t={t}
-        locale={locale}
-        onLocale={onLocale}
         watermarkImage={wmImage}
         setWatermarkImage={setWmImage}
         exportPreset={exportPreset}

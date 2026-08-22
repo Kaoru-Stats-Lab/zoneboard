@@ -7,9 +7,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useParams } from "react-router-dom";
+import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
-import { messages, type Locale } from "../i18n/messages";
+import { messages } from "../i18n/messages";
 import { captureLandingHints, type FeedbackSource } from "../lib/feedbackClient";
 import { FeedbackPanel } from "./FeedbackPanel";
 
@@ -20,9 +20,10 @@ type FeedbackContextValue = {
 const FeedbackContext = createContext<FeedbackContextValue | null>(null);
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
-  const { locale: localeParam } = useParams();
-  const locale: Locale = localeParam === "en" ? "en" : "ja";
-  const t = useCallback((k: MessageKey) => messages[locale][k], [locale]);
+  const t = useCallback(
+    (k: MessageKey) => messages[APP_LOCALE][k],
+    [],
+  );
   const [open, setOpen] = useState(false);
   const [source, setSource] = useState<FeedbackSource>("landing");
 
@@ -46,7 +47,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
       <FeedbackPanel
         open={open}
         source={source}
-        locale={locale}
+        locale={APP_LOCALE}
         onClose={() => setOpen(false)}
         t={t}
       />

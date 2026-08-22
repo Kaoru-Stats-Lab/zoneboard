@@ -3,6 +3,7 @@ import type {
   BoardStore,
   DrawObject,
   GoalEntry,
+  CardEntry,
   LineObject,
   Scene,
   SportId,
@@ -74,6 +75,7 @@ export function createBoard(
     homeTeam: "",
     awayTeam: "",
     goals: [],
+    cards: [],
     showMatchBanner: sport === "soccer",
     pitchView: sport === "basketball" ? "half" : "full",
     pitchFlipped: false,
@@ -177,6 +179,7 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     homeTeam: (raw as { homeTeam?: string }).homeTeam ?? "",
     awayTeam: (raw as { awayTeam?: string }).awayTeam ?? "",
     goals: (raw as { goals?: GoalEntry[] }).goals ?? [],
+    cards: (raw as { cards?: CardEntry[] }).cards ?? [],
     showMatchBanner:
       (raw as { showMatchBanner?: boolean }).showMatchBanner ??
       raw.sport === "soccer",
