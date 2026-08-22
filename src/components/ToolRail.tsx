@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
-import { TOOL_COLORS } from "../models/types";
+import { toolColorForBoard } from "../canvas/drawingInk";
 import { toolItemsForSport } from "./tools";
 
 type Props = {
@@ -15,7 +15,7 @@ export function ToolRail({ state, t }: Props) {
   return (
     <div className="tool-rail" role="toolbar" aria-label={t("tools")}>
       {toolItemsForSport(state.board?.sport).map((tool) => {
-        const color = TOOL_COLORS[tool.id];
+        const color = toolColorForBoard(state.board, tool.id);
         const active = state.tool === tool.id;
         return (
           <button

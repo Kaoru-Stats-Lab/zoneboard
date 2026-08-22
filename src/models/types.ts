@@ -291,8 +291,7 @@ export const AWAY_COLOR = "#3498db";
 
 /**
  * ツールレール／描画の意味色。
- * chrome 全体はニュートラル。色は「キャンバス上の意味」と揃える。
- * 業界: Figma 等はツール一色＋active アクセント。戦術ボードは Home/Away と線種だけ色を持つ。
+ * 線種は欧米コーチング図式: Pass=破線、Run=実線、Dribble=波線。
  */
 export const LINE_COLORS = {
   pass: "#2563eb",

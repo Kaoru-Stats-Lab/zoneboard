@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
-import { TOOL_COLORS } from "../models/types";
+import { toolColorForBoard } from "../canvas/drawingInk";
 import { toolItemsForSport } from "./tools";
 
 type Props = {
@@ -14,7 +14,7 @@ type Props = {
 export function BroadcastToolMenu({ state, t, toolLabel }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const activeColor = TOOL_COLORS[state.tool];
+  const activeColor = toolColorForBoard(state.board, state.tool);
 
   useEffect(() => {
     if (!open) return;
@@ -37,7 +37,7 @@ export function BroadcastToolMenu({ state, t, toolLabel }: Props) {
       {open && (
         <div className="broadcast-tool-pop" role="menu" aria-label={t("tools")}>
           {toolItemsForSport(state.board?.sport).map((tool) => {
-            const color = TOOL_COLORS[tool.id];
+            const color = toolColorForBoard(state.board, tool.id);
             const active = state.tool === tool.id;
             return (
               <button

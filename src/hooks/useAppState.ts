@@ -26,11 +26,15 @@ import {
   AWAY_COLOR,
   DEFAULT_SELECTION_COLOR,
   HOME_COLOR,
-  LINE_COLORS,
   MAX_BOARDS,
   MAX_SCENES,
-  ZONE_COLORS,
 } from "../models/types";
+import {
+  lineColorForBoard,
+  penColorForBoard,
+  textColorForBoard,
+  zoneColorsForBoard,
+} from "../canvas/drawingInk";
 import { formationPieces } from "../presets/formations";
 import {
   applyLineupToScenePieces,
@@ -601,17 +605,18 @@ export function useAppState() {
             type: "line",
             kind,
             points,
-            color: LINE_COLORS[kind],
+            color: lineColorForBoard(board, kind),
             strokeWidth: 2,
           },
         ],
       }));
     },
-    [updateScene],
+    [board, updateScene],
   );
 
   const addZone = useCallback(
     (x: number, y: number, w: number, h: number) => {
+      const zoneInk = zoneColorsForBoard(board);
       updateScene((s) => ({
         ...s,
         objects: [
@@ -623,13 +628,13 @@ export function useAppState() {
             y,
             w,
             h,
-            color: ZONE_COLORS.fill,
-            strokeColor: ZONE_COLORS.stroke,
+            color: zoneInk.fill,
+            strokeColor: zoneInk.stroke,
           },
         ],
       }));
     },
-    [updateScene],
+    [board, updateScene],
   );
 
   const addPen = useCallback(
@@ -643,13 +648,13 @@ export function useAppState() {
             id: uid(),
             type: "pen",
             points,
-            color: "#111111",
+            color: penColorForBoard(board),
             strokeWidth: 2,
           },
         ],
       }));
     },
-    [updateScene],
+    [board, updateScene],
   );
 
   const addText = useCallback(
@@ -664,11 +669,29 @@ export function useAppState() {
             x,
             y,
             text,
-            color: "#111111",
+            color: textColorForBoard(board),
             fontSize: 0.035,
           },
         ],
       }));
+    },
+    [board, updateScene],
+  );
+
+  const updateText = useCallback(
+    (id: string, text: string) => {
+      const trimmed = text.trim();
+      updateScene((s) => {
+        if (!trimmed) {
+          return { ...s, objects: s.objects.filter((o) => o.id !== id) };
+        }
+        return {
+          ...s,
+          objects: s.objects.map((o) =>
+            o.id === id && o.type === "text" ? { ...o, text: trimmed } : o,
+          ),
+        };
+      });
     },
     [updateScene],
   );
@@ -824,6 +847,7 @@ export function useAppState() {
     addZone,
     addPen,
     addText,
+    updateText,
     deleteSelected,
     clearDrawings,
     clearBoard,

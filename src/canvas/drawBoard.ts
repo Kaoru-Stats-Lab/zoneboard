@@ -8,7 +8,25 @@ import type {
   Scene,
   WatermarkSettings,
 } from "../models/types";
-import { LINE_COLORS, UI_FONT_STACK, usesPreferredFoot } from "../models/types";
+import {
+  UI_FONT_STACK,
+  usesPreferredFoot,
+} from "../models/types";
+import {
+  grassHaloWidth,
+  HALO_INK_GRASS,
+  lineColorForBoard,
+  penColorForBoard,
+  textColorForBoard,
+  usesGrassInk,
+  zoneColorsForBoard,
+} from "./drawingInk";
+import {
+  drawArrowHeadAt,
+  endTangentAngle,
+  strokePointChain,
+  wavyPathFromPolyline,
+} from "./wavyPath";
 import { BASKET_HALF_START } from "../presets/sports";
 import {
   drawPitchLanes,
@@ -113,6 +131,8 @@ export function drawBoard(
     dragVisual?: DragVisual | null;
     /** 描画中の自由曲線プレビュー */
     previewLine?: { kind: LineKind; points: { x: number; y: number }[] } | null;
+    /** インライン編集中のテキスト（二重表示防止） */
+    editingTextId?: string | null;
     /** 競技ボール画像。未ロード時は幾何フォールバック */
     ballImage?: HTMLImageElement | null;
   } = {},
@@ -154,6 +174,7 @@ export function drawBoard(
   }
 
   for (const obj of scene.objects) {
+    if (obj.type === "text" && obj.id === opts.editingTextId) continue;
     drawObject(
       ctx,
       pitch,
@@ -175,7 +196,7 @@ export function drawBoard(
         type: "line",
         kind,
         points: opts.previewLine.points,
-        color: LINE_COLORS[kind],
+        color: lineColorForBoard(board, kind),
         strokeWidth: 2,
       },
       false,
@@ -507,6 +528,7 @@ function drawObject(
       1.5,
       Math.min(pitch.w, pitch.h) * 0.004 * obj.strokeWidth,
     );
+    const ink = lineColorForBoard(board, obj.kind);
     if (selected) {
       ctx.strokeStyle = selectionColor;
       ctx.lineWidth = lw + 4;
@@ -516,36 +538,7 @@ function drawObject(
       strokePolyline(ctx, pts);
       ctx.globalAlpha = 1;
     }
-    ctx.strokeStyle = obj.color;
-    ctx.lineWidth = lw;
-    ctx.lineJoin = "round";
-
-    if (obj.kind === "run") {
-      // ギャップを線分より広く。round cap だと隙間が潰れるので butt
-      const dash = Math.max(7, lw * 2.2);
-      const gap = Math.max(14, lw * 4.5);
-      ctx.setLineDash([dash, gap]);
-      ctx.lineCap = "butt";
-      strokePolyline(ctx, pts);
-      ctx.setLineDash([]);
-      ctx.lineCap = "round";
-      drawArrowHead(ctx, pts, lw);
-    } else if (obj.kind === "dribble") {
-      // 自由曲線そのものがドリブル軌道（ユーザが弧・ジグザグを描く）
-      ctx.lineCap = "round";
-      strokePolyline(ctx, pts);
-      drawArrowHead(ctx, pts, lw);
-    } else if (obj.kind === "screen") {
-      ctx.setLineDash([]);
-      ctx.lineCap = "round";
-      strokePolyline(ctx, pts);
-      drawScreenBar(ctx, pts, lw);
-    } else {
-      ctx.setLineDash([]);
-      ctx.lineCap = "round";
-      strokePolyline(ctx, pts);
-      drawArrowHead(ctx, pts, lw);
-    }
+    strokeLineByKind(ctx, pts, lw, ink, obj.kind, board);
     return;
   }
 
@@ -559,9 +552,10 @@ function drawObject(
     const y = Math.min(p1.y, p2.y);
     const w = Math.abs(p2.x - p1.x);
     const h = Math.abs(p2.y - p1.y);
-    ctx.fillStyle = obj.color;
-    ctx.strokeStyle = selected ? selectionColor : obj.strokeColor;
-    ctx.lineWidth = selected ? 3 : 1.5;
+    const zoneInk = zoneColorsForBoard(board);
+    ctx.fillStyle = zoneInk.fill;
+    ctx.strokeStyle = selected ? selectionColor : zoneInk.stroke;
+    ctx.lineWidth = selected ? 3 : Math.max(1.5, lwOnPitch(pitch, 1.5));
     ctx.fillRect(x, y, w, h);
     ctx.strokeRect(x, y, w, h);
     return;
@@ -573,46 +567,11 @@ function drawObject(
       1.5,
       Math.min(pitch.w, pitch.h) * 0.003 * obj.strokeWidth,
     );
+    const ink = penColorForBoard(board);
     if (selected) {
-      ctx.beginPath();
-      ctx.strokeStyle = selectionColor;
-      ctx.lineWidth = lw + 4;
-      ctx.globalAlpha = 0.35;
-      ctx.lineJoin = "round";
-      ctx.lineCap = "round";
-      let started = false;
-      for (const pt of obj.points) {
-        const m = worldToPitch(pt.x, pt.y, board);
-        if (!m) continue;
-        const p = fromNorm(m.x, m.y, pitch);
-        if (!started) {
-          ctx.moveTo(p.x, p.y);
-          started = true;
-        } else {
-          ctx.lineTo(p.x, p.y);
-        }
-      }
-      ctx.stroke();
-      ctx.globalAlpha = 1;
+      strokePenPath(ctx, board, pitch, obj.points, lw + 4, selectionColor, 0.35);
     }
-    ctx.beginPath();
-    ctx.strokeStyle = obj.color;
-    ctx.lineWidth = lw;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    let started = false;
-    for (const pt of obj.points) {
-      const m = worldToPitch(pt.x, pt.y, board);
-      if (!m) continue;
-      const p = fromNorm(m.x, m.y, pitch);
-      if (!started) {
-        ctx.moveTo(p.x, p.y);
-        started = true;
-      } else {
-        ctx.lineTo(p.x, p.y);
-      }
-    }
-    ctx.stroke();
+    strokePenPath(ctx, board, pitch, obj.points, lw, ink, 1, usesGrassInk(board));
     return;
   }
 
@@ -630,9 +589,115 @@ function drawObject(
       ctx.lineWidth = 2;
       ctx.strokeRect(p.x - 2, p.y - 2, tw + 4, size + 4);
     }
-    ctx.fillStyle = obj.color;
+    const ink = textColorForBoard(board);
+    if (usesGrassInk(board)) {
+      ctx.shadowColor = "rgba(0,0,0,0.55)";
+      ctx.shadowBlur = Math.max(2, size * 0.08);
+      ctx.shadowOffsetY = Math.max(1, size * 0.04);
+    }
+    ctx.fillStyle = ink;
     ctx.fillText(obj.text, p.x, p.y);
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
   }
+}
+
+function lwOnPitch(pitch: PitchRect, base: number): number {
+  return Math.max(base, Math.min(pitch.w, pitch.h) * 0.0035);
+}
+
+function strokeLineByKind(
+  ctx: CanvasRenderingContext2D,
+  pts: { x: number; y: number }[],
+  lw: number,
+  ink: string,
+  kind: LineKind,
+  board: BoardDocument,
+) {
+  const draw = (color: string, width: number) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineJoin = "round";
+    if (kind === "run") {
+      // 欧米標準: 実線 = ボールなしの走り
+      ctx.setLineDash([]);
+      ctx.lineCap = "round";
+      strokePolyline(ctx, pts);
+      if (color === ink) drawArrowHead(ctx, pts, width);
+    } else if (kind === "pass") {
+      // 欧米標準: 破線 = パス（ボールの軌道）
+      const dash = Math.max(7, width * 2.2);
+      const gap = Math.max(14, width * 4.5);
+      ctx.setLineDash([dash, gap]);
+      ctx.lineCap = "butt";
+      strokePolyline(ctx, pts);
+      ctx.setLineDash([]);
+      ctx.lineCap = "round";
+      if (color === ink) drawArrowHead(ctx, pts, width);
+    } else if (kind === "dribble") {
+      ctx.lineCap = "round";
+      ctx.setLineDash([]);
+      const amp = Math.max(3, width * 1.55);
+      const wavy = wavyPathFromPolyline(pts, amp);
+      strokePointChain(ctx, wavy);
+      if (color === ink) {
+        const tip = wavy[wavy.length - 1];
+        drawArrowHeadAt(ctx, tip, endTangentAngle(pts), width);
+      }
+    } else if (kind === "screen") {
+      ctx.setLineDash([]);
+      ctx.lineCap = "round";
+      strokePolyline(ctx, pts);
+      if (color === ink) drawScreenBar(ctx, pts, width);
+    }
+  };
+
+  if (usesGrassInk(board)) {
+    draw(HALO_INK_GRASS, grassHaloWidth(lw));
+  }
+  draw(ink, lw);
+}
+
+function strokePenPath(
+  ctx: CanvasRenderingContext2D,
+  board: BoardDocument,
+  pitch: PitchRect,
+  points: { x: number; y: number }[],
+  lw: number,
+  color: string,
+  alpha = 1,
+  withHalo = false,
+) {
+  ctx.beginPath();
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  let started = false;
+  for (const pt of points) {
+    const m = worldToPitch(pt.x, pt.y, board);
+    if (!m) continue;
+    const p = fromNorm(m.x, m.y, pitch);
+    if (!started) {
+      ctx.moveTo(p.x, p.y);
+      started = true;
+    } else {
+      ctx.lineTo(p.x, p.y);
+    }
+  }
+  if (!started) return;
+
+  const apply = (strokeColor: string, strokeWidth: number) => {
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = strokeWidth;
+    ctx.globalAlpha = alpha;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  };
+
+  if (withHalo) {
+    apply(HALO_INK_GRASS, grassHaloWidth(lw));
+  }
+  apply(color, lw);
 }
 
 function distToSegment(

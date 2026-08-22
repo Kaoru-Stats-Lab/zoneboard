@@ -322,6 +322,41 @@ button.danger {
   user-select: none;
 }
 
+.canvas-text-editor {
+  position: absolute;
+  z-index: 4;
+  margin: 0;
+  padding: 2px 6px;
+  border: 2px solid #2563eb;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #111;
+  font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", "Noto Sans JP",
+    sans-serif;
+  font-weight: 600;
+  line-height: 1.35;
+  resize: none;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  outline: none;
+}
+
+.canvas-text-editor--grass {
+  background: rgba(0, 0, 0, 0.72);
+  border-color: rgba(255, 255, 255, 0.92);
+  color: #fff;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+}
+
+.canvas-text-editor::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+  font-weight: 500;
+}
+
+.canvas-text-editor--grass::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
 /* タブレット・大型タッチパネル: 指で押しやすいターゲット */
 @media (pointer: coarse) {
   button,

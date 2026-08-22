@@ -18,15 +18,27 @@ import {
 import { fitField, toNorm, zoomAt } from "../canvas/layout";
 import { drawMatchBanner, matchBannerHeight } from "../canvas/matchBanner";
 import { smoothLinePath } from "../canvas/smoothPath";
+import { textOverlayRect } from "../canvas/textOverlayLayout";
 import type { AppState } from "../hooks/useAppState";
+import type { MessageKey } from "../i18n/messages";
 import type { Viewport } from "../models/types";
 import { isLineTool } from "../models/types";
+import { CanvasTextEditor } from "./CanvasTextEditor";
+
+type TextEditSession = {
+  worldX: number;
+  worldY: number;
+  fontSizeNorm: number;
+  objectId?: string;
+  draft: string;
+};
 
 type Props = {
   state: AppState;
   watermarkImage: HTMLImageElement | null;
   /** PNG プレビュー時の画角（設定中・current 以外） */
   viewOverride?: Viewport | null;
+  t: (k: MessageKey) => string;
 };
 
 type DragState =
@@ -69,13 +81,18 @@ export function BoardCanvas({
   state,
   watermarkImage,
   viewOverride = null,
+  t,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const boardSurfaceRef = useRef<HTMLDivElement>(null);
   const drag = useRef<DragState | null>(null);
   const [dragTick, setDragTick] = useState(0);
+  const [textEdit, setTextEdit] = useState<TextEditSession | null>(null);
+  const textEditRef = useRef<TextEditSession | null>(null);
   const [ballImage, setBallImage] = useState<HTMLImageElement | null>(null);
   const raf = useRef<number | null>(null);
+
+  textEditRef.current = textEdit;
 
   const { board, scene } = state;
   const view = board ? (viewOverride ?? board.viewport) : null;
@@ -162,6 +179,35 @@ export function BoardCanvas({
     };
   }, [board, state, view, viewLocked]);
 
+  /** Ctrl+ホイール（Mac はピンチも ctrl 扱い）でカーソル位置ズーム */
+  useEffect(() => {
+    const el = boardSurfaceRef.current;
+    if (!el || !board || !view || viewLocked) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const { pitch } = fitField(
+        canvas.clientWidth,
+        canvas.clientHeight,
+        board,
+        4,
+        view,
+      );
+      const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
+      const focusX = norm?.x ?? view.cx;
+      const focusY = norm?.y ?? view.cy;
+      const factor = Math.exp(-e.deltaY * 0.002);
+      if (Math.abs(factor - 1) < 0.001) return;
+      state.setViewport(zoomAt(view, focusX, focusY, factor));
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [board, state, view, viewLocked]);
+
   const paint = () => {
     const canvas = canvasRef.current;
     const surface = boardSurfaceRef.current;
@@ -199,6 +245,7 @@ export function BoardCanvas({
           ? { kind: d.kind, points: smoothLinePath(d.points) }
           : null,
       ballImage,
+      editingTextId: textEdit?.objectId ?? null,
     });
     if (bannerH > 0) {
       drawMatchBanner(ctx, w, bannerH, board);
@@ -227,6 +274,7 @@ export function BoardCanvas({
     state.broadcast,
     dragTick,
     view,
+    textEdit,
   ]);
 
   if (!board || !scene || !view) return null;
@@ -252,25 +300,6 @@ export function BoardCanvas({
     });
   };
 
-  const onWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    if (viewLocked) return;
-    const canvas = canvasRef.current;
-    if (!canvas || !board) return;
-    const { pitch } = fitField(
-      canvas.clientWidth,
-      canvas.clientHeight,
-      board,
-      4,
-      view,
-    );
-    const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
-    const focusX = norm?.x ?? view.cx;
-    const focusY = norm?.y ?? view.cy;
-    const factor = e.deltaY > 0 ? 1 / 1.12 : 1.12;
-    state.setViewport(zoomAt(view, focusX, focusY, factor));
-  };
-
   const pieceAtEvent = (e: { clientX: number; clientY: number }) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
@@ -286,6 +315,55 @@ export function BoardCanvas({
     return hitTestPiece(board, scene, pitch, norm.x, norm.y);
   };
 
+  const commitTextEdit = (value: string) => {
+    const session = textEditRef.current;
+    if (!session) return;
+    const trimmed = value.trim();
+    if (session.objectId) {
+      state.updateText(session.objectId, trimmed);
+      state.setSelectedObjectId(trimmed ? session.objectId : null);
+    } else if (trimmed) {
+      state.addText(session.worldX, session.worldY, trimmed);
+    }
+    setTextEdit(null);
+  };
+
+  const cancelTextEdit = () => {
+    setTextEdit(null);
+  };
+
+  const openTextEdit = (opts: {
+    worldX: number;
+    worldY: number;
+    initial: string;
+    objectId?: string;
+    fontSizeNorm?: number;
+  }) => {
+    if (textEditRef.current) commitTextEdit(textEditRef.current.draft);
+    setTextEdit({
+      worldX: opts.worldX,
+      worldY: opts.worldY,
+      fontSizeNorm: opts.fontSizeNorm ?? 0.035,
+      objectId: opts.objectId,
+      draft: opts.initial,
+    });
+  };
+
+  const objectAtEvent = (e: { clientX: number; clientY: number }) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const { pitch } = fitField(
+      canvas.clientWidth,
+      canvas.clientHeight,
+      board,
+      4,
+      view,
+    );
+    const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
+    if (!norm) return null;
+    return hitTestObject(board, scene, norm.x, norm.y);
+  };
+
   /** ダブルクリックは移動操作と衝突しやすいのでトリプルクリック */
   const onClick = (e: ReactMouseEvent) => {
     if (state.broadcast || state.tool !== "select") return;
@@ -295,6 +373,23 @@ export function BoardCanvas({
       e.preventDefault();
       state.openPieceInspector(piece.id);
     }
+  };
+
+  const onDoubleClick = (e: ReactMouseEvent) => {
+    if (state.broadcast || state.tool !== "select" || viewLocked) return;
+    const obj = objectAtEvent(e);
+    if (obj?.type !== "text") return;
+    e.preventDefault();
+    state.setSelectedBall(false);
+    state.setSelectedPieceId(null);
+    state.setSelectedObjectId(obj.id);
+    openTextEdit({
+      worldX: obj.x,
+      worldY: obj.y,
+      initial: obj.text,
+      objectId: obj.id,
+      fontSizeNorm: obj.fontSize,
+    });
   };
 
   const onContextMenu = (e: ReactMouseEvent) => {
@@ -464,8 +559,13 @@ export function BoardCanvas({
     }
 
     if (state.tool === "text") {
-      const text = window.prompt("Text", "");
-      if (text) state.addText(world.x, world.y, text);
+      e.preventDefault();
+      openTextEdit({
+        worldX: world.x,
+        worldY: world.y,
+        initial: "",
+      });
+      return;
     }
   };
 
@@ -620,6 +720,20 @@ export function BoardCanvas({
     }
   };
 
+  const surface = boardSurfaceRef.current;
+  const textOverlay =
+    textEdit && surface
+      ? textOverlayRect(
+          surface.clientWidth,
+          surface.clientHeight,
+          board,
+          view,
+          textEdit.worldX,
+          textEdit.worldY,
+          textEdit.fontSizeNorm,
+        )
+      : null;
+
   return (
     <div
       className={`board-surface${state.broadcast ? " broadcast" : ""}`}
@@ -632,10 +746,25 @@ export function BoardCanvas({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        onWheel={onWheel}
         onClick={onClick}
+        onDoubleClick={onDoubleClick}
         onContextMenu={onContextMenu}
       />
+      {textEdit && textOverlay && (
+        <CanvasTextEditor
+          board={board}
+          left={textOverlay.left}
+          top={textOverlay.top}
+          fontSize={textOverlay.fontSize}
+          value={textEdit.draft}
+          placeholder={t("textPlaceholder")}
+          onChange={(draft) =>
+            setTextEdit((prev) => (prev ? { ...prev, draft } : null))
+          }
+          onCommit={commitTextEdit}
+          onCancel={cancelTextEdit}
+        />
+      )}
     </div>
   );
 }

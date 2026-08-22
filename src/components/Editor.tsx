@@ -252,6 +252,7 @@ export function Editor({ state, locale, onLocale }: Props) {
             state={state}
             watermarkImage={wmImage}
             viewOverride={exportViewOverride}
+            t={t}
           />
           {exportAspect != null && (
             <ExportPreviewFrame aspect={exportAspect} t={t} />
