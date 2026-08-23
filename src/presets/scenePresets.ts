@@ -1,3 +1,5 @@
+import type { KitPalette } from "../models/kits";
+import { defaultKitPalette } from "../models/kits";
 import type {
   BallState,
   Piece,
@@ -38,7 +40,7 @@ function mirrorBall(ball: BallState): BallState {
 
 /** 右ゴール（x=1）側 CK — ゾーン守備の骨格 */
 const CK_RIGHT_HOME: Spot[] = [
-  { x: 0.965, y: 0.5, number: "1" },
+  { x: 0.965, y: 0.5, number: "1", gk: true },
   { x: 0.928, y: 0.76, number: "4" },
   { x: 0.928, y: 0.24, number: "5" },
   { x: 0.898, y: 0.5, number: "6" },
@@ -52,7 +54,7 @@ const CK_RIGHT_HOME: Spot[] = [
 ];
 
 const CK_RIGHT_AWAY: Spot[] = [
-  { x: 0.045, y: 0.5, number: "1" },
+  { x: 0.045, y: 0.5, number: "1", gk: true },
   { x: 0.978, y: 0.955, number: "7" },
   { x: 0.938, y: 0.85, number: "11" },
   { x: 0.908, y: 0.72, number: "9" },
@@ -67,14 +69,18 @@ const CK_RIGHT_AWAY: Spot[] = [
 
 const CK_RIGHT_BALL: BallState = { x: 0.992, y: 0.968 };
 
-function ckZonalPieces(side: Side, benchCount: number): Piece[] {
+function ckZonalPieces(
+  side: Side,
+  benchCount: number,
+  kits: KitPalette = defaultKitPalette(),
+): Piece[] {
   const homeSpots = side === "right" ? CK_RIGHT_HOME : mirrorSpots(CK_RIGHT_HOME);
   const awaySpots = side === "right" ? CK_RIGHT_AWAY : mirrorSpots(CK_RIGHT_AWAY);
   return [
-    ...piecesFromSpots(homeSpots, "home", "starter"),
-    ...benchPieces(benchCount, "home"),
-    ...piecesFromSpots(awaySpots, "away", "starter"),
-    ...benchPieces(benchCount, "away"),
+    ...piecesFromSpots(homeSpots, "home", "starter", kits),
+    ...benchPieces(benchCount, "home", kits),
+    ...piecesFromSpots(awaySpots, "away", "starter", kits),
+    ...benchPieces(benchCount, "away", kits),
   ];
 }
 
@@ -84,17 +90,20 @@ const SCENE_PRESET_DEFS: Record<
     labelKey: MessageKey;
     phase: ScenePhase;
     sports: SportId[];
-    build: (benchCount: number) => Omit<BuiltScenePreset, "label">;
+    build: (
+      benchCount: number,
+      kits: KitPalette,
+    ) => Omit<BuiltScenePreset, "label">;
   }
 > = {
   "ck-right-zonal": {
     labelKey: "scenePresetCkRightZonal",
     phase: "setpiece",
     sports: ["soccer"],
-    build: (benchCount) => ({
+    build: (benchCount, kits) => ({
       phase: "setpiece",
       viewport: VIEW_PRESETS["ck-setup-right"],
-      pieces: ckZonalPieces("right", benchCount),
+      pieces: ckZonalPieces("right", benchCount, kits),
       ball: { ...CK_RIGHT_BALL },
     }),
   },
@@ -102,10 +111,10 @@ const SCENE_PRESET_DEFS: Record<
     labelKey: "scenePresetCkLeftZonal",
     phase: "setpiece",
     sports: ["soccer"],
-    build: (benchCount) => ({
+    build: (benchCount, kits) => ({
       phase: "setpiece",
       viewport: VIEW_PRESETS["ck-setup-left"],
-      pieces: ckZonalPieces("left", benchCount),
+      pieces: ckZonalPieces("left", benchCount, kits),
       ball: mirrorBall(CK_RIGHT_BALL),
     }),
   },
@@ -121,10 +130,11 @@ export function buildScenePreset(
   id: ScenePresetId,
   sport: SportId,
   benchCount: number,
+  kits: KitPalette = defaultKitPalette(),
 ): BuiltScenePreset | null {
   const def = SCENE_PRESET_DEFS[id];
   if (!def || !def.sports.includes(sport)) return null;
-  const built = def.build(benchCount);
+  const built = def.build(benchCount, kits);
   return {
     label: messages[APP_LOCALE][def.labelKey],
     ...built,

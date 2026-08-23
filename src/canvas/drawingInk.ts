@@ -4,6 +4,7 @@ import {
   TOOL_COLORS,
   ZONE_COLORS,
 } from "../models/types";
+import { kitsFromBoard } from "../models/kits";
 
 export function usesGrassInk(board?: BoardDocument | null): boolean {
   return board?.sport === "soccer" && !!board.showGrassPitch;
@@ -52,6 +53,8 @@ export function toolColorForBoard(
   board: BoardDocument | null | undefined,
   tool: ToolId,
 ): string {
+  if (board && tool === "piece-home") return kitsFromBoard(board).home;
+  if (board && tool === "piece-away") return kitsFromBoard(board).away;
   if (!usesGrassInk(board)) return TOOL_COLORS[tool];
   if (
     tool === "pass" ||

@@ -1,5 +1,6 @@
 import type { BoardDocument, GoalEntry } from "../models/types";
-import { AWAY_COLOR, HOME_COLOR, UI_FONT_STACK } from "../models/types";
+import { UI_FONT_STACK } from "../models/types";
+import { kitsFromBoard } from "../models/kits";
 import {
   buildMatchTimeline,
   cardsForTeam,
@@ -65,6 +66,7 @@ export function drawMatchBanner(
   ctx.fillStyle = "#141414";
   ctx.fillRect(0, 0, canvasW, bannerH);
 
+  const kits = kitsFromBoard(board);
   const padX = Math.max(12, canvasW * 0.018);
   const home = board.homeTeam.trim() || "Home";
   const away = board.awayTeam.trim() || "Away";
@@ -99,7 +101,7 @@ export function drawMatchBanner(
   ctx.textBaseline = "middle";
   let xRight = canvasW - padX;
   const parts: { text: string; color: string; size?: number }[] = [
-    { text: away, color: AWAY_COLOR },
+    { text: away, color: kits.away },
   ];
   if (awayCardStr) {
     parts.push({ text: ` ${awayCardStr}`, color: "#cccccc", size: cardBadgeSize });
@@ -112,7 +114,7 @@ export function drawMatchBanner(
   if (homeCardStr) {
     parts.push({ text: `${homeCardStr} `, color: "#cccccc", size: cardBadgeSize });
   }
-  parts.push({ text: home, color: HOME_COLOR });
+  parts.push({ text: home, color: kits.home });
 
   for (const p of parts) {
     ctx.font = `600 ${p.size ?? scoreSize}px ${UI_FONT_STACK}`;
@@ -139,7 +141,7 @@ export function drawMatchBanner(
       ctx.fillStyle = "#aaaaaa";
       if (sep) ctx.fillText(sep, x, line2Y);
       x += sepW;
-      ctx.fillStyle = team === "home" ? HOME_COLOR : AWAY_COLOR;
+      ctx.fillStyle = team === "home" ? kits.home : kits.away;
       const partW = ctx.measureText(part).width;
       if (x + partW > padX + maxW) {
         ctx.fillStyle = "#888888";

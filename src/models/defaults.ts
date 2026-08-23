@@ -9,7 +9,13 @@ import type {
   SportId,
   WatermarkSettings,
 } from "./types";
-import { PIECE_SCALE } from "./types";
+import {
+  AWAY_COLOR,
+  AWAY_GK_COLOR,
+  HOME_COLOR,
+  HOME_GK_COLOR,
+  PIECE_SCALE,
+} from "./types";
 import { uid } from "./id";
 import {
   DEFAULT_BENCH_COUNT,
@@ -21,6 +27,11 @@ import { emptyRoster } from "../presets/roster";
 import { DEFAULT_VIEWPORT } from "../presets/viewport";
 import { defaultBoardTitle, defaultSceneLabel, defaultSceneName } from "../i18n/localeDefaults";
 import type { Locale } from "../i18n/messages";
+import {
+  applyGkColorsOnMigrate,
+  defaultKitPalette,
+  tagKeepers,
+} from "./kits";
 import { roleFromPosition } from "./pieceRole";
 import { createScene } from "./scene";
 
@@ -61,8 +72,9 @@ export function createBoard(
   locale?: Locale,
 ): BoardDocument {
   const benchCount = DEFAULT_BENCH_COUNT;
+  const kits = defaultKitPalette();
   const scene = createScene(defaultSceneLabel(sport, locale), "pre", {
-    pieces: formationPieces(sport, true, benchCount),
+    pieces: formationPieces(sport, true, benchCount, kits),
     ball: { x: 0.5, y: 0.5 },
     objects: [],
   });
@@ -74,6 +86,10 @@ export function createBoard(
     matchLabel: "",
     homeTeam: "",
     awayTeam: "",
+    homeColor: HOME_COLOR,
+    awayColor: AWAY_COLOR,
+    homeGkColor: HOME_GK_COLOR,
+    awayGkColor: AWAY_GK_COLOR,
     goals: [],
     cards: [],
     showMatchBanner: sport === "soccer",
@@ -174,6 +190,26 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     }
   }
 
+  const sport = raw.sport;
+  const homeColor =
+    (raw as { homeColor?: string }).homeColor ?? HOME_COLOR;
+  const awayColor =
+    (raw as { awayColor?: string }).awayColor ?? AWAY_COLOR;
+  const homeGkColor =
+    (raw as { homeGkColor?: string }).homeGkColor ?? HOME_GK_COLOR;
+  const awayGkColor =
+    (raw as { awayGkColor?: string }).awayGkColor ?? AWAY_GK_COLOR;
+  const kits = {
+    home: homeColor,
+    away: awayColor,
+    homeGk: homeGkColor,
+    awayGk: awayGkColor,
+  };
+  scenes = scenes.map((s) => ({
+    ...s,
+    pieces: applyGkColorsOnMigrate(tagKeepers(sport, s.pieces ?? []), kits),
+  }));
+
   return {
     schemaVersion: 2,
     id: raw.id,
@@ -182,6 +218,10 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     matchLabel: raw.matchLabel ?? "",
     homeTeam: (raw as { homeTeam?: string }).homeTeam ?? "",
     awayTeam: (raw as { awayTeam?: string }).awayTeam ?? "",
+    homeColor,
+    awayColor,
+    homeGkColor,
+    awayGkColor,
     goals: (raw as { goals?: GoalEntry[] }).goals ?? [],
     cards: (raw as { cards?: CardEntry[] }).cards ?? [],
     showMatchBanner:

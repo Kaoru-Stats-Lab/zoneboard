@@ -8,7 +8,13 @@ import type {
   Piece,
   Scene,
 } from "../models/types";
-import { AWAY_COLOR, HOME_COLOR, PIECE_SCALE } from "../models/types";
+import {
+  AWAY_COLOR,
+  AWAY_GK_COLOR,
+  HOME_COLOR,
+  HOME_GK_COLOR,
+  PIECE_SCALE,
+} from "../models/types";
 import { DEFAULT_VIEWPORT } from "../presets/viewport";
 
 export const LP_HERO_CYCLE_MS = 6000;
@@ -63,16 +69,24 @@ export const LP_PASS_POINTS = smoothLinePath(LP_PASS_RAW);
 export const LP_DRIBBLE_POINTS = smoothLinePath(LP_DRIBBLE_RAW);
 
 function makePiece(spot: Spot, team: "home" | "away"): Piece {
+  const isGk = spot.number === "1";
   return {
     id: spot.id ?? `lp-${team}-${spot.number}`,
     x: spot.x,
     y: spot.y,
     number: spot.number,
     label: "",
-    color: team === "home" ? HOME_COLOR : AWAY_COLOR,
+    color: isGk
+      ? team === "home"
+        ? HOME_GK_COLOR
+        : AWAY_GK_COLOR
+      : team === "home"
+        ? HOME_COLOR
+        : AWAY_COLOR,
     team,
     facing: team === "home" ? 0 : 180,
     role: "starter",
+    kit: isGk ? "gk" : "outfield",
   };
 }
 

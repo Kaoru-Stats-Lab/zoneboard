@@ -26,6 +26,7 @@ function sceneLabelPhKey(sport: SportId | undefined): MessageKey {
   }
 }
 import { BoardCanvas } from "./BoardCanvas";
+import { BrandMark } from "./BrandMark";
 import { BroadcastToolMenu } from "./BroadcastToolMenu";
 import { Drawer } from "./Drawer";
 import { ExportPreviewFrame } from "./ExportPreviewFrame";
@@ -241,7 +242,10 @@ export function Editor({ state }: Props) {
       {!state.broadcast && (
         <header className="topbar">
           <div className="topbar-left">
-            <strong className="topbar-brand">{t("brand")}</strong>
+            <strong className="topbar-brand">
+              <BrandMark className="topbar-mark" title={t("brand")} />
+              {t("brand")}
+            </strong>
             <button
               type="button"
               className={state.drawerOpen ? "active" : ""}

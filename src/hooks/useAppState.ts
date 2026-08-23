@@ -42,6 +42,12 @@ import {
   normalizePieceColor,
   normalizePieceNumber,
 } from "../canvas/pieceInk";
+import {
+  colorForKit,
+  kitsFromBoard,
+  paintPiecesWithKits,
+  type PieceKit,
+} from "../models/kits";
 import { formationPieces } from "../presets/formations";
 import {
   buildScenePreset,
@@ -284,6 +290,7 @@ export function useAppState() {
         presetId,
         board.sport,
         board.benchCount,
+        kitsFromBoard(board),
       );
       if (!preset) return false;
       const next = createScene(preset.label, preset.phase, {
@@ -369,7 +376,7 @@ export function useAppState() {
             ...s,
             label: defaultSceneLabel(sport, loc),
             hideHalf: "none",
-            pieces: formationPieces(sport, true, benchCount),
+            pieces: formationPieces(sport, true, benchCount, kitsFromBoard(b)),
             objects: [],
             ball: { x: 0.5, y: 0.5 },
           }),
@@ -385,7 +392,12 @@ export function useAppState() {
     if (!board) return;
     updateScene((s) => ({
       ...s,
-      pieces: formationPieces(board.sport, true, board.benchCount),
+      pieces: formationPieces(
+        board.sport,
+        true,
+        board.benchCount,
+        kitsFromBoard(board),
+      ),
       objects: [],
     }));
   }, [board, updateScene]);
@@ -395,7 +407,7 @@ export function useAppState() {
       updateBoard((b) =>
         mapActiveScene({ ...b, benchCount }, (s) => ({
           ...s,
-          pieces: formationPieces(b.sport, true, benchCount),
+          pieces: formationPieces(b.sport, true, benchCount, kitsFromBoard(b)),
         })),
       );
     },
@@ -477,6 +489,7 @@ export function useAppState() {
       board.roster.home,
       board.roster.away,
       board.benchCount,
+      kitsFromBoard(board),
     );
     if (pieces.length === 0) return false;
     updateScene((s) => ({
@@ -532,6 +545,7 @@ export function useAppState() {
 
   const addPieceAt = useCallback(
     (x: number, y: number, team: "home" | "away") => {
+      const kits = board ? kitsFromBoard(board) : undefined;
       const role = roleFromPosition(x, y);
       const piece: Piece = {
         id: uid(),
@@ -539,16 +553,21 @@ export function useAppState() {
         y,
         number: "",
         label: "",
-        color: team === "home" ? HOME_COLOR : AWAY_COLOR,
+        color: kits
+          ? colorForKit(kits, team, "outfield")
+          : team === "home"
+            ? HOME_COLOR
+            : AWAY_COLOR,
         team,
         facing: team === "home" ? 0 : 180,
         role,
+        kit: "outfield",
       };
       updateScene((s) => ({ ...s, pieces: [...s.pieces, piece] }));
       setSelectedPieceId(piece.id);
       setTool("select");
     },
-    [updateScene],
+    [board, updateScene],
   );
 
   const movePiece = useCallback(
@@ -629,7 +648,13 @@ export function useAppState() {
         if (patch.number !== undefined) {
           normalized.number = normalizePieceNumber(patch.number);
         }
-        if (patch.color !== undefined && existing) {
+        if (patch.kit !== undefined && existing && board) {
+          normalized.color = colorForKit(
+            kitsFromBoard(board),
+            existing.team,
+            patch.kit === "gk" ? "gk" : "outfield",
+          );
+        } else if (patch.color !== undefined && existing) {
           normalized.color = normalizePieceColor(
             patch.color,
             existing.team === "home" ? HOME_COLOR : AWAY_COLOR,
@@ -647,7 +672,41 @@ export function useAppState() {
         return { ...s, pieces, ball };
       }, record);
     },
-    [updateScene],
+    [board, updateScene],
+  );
+
+  const setKitColor = useCallback(
+    (team: "home" | "away", kit: PieceKit, color: string) => {
+      updateBoard((b) => {
+        const fallback =
+          team === "home"
+            ? kit === "gk"
+              ? b.homeGkColor
+              : b.homeColor
+            : kit === "gk"
+              ? b.awayGkColor
+              : b.awayColor;
+        const nextColor = normalizePieceColor(color, fallback);
+        const next: BoardDocument = { ...b };
+        if (team === "home") {
+          if (kit === "gk") next.homeGkColor = nextColor;
+          else next.homeColor = nextColor;
+        } else if (kit === "gk") {
+          next.awayGkColor = nextColor;
+        } else {
+          next.awayColor = nextColor;
+        }
+        const kits = kitsFromBoard(next);
+        return {
+          ...next,
+          scenes: next.scenes.map((s) => ({
+            ...s,
+            pieces: paintPiecesWithKits(s.pieces, kits),
+          })),
+        };
+      });
+    },
+    [updateBoard],
   );
 
   const addLine = useCallback(
@@ -1047,6 +1106,7 @@ export function useAppState() {
     movePieceWithLine,
     swapPieces,
     patchPiece,
+    setKitColor,
     addLine,
     addZone,
     addPen,

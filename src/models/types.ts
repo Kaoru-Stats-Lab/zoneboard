@@ -137,6 +137,12 @@ export interface Piece {
    * bench = ベンチ帯のみ小サイズ（y がピッチから十分離れた帯）
    */
   role: "starter" | "bench";
+  /**
+   * キット枠。サカ系だけ意味がある。
+   * outfield = フィールドユニ、gk = GKユニ（IFAB: 他と区別できる色）。
+   * 未指定は outfield。背番号では推定しない。
+   */
+  kit?: "outfield" | "gk";
   /** 個別に隠す（局面の hideHalf より優先して隠す場合に false） */
   visible?: boolean;
   /**
@@ -236,6 +242,12 @@ export interface BoardDocument {
   /** ホーム／アウェイ表示名（スコア帯用） */
   homeTeam: string;
   awayTeam: string;
+  /** フィールドユニ。未保存データは HOME_COLOR / AWAY_COLOR */
+  homeColor: string;
+  awayColor: string;
+  /** GKユニ。サカ系のみUI表示。PL配信でもキーパーは別色が必須 */
+  homeGkColor: string;
+  awayGkColor: string;
   /** 得点一覧（スコア = 件数） */
   goals: GoalEntry[];
   /** イエロー / レッド（累計は cards から自動集計） */
@@ -305,6 +317,9 @@ export const MAX_BOARDS = 3;
 export const MAX_SCENES = 8;
 export const HOME_COLOR = "#e74c3c";
 export const AWAY_COLOR = "#3498db";
+/** 放送図の定番: ホームGKは緑、アウェイGKは黄（フィールドと被らない） */
+export const HOME_GK_COLOR = "#2ecc71";
+export const AWAY_GK_COLOR = "#f1c40f";
 
 /**
  * ツールレール／描画の意味色。

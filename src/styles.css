@@ -97,11 +97,20 @@ button.danger {
 
 .lp-eyebrow {
   grid-area: eyebrow;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   margin: 0 0 1rem;
   color: #9a9a96;
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: lowercase;
+}
+
+.lp-mark {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
 }
 
 .lp-hero h1 {
@@ -556,8 +565,17 @@ button.danger {
 }
 
 .topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.95rem;
   margin-right: 0.15rem;
+}
+
+.topbar-mark {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
 }
 
 .topbar-icon-btn {
@@ -1057,6 +1075,45 @@ button.danger {
 .row {
   display: flex;
   gap: 0.35rem;
+}
+
+.kit-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.35rem 0 0.15rem;
+}
+
+.kit-colors-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kit-colors-team {
+  width: 4.5rem;
+  flex: 0 0 4.5rem;
+  font-size: 0.78rem;
+  color: #555;
+}
+
+.kit-swatch {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.3rem !important;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.kit-swatch input[type="color"] {
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
 }
 
 .row button {

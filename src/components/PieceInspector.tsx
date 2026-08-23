@@ -1,6 +1,7 @@
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { normalizePieceNumber } from "../canvas/pieceInk";
+import { sportHasGk } from "../models/kits";
 import {
   usesHeight,
   usesPreferredFoot,
@@ -82,6 +83,20 @@ export function PieceInspector({ state, t }: Props) {
           }
         />
       </label>
+      {sport && sportHasGk(sport) && (
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={selected.kit === "gk"}
+            onChange={(e) =>
+              state.patchPiece(selected.id, {
+                kit: e.target.checked ? "gk" : "outfield",
+              })
+            }
+          />
+          {t("pieceIsGk")}
+        </label>
+      )}
       {showFoot && (
         <label>
           {t("preferredFoot")}

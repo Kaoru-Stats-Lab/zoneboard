@@ -1,5 +1,6 @@
+import type { KitPalette } from "../models/kits";
+import { colorForKit, defaultKitPalette, sportHasGk } from "../models/kits";
 import type { Piece, RosterPlayer, SportId, TeamRoster } from "../models/types";
-import { AWAY_COLOR, HOME_COLOR } from "../models/types";
 import { uid } from "../models/id";
 import { DEFAULT_BENCH_COUNT } from "./bench";
 
@@ -153,8 +154,8 @@ export function piecesFromRoster(
   team: "home" | "away",
   roster: TeamRoster,
   benchCount: number = DEFAULT_BENCH_COUNT,
+  kits: KitPalette = defaultKitPalette(),
 ): Piece[] {
-  const color = team === "home" ? HOME_COLOR : AWAY_COLOR;
   const facing = team === "home" ? 0 : 180;
   const nStart = STARTER_COUNT[sport];
   let spots = starterSpots(sport);
@@ -176,16 +177,18 @@ export function piecesFromRoster(
 
   starters.forEach((p, i) => {
     const spot = spots[i] ?? spots[spots.length - 1];
+    const kit = sportHasGk(sport) && i === 0 ? "gk" : "outfield";
     pieces.push({
       id: uid(),
       x: spot.x,
       y: spot.y,
       number: p.number,
       label: p.label,
-      color,
+      color: colorForKit(kits, team, kit),
       team,
       facing,
       role: "starter",
+      kit,
       preferredFoot: p.preferredFoot ?? null,
       heightCm: p.heightCm ?? null,
       weightKg: p.weightKg ?? null,
@@ -206,10 +209,11 @@ export function piecesFromRoster(
       y: benchY,
       number: p.number,
       label: p.label,
-      color,
+      color: colorForKit(kits, team, "outfield"),
       team,
       facing,
       role: "bench",
+      kit: "outfield",
       preferredFoot: p.preferredFoot ?? null,
       heightCm: p.heightCm ?? null,
       weightKg: p.weightKg ?? null,
@@ -225,9 +229,10 @@ export function applyLineupToScenePieces(
   home: TeamRoster,
   away: TeamRoster,
   benchCount: number = DEFAULT_BENCH_COUNT,
+  kits: KitPalette = defaultKitPalette(),
 ): Piece[] {
   return [
-    ...piecesFromRoster(sport, "home", home, benchCount),
-    ...piecesFromRoster(sport, "away", away, benchCount),
+    ...piecesFromRoster(sport, "home", home, benchCount, kits),
+    ...piecesFromRoster(sport, "away", away, benchCount, kits),
   ];
 }

@@ -3,6 +3,7 @@ import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
 import { useFeedback } from "./FeedbackProvider";
+import { BrandMark } from "./BrandMark";
 import { LpHeroBoard } from "./LpHeroBoard";
 
 export function Landing() {
@@ -13,7 +14,10 @@ export function Landing() {
     <div className="lp">
       <div className="lp-stage">
         <header className="lp-hero">
-          <p className="lp-eyebrow">zoneboard.app</p>
+          <p className="lp-eyebrow">
+            <BrandMark className="lp-mark" />
+            zoneboard.app
+          </p>
           <h1>
             {t("lpHeadline1")}
             <br />
