@@ -127,3 +127,37 @@ export function smoothLinePath(points: Point2[]): Point2[] {
   simplified[simplified.length - 1] = end;
   return simplified;
 }
+
+/** 先頭から t (0–1) までの部分点列（プレビュー線の伸び用） */
+export function polylineByProgress(points: Point2[], t: number): Point2[] {
+  if (points.length === 0) return [];
+  if (points.length === 1) return [{ ...points[0] }, { ...points[0] }];
+  if (t <= 0) return [{ ...points[0] }, { ...points[0] }];
+  if (t >= 1) return points.map((p) => ({ ...p }));
+
+  const total = pathLength(points);
+  if (total < 1e-9) return [{ ...points[0] }, { ...points[0] }];
+  const target = total * t;
+  let acc = 0;
+  const out: Point2[] = [{ ...points[0] }];
+  for (let i = 1; i < points.length; i++) {
+    const seg = dist(points[i - 1], points[i]);
+    if (acc + seg >= target) {
+      const f = seg > 0 ? (target - acc) / seg : 0;
+      out.push({
+        x: points[i - 1].x + (points[i].x - points[i - 1].x) * f,
+        y: points[i - 1].y + (points[i].y - points[i - 1].y) * f,
+      });
+      return out;
+    }
+    acc += seg;
+    out.push({ ...points[i] });
+  }
+  return out;
+}
+
+/** 点列上の t (0–1) 位置 */
+export function pointOnPolyline(points: Point2[], t: number): Point2 {
+  const partial = polylineByProgress(points, t);
+  return partial[partial.length - 1] ?? points[0];
+}

@@ -115,7 +115,13 @@ button.danger {
 }
 
 .lp-hero-board {
-  margin: 2.5rem 0 0;
+  margin: 2.5rem calc(-1 * min(1.25rem, 4vw)) 0;
+  width: calc(100% + 2 * min(1.25rem, 4vw));
+  max-width: min(52rem, 100vw);
+}
+
+.lp-board-stage {
+  position: relative;
 }
 
 .lp-board-frame {
@@ -126,6 +132,16 @@ button.danger {
   border: 1px solid #e5e5e3;
   border-radius: 8px;
   background: #ececea;
+  transition:
+    grid-template-columns 0.45s ease,
+    gap 0.45s ease,
+    padding 0.45s ease;
+}
+
+.lp-board-frame.is-broadcast {
+  grid-template-columns: 0fr 1fr;
+  gap: 0;
+  padding: 0.35rem;
 }
 
 .lp-board-rail {
@@ -136,6 +152,19 @@ button.danger {
   border-radius: 6px;
   background: #fff;
   border: 1px solid #e5e5e3;
+  overflow: hidden;
+  min-width: 0;
+  transition:
+    opacity 0.4s ease,
+    padding 0.4s ease,
+    border-color 0.4s ease;
+}
+
+.lp-board-frame.is-broadcast .lp-board-rail {
+  opacity: 0;
+  padding: 0;
+  border-color: transparent;
+  pointer-events: none;
 }
 
 .lp-board-rail span {
@@ -148,67 +177,65 @@ button.danger {
 }
 
 .lp-board-rail span:nth-child(1) {
-  border-left-color: #2563eb;
+  border-left-color: #93c5fd;
 }
 
 .lp-board-rail span:nth-child(2) {
-  border-left-color: #059669;
+  border-left-color: #fde047;
 }
 
 .lp-board-rail span:nth-child(3) {
-  border-left-color: #ea580c;
+  border-left-color: #fdba74;
 }
 
-.lp-board-pitch {
+.lp-board-canvas-wrap {
   position: relative;
+  min-width: 0;
   aspect-ratio: 105 / 68;
+  min-height: clamp(160px, 42vw, 320px);
   border-radius: 4px;
   overflow: hidden;
-  background: repeating-linear-gradient(
-    90deg,
-    #2f6e38 0,
-    #2f6e38 12%,
-    #357a40 12%,
-    #357a40 24%
-  );
-  border: 2px solid rgba(255, 255, 255, 0.92);
+  background: #e8e8e8;
 }
 
-.lp-board-line--half {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 2px;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.88);
-  transform: translateX(-50%);
-}
-
-.lp-board-line--circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 22%;
-  aspect-ratio: 1;
-  border: 2px solid rgba(255, 255, 255, 0.88);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.lp-board-path {
-  position: absolute;
-  inset: 0;
+.lp-board-canvas-wrap canvas {
+  display: block;
   width: 100%;
   height: 100%;
   pointer-events: none;
 }
 
-.lp-board-path--pass {
-  color: #93c5fd;
+.lp-obs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s ease;
 }
 
-.lp-board-path--dribble {
-  color: #fdba74;
+.lp-obs.is-visible {
+  opacity: 1;
+}
+
+.lp-obs-cam {
+  position: absolute;
+  left: 4%;
+  bottom: 7%;
+  width: min(18%, 5.5rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(26, 26, 24, 0.52);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+}
+
+.lp-obs-chat {
+  position: absolute;
+  right: 3%;
+  top: 10%;
+  bottom: 10%;
+  width: min(14%, 4rem);
+  border-radius: 6px;
+  background: rgba(26, 26, 24, 0.38);
 }
 
 .lp-hero-board figcaption {
@@ -216,6 +243,12 @@ button.danger {
   color: #6b6a66;
   font-size: 0.8125rem;
   text-align: center;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.lp-hero-board figcaption.is-visible {
+  opacity: 1;
 }
 
 .lp-promises {
@@ -1222,6 +1255,22 @@ button.danger {
   margin: 0;
   font-size: 0.85rem;
   color: #666;
+}
+
+.obs-checklist {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: #333;
+}
+
+.obs-checklist li + li {
+  margin-top: 0.35rem;
+}
+
+.obs-warn {
+  color: #92400e;
 }
 
 .modal label {

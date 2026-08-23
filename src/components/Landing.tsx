@@ -3,6 +3,7 @@ import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
 import { useFeedback } from "./FeedbackProvider";
+import { LpHeroBoard } from "./LpHeroBoard";
 
 export function Landing() {
   const t = (k: MessageKey) => messages[APP_LOCALE][k];
@@ -24,47 +25,7 @@ export function Landing() {
             {t("openBoard")}
           </Link>
 
-          <figure className="lp-hero-board" aria-hidden="true">
-            <div className="lp-board-frame">
-              <div className="lp-board-rail">
-                <span />
-                <span />
-                <span />
-              </div>
-              <div className="lp-board-pitch">
-                <div className="lp-board-line lp-board-line--half" />
-                <div className="lp-board-line lp-board-line--circle" />
-                <svg
-                  className="lp-board-path lp-board-path--pass"
-                  viewBox="0 0 200 120"
-                  preserveAspectRatio="none"
-                >
-                  <line
-                    x1="28"
-                    y1="88"
-                    x2="168"
-                    y2="32"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeDasharray="8 10"
-                  />
-                </svg>
-                <svg
-                  className="lp-board-path lp-board-path--dribble"
-                  viewBox="0 0 200 120"
-                  preserveAspectRatio="none"
-                >
-                  <path
-                    d="M 36 72 Q 58 48 80 62 T 124 38 T 172 52"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  />
-                </svg>
-              </div>
-            </div>
-            <figcaption>{t("lpHeroCaption")}</figcaption>
-          </figure>
+          <LpHeroBoard />
         </header>
 
         <section className="lp-promises" aria-label="What this is">
