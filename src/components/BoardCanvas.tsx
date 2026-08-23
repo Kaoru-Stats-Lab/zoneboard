@@ -31,6 +31,8 @@ type TextEditSession = {
   fontSizeNorm: number;
   objectId?: string;
   draft: string;
+  color?: string;
+  fontFamily?: import("../models/types").TextFontId;
 };
 
 type Props = {
@@ -82,6 +84,13 @@ type DragState =
       x0: number;
       y0: number;
       points?: { x: number; y: number }[];
+    }
+  | {
+      mode: "text";
+      id: string;
+      lastX: number;
+      lastY: number;
+      recorded: boolean;
     };
 
 export function BoardCanvas({
@@ -353,6 +362,8 @@ export function BoardCanvas({
     initial: string;
     objectId?: string;
     fontSizeNorm?: number;
+    color?: string;
+    fontFamily?: import("../models/types").TextFontId;
   }) => {
     if (textEditRef.current) commitTextEdit(textEditRef.current.draft);
     setTextEdit({
@@ -361,6 +372,8 @@ export function BoardCanvas({
       fontSizeNorm: opts.fontSizeNorm ?? 0.035,
       objectId: opts.objectId,
       draft: opts.initial,
+      color: opts.color,
+      fontFamily: opts.fontFamily,
     });
   };
 
@@ -404,6 +417,8 @@ export function BoardCanvas({
       initial: obj.text,
       objectId: obj.id,
       fontSizeNorm: obj.fontSize,
+      color: obj.color,
+      fontFamily: obj.fontFamily,
     });
   };
 
@@ -519,6 +534,17 @@ export function BoardCanvas({
         state.setSelectedBall(false);
         state.setSelectedPieceId(null);
         state.setSelectedObjectId(obj.id);
+        if (obj.type === "text") {
+          drag.current = {
+            mode: "text",
+            id: obj.id,
+            lastX: world.x,
+            lastY: world.y,
+            recorded: false,
+          };
+          canvas.setPointerCapture(e.pointerId);
+          bumpDragVisual();
+        }
         return;
       }
       if (
@@ -688,6 +714,29 @@ export function BoardCanvas({
       return;
     }
 
+    if (d.mode === "text") {
+      const textObj = scene.objects.find(
+        (o) => o.id === d.id && o.type === "text",
+      );
+      if (textObj && textObj.type === "text") {
+        const dx = world.x - d.lastX;
+        const dy = world.y - d.lastY;
+        if (Math.hypot(dx, dy) > 0.001) {
+          state.moveText(
+            d.id,
+            textObj.x + dx,
+            textObj.y + dy,
+            !d.recorded,
+          );
+          d.recorded = true;
+          d.lastX = world.x;
+          d.lastY = world.y;
+          bumpDragVisual();
+        }
+      }
+      return;
+    }
+
     if (d.mode === "pen" && d.points) {
       d.points.push({ x: world.x, y: world.y });
       bumpDragVisual();
@@ -789,6 +838,8 @@ export function BoardCanvas({
           fontSize={textOverlay.fontSize}
           value={textEdit.draft}
           placeholder={t("textPlaceholder")}
+          color={textEdit.color}
+          fontFamily={textEdit.fontFamily}
           onChange={(draft) =>
             setTextEdit((prev) => (prev ? { ...prev, draft } : null))
           }

@@ -19,7 +19,7 @@ import {
 import { formationPieces } from "../presets/formations";
 import { emptyRoster } from "../presets/roster";
 import { DEFAULT_VIEWPORT } from "../presets/viewport";
-import { defaultBoardTitle, defaultSceneLabel } from "../i18n/localeDefaults";
+import { defaultBoardTitle, defaultSceneLabel, defaultSceneName } from "../i18n/localeDefaults";
 import type { Locale } from "../i18n/messages";
 import { roleFromPosition } from "./pieceRole";
 import { createScene } from "./scene";
@@ -137,16 +137,20 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
   let activeSceneId = raw.activeSceneId;
 
   if (!scenes?.length) {
-    const scene = createScene(raw.title || "局面 1", "custom", {
-      pieces: (raw.pieces ?? []).map((p) => ({
-        ...p,
-        role: roleFromPosition(p.x, p.y),
-        label: p.label ?? "",
-        number: p.number ?? "",
-      })),
-      ball: raw.ball ?? { x: 0.5, y: 0.5 },
-      objects: normalizeObjects(raw.objects ?? []),
-    });
+    const scene = createScene(
+      raw.title || defaultSceneName(1, raw.sport ?? "soccer"),
+      "custom",
+      {
+        pieces: (raw.pieces ?? []).map((p) => ({
+          ...p,
+          role: roleFromPosition(p.x, p.y),
+          label: p.label ?? "",
+          number: p.number ?? "",
+        })),
+        ball: raw.ball ?? { x: 0.5, y: 0.5 },
+        objects: normalizeObjects(raw.objects ?? []),
+      },
+    );
     scenes = [scene];
     activeSceneId = scene.id;
   } else {
@@ -154,7 +158,7 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
       ...s,
       hideHalf: s.hideHalf ?? "none",
       phase: s.phase ?? "custom",
-      label: s.label || "局面",
+      label: s.label || defaultSceneName(1, raw.sport ?? "soccer"),
       pieces: (s.pieces ?? []).map((p) => ({
         ...p,
         // タッチライン際はフルサイズに再分類（旧: 線外=即ベンチ）

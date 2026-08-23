@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import { usesGrassInk } from "../canvas/drawingInk";
-import type { BoardDocument } from "../models/types";
+import { usesGrassInk, textColorForBoard } from "../canvas/drawingInk";
+import { textFontStack } from "../presets/textStyle";
+import type { BoardDocument, TextFontId } from "../models/types";
 
 type Props = {
   board: BoardDocument;
@@ -9,6 +10,8 @@ type Props = {
   fontSize: number;
   value: string;
   placeholder: string;
+  color?: string;
+  fontFamily?: TextFontId;
   onChange: (value: string) => void;
   onCommit: (value: string) => void;
   onCancel: () => void;
@@ -22,6 +25,8 @@ export function CanvasTextEditor({
   fontSize,
   value,
   placeholder,
+  color,
+  fontFamily,
   onChange,
   onCommit,
   onCancel,
@@ -29,6 +34,8 @@ export function CanvasTextEditor({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const valueRef = useRef(value);
   const grass = usesGrassInk(board);
+  const ink = color ?? textColorForBoard(board);
+  const stack = textFontStack(fontFamily);
 
   useEffect(() => {
     valueRef.current = value;
@@ -60,6 +67,8 @@ export function CanvasTextEditor({
         fontSize,
         minWidth: Math.max(120, fontSize * 6),
         minHeight: fontSize * 1.45,
+        color: ink,
+        fontFamily: stack,
       }}
       value={value}
       placeholder={placeholder}

@@ -30,6 +30,7 @@ import { BroadcastToolMenu } from "./BroadcastToolMenu";
 import { Drawer } from "./Drawer";
 import { ExportPreviewFrame } from "./ExportPreviewFrame";
 import { PieceInspector } from "./PieceInspector";
+import { TextInspector } from "./TextInspector";
 import { SettingsModal } from "./SettingsModal";
 import { ToolRail } from "./ToolRail";
 import { useFeedback } from "./FeedbackProvider";
@@ -258,6 +259,7 @@ export function Editor({ state }: Props) {
           )}
           <ToolRail state={state} t={t} />
           <PieceInspector state={state} t={t} />
+          <TextInspector state={state} t={t} />
         </div>
         <Drawer state={state} t={t} />
       </div>

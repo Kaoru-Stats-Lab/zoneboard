@@ -20,6 +20,7 @@ import type {
   CardKind,
   ScenePhase,
   SportId,
+  TextFontId,
   ToolId,
   WatermarkSettings,
 } from "../models/types";
@@ -38,6 +39,10 @@ import {
 } from "../canvas/drawingInk";
 import { formationPieces } from "../presets/formations";
 import {
+  buildScenePreset,
+  type ScenePresetId,
+} from "../presets/scenePresets";
+import {
   applyLineupToScenePieces,
   parseRosterText,
   parseStarterNumbers,
@@ -47,9 +52,11 @@ import {
   VIEW_PRESETS,
   type ViewPresetId,
 } from "../presets/viewport";
+import { defaultTextFont } from "../presets/textStyle";
 import {
   defaultBoardTitle,
   defaultSceneLabel,
+  defaultSceneName,
   detectLocaleForDefaults,
 } from "../i18n/localeDefaults";
 import type { Viewport } from "../models/types";
@@ -245,7 +252,7 @@ export function useAppState() {
       if (!board || !scene) return false;
       if (board.scenes.length >= MAX_SCENES) return false;
       const next = createScene(
-        label ?? `局面 ${board.scenes.length + 1}`,
+        label ?? defaultSceneName(board.scenes.length + 1, board.sport),
         phase,
         scene,
       );
@@ -258,6 +265,34 @@ export function useAppState() {
       return true;
     },
     [board, scene, updateBoard],
+  );
+
+  const addSceneFromPreset = useCallback(
+    (presetId: ScenePresetId) => {
+      if (!board) return false;
+      if (board.scenes.length >= MAX_SCENES) return false;
+      const preset = buildScenePreset(
+        presetId,
+        board.sport,
+        board.benchCount,
+      );
+      if (!preset) return false;
+      const next = createScene(preset.label, preset.phase, {
+        pieces: preset.pieces,
+        ball: preset.ball,
+        objects: [],
+      });
+      updateBoard((b) => ({
+        ...b,
+        scenes: [...b.scenes, next],
+        activeSceneId: next.id,
+        viewport: preset.viewport,
+      }));
+      setSelectedPieceId(null);
+      setSelectedBall(false);
+      return true;
+    },
+    [board, updateBoard],
   );
 
   const deleteScene = useCallback(
@@ -673,6 +708,7 @@ export function useAppState() {
             text,
             color: textColorForBoard(board),
             fontSize: 0.035,
+            fontFamily: defaultTextFont(),
           },
         ],
       }));
@@ -694,6 +730,43 @@ export function useAppState() {
           ),
         };
       });
+    },
+    [updateScene],
+  );
+
+  const moveText = useCallback(
+    (id: string, x: number, y: number, record: boolean) => {
+      updateScene(
+        (s) => ({
+          ...s,
+          objects: s.objects.map((o) =>
+            o.id === id && o.type === "text" ? { ...o, x, y } : o,
+          ),
+        }),
+        record,
+      );
+    },
+    [updateScene],
+  );
+
+  const patchText = useCallback(
+    (
+      id: string,
+      patch: {
+        color?: string;
+        fontFamily?: TextFontId;
+        fontSize?: number;
+      },
+    ) => {
+      updateScene(
+        (s) => ({
+          ...s,
+          objects: s.objects.map((o) =>
+            o.id === id && o.type === "text" ? { ...o, ...patch } : o,
+          ),
+        }),
+        false,
+      );
     },
     [updateScene],
   );
@@ -862,6 +935,7 @@ export function useAppState() {
     deleteBoard,
     setActiveScene,
     addScene,
+    addSceneFromPreset,
     deleteScene,
     cycleScene,
     setHideHalf,
@@ -886,6 +960,8 @@ export function useAppState() {
     addPen,
     addText,
     updateText,
+    moveText,
+    patchText,
     deleteSelected,
     clearDrawings,
     clearBoard,

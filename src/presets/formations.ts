@@ -4,7 +4,7 @@ import { AWAY_COLOR, HOME_COLOR } from "../models/types";
 import { uid } from "../models/id";
 import { FIVE_A_SIDE_DEFAULT_BENCH } from "./smallPitches";
 
-type Spot = { x: number; y: number; number: string };
+export type Spot = { x: number; y: number; number: string };
 
 const SOCCER_442_HOME: Spot[] = [
   { x: 0.08, y: 0.5, number: "1" },
@@ -22,6 +22,15 @@ const SOCCER_442_HOME: Spot[] = [
 
 function mirrorAway(spots: Spot[]): Spot[] {
   return spots.map((s) => ({ ...s, x: 1 - s.x }));
+}
+
+export function piecesFromSpots(
+  spots: Spot[],
+  team: "home" | "away",
+  role: "starter" | "bench" = "starter",
+): Piece[] {
+  const facing = team === "home" ? 0 : 180;
+  return toPieces(spots, team, facing, role);
 }
 
 function toPieces(
@@ -45,7 +54,7 @@ function toPieces(
 }
 
 /** ホーム下帯・アウェイ上帯（白バッファ内）に等間隔配置 */
-function benchSpots(count: number, team: "home" | "away"): Spot[] {
+export function benchSpots(count: number, team: "home" | "away"): Spot[] {
   const y = team === "home" ? 1.08 : -0.08;
   const spots: Spot[] = [];
   for (let i = 0; i < count; i++) {
@@ -57,6 +66,10 @@ function benchSpots(count: number, team: "home" | "away"): Spot[] {
     });
   }
   return spots;
+}
+
+export function benchPieces(count: number, team: "home" | "away"): Piece[] {
+  return piecesFromSpots(benchSpots(count, team), team, "bench");
 }
 
 export function formationPieces(

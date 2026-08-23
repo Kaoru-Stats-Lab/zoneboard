@@ -16,6 +16,7 @@ import {
 } from "../models/types";
 import { STARTER_COUNT } from "../presets/roster";
 import { viewPresetsForSport } from "../presets/viewport";
+import { scenePresetsForSport, type ScenePresetId } from "../presets/scenePresets";
 
 function startersPlaceholder(sport: SportId): string {
   const n = STARTER_COUNT[sport];
@@ -116,6 +117,30 @@ export function Drawer({ state, t }: Props) {
               >
                 {t("newScene")}
               </button>
+              {scenePresetsForSport(board.sport).length > 0 && (
+                <label>
+                  {t("fromPreset")}
+                  <select
+                    value=""
+                    disabled={sceneLimit}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      if (!id) return;
+                      if (!state.addSceneFromPreset(id as ScenePresetId)) {
+                        window.alert(t("sceneLimit"));
+                      }
+                      e.target.value = "";
+                    }}
+                  >
+                    <option value="">—</option>
+                    {scenePresetsForSport(board.sport).map(({ id, key }) => (
+                      <option key={id} value={id}>
+                        {t(key)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <button
                 type="button"
                 disabled={board.scenes.length <= 1}

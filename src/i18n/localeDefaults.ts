@@ -6,23 +6,29 @@ export function detectLocaleForDefaults(): Locale {
   return APP_LOCALE;
 }
 
-function sceneLabelKey(sport: SportId): MessageKey {
+function sceneDefaultLabelKey(sport: SportId): MessageKey {
   switch (sport) {
     case "basketball":
-      return "sceneLabelPhBasket";
+      return "sceneDefaultBasket";
     case "futsal":
-      return "sceneLabelPhFutsal";
+      return "sceneDefaultFutsal";
     case "beach_soccer":
-      return "sceneLabelPhBeach";
+      return "sceneDefaultBeach";
     case "volleyball":
-      return "sceneLabelPhVolley";
+      return "sceneDefaultVolley";
     default:
-      return "sceneLabelPhSoccer";
+      return "sceneDefaultSoccer";
   }
 }
 
 export function defaultSceneLabel(sport: SportId, _locale?: Locale): string {
-  return messages[APP_LOCALE][sceneLabelKey(sport)];
+  return messages[APP_LOCALE][sceneDefaultLabelKey(sport)];
+}
+
+/** 複製シーン等の自動名（Scene 2, Scene 3…） */
+export function defaultSceneName(index: number, sport: SportId = "soccer"): string {
+  if (index <= 1) return defaultSceneLabel(sport);
+  return `Scene ${index}`;
 }
 
 export function defaultBoardTitle(index: number, _locale?: Locale): string {

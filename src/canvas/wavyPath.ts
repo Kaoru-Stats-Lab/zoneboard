@@ -160,6 +160,7 @@ export function drawArrowHeadAt(
   tip: Point2,
   angle: number,
   lw: number,
+  fill: string,
 ) {
   const head = 8 + lw * 2;
   ctx.beginPath();
@@ -173,6 +174,6 @@ export function drawArrowHeadAt(
     tip.y - head * Math.sin(angle + Math.PI / 7),
   );
   ctx.closePath();
-  ctx.fillStyle = ctx.strokeStyle as string;
+  ctx.fillStyle = fill;
   ctx.fill();
 }

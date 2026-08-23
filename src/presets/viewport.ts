@@ -22,6 +22,8 @@ export type ViewPresetId =
   | "throw-bottom"
   | "pen-left"
   | "pen-right"
+  | "ck-setup-left"
+  | "ck-setup-right"
   // basketball
   | "bball-front-right"
   | "bball-front-left"
@@ -53,6 +55,9 @@ export const VIEW_PRESETS: Record<ViewPresetId, Viewport> = {
   "throw-bottom": { zoom: 2.1, cx: 0.5, cy: 0.94 },
   "pen-left": { zoom: 2.5, cx: 0.12, cy: 0.5 },
   "pen-right": { zoom: 2.5, cx: 0.88, cy: 0.5 },
+  /** 攻撃ハーフ全体（CK 配置・ゾーン説明向け） */
+  "ck-setup-right": { zoom: 1.95, cx: 0.83, cy: 0.5 },
+  "ck-setup-left": { zoom: 1.95, cx: 0.17, cy: 0.5 },
   // バスケ（フロントコート中心・ペイント・コーナー・トランジション）
   "bball-front-right": { zoom: 1.45, cx: 0.7, cy: 0.5 },
   "bball-front-left": { zoom: 1.45, cx: 0.3, cy: 0.5 },
@@ -118,6 +123,8 @@ export function viewPresetsForSport(sport: SportId): ViewPresetEntry[] {
     { id: "full", key: "viewFull" },
     { id: "final-third-left", key: "viewFtL" },
     { id: "final-third-right", key: "viewFtR" },
+    { id: "ck-setup-left", key: "viewCkSetupL" },
+    { id: "ck-setup-right", key: "viewCkSetupR" },
     { id: "corner-bl", key: "viewCkBl" },
     { id: "corner-br", key: "viewCkBr" },
     { id: "corner-tl", key: "viewCkTl" },

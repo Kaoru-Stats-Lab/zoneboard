@@ -182,6 +182,8 @@ export interface PenObject {
   strokeWidth: number;
 }
 
+export type TextFontId = "system" | "display" | "serif" | "mono";
+
 export interface TextObject {
   id: string;
   type: "text";
@@ -190,6 +192,7 @@ export interface TextObject {
   text: string;
   color: string;
   fontSize: number;
+  fontFamily?: TextFontId;
 }
 
 export type DrawObject = LineObject | ZoneObject | PenObject | TextObject;

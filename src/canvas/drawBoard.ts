@@ -27,6 +27,7 @@ import {
   strokeWavyPath,
   wavyPathFromPolyline,
 } from "./wavyPath";
+import { textFontStack } from "../presets/textStyle";
 import { pieceDiscipline, CARD_YELLOW, CARD_RED } from "./matchCards";
 import { BASKET_HALF_START } from "../presets/sports";
 import {
@@ -671,17 +672,22 @@ function drawObject(
     if (!m) return;
     const p = fromNorm(m.x, m.y, pitch);
     const size = Math.max(10, Math.min(pitch.w, pitch.h) * obj.fontSize);
-    ctx.font = `600 ${size}px ${UI_FONT_STACK}`;
+    const stack = textFontStack(obj.fontFamily);
+    ctx.font = `600 ${size}px ${stack}`;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
+    const tw = ctx.measureText(obj.text).width || size * obj.text.length * 0.6;
     if (selected) {
-      const tw = ctx.measureText(obj.text).width || size * obj.text.length * 0.6;
       ctx.strokeStyle = selectionColor;
       ctx.lineWidth = 2;
-      ctx.strokeRect(p.x - 2, p.y - 2, tw + 4, size + 4);
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(p.x - 3, p.y - 3, tw + 6, size + 6);
+      ctx.setLineDash([]);
     }
-    const ink = textColorForBoard(board);
-    if (usesGrassInk(board)) {
+    const ink = obj.color || textColorForBoard(board);
+    const needsShadow =
+      usesGrassInk(board) && ink.toLowerCase() !== "#111111";
+    if (needsShadow) {
       ctx.shadowColor = "rgba(0,0,0,0.55)";
       ctx.shadowBlur = Math.max(2, size * 0.08);
       ctx.shadowOffsetY = Math.max(1, size * 0.04);
@@ -836,7 +842,7 @@ function strokeLineByKind(
       ctx.setLineDash([]);
       ctx.lineCap = "round";
       strokePolyline(ctx, pts);
-      if (color === ink) drawArrowHead(ctx, pts, width);
+      if (color === ink) drawArrowHead(ctx, pts, width, ink);
     } else if (kind === "screen") {
       ctx.setLineDash([]);
       ctx.lineCap = "round";
@@ -875,7 +881,7 @@ function strokePassLine(
   }
   strokePolyline(ctx, pts);
   ctx.restore();
-  drawArrowHead(ctx, pts, lw);
+  drawArrowHead(ctx, pts, lw, ink);
 }
 
 /** ドリブル波線: 白ハロー二重描画はモアレになるので影のみ */
@@ -906,7 +912,7 @@ function strokeDribbleLine(
   }
 
   const tip = wavy[wavy.length - 1];
-  drawArrowHeadAt(ctx, tip, endTangentAngle(pts), lw);
+  drawArrowHeadAt(ctx, tip, endTangentAngle(pts), lw, ink);
 }
 
 function strokePenPath(
@@ -1078,6 +1084,7 @@ function drawArrowHead(
   ctx: CanvasRenderingContext2D,
   pts: { x: number; y: number }[],
   lw: number,
+  fill: string,
 ) {
   if (pts.length < 2) return;
   const p2 = pts[pts.length - 1];
@@ -1095,7 +1102,7 @@ function drawArrowHead(
     p2.y - head * Math.sin(ang + Math.PI / 7),
   );
   ctx.closePath();
-  ctx.fillStyle = ctx.strokeStyle as string;
+  ctx.fillStyle = fill;
   ctx.fill();
 }
 
