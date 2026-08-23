@@ -305,6 +305,22 @@ export const messages = {
       "ブラウザソースは別プロファイルのため、この Chrome で動かした駒は写りません。使わないでください。",
     obsNotIncluded:
       "顔・チャットは OBS 側で合成。ボードに Webcam は足しません。",
+    obsBroadcastUrl: "配信用 URL",
+    obsBroadcastUrlHint:
+      "ブックマークや OBS から開くと、同じウィンドウ・同じ保存のまま配信モードで始まります。",
+    obsUrlCopy: "コピー",
+    obsUrlCopied: "コピー済み",
+    obsSettingsWarn:
+      "配信中は設定を開かないでください。モーダルがウィンドウキャプチャに全面で写ります。",
+    obsFocusCapture:
+      "駒を動かすときは、ウィンドウキャプチャ中のブラウザウィンドウをクリックしてフォーカスを戻す",
+    obsFocusObs:
+      "OBS のプレビューをクリックするとフォーカスが OBS 側に移り、駒は動かない",
+    obsHotkeys:
+      "ZoneBoard: B = 配信モード、Esc = 解除、[ ] = 局面切替。OBS で B や Esc を配信開始などに割り当てている場合は、OBS 側のショートカットを変える",
+    broadcastFocusHint: "クリックして操作",
+    exitBroadcastShort: "解除",
+    exitBroadcastHint: "配信解除 (Esc)",
     toolIndicator: "ツール",
     feedbackOpen: "フィードバック",
     feedbackHint: "任意送信です。返信はしません。ボードの内容は書かないでください。",
@@ -629,6 +645,22 @@ export const messages = {
       "Browser Source uses a separate profile—pieces you move in this Chrome window will not appear. Do not use it.",
     obsNotIncluded:
       "Face and chat belong in OBS. ZoneBoard does not add a webcam to the board.",
+    obsBroadcastUrl: "Broadcast URL",
+    obsBroadcastUrlHint:
+      "Open from a bookmark or OBS to start in Broadcast mode in this same window and storage.",
+    obsUrlCopy: "Copy",
+    obsUrlCopied: "Copied",
+    obsSettingsWarn:
+      "Do not open Settings while live—the modal fills the window capture.",
+    obsFocusCapture:
+      "To move pieces, click the captured browser window to restore focus",
+    obsFocusObs:
+      "Clicking the OBS preview moves focus to OBS—pieces won't respond",
+    obsHotkeys:
+      "ZoneBoard: B = broadcast, Esc = exit, [ ] = scenes. If OBS uses B or Esc for streaming, change OBS shortcuts",
+    broadcastFocusHint: "Click to control",
+    exitBroadcastShort: "Exit",
+    exitBroadcastHint: "Exit broadcast (Esc)",
     feedbackOpen: "Feedback",
     feedbackHint: "Optional. We will not reply. Do not paste board content.",
     feedbackKindBug: "Something broken",

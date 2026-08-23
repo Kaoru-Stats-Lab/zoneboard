@@ -98,7 +98,11 @@ export function useAppState() {
   );
   const [broadcast, setBroadcast] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(true);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpenState] = useState(false);
+  const setSettingsOpen = useCallback((open: boolean) => {
+    if (open && broadcast) return;
+    setSettingsOpenState(open);
+  }, [broadcast]);
   const [bakeWm, setBakeWm] = useState(true);
   const history = useRef<BoardDocument[]>([]);
   const future = useRef<BoardDocument[]>([]);

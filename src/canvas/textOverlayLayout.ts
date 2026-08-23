@@ -1,6 +1,10 @@
 import type { BoardDocument, Viewport } from "../models/types";
 import { worldToPitch } from "./drawBoard";
-import { fitField, fromNorm } from "./layout";
+import {
+  broadcastFrameRect,
+  fitSurfaceLayout,
+  fromNorm,
+} from "./layout";
 import { matchBannerHeight } from "./matchBanner";
 
 export function textOverlayRect(
@@ -11,11 +15,25 @@ export function textOverlayRect(
   worldX: number,
   worldY: number,
   fontSizeNorm = 0.035,
+  broadcast = false,
 ): { left: number; top: number; fontSize: number } | null {
   const mapped = worldToPitch(worldX, worldY, board);
   if (!mapped) return null;
-  const bannerH = matchBannerHeight(surfaceW, surfaceH, board);
-  const { pitch } = fitField(surfaceW, surfaceH, board, 4, view, bannerH);
+  const frame = broadcast ? broadcastFrameRect(surfaceW, surfaceH) : null;
+  const bannerH = matchBannerHeight(
+    frame?.w ?? surfaceW,
+    frame?.h ?? surfaceH,
+    board,
+  );
+  const { pitch } = fitSurfaceLayout(
+    surfaceW,
+    surfaceH,
+    board,
+    4,
+    view,
+    bannerH,
+    broadcast,
+  );
   const p = fromNorm(mapped.x, mapped.y, pitch);
   return {
     left: p.x,

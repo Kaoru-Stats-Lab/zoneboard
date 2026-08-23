@@ -48,7 +48,9 @@ export function SettingsModal({
   const { openFeedback } = useFeedback();
   const fileRef = useRef<HTMLInputElement>(null);
   const [bakeCaption, setBakeCaption] = useState(true);
+  const [urlCopied, setUrlCopied] = useState(false);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const broadcastUrl = `${window.location.origin}/board?broadcast=1`;
   const dragRef = useRef<{
     ox: number;
     oy: number;
@@ -60,7 +62,7 @@ export function SettingsModal({
     if (!state.settingsOpen) setPos(null);
   }, [state.settingsOpen]);
 
-  if (!state.settingsOpen || !state.board) return null;
+  if (!state.settingsOpen || !state.board || state.broadcast) return null;
   const wm = state.watermark;
 
   const onHeaderPointerDown = (e: ReactPointerEvent) => {
@@ -98,6 +100,16 @@ export function SettingsModal({
       enabled: true,
       imageDataUrl: compressed,
     });
+  };
+
+  const copyBroadcastUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(broadcastUrl);
+      setUrlCopied(true);
+      window.setTimeout(() => setUrlCopied(false), 2000);
+    } catch {
+      window.prompt(t("obsBroadcastUrl"), broadcastUrl);
+    }
   };
 
   const onExport = async () => {
@@ -313,6 +325,26 @@ export function SettingsModal({
           </ol>
           <p className="hint-muted obs-warn">{t("obsBrowserWarn")}</p>
           <p className="hint-muted">{t("obsNotIncluded")}</p>
+          <ul className="obs-checklist">
+            <li>{t("obsFocusCapture")}</li>
+            <li>{t("obsFocusObs")}</li>
+            <li>{t("obsHotkeys")}</li>
+          </ul>
+          <span className="field-label">{t("obsBroadcastUrl")}</span>
+          <div className="obs-url-row">
+            <input
+              type="text"
+              readOnly
+              value={broadcastUrl}
+              aria-label={t("obsBroadcastUrl")}
+              onFocus={(e) => e.currentTarget.select()}
+            />
+            <button type="button" onClick={copyBroadcastUrl}>
+              {urlCopied ? t("obsUrlCopied") : t("obsUrlCopy")}
+            </button>
+          </div>
+          <p className="hint-muted">{t("obsBroadcastUrlHint")}</p>
+          <p className="hint-muted obs-warn">{t("obsSettingsWarn")}</p>
         </section>
 
         <section>

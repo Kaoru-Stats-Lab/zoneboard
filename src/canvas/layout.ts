@@ -28,6 +28,64 @@ export interface FieldLayout {
  */
 export const FIELD_BUFFER = 0.14;
 
+/** OBS 配信キャンバス想定（16:9）。ピッチは歪めず contain。 */
+export const BROADCAST_FRAME_ASPECT = 16 / 9;
+
+export const BROADCAST_LETTERBOX = "#e8e8e8";
+
+/** キャンバス内に収まる最大の 16:9 矩形（中央配置） */
+export function broadcastFrameRect(canvasW: number, canvasH: number): PitchRect {
+  let w = canvasW;
+  let h = w / BROADCAST_FRAME_ASPECT;
+  if (h > canvasH) {
+    h = canvasH;
+    w = h * BROADCAST_FRAME_ASPECT;
+  }
+  return {
+    x: (canvasW - w) / 2,
+    y: (canvasH - h) / 2,
+    w,
+    h,
+  };
+}
+
+function offsetRect(r: PitchRect, dx: number, dy: number): PitchRect {
+  return { x: r.x + dx, y: r.y + dy, w: r.w, h: r.h };
+}
+
+export type SurfaceLayout = FieldLayout & { frame: PitchRect | null };
+
+/**
+ * 編集: 従来どおりキャンバス全体にフィット。
+ * 配信: 16:9 フレーム内に contain（ピッチ crop なし）。bannerH はフレーム基準。
+ */
+export function fitSurfaceLayout(
+  canvasW: number,
+  canvasH: number,
+  board: BoardDocument,
+  pad: number,
+  viewport: Viewport | undefined,
+  bannerH: number,
+  broadcast: boolean,
+): SurfaceLayout {
+  if (!broadcast) {
+    const layout = fitField(canvasW, canvasH, board, pad, viewport, bannerH);
+    return { ...layout, frame: null };
+  }
+
+  const frame = broadcastFrameRect(canvasW, canvasH);
+  const contentH = Math.max(1, frame.h - bannerH);
+  const layout = fitField(frame.w, contentH, board, pad, viewport, 0);
+  const dx = frame.x;
+  const dy = frame.y + bannerH;
+  return {
+    outer: offsetRect(layout.outer, dx, dy),
+    pitch: offsetRect(layout.pitch, dx, dy),
+    viewport: layout.viewport,
+    frame,
+  };
+}
+
 /** バッファ込みフィールドをキャンバスにフィットし、viewport でズーム */
 export function fitField(
   canvasW: number,

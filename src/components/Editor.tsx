@@ -45,6 +45,24 @@ export function Editor({ state }: Props) {
   const [wmImage, setWmImage] = useState<HTMLImageElement | null>(null);
   const [exportPreset, setExportPreset] = useState<ExportPresetId>("ig45");
   const [exportFocus, setExportFocus] = useState<ExportFocusId>("current");
+  const [windowFocused, setWindowFocused] = useState(true);
+
+  useEffect(() => {
+    if (!state.broadcast) {
+      setWindowFocused(true);
+      return;
+    }
+    const sync = () => setWindowFocused(document.hasFocus());
+    const onFocus = () => setWindowFocused(true);
+    const onBlur = () => setWindowFocused(false);
+    sync();
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, [state.broadcast]);
 
   const exportViewOverride = useMemo(() => {
     if (!state.settingsOpen || !state.board || exportFocus === "current") {
@@ -195,6 +213,18 @@ export function Editor({ state }: Props) {
     return t(map[state.tool] ?? "select");
   })();
 
+  const sceneFullLabel = state.scene?.label?.trim() ?? "";
+  const sceneIndex =
+    state.board?.scenes.findIndex((s) => s.id === state.scene?.id) ?? -1;
+  const sceneShort =
+    sceneFullLabel.length > 0
+      ? sceneFullLabel.length > 8
+        ? `${sceneFullLabel.slice(0, 7)}…`
+        : sceneFullLabel
+      : sceneIndex >= 0
+        ? String(sceneIndex + 1)
+        : "";
+
   return (
     <div className={`editor${state.broadcast ? " is-broadcast" : ""}`}>
       {!state.broadcast && (
@@ -260,29 +290,55 @@ export function Editor({ state }: Props) {
           <ToolRail state={state} t={t} />
           <PieceInspector state={state} t={t} />
           <TextInspector state={state} t={t} />
+          {state.broadcast && !windowFocused && (
+            <div className="broadcast-focus-hint" role="status">
+              {t("broadcastFocusHint")}
+            </div>
+          )}
+          {state.broadcast && (
+            <div className="broadcast-chrome" aria-label={t("broadcast")}>
+              <div className="broadcast-chrome-inner">
+                <div className="scene-switcher">
+                  <button
+                    type="button"
+                    className="broadcast-icon-btn"
+                    onClick={() => state.cycleScene(-1)}
+                    aria-label="Previous scene"
+                  >
+                    [
+                  </button>
+                  {sceneShort ? (
+                    <span
+                      className="broadcast-scene"
+                      title={sceneFullLabel || undefined}
+                    >
+                      {sceneShort}
+                    </span>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="broadcast-icon-btn"
+                    onClick={() => state.cycleScene(1)}
+                    aria-label="Next scene"
+                  >
+                    ]
+                  </button>
+                </div>
+                <BroadcastToolMenu state={state} t={t} toolLabel={toolLabel} />
+                <button
+                  type="button"
+                  className="broadcast-exit"
+                  title={t("exitBroadcastHint")}
+                  onClick={state.exitBroadcast}
+                >
+                  {t("exitBroadcastShort")}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         <Drawer state={state} t={t} />
       </div>
-
-      {state.broadcast && (
-        <div className="broadcast-chrome">
-          <div className="scene-switcher">
-            <button type="button" onClick={() => state.cycleScene(-1)}>
-              [
-            </button>
-            <span className="tool-pill scene-pill">
-              {state.scene?.label ?? ""}
-            </span>
-            <button type="button" onClick={() => state.cycleScene(1)}>
-              ]
-            </button>
-          </div>
-          <BroadcastToolMenu state={state} t={t} toolLabel={toolLabel} />
-          <button type="button" onClick={state.exitBroadcast}>
-            {t("exitBroadcast")}
-          </button>
-        </div>
-      )}
 
       <SettingsModal
         state={state}

@@ -69,13 +69,14 @@ export function BroadcastToolMenu({ state, t, toolLabel }: Props) {
       )}
       <button
         type="button"
-        className={`tool-pill tool-pill-btn${open ? " open" : ""}`}
+        className={`broadcast-tool-toggle${open ? " open" : ""}`}
         style={{ "--tool-color": activeColor } as CSSProperties}
         aria-expanded={open}
         aria-haspopup="menu"
+        title={`${t("toolIndicator")}: ${toolLabel}`}
         onClick={() => setOpen((v) => !v)}
       >
-        {t("toolIndicator")}: {toolLabel}
+        {toolLabel}
       </button>
     </div>
   );

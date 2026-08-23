@@ -15,13 +15,19 @@ import {
   hitTestWatermark,
   pitchToWorld,
 } from "../canvas/drawBoard";
-import { fitField, toNorm, zoomAt } from "../canvas/layout";
+import {
+  BROADCAST_LETTERBOX,
+  broadcastFrameRect,
+  fitSurfaceLayout,
+  toNorm,
+  zoomAt,
+} from "../canvas/layout";
 import { drawMatchBanner, matchBannerHeight } from "../canvas/matchBanner";
 import { smoothLinePath } from "../canvas/smoothPath";
 import { textOverlayRect } from "../canvas/textOverlayLayout";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
-import type { Viewport } from "../models/types";
+import type { BoardDocument, Viewport } from "../models/types";
 import { isLineTool } from "../models/types";
 import { CanvasTextEditor } from "./CanvasTextEditor";
 
@@ -42,6 +48,31 @@ type Props = {
   viewOverride?: Viewport | null;
   t: (k: MessageKey) => string;
 };
+
+function resolveSurfaceLayout(
+  canvasW: number,
+  canvasH: number,
+  board: BoardDocument,
+  view: Viewport,
+  broadcast: boolean,
+) {
+  const frame = broadcast ? broadcastFrameRect(canvasW, canvasH) : null;
+  const bannerH = matchBannerHeight(
+    frame?.w ?? canvasW,
+    frame?.h ?? canvasH,
+    board,
+  );
+  const layout = fitSurfaceLayout(
+    canvasW,
+    canvasH,
+    board,
+    4,
+    view,
+    bannerH,
+    broadcast,
+  );
+  return { ...layout, bannerH, frame: layout.frame };
+}
 
 type DragState =
   | {
@@ -159,12 +190,12 @@ export function BoardCanvas({
 
       const dist = touchDist(e.touches[0], e.touches[1]);
       const mid = touchMid(e.touches[0], e.touches[1]);
-      const { pitch } = fitField(
+      const { pitch } = resolveSurfaceLayout(
         canvas.clientWidth,
         canvas.clientHeight,
         board,
-        4,
         view,
+        state.broadcast,
       );
 
       if (lastDist > 0) {
@@ -193,7 +224,7 @@ export function BoardCanvas({
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
     };
-  }, [board, state, view, viewLocked]);
+  }, [board, state, state.broadcast, view, viewLocked]);
 
   /** Ctrl+ホイール（Mac はピンチも ctrl 扱い）でカーソル位置ズーム */
   useEffect(() => {
@@ -205,12 +236,12 @@ export function BoardCanvas({
       e.preventDefault();
       const canvas = canvasRef.current;
       if (!canvas) return;
-      const { pitch } = fitField(
+      const { pitch } = resolveSurfaceLayout(
         canvas.clientWidth,
         canvas.clientHeight,
         board,
-        4,
         view,
+        state.broadcast,
       );
       const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
       const focusX = norm?.x ?? view.cx;
@@ -222,7 +253,7 @@ export function BoardCanvas({
 
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [board, state, view, viewLocked]);
+  }, [board, state, state.broadcast, view, viewLocked]);
 
   const paint = () => {
     const canvas = canvasRef.current;
@@ -237,10 +268,16 @@ export function BoardCanvas({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const bannerH = matchBannerHeight(w, h, board);
-    const { outer, pitch } = fitField(w, h, board, 4, view, bannerH);
+    const { outer, pitch, bannerH, frame } = resolveSurfaceLayout(
+      w,
+      h,
+      board,
+      view,
+      state.broadcast,
+    );
     const d = drag.current;
-    const pitchArea = (pitch.w * pitch.h) / (w * h);
+    const frameArea = frame ? frame.w * frame.h : w * h;
+    const pitchArea = (pitch.w * pitch.h) / frameArea;
     drawBoard(ctx, pitch, board, scene, {
       selectedPieceId: state.selectedPieceId,
       selectedObjectId: state.selectedObjectId,
@@ -249,7 +286,7 @@ export function BoardCanvas({
       watermark: state.watermark,
       watermarkImage,
       outer,
-      background: "#e8e8e8",
+      background: BROADCAST_LETTERBOX,
       dragVisual:
         d?.mode === "piece"
           ? { pieceId: d.id, boost: d.boost }
@@ -272,7 +309,14 @@ export function BoardCanvas({
       editingTextId: textEdit?.objectId ?? null,
     });
     if (bannerH > 0) {
-      drawMatchBanner(ctx, w, bannerH, board, t("cardY2CLabel"));
+      if (frame) {
+        ctx.save();
+        ctx.translate(frame.x, frame.y);
+        drawMatchBanner(ctx, frame.w, bannerH, board, t("cardY2CLabel"));
+        ctx.restore();
+      } else {
+        drawMatchBanner(ctx, w, bannerH, board, t("cardY2CLabel"));
+      }
     }
     surface.dataset.pitchRatio = String(pitchArea);
   };
@@ -306,12 +350,12 @@ export function BoardCanvas({
   const getNorm = (e: ReactPointerEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
-    const { pitch } = fitField(
+    const { pitch } = resolveSurfaceLayout(
       canvas.clientWidth,
       canvas.clientHeight,
       board,
-      4,
       view,
+      state.broadcast,
     );
     return { norm: toNorm(e.clientX, e.clientY, canvas, pitch), pitch };
   };
@@ -327,12 +371,12 @@ export function BoardCanvas({
   const pieceAtEvent = (e: { clientX: number; clientY: number }) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
-    const { pitch } = fitField(
+    const { pitch } = resolveSurfaceLayout(
       canvas.clientWidth,
       canvas.clientHeight,
       board,
-      4,
       view,
+      state.broadcast,
     );
     const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
     if (!norm) return null;
@@ -380,12 +424,12 @@ export function BoardCanvas({
   const objectAtEvent = (e: { clientX: number; clientY: number }) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
-    const { pitch } = fitField(
+    const { pitch } = resolveSurfaceLayout(
       canvas.clientWidth,
       canvas.clientHeight,
       board,
-      4,
       view,
+      state.broadcast,
     );
     const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
     if (!norm) return null;
@@ -626,12 +670,12 @@ export function BoardCanvas({
       if (viewLocked) return;
       const canvas = canvasRef.current;
       if (!canvas || !board) return;
-      const { pitch } = fitField(
+      const { pitch } = resolveSurfaceLayout(
         canvas.clientWidth,
         canvas.clientHeight,
         board,
-        4,
         view,
+        state.broadcast,
       );
       const dx = (e.clientX - d.lastClientX) / pitch.w;
       const dy = (e.clientY - d.lastClientY) / pitch.h;
@@ -810,6 +854,7 @@ export function BoardCanvas({
           textEdit.worldX,
           textEdit.worldY,
           textEdit.fontSizeNorm,
+          state.broadcast,
         )
       : null;
 
