@@ -293,6 +293,18 @@ export const messages = {
     confirmBench: "サブ人数を変えると配置をやり直します。続行しますか？",
     exportPreviewLabel: "PNG に入る範囲",
     exportPreviewHint: "暗い外側は書き出しに入りません。ウィンドウをドラッグして確認",
+    obsSection: "OBSで使う",
+    obsIntro: "推奨: ウィンドウキャプチャ + 配信モード + 1920×1080",
+    obsStep1:
+      "ブラウザウィンドウを 1920×1080 にする（キャンバスが 16:9 で写るサイズ）",
+    obsStep2: "ボードで配信モードにする（キー B）",
+    obsStep3:
+      "OBS → ソース → ウィンドウキャプチャ → このブラウザ。クライアント領域を ON",
+    obsStep4: "60 fps 推奨（駒ドラッグが滑らか）",
+    obsBrowserWarn:
+      "ブラウザソースは別プロファイルのため、この Chrome で動かした駒は写りません。使わないでください。",
+    obsNotIncluded:
+      "顔・チャットは OBS 側で合成。ボードに Webcam は足しません。",
     toolIndicator: "ツール",
     feedbackOpen: "フィードバック",
     feedbackHint: "任意送信です。返信はしません。ボードの内容は書かないでください。",
@@ -605,6 +617,18 @@ export const messages = {
     toolIndicator: "Tool",
     exportPreviewLabel: "PNG frame",
     exportPreviewHint: "Dimmed area is cropped out. Drag the window to check",
+    obsSection: "Use with OBS",
+    obsIntro: "Recommended: Window Capture + Broadcast mode + 1920×1080",
+    obsStep1:
+      "Set the browser window to 1920×1080 (canvas fills 16:9)",
+    obsStep2: "Turn on Broadcast mode on the board (key B)",
+    obsStep3:
+      "OBS → Sources → Window Capture → this browser. Enable client area",
+    obsStep4: "60 fps recommended (smoother piece drags)",
+    obsBrowserWarn:
+      "Browser Source uses a separate profile—pieces you move in this Chrome window will not appear. Do not use it.",
+    obsNotIncluded:
+      "Face and chat belong in OBS. ZoneBoard does not add a webcam to the board.",
     feedbackOpen: "Feedback",
     feedbackHint: "Optional. We will not reply. Do not paste board content.",
     feedbackKindBug: "Something broken",

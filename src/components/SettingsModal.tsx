@@ -303,6 +303,19 @@ export function SettingsModal({
         </section>
 
         <section>
+          <h3>{t("obsSection")}</h3>
+          <p className="hint-muted">{t("obsIntro")}</p>
+          <ol className="obs-checklist">
+            <li>{t("obsStep1")}</li>
+            <li>{t("obsStep2")}</li>
+            <li>{t("obsStep3")}</li>
+            <li>{t("obsStep4")}</li>
+          </ol>
+          <p className="hint-muted obs-warn">{t("obsBrowserWarn")}</p>
+          <p className="hint-muted">{t("obsNotIncluded")}</p>
+        </section>
+
+        <section>
           <h3>{t("appearance")}</h3>
           {state.board.sport === "soccer" && (
             <>
