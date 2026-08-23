@@ -414,6 +414,18 @@ button.danger {
   position: relative;
 }
 
+.board-surface[data-tool="zone"] canvas {
+  cursor: crosshair;
+}
+
+.board-surface[data-tool="pen"] canvas,
+.board-surface[data-tool="pass"] canvas,
+.board-surface[data-tool="run"] canvas,
+.board-surface[data-tool="dribble"] canvas,
+.board-surface[data-tool="screen"] canvas {
+  cursor: crosshair;
+}
+
 .topbar-brand {
   font-size: 0.95rem;
   margin-right: 0.15rem;

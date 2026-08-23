@@ -71,7 +71,14 @@ type DragState =
       points: { x: number; y: number }[];
     }
   | {
-      mode: "zone" | "pen";
+      mode: "zone";
+      x0: number;
+      y0: number;
+      x1: number;
+      y1: number;
+    }
+  | {
+      mode: "pen";
       x0: number;
       y0: number;
       points?: { x: number; y: number }[];
@@ -243,6 +250,14 @@ export function BoardCanvas({
       previewLine:
         d?.mode === "line" && d.points.length >= 2
           ? { kind: d.kind, points: smoothLinePath(d.points) }
+          : null,
+      previewZone:
+        d?.mode === "zone"
+          ? { x0: d.x0, y0: d.y0, x1: d.x1, y1: d.y1 }
+          : null,
+      previewPen:
+        d?.mode === "pen" && d.points && d.points.length >= 1
+          ? d.points
           : null,
       ballImage,
       editingTextId: textEdit?.objectId ?? null,
@@ -542,8 +557,15 @@ export function BoardCanvas({
     }
 
     if (state.tool === "zone") {
-      drag.current = { mode: "zone", x0: world.x, y0: world.y };
+      drag.current = {
+        mode: "zone",
+        x0: world.x,
+        y0: world.y,
+        x1: world.x,
+        y1: world.y,
+      };
       canvas.setPointerCapture(e.pointerId);
+      bumpDragVisual();
       return;
     }
 
@@ -555,6 +577,7 @@ export function BoardCanvas({
         points: [{ x: world.x, y: world.y }],
       };
       canvas.setPointerCapture(e.pointerId);
+      bumpDragVisual();
       return;
     }
 
@@ -658,6 +681,13 @@ export function BoardCanvas({
       return;
     }
 
+    if (d.mode === "zone") {
+      d.x1 = world.x;
+      d.y1 = world.y;
+      bumpDragVisual();
+      return;
+    }
+
     if (d.mode === "pen" && d.points) {
       d.points.push({ x: world.x, y: world.y });
       bumpDragVisual();
@@ -739,6 +769,7 @@ export function BoardCanvas({
       className={`board-surface${state.broadcast ? " broadcast" : ""}`}
       ref={boardSurfaceRef}
       data-board-surface="true"
+      data-tool={state.tool}
     >
       <canvas
         ref={canvasRef}

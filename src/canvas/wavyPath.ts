@@ -87,7 +87,7 @@ function bendFade(center: Point2[], i: number): number {
 /**
  * ユーザが引いた経路に沿った波線。
  * - 中心線は平滑化曲線（角の折れ波を回避）
- * - 波数は 1〜3 に制限（配信画面で読めるサイズ）
+ * - 波長は固定。距離が伸びれば波の数が増える（伸ばし伸ばししない）
  */
 export function wavyPathFromPolyline(
   pts: Point2[],
@@ -100,8 +100,9 @@ export function wavyPathFromPolyline(
   const total = polylineLength(center);
   if (total < 4) return center;
 
-  const wavelength = Math.max(24, amplitude * 7);
-  const waveCount = Math.min(2.75, Math.max(1.1, total / wavelength));
+  // 振幅に比例した固定波長（px）。短い線でも最低 ~1 周期は見えるようにする
+  const wavelength = Math.max(22, amplitude * 6.5);
+  const waveCount = Math.max(1, total / wavelength);
 
   const arc: number[] = [0];
   for (let i = 1; i < center.length; i++) {
@@ -114,6 +115,7 @@ export function wavyPathFromPolyline(
     const { tx, ty } = tangentAt(center, i);
     const nx = -ty;
     const ny = tx;
+    // 弧長に沿って一定波長で位相を進める（長さで波を引き伸ばさない）
     const phase = (arc[i] / totalS) * waveCount * Math.PI * 2;
     const fade = bendFade(center, i);
     const a = amplitude * fade;

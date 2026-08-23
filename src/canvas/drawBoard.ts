@@ -132,6 +132,15 @@ export function drawBoard(
     dragVisual?: DragVisual | null;
     /** 描画中の自由曲線プレビュー */
     previewLine?: { kind: LineKind; points: { x: number; y: number }[] } | null;
+    /** ゾーン矩形ドラッグ中のプレビュー（x0,y0=起点） */
+    previewZone?: {
+      x0: number;
+      y0: number;
+      x1: number;
+      y1: number;
+    } | null;
+    /** ペンドラッグ中のプレビュー */
+    previewPen?: { x: number; y: number }[] | null;
     /** インライン編集中のテキスト（二重表示防止） */
     editingTextId?: string | null;
     /** 競技ボール画像。未ロード時は幾何フォールバック */
@@ -205,6 +214,14 @@ export function drawBoard(
     );
   }
 
+  if (opts.previewZone) {
+    drawZonePreview(ctx, pitch, board, opts.previewZone);
+  }
+
+  if (opts.previewPen && opts.previewPen.length >= 1) {
+    drawPenPreview(ctx, pitch, board, opts.previewPen);
+  }
+
   const scale = board.pieceScale ?? 1;
   for (const piece of scene.pieces) {
     if (!isPieceDrawn(piece, scene.hideHalf)) continue;
@@ -247,7 +264,7 @@ function drawPiece(
   r: number,
   selected: boolean,
   dragging: boolean,
-  selectionColor: string,
+  _selectionColor: string,
 ) {
   const mapped = worldToPitch(piece.x, piece.y, board);
   if (!mapped) return;
@@ -270,9 +287,21 @@ function drawPiece(
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = piece.color;
   ctx.fill();
-  ctx.lineWidth = selected || dragging ? 3 : 1.5;
-  ctx.strokeStyle = selected || dragging ? selectionColor : "#fff";
-  ctx.stroke();
+  // 選択縁は芝生でも読める白＋暗ハロー（設定の黒選択色は使わない）
+  if (selected || dragging) {
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "rgba(0,0,0,0.55)";
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.lineWidth = 2.25;
+    ctx.strokeStyle = "#fff";
+    ctx.stroke();
+  } else {
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "#fff";
+    ctx.stroke();
+  }
 
   if (discipline.yellow) {
     ctx.beginPath();
@@ -302,15 +331,9 @@ function drawPiece(
     ctx.setLineDash([]);
   }
 
-  // 選択時: 駒との隙間を空けたリング（アクティブ認識＋回転ハンドル）
+  // 選択時: 白破線＋暗ハロー（芝上でも一目でアクティブ）
   if (selected && !dragging) {
-    ctx.beginPath();
-    ctx.arc(x, y, r * 1.72, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(0,0,0,0.28)";
-    ctx.lineWidth = 1.75;
-    ctx.setLineDash([4, 4]);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    drawPieceSelectionRing(ctx, x, y, r * 1.72);
   }
 
   const rad = (piece.facing * Math.PI) / 180;
@@ -327,9 +350,23 @@ function drawPiece(
   ctx.closePath();
   ctx.fillStyle = piece.color;
   ctx.fill();
-  ctx.strokeStyle = selected ? selectionColor : "#fff";
-  ctx.lineWidth = selected ? 2 : 1;
-  ctx.stroke();
+  if (selected) {
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(fx - ox, fy - oy);
+    ctx.lineTo(fx + ox, fy + oy);
+    ctx.closePath();
+    ctx.lineWidth = 1.75;
+    ctx.strokeStyle = "#fff";
+    ctx.stroke();
+  } else {
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
 
   if (dragging) ctx.restore();
 
@@ -363,6 +400,30 @@ function drawPiece(
   }
 
   if (discipline.sentOff) ctx.restore();
+}
+
+/** 芝上でも読める選択リング（暗ハロー＋白〜淡黄破線） */
+function drawPieceSelectionRing(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  ringR: number,
+) {
+  ctx.save();
+  ctx.setLineDash([5, 4]);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.arc(x, y, ringR, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(0,0,0,0.55)";
+  ctx.lineWidth = 3.5;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x, y, ringR, 0, Math.PI * 2);
+  ctx.strokeStyle = "#FEF9C3";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
 }
 
 function drawBall(
@@ -556,7 +617,7 @@ function drawObject(
       Math.min(pitch.w, pitch.h) * 0.004 * obj.strokeWidth,
     );
     const ink = lineColorForBoard(board, obj.kind);
-    if (selected) {
+    if (selected && obj.kind !== "pass") {
       ctx.strokeStyle = selectionColor;
       ctx.lineWidth = lw + 4;
       ctx.globalAlpha = 0.35;
@@ -564,6 +625,9 @@ function drawObject(
       ctx.lineJoin = "round";
       strokePolyline(ctx, pts);
       ctx.globalAlpha = 1;
+    }
+    if (selected && obj.kind === "pass") {
+      strokePassLine(ctx, pts, lw + 1.5, selectionColor, board, { alpha: 0.4 });
     }
     strokeLineByKind(ctx, pts, lw, ink, obj.kind, board);
     return;
@@ -630,6 +694,117 @@ function drawObject(
   }
 }
 
+/** ゾーン作成中: 起点マーカー + ラバーバンド矩形（クリック直後から見える） */
+function drawZonePreview(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  board: BoardDocument,
+  z: { x0: number; y0: number; x1: number; y1: number },
+) {
+  const a = worldToPitch(z.x0, z.y0, board);
+  const b = worldToPitch(z.x1, z.y1, board);
+  if (!a || !b) return;
+  const p0 = fromNorm(a.x, a.y, pitch);
+  const p1 = fromNorm(b.x, b.y, pitch);
+  const x = Math.min(p0.x, p1.x);
+  const y = Math.min(p0.y, p1.y);
+  const w = Math.abs(p1.x - p0.x);
+  const h = Math.abs(p1.y - p0.y);
+  const ink = zoneColorsForBoard(board);
+  const stroke = ink.stroke;
+  const scale = Math.min(pitch.w, pitch.h);
+  const handleR = Math.max(5, scale * 0.012);
+  const cross = Math.max(10, scale * 0.028);
+  const lw = Math.max(2, lwOnPitch(pitch, 2));
+
+  // ドラッグ中の矩形。未移動時は小さなシード枠で「開始済み」を示す
+  const showRect = w >= 2 || h >= 2;
+  ctx.save();
+  ctx.fillStyle = ink.fill;
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = lw;
+  ctx.setLineDash([6, 4]);
+  if (showRect) {
+    ctx.fillRect(x, y, Math.max(w, 1), Math.max(h, 1));
+    ctx.strokeRect(x, y, Math.max(w, 1), Math.max(h, 1));
+  } else {
+    const seed = Math.max(18, scale * 0.04);
+    ctx.globalAlpha = 0.85;
+    ctx.fillRect(p0.x - seed / 2, p0.y - seed / 2, seed, seed);
+    ctx.strokeRect(p0.x - seed / 2, p0.y - seed / 2, seed, seed);
+    ctx.globalAlpha = 1;
+  }
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // 起点: 十字 + 塗りつぶし点（クリック直後の唯一の合図）
+  ctx.save();
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = Math.max(2, lw * 0.9);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(p0.x - cross, p0.y);
+  ctx.lineTo(p0.x + cross, p0.y);
+  ctx.moveTo(p0.x, p0.y - cross);
+  ctx.lineTo(p0.x, p0.y + cross);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(p0.x, p0.y, handleR, 0, Math.PI * 2);
+  ctx.fillStyle = stroke;
+  ctx.fill();
+  ctx.strokeStyle = usesGrassInk(board) ? "rgba(0,0,0,0.55)" : "#fff";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+
+  // 対角角: ドラッグ先ハンドル（動いたときだけ）
+  if (Math.hypot(p1.x - p0.x, p1.y - p0.y) > handleR * 2) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(p1.x, p1.y, handleR * 0.85, 0, Math.PI * 2);
+    ctx.fillStyle = stroke;
+    ctx.fill();
+    ctx.strokeStyle = usesGrassInk(board) ? "rgba(0,0,0,0.55)" : "#fff";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+/** ペン描画中: 起点ドット → ドラッグ中は実線プレビュー */
+function drawPenPreview(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  board: BoardDocument,
+  points: { x: number; y: number }[],
+) {
+  const lw = Math.max(1.5, Math.min(pitch.w, pitch.h) * 0.003 * 2);
+  const ink = penColorForBoard(board);
+
+  if (points.length === 1) {
+    const m = worldToPitch(points[0].x, points[0].y, board);
+    if (!m) return;
+    const p = fromNorm(m.x, m.y, pitch);
+    const dotR = Math.max(3.5, lw * 0.75);
+    ctx.save();
+    if (usesGrassInk(board)) {
+      ctx.shadowColor = "rgba(0,0,0,0.42)";
+      ctx.shadowBlur = Math.max(1.5, lw * 0.55);
+    }
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, dotR, 0, Math.PI * 2);
+    ctx.fillStyle = ink;
+    ctx.fill();
+    ctx.strokeStyle = usesGrassInk(board) ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.6)";
+    ctx.lineWidth = 1.25;
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
+  strokePenPath(ctx, board, pitch, points, lw, ink, 1, usesGrassInk(board));
+}
+
 function lwOnPitch(pitch: PitchRect, base: number): number {
   return Math.max(base, Math.min(pitch.w, pitch.h) * 0.0035);
 }
@@ -647,6 +822,11 @@ function strokeLineByKind(
     return;
   }
 
+  if (kind === "pass") {
+    strokePassLine(ctx, pts, lw, ink, board);
+    return;
+  }
+
   const draw = (color: string, width: number) => {
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
@@ -656,16 +836,6 @@ function strokeLineByKind(
       ctx.setLineDash([]);
       ctx.lineCap = "round";
       strokePolyline(ctx, pts);
-      if (color === ink) drawArrowHead(ctx, pts, width);
-    } else if (kind === "pass") {
-      // 欧米標準: 破線 = パス（ボールの軌道）
-      const dash = Math.max(7, width * 2.2);
-      const gap = Math.max(14, width * 4.5);
-      ctx.setLineDash([dash, gap]);
-      ctx.lineCap = "butt";
-      strokePolyline(ctx, pts);
-      ctx.setLineDash([]);
-      ctx.lineCap = "round";
       if (color === ink) drawArrowHead(ctx, pts, width);
     } else if (kind === "screen") {
       ctx.setLineDash([]);
@@ -679,6 +849,33 @@ function strokeLineByKind(
     draw(HALO_INK_GRASS, grassHaloWidth(lw));
   }
   draw(ink, lw);
+}
+
+/** 欧米標準: 破線 = パス。芝生では白ハロー不可（隙間から白矩形が見える）→ 影のみ */
+function strokePassLine(
+  ctx: CanvasRenderingContext2D,
+  pts: { x: number; y: number }[],
+  lw: number,
+  ink: string,
+  board: BoardDocument,
+  opts?: { alpha?: number },
+) {
+  const dash = Math.max(8, lw * 2.4);
+  const gap = Math.max(10, lw * 3);
+  ctx.save();
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.setLineDash([dash, gap]);
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = lw;
+  if (opts?.alpha != null) ctx.globalAlpha = opts.alpha;
+  if (usesGrassInk(board)) {
+    ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
+    ctx.shadowBlur = Math.max(1.5, lw * 0.55);
+  }
+  strokePolyline(ctx, pts);
+  ctx.restore();
+  drawArrowHead(ctx, pts, lw);
 }
 
 /** ドリブル波線: 白ハロー二重描画はモアレになるので影のみ */
