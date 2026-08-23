@@ -37,6 +37,7 @@ import {
   textColorForBoard,
   zoneColorsForBoard,
 } from "../canvas/drawingInk";
+import { smoothLinePath, softenPenPoints } from "../canvas/smoothPath";
 import {
   normalizePieceColor,
   normalizePieceNumber,
@@ -670,6 +671,59 @@ export function useAppState() {
     [board, updateScene],
   );
 
+  const LINE_TRAIL_MIN = 0.012;
+
+  const movePieceWithLine = useCallback(
+    (
+      id: string,
+      x: number,
+      y: number,
+      kind: LineKind,
+      points: { x: number; y: number }[],
+      facing?: number,
+    ) => {
+      const start = points[0];
+      const end = points[points.length - 1];
+      const smoothed = points.length >= 2 ? smoothLinePath(points) : [];
+      const trail =
+        !!start &&
+        !!end &&
+        points.length >= 2 &&
+        Math.hypot(end.x - start.x, end.y - start.y) >= LINE_TRAIL_MIN &&
+        smoothed.length >= 2;
+
+      updateScene((s) => {
+        const role = roleFromPosition(x, y);
+        const pieces = s.pieces.map((p) =>
+          p.id === id
+            ? { ...p, x, y, role, facing: facing ?? p.facing }
+            : p,
+        );
+        const piece = pieces.find((p) => p.id === id);
+        let ball = s.ball;
+        if (piece) {
+          const followed = ballFollowingPiece(ball, piece);
+          if (followed) ball = followed;
+        }
+        const objects = trail
+          ? [
+              ...s.objects,
+              {
+                id: uid(),
+                type: "line" as const,
+                kind,
+                points: smoothed,
+                color: lineColorForBoard(board, kind),
+                strokeWidth: 2,
+              },
+            ]
+          : s.objects;
+        return { ...s, pieces, ball, objects };
+      });
+    },
+    [board, updateScene],
+  );
+
   const addZone = useCallback(
     (x: number, y: number, w: number, h: number) => {
       const zoneInk = zoneColorsForBoard(board);
@@ -696,6 +750,7 @@ export function useAppState() {
   const addPen = useCallback(
     (points: { x: number; y: number }[]) => {
       if (points.length < 2) return;
+      const stored = softenPenPoints(points);
       updateScene((s) => ({
         ...s,
         objects: [
@@ -703,7 +758,7 @@ export function useAppState() {
           {
             id: uid(),
             type: "pen",
-            points,
+            points: stored,
             color: penColorForBoard(board),
             strokeWidth: 2,
           },
@@ -830,6 +885,23 @@ export function useAppState() {
     updateScene((s) => ({ ...s, objects: [] }));
     setSelectedObjectId(null);
   }, [updateScene]);
+
+  const wipeDrawing = useCallback(() => {
+    updateScene((s) => {
+      if (s.objects.length === 0) return s;
+      if (selectedObjectId) {
+        const has = s.objects.some((o) => o.id === selectedObjectId);
+        if (has) {
+          return {
+            ...s,
+            objects: s.objects.filter((o) => o.id !== selectedObjectId),
+          };
+        }
+      }
+      return { ...s, objects: s.objects.slice(0, -1) };
+    });
+    if (selectedObjectId) setSelectedObjectId(null);
+  }, [selectedObjectId, updateScene]);
 
   const clearBoard = useCallback(() => {
     updateScene((s) => ({ ...s, pieces: [], objects: [] }));
@@ -972,6 +1044,7 @@ export function useAppState() {
     exitBroadcast,
     addPieceAt,
     movePiece,
+    movePieceWithLine,
     swapPieces,
     patchPiece,
     addLine,
@@ -983,6 +1056,7 @@ export function useAppState() {
     patchText,
     deleteSelected,
     clearDrawings,
+    wipeDrawing,
     clearBoard,
     addGoal,
     removeGoal,

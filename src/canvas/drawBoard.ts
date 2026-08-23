@@ -36,6 +36,7 @@ import {
   wavyPathFromPolyline,
 } from "./wavyPath";
 import { textFontStack } from "../presets/textStyle";
+import { tracePenBezierPath } from "./smoothPath";
 import { pieceDiscipline, CARD_YELLOW, CARD_RED } from "./matchCards";
 import { BASKET_HALF_START } from "../presets/sports";
 import {
@@ -46,6 +47,75 @@ import {
   outerFillForBoard,
 } from "./drawPitch";
 import { fromNorm, pointerHitSlop, type PitchRect } from "./layout";
+
+type ZoneBounds = {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  cx: number;
+  cy: number;
+  rx: number;
+  ry: number;
+};
+
+function zoneNormBounds(zone: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}): ZoneBounds {
+  const x0 = Math.min(zone.x, zone.x + zone.w);
+  const x1 = Math.max(zone.x, zone.x + zone.w);
+  const y0 = Math.min(zone.y, zone.y + zone.h);
+  const y1 = Math.max(zone.y, zone.y + zone.h);
+  return {
+    x0,
+    y0,
+    x1,
+    y1,
+    cx: (x0 + x1) / 2,
+    cy: (y0 + y1) / 2,
+    rx: (x1 - x0) / 2,
+    ry: (y1 - y0) / 2,
+  };
+}
+
+/** AABB に内接する軸平行楕円（描画・ヒット共通） */
+function fillStrokeZoneEllipse(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  fill: boolean,
+  stroke: boolean,
+) {
+  const rx = Math.abs(w) / 2;
+  const ry = Math.abs(h) / 2;
+  if (rx < 0.5 || ry < 0.5) return;
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  if (fill) ctx.fill();
+  if (stroke) ctx.stroke();
+}
+
+function normPointInZoneEllipse(
+  normX: number,
+  normY: number,
+  zone: { x: number; y: number; w: number; h: number },
+  slop: number,
+): boolean {
+  const { cx, cy, rx, ry } = zoneNormBounds(zone);
+  if (rx <= 0 || ry <= 0) return false;
+  const erx = rx + slop;
+  const ery = ry + slop;
+  const dx = (normX - cx) / erx;
+  const dy = (normY - cy) / ery;
+  return dx * dx + dy * dy <= 1;
+}
 
 export function worldToPitch(
   x: number,
@@ -381,23 +451,14 @@ function drawPiece(
   ctx.closePath();
   ctx.fillStyle = ink;
   ctx.fill();
-  if (selected) {
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(0,0,0,0.5)";
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(tx, ty);
-    ctx.lineTo(fx - ox, fy - oy);
-    ctx.lineTo(fx + ox, fy + oy);
-    ctx.closePath();
-    ctx.lineWidth = 1.75;
-    ctx.strokeStyle = inkHalo;
-    ctx.stroke();
-  } else {
-    ctx.strokeStyle = inkHalo;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
+  // 向きは二次情報。選択ハローは円と破線リングに任せ、三角は芝から切るヘアラインだけ。
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.strokeStyle = inkHalo;
+  ctx.lineWidth = Math.max(0.7, Math.min(1.05, r * 0.048));
+  ctx.stroke();
+  ctx.lineJoin = "miter";
+  ctx.lineCap = "butt";
 
   if (discipline.sentOff) ctx.restore();
   if (dragging) ctx.restore();
@@ -679,8 +740,7 @@ function drawObject(
     ctx.fillStyle = zoneInk.fill;
     ctx.strokeStyle = selected ? selectionColor : zoneInk.stroke;
     ctx.lineWidth = selected ? 3 : Math.max(1.5, lwOnPitch(pitch, 1.5));
-    ctx.fillRect(x, y, w, h);
-    ctx.strokeRect(x, y, w, h);
+    fillStrokeZoneEllipse(ctx, x, y, w, h, true, true);
     return;
   }
 
@@ -731,7 +791,7 @@ function drawObject(
   }
 }
 
-/** ゾーン作成中: 起点マーカー + ラバーバンド矩形（クリック直後から見える） */
+/** ゾーン作成中: 起点マーカー + ラバーバンド楕円（クリック直後から見える） */
 function drawZonePreview(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,
@@ -754,21 +814,27 @@ function drawZonePreview(
   const cross = Math.max(10, scale * 0.028);
   const lw = Math.max(2, lwOnPitch(pitch, 2));
 
-  // ドラッグ中の矩形。未移動時は小さなシード枠で「開始済み」を示す
-  const showRect = w >= 2 || h >= 2;
+  // ドラッグ中の楕円。未移動時は小さなシード枠で「開始済み」を示す
+  const showShape = w >= 2 || h >= 2;
   ctx.save();
   ctx.fillStyle = ink.fill;
   ctx.strokeStyle = stroke;
   ctx.lineWidth = lw;
   ctx.setLineDash([6, 4]);
-  if (showRect) {
-    ctx.fillRect(x, y, Math.max(w, 1), Math.max(h, 1));
-    ctx.strokeRect(x, y, Math.max(w, 1), Math.max(h, 1));
+  if (showShape) {
+    fillStrokeZoneEllipse(
+      ctx,
+      x,
+      y,
+      Math.max(w, 1),
+      Math.max(h, 1),
+      true,
+      true,
+    );
   } else {
     const seed = Math.max(18, scale * 0.04);
     ctx.globalAlpha = 0.85;
-    ctx.fillRect(p0.x - seed / 2, p0.y - seed / 2, seed, seed);
-    ctx.strokeRect(p0.x - seed / 2, p0.y - seed / 2, seed, seed);
+    fillStrokeZoneEllipse(ctx, p0.x - seed / 2, p0.y - seed / 2, seed, seed, true, true);
     ctx.globalAlpha = 1;
   }
   ctx.setLineDash([]);
@@ -956,22 +1022,18 @@ function strokePenPath(
   alpha = 1,
   withHalo = false,
 ) {
-  ctx.beginPath();
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-  let started = false;
+  const pts: { x: number; y: number }[] = [];
   for (const pt of points) {
     const m = worldToPitch(pt.x, pt.y, board);
     if (!m) continue;
-    const p = fromNorm(m.x, m.y, pitch);
-    if (!started) {
-      ctx.moveTo(p.x, p.y);
-      started = true;
-    } else {
-      ctx.lineTo(p.x, p.y);
-    }
+    pts.push(fromNorm(m.x, m.y, pitch));
   }
-  if (!started) return;
+  if (pts.length === 0) return;
+
+  ctx.beginPath();
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  if (!tracePenBezierPath(ctx, pts)) return;
 
   const apply = (strokeColor: string, strokeWidth: number) => {
     ctx.strokeStyle = strokeColor;
@@ -1026,16 +1088,14 @@ export function hitTestObject(
         }
       }
     } else if (obj.type === "zone") {
-      const x0 = Math.min(obj.x, obj.x + obj.w);
-      const x1 = Math.max(obj.x, obj.x + obj.w);
-      const y0 = Math.min(obj.y, obj.y + obj.h);
-      const y1 = Math.max(obj.y, obj.y + obj.h);
-      if (normX >= x0 && normX <= x1 && normY >= y0 && normY <= y1) return obj;
+      const threshold = 0.025 * pointerHitSlop();
+      if (normPointInZoneEllipse(normX, normY, obj, threshold)) return obj;
     } else if (obj.type === "pen") {
+      const penThreshold = threshold * 1.2;
       for (let j = 1; j < obj.points.length; j++) {
         const a = obj.points[j - 1];
         const b = obj.points[j];
-        if (distToSegment(normX, normY, a.x, a.y, b.x, b.y) <= threshold) {
+        if (distToSegment(normX, normY, a.x, a.y, b.x, b.y) <= penThreshold) {
           return obj;
         }
       }

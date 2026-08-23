@@ -46,6 +46,7 @@ export function BroadcastToolMenu({ state, t, toolLabel }: Props) {
                 role="menuitem"
                 className={`tool-rail-btn${active ? " active" : ""}`}
                 style={{ "--tool-color": color } as CSSProperties}
+                title={tool.hint ? t(tool.hint) : t(tool.key)}
                 onClick={() => {
                   state.setTool(tool.id);
                   setOpen(false);
@@ -55,6 +56,18 @@ export function BroadcastToolMenu({ state, t, toolLabel }: Props) {
               </button>
             );
           })}
+          <button
+            type="button"
+            className="tool-rail-wipe"
+            title={t("wipeDrawingHint")}
+            disabled={!(state.scene?.objects.length ?? 0)}
+            onClick={() => {
+              state.wipeDrawing();
+              setOpen(false);
+            }}
+          >
+            {t("wipeDrawing")}
+          </button>
           <button
             type="button"
             className="tool-rail-undo"

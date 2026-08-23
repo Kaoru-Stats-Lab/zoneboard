@@ -1,11 +1,15 @@
 :root {
   color: #111;
-  background: #fafafa;
+  background: #0c0d0e;
   font-family:
     "Segoe UI", "Yu Gothic UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
     "Noto Sans JP", "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji",
     system-ui, sans-serif;
   line-height: 1.4;
+}
+
+html:has(.editor) {
+  background: #fafafa;
 }
 
 * {
@@ -54,70 +58,117 @@ button.danger {
   color: #c0392b;
 }
 
-/* Landing (duo·reader-style: narrow column, show-don't-tell) */
+/* Landing — one studio. Type is the ident; the pitch is the light. */
 .lp {
+  --lp-sans: "Barlow", "Zen Kaku Gothic New", "Segoe UI", "Yu Gothic UI",
+    "Hiragino Sans", system-ui, sans-serif;
+  --lp-display: "Barlow Semi Condensed", "Zen Kaku Gothic New", "Segoe UI",
+    "Yu Gothic UI", "Hiragino Sans", system-ui, sans-serif;
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  background: #fafaf9;
-  color: #1a1a18;
-  font-family: "Segoe UI", system-ui, sans-serif;
-  line-height: 1.5;
+  background: #0c0d0e;
+  color: #f3f3f1;
+  font-family: var(--lp-sans);
+  font-synthesis: none;
+  line-height: 1.45;
 }
 
-.lp main {
-  flex: 1;
-  width: min(40rem, calc(100% - 2.5rem));
+.lp-stage {
+  background: #0c0d0e;
+  color: #f3f3f1;
+}
+
+.lp-hero {
+  display: grid;
+  grid-template-columns: minmax(17rem, 24rem) minmax(0, 1fr);
+  grid-template-areas:
+    "eyebrow board"
+    "title board"
+    "lede board"
+    "cta board";
+  column-gap: 2.75rem;
+  row-gap: 0;
+  align-items: start;
+  width: min(72rem, calc(100% - 2.5rem));
   margin: 0 auto;
-  padding: 4.5rem 0 3rem;
-}
-
-.lp-hero h1 {
-  margin: 1.25rem 0 0;
-  font-size: clamp(1.75rem, 4.5vw, 2.25rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
+  padding: 3.75rem 0 1.25rem;
 }
 
 .lp-eyebrow {
+  grid-area: eyebrow;
+  margin: 0 0 1rem;
+  color: #9a9a96;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+}
+
+.lp-hero h1 {
+  grid-area: title;
   margin: 0;
-  color: #6b6a66;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
+  font-family: var(--lp-display);
+  font-size: clamp(1.9rem, 3.6vw, 2.9rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
 }
 
 .lp-payoff {
   display: block;
   margin-top: 0.5em;
+  color: #c8c8c4;
+  font-family: var(--lp-sans);
+  font-size: 0.58em;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 
 .lp-lede {
-  margin: 1rem 0 0;
-  color: #6b6a66;
-  font-size: 1.0625rem;
+  grid-area: lede;
+  margin: 1.1rem 0 0;
+  color: #9a9a96;
+  font-size: 0.98rem;
+  max-width: 36ch;
 }
 
 .lp-cta {
+  grid-area: cta;
+  justify-self: start;
   display: inline-block;
-  margin-top: 1.75rem;
-  padding: 0.55rem 0.95rem;
-  border-radius: 4px;
-  background: #1a1a18;
-  color: #fff;
+  margin-top: 1.5rem;
+  padding: 0.62rem 1.15rem;
+  border: 1px solid #c4a24a;
+  border-radius: 2px;
+  background: #c4a24a;
+  color: #0c0d0e;
+  font-family: var(--lp-sans);
   font-size: 0.875rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
   text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .lp-cta:hover {
-  background: #333330;
+  background: #f3f3f1;
+  border-color: #f3f3f1;
+  color: #0c0d0e;
+}
+
+.lp-cta:focus-visible {
+  outline: 2px solid #c4a24a;
+  outline-offset: 3px;
 }
 
 .lp-hero-board {
-  margin: 2.5rem calc(-1 * min(1.25rem, 4vw)) 0;
-  width: calc(100% + 2 * min(1.25rem, 4vw));
-  max-width: min(52rem, 100vw);
+  grid-area: board;
+  margin: 0;
+  min-width: 0;
 }
 
 .lp-board-stage {
@@ -128,10 +179,10 @@ button.danger {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.65rem;
-  padding: 0.75rem;
-  border: 1px solid #e5e5e3;
-  border-radius: 8px;
-  background: #ececea;
+  padding: 0.7rem;
+  border: 1px solid #2a2b2c;
+  border-radius: 4px;
+  background: #161718;
   transition:
     grid-template-columns 0.45s ease,
     gap 0.45s ease,
@@ -141,7 +192,7 @@ button.danger {
 .lp-board-frame.is-broadcast {
   grid-template-columns: 0fr 1fr;
   gap: 0;
-  padding: 0.35rem;
+  padding: 0.28rem;
 }
 
 .lp-board-rail {
@@ -149,9 +200,9 @@ button.danger {
   flex-direction: column;
   gap: 0.35rem;
   padding: 0.35rem;
-  border-radius: 6px;
-  background: #fff;
-  border: 1px solid #e5e5e3;
+  border-radius: 3px;
+  background: #1c1d1e;
+  border: 1px solid #2a2b2c;
   overflow: hidden;
   min-width: 0;
   transition:
@@ -171,8 +222,8 @@ button.danger {
   display: block;
   width: 2.4rem;
   height: 0.55rem;
-  border-radius: 3px;
-  background: #f0f0ee;
+  border-radius: 2px;
+  background: #2a2b2c;
   border-left: 3px solid #888;
 }
 
@@ -192,10 +243,10 @@ button.danger {
   position: relative;
   min-width: 0;
   aspect-ratio: 105 / 68;
-  min-height: clamp(160px, 42vw, 320px);
-  border-radius: 4px;
+  min-height: clamp(200px, 36vw, 420px);
+  border-radius: 2px;
   overflow: hidden;
-  background: #e8e8e8;
+  background: #1a3a24;
 }
 
 .lp-board-canvas-wrap canvas {
@@ -224,8 +275,8 @@ button.danger {
   width: min(18%, 5.5rem);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: rgba(26, 26, 24, 0.52);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+  background: rgba(12, 13, 14, 0.62);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.14);
 }
 
 .lp-obs-chat {
@@ -234,15 +285,16 @@ button.danger {
   top: 10%;
   bottom: 10%;
   width: min(14%, 4rem);
-  border-radius: 6px;
-  background: rgba(26, 26, 24, 0.38);
+  border-radius: 4px;
+  background: rgba(12, 13, 14, 0.45);
 }
 
 .lp-hero-board figcaption {
-  margin-top: 0.65rem;
-  color: #6b6a66;
-  font-size: 0.8125rem;
-  text-align: center;
+  margin-top: 0.7rem;
+  color: #8a8a86;
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+  text-align: left;
   opacity: 0;
   transition: opacity 0.35s ease;
 }
@@ -251,54 +303,99 @@ button.danger {
   opacity: 1;
 }
 
-.lp-promises {
+.lp-steps {
   display: grid;
-  gap: 1.75rem;
-  margin-top: 3.5rem;
-  padding-top: 2.5rem;
-  border-top: 1px solid #e5e5e3;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.75rem 2rem;
+  list-style: none;
+  counter-reset: lp-step;
+  width: min(72rem, calc(100% - 2.5rem));
+  margin: 0 auto;
+  padding: 2rem 0 2.75rem;
 }
 
-.lp-promises h2 {
-  margin: 0 0 0.35rem;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.lp-promises p {
+.lp-steps li {
+  counter-increment: lp-step;
   margin: 0;
-  color: #6b6a66;
-  font-size: 0.9375rem;
+  padding: 0;
+  border-top: 1px solid #2a2b2c;
+  padding-top: 1rem;
 }
 
-.lp-creed {
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e5e5e3;
-}
-
-.lp-creed h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1rem;
+.lp-steps h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0 0 0.4rem;
+  font-family: var(--lp-display);
+  font-size: 1.15rem;
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
-.lp-creed p {
+.lp-steps h2::before {
+  content: counter(lp-step);
+  color: #7a7a76;
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.lp-steps p {
   margin: 0;
-  color: #444440;
-  font-size: 0.9375rem;
+  color: #9a9a96;
+  font-size: 0.9rem;
+}
+
+.lp-close {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem 4rem;
+  width: min(72rem, calc(100% - 2.5rem));
+  margin: 0 auto;
+  padding: 2.25rem 0 3rem;
+  border-top: 1px solid #2a2b2c;
+}
+
+.lp-kicker {
+  margin: 0 0 0.7rem;
+  color: #7a7a76;
+  font-family: var(--lp-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lp-close-copy {
+  margin: 0;
+  max-width: 18em;
+  font-family: var(--lp-display);
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.22;
+  color: #f0f0ec;
+}
+
+.lp-creed .lp-close-copy {
+  color: #b8b8b4;
 }
 
 .lp-footer {
-  width: min(40rem, calc(100% - 2.5rem));
+  width: min(72rem, calc(100% - 2.5rem));
   margin: 0 auto;
-  padding: 2rem 0 2.5rem;
-  border-top: 1px solid #e5e5e3;
+  padding: 1.35rem 0 2.25rem;
+  border-top: 1px solid #2a2b2c;
 }
 
 .lp-footer-brand {
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.45rem;
+  font-family: var(--lp-display);
+  font-size: 1.05rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .lp-footer-row {
@@ -307,8 +404,8 @@ button.danger {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  color: #6b6a66;
-  font-size: 0.8125rem;
+  color: #7a7a76;
+  font-size: 0.75rem;
 }
 
 .lp-footer-row p {
@@ -335,51 +432,50 @@ button.danger {
 
 .lp-footer-links a:hover,
 .lp-footer-fb:hover {
-  color: #1a1a18;
+  color: #f3f3f1;
   text-decoration: underline;
 }
 
-@media (prefers-color-scheme: dark) {
-  .lp {
-    background: #0f1011;
-    color: #ededea;
+@media (max-width: 52rem) {
+  .lp-hero {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "eyebrow"
+      "title"
+      "cta"
+      "board"
+      "lede";
+    padding-top: 2.5rem;
   }
 
-  .lp-eyebrow,
-  .lp-lede,
-  .lp-promises p,
-  .lp-hero-board figcaption,
-  .lp-footer-row {
-    color: #9b9a96;
-  }
-
-  .lp-creed p {
-    color: #c8c8c4;
+  .lp-lede {
+    margin-top: 1.25rem;
+    max-width: none;
   }
 
   .lp-cta {
-    background: #ededea;
-    color: #0f1011;
+    margin-top: 1.2rem;
+    margin-bottom: 1.5rem;
   }
 
-  .lp-cta:hover {
-    background: #fff;
+  .lp-steps {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-top: 0.5rem;
   }
 
-  .lp-board-frame {
-    background: #1a1b1c;
-    border-color: #2a2a28;
+  .lp-steps li {
+    padding: 1.1rem 0;
   }
 
-  .lp-board-rail {
-    background: #151617;
-    border-color: #2a2a28;
+  .lp-board-canvas-wrap {
+    min-height: clamp(180px, 52vw, 280px);
   }
 
-  .lp-promises,
-  .lp-creed,
-  .lp-footer {
-    border-color: #2a2a28;
+  .lp-close {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 1.75rem 0 2.5rem;
   }
 }
 
@@ -529,6 +625,19 @@ button.danger {
   border-radius: 0 0 8px 8px !important;
   padding-top: 0.5rem !important;
   color: #777;
+}
+
+.tool-rail-wipe {
+  margin-top: 4px;
+  border-top: 1px solid #eee;
+  border-radius: 0 !important;
+  padding-top: 0.5rem !important;
+  color: #777;
+}
+
+.tool-rail-wipe:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* Piece inspector — selection properties */
@@ -1195,6 +1304,7 @@ button.danger {
 }
 
 .broadcast-tool-pop .tool-rail-btn,
+.broadcast-tool-pop .tool-rail-wipe,
 .broadcast-tool-pop .tool-rail-undo {
   width: 100%;
   min-width: 68px;

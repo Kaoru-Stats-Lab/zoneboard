@@ -27,8 +27,67 @@ import { smoothLinePath } from "../canvas/smoothPath";
 import { textOverlayRect } from "../canvas/textOverlayLayout";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
-import type { BoardDocument, Viewport } from "../models/types";
+import type { BoardDocument, LineKind, Viewport } from "../models/types";
 import { isLineTool } from "../models/types";
+
+function zoneDragCorner(
+  x0: number,
+  y0: number,
+  x: number,
+  y: number,
+  square: boolean,
+): { x: number; y: number } {
+  if (!square) return { x, y };
+  const dx = x - x0;
+  const dy = y - y0;
+  const side = Math.max(Math.abs(dx), Math.abs(dy));
+  return {
+    x: x0 + Math.sign(dx || 1) * side,
+    y: y0 + Math.sign(dy || 1) * side,
+  };
+}
+
+const PEN_POINT_MIN_DIST = 0.0008;
+
+function appendPenWorldPoint(
+  points: { x: number; y: number }[],
+  world: { x: number; y: number },
+): boolean {
+  const last = points[points.length - 1];
+  if (
+    last &&
+    Math.hypot(world.x - last.x, world.y - last.y) < PEN_POINT_MIN_DIST
+  ) {
+    return false;
+  }
+  points.push({ x: world.x, y: world.y });
+  return true;
+}
+
+function samplePenPointerEvents(
+  nativeEvent: PointerEvent,
+  points: { x: number; y: number }[],
+  board: BoardDocument,
+  normFromClient: (
+    clientX: number,
+    clientY: number,
+  ) => { x: number; y: number } | null,
+): boolean {
+  const extras =
+    typeof nativeEvent.getCoalescedEvents === "function"
+      ? nativeEvent.getCoalescedEvents()
+      : [];
+  const batch = extras.length > 0 ? extras : [nativeEvent];
+  let added = false;
+  for (const ev of batch) {
+    const norm = normFromClient(ev.clientX, ev.clientY);
+    if (!norm) continue;
+    const world = pitchToWorld(norm.x, norm.y, board);
+    if (appendPenWorldPoint(points, world)) added = true;
+  }
+  return added;
+}
+
 import { CanvasTextEditor } from "./CanvasTextEditor";
 
 type TextEditSession = {
@@ -100,8 +159,20 @@ type DragState =
     }
   | {
       mode: "line";
-      kind: import("../models/types").LineKind;
+      kind: LineKind;
       points: { x: number; y: number }[];
+    }
+  | {
+      mode: "piece-line";
+      kind: "run" | "dribble";
+      id: string;
+      startX: number;
+      startY: number;
+      lastX: number;
+      lastY: number;
+      points: { x: number; y: number }[];
+      recorded: boolean;
+      boost: number;
     }
   | {
       mode: "zone";
@@ -288,13 +359,14 @@ export function BoardCanvas({
       outer,
       background: BROADCAST_LETTERBOX,
       dragVisual:
-        d?.mode === "piece"
+        d?.mode === "piece" || d?.mode === "piece-line"
           ? { pieceId: d.id, boost: d.boost }
           : d?.mode === "ball"
             ? { ball: true, boost: d.boost }
             : null,
       previewLine:
-        d?.mode === "line" && d.points.length >= 2
+        (d?.mode === "line" || d?.mode === "piece-line") &&
+        d.points.length >= 2
           ? { kind: d.kind, points: smoothLinePath(d.points) }
           : null,
       previewZone:
@@ -348,6 +420,8 @@ export function BoardCanvas({
   if (!board || !scene || !view) return null;
 
   const getNorm = (e: ReactPointerEvent) => {
+    const norm = normFromClient(e.clientX, e.clientY);
+    if (!norm) return null;
     const canvas = canvasRef.current;
     if (!canvas) return null;
     const { pitch } = resolveSurfaceLayout(
@@ -357,7 +431,20 @@ export function BoardCanvas({
       view,
       state.broadcast,
     );
-    return { norm: toNorm(e.clientX, e.clientY, canvas, pitch), pitch };
+    return { norm, pitch };
+  };
+
+  const normFromClient = (clientX: number, clientY: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const { pitch } = resolveSurfaceLayout(
+      canvas.clientWidth,
+      canvas.clientHeight,
+      board,
+      view,
+      state.broadcast,
+    );
+    return toNorm(clientX, clientY, canvas, pitch);
   };
 
   const bumpDragVisual = () => {
@@ -618,12 +705,71 @@ export function BoardCanvas({
     }
 
     if (isLineTool(state.tool)) {
+      const pieceHit = hitTestPiecePointer(
+        board,
+        scene,
+        pitch,
+        norm.x,
+        norm.y,
+      );
+      if (pieceHit?.action === "rotate") {
+        const facingPiece = pieceHit.piece;
+        state.setSelectedBall(false);
+        state.setSelectedPieceId(facingPiece.id);
+        state.setSelectedObjectId(null);
+        const facing =
+          (Math.atan2(world.y - facingPiece.y, world.x - facingPiece.x) *
+            180) /
+          Math.PI;
+        state.patchPiece(facingPiece.id, { facing }, true);
+        drag.current = {
+          mode: "piece-rotate",
+          id: facingPiece.id,
+          recorded: true,
+        };
+        canvas.setPointerCapture(e.pointerId);
+        bumpDragVisual();
+        return;
+      }
+      const piece = pieceHit?.piece ?? null;
+      if (
+        piece &&
+        (state.tool === "run" || state.tool === "dribble")
+      ) {
+        state.setSelectedBall(false);
+        state.setSelectedPieceId(piece.id);
+        state.setSelectedObjectId(null);
+        drag.current = {
+          mode: "piece-line",
+          kind: state.tool,
+          id: piece.id,
+          startX: piece.x,
+          startY: piece.y,
+          lastX: world.x,
+          lastY: world.y,
+          points: [{ x: piece.x, y: piece.y }],
+          recorded: false,
+          boost: 1.18,
+        };
+        canvas.setPointerCapture(e.pointerId);
+        bumpDragVisual();
+        return;
+      }
+      const lineStart = piece
+        ? { x: piece.x, y: piece.y }
+        : { x: world.x, y: world.y };
+      if (piece) {
+        state.setSelectedBall(false);
+        state.setSelectedPieceId(piece.id);
+        state.setSelectedObjectId(null);
+      }
       drag.current = {
         mode: "line",
         kind: state.tool,
-        points: [{ x: world.x, y: world.y }],
+        points: [lineStart],
       };
       canvas.setPointerCapture(e.pointerId);
+      bumpDragVisual();
       return;
     }
 
@@ -741,6 +887,26 @@ export function BoardCanvas({
       return;
     }
 
+    if (d.mode === "piece-line") {
+      const dx = world.x - d.lastX;
+      const dy = world.y - d.lastY;
+      const dist = Math.hypot(dx, dy);
+      let facing: number | undefined;
+      if (dist > 0.004) {
+        facing = (Math.atan2(dy, dx) * 180) / Math.PI;
+        d.lastX = world.x;
+        d.lastY = world.y;
+        d.boost = Math.min(1.28, 1.12 + dist * 8);
+      }
+      state.movePiece(d.id, world.x, world.y, false, facing);
+      const last = d.points[d.points.length - 1]!;
+      if (Math.hypot(world.x - last.x, world.y - last.y) >= 0.008) {
+        d.points.push({ x: world.x, y: world.y });
+      }
+      bumpDragVisual();
+      return;
+    }
+
     if (d.mode === "line") {
       const last = d.points[d.points.length - 1];
       const dist = Math.hypot(world.x - last.x, world.y - last.y);
@@ -753,8 +919,9 @@ export function BoardCanvas({
     }
 
     if (d.mode === "zone") {
-      d.x1 = world.x;
-      d.y1 = world.y;
+      const corner = zoneDragCorner(d.x0, d.y0, world.x, world.y, e.shiftKey);
+      d.x1 = corner.x;
+      d.y1 = corner.y;
       bumpDragVisual();
       return;
     }
@@ -783,8 +950,11 @@ export function BoardCanvas({
     }
 
     if (d.mode === "pen" && d.points) {
-      d.points.push({ x: world.x, y: world.y });
-      bumpDragVisual();
+      if (
+        samplePenPointerEvents(e.nativeEvent, d.points, board, normFromClient)
+      ) {
+        bumpDragVisual();
+      }
     }
   };
 
@@ -823,6 +993,25 @@ export function BoardCanvas({
       return;
     }
 
+    if (d.mode === "piece-line") {
+      const last = d.points[d.points.length - 1]!;
+      if (Math.hypot(world.x - last.x, world.y - last.y) >= 0.008) {
+        d.points.push({ x: world.x, y: world.y });
+      }
+      const facing =
+        (Math.atan2(world.y - d.startY, world.x - d.startX) * 180) / Math.PI;
+      state.movePieceWithLine(
+        d.id,
+        world.x,
+        world.y,
+        d.kind,
+        d.points,
+        facing,
+      );
+      state.setSelectedPieceId(d.id);
+      return;
+    }
+
     if (d.mode === "line") {
       const last = d.points[d.points.length - 1];
       if (
@@ -834,13 +1023,15 @@ export function BoardCanvas({
         state.addLine(d.kind, smoothLinePath(d.points));
       }
     } else if (d.mode === "zone") {
-      const x = Math.min(d.x0, world.x);
-      const y = Math.min(d.y0, world.y);
-      const w = Math.abs(world.x - d.x0);
-      const h = Math.abs(world.y - d.y0);
+      const corner = zoneDragCorner(d.x0, d.y0, world.x, world.y, e.shiftKey);
+      const x = Math.min(d.x0, corner.x);
+      const y = Math.min(d.y0, corner.y);
+      const w = Math.abs(corner.x - d.x0);
+      const h = Math.abs(corner.y - d.y0);
       if (w > 0.01 && h > 0.01) state.addZone(x, y, w, h);
     } else if (d.mode === "pen" && d.points) {
-      state.addPen(d.points);
+      samplePenPointerEvents(e.nativeEvent, d.points, board, normFromClient);
+      if (d.points.length >= 2) state.addPen(d.points);
     }
   };
 

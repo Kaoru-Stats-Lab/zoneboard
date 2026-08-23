@@ -4,6 +4,7 @@ import {
   LANE5_BOUNDARY_NORM,
   SOCCER_NORM,
   SOCCER_PITCH_M,
+  soccerMowingStripeWidthsM,
 } from "../presets/soccerPitch";
 import { BASKET_HALF_START } from "../presets/sports";
 import { fromNorm, type PitchRect } from "./layout";
@@ -76,25 +77,35 @@ export function drawPitchSurface(
   } else if (board?.sport === "basketball" && board.showWoodCourt) {
     drawWoodSurface(ctx, pitch);
   } else if (usesGrassPitch(board)) {
-    drawGrassSurface(ctx, pitch);
+    drawGrassSurface(ctx, pitch, board);
   } else {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(x, y, w, h);
   }
 }
 
-/** サッカー芝（刈り込みストライプ＋微細ノイズ。配信向け） */
-function drawGrassSurface(ctx: CanvasRenderingContext2D, pitch: PitchRect) {
+/** サッカー芝（UEFA 刈り込み縞＋微細ノイズ。配信向け） */
+function drawGrassSurface(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  board?: BoardDocument,
+) {
   const { x, y, w, h } = pitch;
   ctx.fillStyle = "#2f6e38";
   ctx.fillRect(x, y, w, h);
 
-  const stripes = Math.max(14, Math.ceil(w / 24));
-  for (let i = 0; i < stripes; i++) {
-    const sx = x + (i * w) / stripes;
-    const sw = w / stripes + 1;
+  const view = board?.pitchView === "half" ? "half" : "full";
+  const widthsM = soccerMowingStripeWidthsM(view);
+  const lengthM =
+    view === "half" ? SOCCER_PITCH_M.length / 2 : SOCCER_PITCH_M.length;
+  let cursor = x;
+  for (let i = 0; i < widthsM.length; i++) {
+    const sw = (widthsM[i]! / lengthM) * w;
+    const sx = cursor;
+    cursor += sw;
+    const bandW = i === widthsM.length - 1 ? x + w - sx : sw + 1;
     ctx.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
-    ctx.fillRect(sx, y, sw, h);
+    ctx.fillRect(sx, y, bandW, h);
   }
 
   const grains = Math.min(900, Math.floor((w * h) / 620));

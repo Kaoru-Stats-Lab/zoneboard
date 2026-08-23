@@ -11,7 +11,7 @@ export function Landing() {
 
   return (
     <div className="lp">
-      <main>
+      <div className="lp-stage">
         <header className="lp-hero">
           <p className="lp-eyebrow">zoneboard.app</p>
           <h1>
@@ -24,47 +24,60 @@ export function Landing() {
           <Link className="lp-cta" to="/board">
             {t("openBoard")}
           </Link>
-
           <LpHeroBoard />
         </header>
 
-        <section className="lp-promises" aria-label="What this is">
-          <article>
+        <ol className="lp-steps" aria-label={t("lpStepsLabel")}>
+          <li>
             <h2>{t("lpPromise1Title")}</h2>
             <p>{t("lpPromise1Body")}</p>
-          </article>
-          <article>
+          </li>
+          <li>
             <h2>{t("lpPromise2Title")}</h2>
             <p>{t("lpPromise2Body")}</p>
-          </article>
-          <article>
+          </li>
+          <li>
             <h2>{t("lpPromise3Title")}</h2>
             <p>{t("lpPromise3Body")}</p>
-          </article>
-        </section>
+          </li>
+        </ol>
 
-        <section id="why" className="lp-creed">
-          <h2>{t("lpCreedTitle")}</h2>
-          <p>{t("lpCreedBody")}</p>
-        </section>
-      </main>
+        <main className="lp-close">
+          <section className="lp-after" aria-labelledby="lp-after-title">
+            <h2 id="lp-after-title" className="lp-kicker">
+              {t("lpAfterTitle")}
+            </h2>
+            <p className="lp-close-copy">{t("lpAfterBody")}</p>
+          </section>
+          <section
+            id="why"
+            className="lp-creed"
+            aria-labelledby="lp-creed-title"
+          >
+            <h2 id="lp-creed-title" className="lp-kicker">
+              {t("lpCreedTitle")}
+            </h2>
+            <p className="lp-close-copy">{t("lpCreedBody")}</p>
+          </section>
+        </main>
 
-      <footer className="lp-footer">
-        <p className="lp-footer-brand">{t("brand")}</p>
-        <div className="lp-footer-row">
-          <p>© 2026 zoneboard.app</p>
-          <nav className="lp-footer-links" aria-label="Site">
-            <a href="#why">{t("lpFooterWhy")}</a>
-            <button
-              type="button"
-              className="lp-footer-fb"
-              onClick={() => openFeedback("landing")}
-            >
-              {t("feedbackOpen")}
-            </button>
-          </nav>
-        </div>
-      </footer>
+        <footer className="lp-footer">
+          <p className="lp-footer-brand">{t("brand")}</p>
+          <div className="lp-footer-row">
+            <p>© 2026 zoneboard.app</p>
+            <nav className="lp-footer-links" aria-label="Site">
+              <a href="#why">{t("lpFooterWhy")}</a>
+              <button
+                type="button"
+                className="lp-footer-fb"
+                onClick={() => openFeedback("landing")}
+              >
+                {t("feedbackOpen")}
+              </button>
+            </nav>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

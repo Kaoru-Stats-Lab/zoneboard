@@ -117,6 +117,17 @@ export function Editor({ state }: Props) {
         return;
       }
 
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.key === "Backspace" &&
+        !e.shiftKey
+      ) {
+        if (typing) return;
+        e.preventDefault();
+        state.wipeDrawing();
+        return;
+      }
+
       if (e.key === "Escape") {
         if (state.pieceInspectorId) {
           state.closePieceInspector();

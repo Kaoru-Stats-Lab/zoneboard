@@ -20,6 +20,39 @@ export const SOCCER_PITCH_M = {
   lineMaxM: 0.12,
 } as const;
 
+/**
+ * 芝の刈り込み縞（mowing stripes）
+ *
+ * IFAB Law 1 は線の寸法だけを定め、縞模様は規定しない。スタジアム／大会ごとの裁量。
+ * ただし国際試合・UEFA は Pitch Quality Guidelines で幅方向（ゴールラインと平行）の帯を義務化し、
+ * 各ハーフ 9 帯・ゴール側 4 帯を 5.50 m 固定とする（6ヤード、PK 11 m、18ヤード、その次）。
+ * 105 m ピッチでは残り 5 帯が 6.10 m。アシスタントのオフサイド目安になるのが実務上の理由。
+ *
+ * DFB は別仕様（ゴール側 3×5.50 m のあと 5.37 / 4.57 m 台）だが、配信ボードは国際試合の見え方に合わせる。
+ */
+export const UEFA_MOWING_M = {
+  /** ゴールラインから数えて固定幅の帯（ゴールエリア＝5.5 m に一致） */
+  nearGoalM: 5.5,
+  nearCount: 4,
+  bandsPerHalf: 9,
+} as const;
+
+/** 見える範囲の左端→右端の帯幅（m）。ハーフビューは左＝センター、右＝ゴール。 */
+export function soccerMowingStripeWidthsM(view: "full" | "half"): number[] {
+  const halfLen = SOCCER_PITCH_M.length / 2;
+  const near = UEFA_MOWING_M.nearGoalM;
+  const nNear = UEFA_MOWING_M.nearCount;
+  const nRest = UEFA_MOWING_M.bandsPerHalf - nNear;
+  const rest = (halfLen - near * nNear) / nRest;
+  const fromGoal = [
+    ...Array<number>(nNear).fill(near),
+    ...Array<number>(nRest).fill(rest),
+  ];
+  const fromMid = [...fromGoal].reverse();
+  if (view === "half") return fromMid;
+  return [...fromGoal, ...fromMid];
+}
+
 /** 法規から導出（105×68 固定） */
 const PEN_AREA_WIDTH_M =
   SOCCER_PITCH_M.penaltyAreaSide * 2 + SOCCER_PITCH_M.goalWidth;

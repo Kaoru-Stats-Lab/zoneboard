@@ -41,6 +41,39 @@ function lightSmooth(points: Point2[]): Point2[] {
   return out;
 }
 
+/** Pen 確定用: 端点固定の弱い移動平均（RDP・間引きなし） */
+export function softenPenPoints(points: Point2[]): Point2[] {
+  return lightSmooth(points);
+}
+
+function midpoint(a: Point2, b: Point2): Point2 {
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+}
+
+/**
+ * 中点二次ベジェで Pen ストロークを描く。
+ * 最後の点は lineTo でポインタ位置を残す（スタビライザなし）。
+ */
+export function tracePenBezierPath(
+  ctx: CanvasRenderingContext2D,
+  pts: Point2[],
+): boolean {
+  if (pts.length === 0) return false;
+  ctx.moveTo(pts[0].x, pts[0].y);
+  if (pts.length === 1) return true;
+  if (pts.length === 2) {
+    ctx.lineTo(pts[1].x, pts[1].y);
+    return true;
+  }
+  for (let i = 1; i < pts.length - 1; i++) {
+    const end = midpoint(pts[i], pts[i + 1]);
+    ctx.quadraticCurveTo(pts[i].x, pts[i].y, end.x, end.y);
+  }
+  const last = pts[pts.length - 1];
+  ctx.lineTo(last.x, last.y);
+  return true;
+}
+
 function rdp(points: Point2[], epsilon: number): Point2[] {
   if (points.length <= 2) return points.map((p) => ({ ...p }));
 

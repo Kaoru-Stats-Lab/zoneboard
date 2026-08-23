@@ -332,6 +332,11 @@ export function isLineTool(tool: ToolId): tool is LineKind {
   );
 }
 
+/** ラン／ドリブル: 駒ドラッグで移動＋軌跡。パス／スクリーンは線のみ */
+export function lineToolMovesPiece(kind: LineKind): boolean {
+  return kind === "run" || kind === "dribble";
+}
+
 export const ZONE_COLORS = {
   fill: "rgba(14, 165, 233, 0.22)",
   stroke: "#0284c7",

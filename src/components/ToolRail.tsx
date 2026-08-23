@@ -22,7 +22,7 @@ export function ToolRail({ state, t }: Props) {
             key={tool.id}
             type="button"
             className={`tool-rail-btn${active ? " active" : ""}`}
-            title={t(tool.key)}
+            title={tool.hint ? t(tool.hint) : t(tool.key)}
             style={{ "--tool-color": color } as CSSProperties}
             onClick={() => state.setTool(tool.id)}
           >
@@ -30,6 +30,15 @@ export function ToolRail({ state, t }: Props) {
           </button>
         );
       })}
+      <button
+        type="button"
+        className="tool-rail-wipe"
+        title={t("wipeDrawingHint")}
+        disabled={!(state.scene?.objects.length ?? 0)}
+        onClick={() => state.wipeDrawing()}
+      >
+        {t("wipeDrawing")}
+      </button>
       <button
         type="button"
         className="tool-rail-undo"
