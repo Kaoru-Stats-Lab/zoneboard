@@ -13,6 +13,14 @@ import {
   usesPreferredFoot,
 } from "../models/types";
 import {
+  fitNumberFontSize,
+  normalizePieceNumber,
+  numberFill,
+  numberHalo,
+  pieceFillColor,
+  relativeLuminance,
+} from "./pieceInk";
+import {
   grassHaloWidth,
   HALO_INK_GRASS,
   lineColorForBoard,
@@ -257,6 +265,28 @@ export function drawBoard(
   }
 }
 
+function drawPieceNumberLabel(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  text: string,
+  fillColor: string,
+  r: number,
+) {
+  const ink = numberFill(fillColor);
+  const halo = numberHalo(fillColor);
+  const fs = fitNumberFontSize(ctx, text, r, UI_FONT_STACK);
+  ctx.font = `700 ${fs}px ${UI_FONT_STACK}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineWidth = Math.max(1, fs * 0.09);
+  ctx.strokeStyle = halo;
+  ctx.lineJoin = "round";
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = ink;
+  ctx.fillText(text, x, y);
+}
+
 function drawPiece(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,
@@ -271,11 +301,11 @@ function drawPiece(
   if (!mapped) return;
   const { x, y } = fromNorm(mapped.x, mapped.y, pitch);
   const discipline = pieceDiscipline(board, piece);
-
-  if (discipline.sentOff) {
-    ctx.save();
-    ctx.globalAlpha = 0.45;
-  }
+  const fillColor = pieceFillColor(piece);
+  const ink = numberFill(fillColor);
+  const inkHalo = numberHalo(fillColor);
+  const darkFill = relativeLuminance(fillColor) < 0.15;
+  const idleEdgeW = darkFill ? 2 : 1.5;
 
   if (dragging) {
     ctx.save();
@@ -284,9 +314,14 @@ function drawPiece(
     ctx.shadowOffsetY = r * 0.15;
   }
 
+  if (discipline.sentOff) {
+    ctx.save();
+    ctx.globalAlpha = 0.45;
+  }
+
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = piece.color;
+  ctx.fillStyle = fillColor;
   ctx.fill();
   // 選択縁は芝生でも読める白＋暗ハロー（設定の黒選択色は使わない）
   if (selected || dragging) {
@@ -299,7 +334,7 @@ function drawPiece(
     ctx.strokeStyle = "#fff";
     ctx.stroke();
   } else {
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = idleEdgeW;
     ctx.strokeStyle = "#fff";
     ctx.stroke();
   }
@@ -332,11 +367,6 @@ function drawPiece(
     ctx.setLineDash([]);
   }
 
-  // 選択時: 白破線＋暗ハロー（芝上でも一目でアクティブ）
-  if (selected && !dragging) {
-    drawPieceSelectionRing(ctx, x, y, r * 1.72);
-  }
-
   const rad = (piece.facing * Math.PI) / 180;
   const fx = x + Math.cos(rad) * r;
   const fy = y + Math.sin(rad) * r;
@@ -349,7 +379,7 @@ function drawPiece(
   ctx.lineTo(fx - ox, fy - oy);
   ctx.lineTo(fx + ox, fy + oy);
   ctx.closePath();
-  ctx.fillStyle = piece.color;
+  ctx.fillStyle = ink;
   ctx.fill();
   if (selected) {
     ctx.lineWidth = 3;
@@ -361,34 +391,37 @@ function drawPiece(
     ctx.lineTo(fx + ox, fy + oy);
     ctx.closePath();
     ctx.lineWidth = 1.75;
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = inkHalo;
     ctx.stroke();
   } else {
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = inkHalo;
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 
+  if (discipline.sentOff) ctx.restore();
   if (dragging) ctx.restore();
 
-  // 背番号のみ（ボード装飾テキストは置かない）
-  if (piece.number) {
-    ctx.fillStyle = "#fff";
-    ctx.font = `700 ${Math.max(8, r * 0.9)}px ${UI_FONT_STACK}`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(piece.number, x, y);
+  // 選択時: 白破線＋暗ハロー（芝上でも一目でアクティブ）
+  if (selected && !dragging) {
+    drawPieceSelectionRing(ctx, x, y, r * 1.72);
   }
 
-  // 利き足（サカ系のみ・解説向け）。向きに対して L=左足側 / R=右足側に小さく表示
+  const displayNumber = normalizePieceNumber(piece.number);
+  if (displayNumber) {
+    drawPieceNumberLabel(ctx, x, y, displayNumber, fillColor, r);
+  }
+
+  // 利き足（サカ系のみ）。番号優先のため外側に配置
   const foot = usesPreferredFoot(board.sport) ? piece.preferredFoot : null;
   if (foot === "L" || foot === "R" || foot === "B") {
     const mark = foot === "B" ? "B" : foot;
     const footRad =
       foot === "B" ? rad + Math.PI : rad + (foot === "L" ? -Math.PI / 2 : Math.PI / 2);
-    const mx = x + Math.cos(footRad) * r * 0.72;
-    const my = y + Math.sin(footRad) * r * 0.72;
-    const fs = Math.max(7, r * 0.42);
+    const footDist = r * 0.9;
+    const mx = x + Math.cos(footRad) * footDist;
+    const my = y + Math.sin(footRad) * footDist;
+    const fs = r * 0.42;
     ctx.beginPath();
     ctx.arc(mx, my, fs * 0.72, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(0,0,0,0.55)";
@@ -399,8 +432,6 @@ function drawPiece(
     ctx.textBaseline = "middle";
     ctx.fillText(mark, mx, my);
   }
-
-  if (discipline.sentOff) ctx.restore();
 }
 
 /** 芝上でも読める選択リング（暗ハロー＋白〜淡黄破線） */
@@ -1180,6 +1211,47 @@ function drawWatermark(
   ctx.restore();
 }
 
+function pieceHitRadiusNorm(
+  board: BoardDocument,
+  pitch: PitchRect,
+  piece: Piece,
+): number {
+  const scale = board.pieceScale ?? 1;
+  const r = pieceRadius(pitch, scale, piece.role);
+  return (r / Math.min(pitch.w, pitch.h)) * pointerHitSlop();
+}
+
+function pieceCenterNorm(
+  board: BoardDocument,
+  piece: Piece,
+): { x: number; y: number } | null {
+  return worldToPitch(piece.x, piece.y, board);
+}
+
+/** 描画と同じ向き三角付近か（本体円の外側） */
+function hitsPieceFacing(
+  board: BoardDocument,
+  piece: Piece,
+  pitch: PitchRect,
+  normX: number,
+  normY: number,
+): boolean {
+  const m = pieceCenterNorm(board, piece);
+  if (!m) return false;
+  const rn = pieceHitRadiusNorm(board, pitch, piece);
+  const d = Math.hypot(m.x - normX, m.y - normY);
+  if (d <= rn * 1.05) return false;
+  const rad = (piece.facing * Math.PI) / 180;
+  const tipX = m.x + Math.cos(rad) * rn * 1.4;
+  const tipY = m.y + Math.sin(rad) * rn * 1.4;
+  const tipD = Math.hypot(normX - tipX, normY - tipY);
+  return tipD <= rn * 0.7;
+}
+
+/**
+ * 重なりは描画順の上（配列末尾）を優先。
+ * 「中心が近い下の駒」を拾わない。
+ */
 export function hitTestPiece(
   board: BoardDocument,
   scene: Scene,
@@ -1188,30 +1260,67 @@ export function hitTestPiece(
   normY: number,
   excludeId?: string | null,
 ): Piece | null {
-  const scale = board.pieceScale ?? 1;
-  let best: Piece | null = null;
-  let bestD = Infinity;
+  const disc = hitTestPieceFromTop(board, scene, pitch, normX, normY, excludeId, 1.05);
+  if (disc) return disc;
+  // 空き地の掴みやすさ用。下の駒の中心に吸い寄せない
+  return hitTestPieceFromTop(board, scene, pitch, normX, normY, excludeId, 1.45);
+}
+
+function hitTestPieceFromTop(
+  board: BoardDocument,
+  scene: Scene,
+  pitch: PitchRect,
+  normX: number,
+  normY: number,
+  excludeId: string | null | undefined,
+  pad: number,
+): Piece | null {
   for (let i = scene.pieces.length - 1; i >= 0; i--) {
     const p = scene.pieces[i];
     if (excludeId && p.id === excludeId) continue;
     if (!isPieceDrawn(p, scene.hideHalf)) continue;
-    const m = worldToPitch(p.x, p.y, board);
+    const m = pieceCenterNorm(board, p);
     if (!m) continue;
-    // ドロップ先はベンチ駒も拾いやすいよう少し広め
-    const r = pieceRadius(pitch, scale, p.role);
-    const rn = (r / Math.min(pitch.w, pitch.h)) * 1.45 * pointerHitSlop();
+    const rn = pieceHitRadiusNorm(board, pitch, p) * pad;
     const d = Math.hypot(m.x - normX, m.y - normY);
-    if (d <= rn && d < bestD) {
-      bestD = d;
-      best = p;
+    if (d <= rn) return p;
+  }
+  return null;
+}
+
+export type PiecePointerHit = { piece: Piece; action: "move" | "rotate" };
+
+/**
+ * クリック1回分。上に見えている駒から:
+ * 本体 → 移動、向き三角 → 回転。下の駒のリングに奪われない。
+ */
+export function hitTestPiecePointer(
+  board: BoardDocument,
+  scene: Scene,
+  pitch: PitchRect,
+  normX: number,
+  normY: number,
+): PiecePointerHit | null {
+  for (let i = scene.pieces.length - 1; i >= 0; i--) {
+    const p = scene.pieces[i];
+    if (!isPieceDrawn(p, scene.hideHalf)) continue;
+    const m = pieceCenterNorm(board, p);
+    if (!m) continue;
+    const rn = pieceHitRadiusNorm(board, pitch, p);
+    const d = Math.hypot(m.x - normX, m.y - normY);
+    if (d <= rn * 1.05) return { piece: p, action: "move" };
+    if (hitsPieceFacing(board, p, pitch, normX, normY)) {
+      return { piece: p, action: "rotate" };
     }
   }
-  return best;
+  const grab = hitTestPieceFromTop(board, scene, pitch, normX, normY, null, 1.45);
+  if (grab) return { piece: grab, action: "move" };
+  return null;
 }
 
 /**
  * 向き三角〜外周リングのヒット（その場回転用）。
- * 本体より外側を優先して拾う。
+ * 上の駒の本体に乗っている点は、下の駒のリングに取られない。
  */
 export function hitTestPieceFacing(
   board: BoardDocument,
@@ -1220,34 +1329,8 @@ export function hitTestPieceFacing(
   normX: number,
   normY: number,
 ): Piece | null {
-  const scale = board.pieceScale ?? 1;
-  const minSide = Math.min(pitch.w, pitch.h);
-  let best: Piece | null = null;
-  let bestD = Infinity;
-  for (let i = scene.pieces.length - 1; i >= 0; i--) {
-    const p = scene.pieces[i];
-    if (!isPieceDrawn(p, scene.hideHalf)) continue;
-    const m = worldToPitch(p.x, p.y, board);
-    if (!m) continue;
-    const r = pieceRadius(pitch, scale, p.role);
-    const rn = (r / minSide) * pointerHitSlop();
-    const d = Math.hypot(m.x - normX, m.y - normY);
-    // 外周リング（本体との隙間〜選択リング外側）
-    const inner = rn * 1.05;
-    const outer = rn * 2.05;
-    if (d < inner || d > outer) continue;
-    const rad = (p.facing * Math.PI) / 180;
-    const tipX = m.x + Math.cos(rad) * rn * 1.4;
-    const tipY = m.y + Math.sin(rad) * rn * 1.4;
-    const tipD = Math.hypot(normX - tipX, normY - tipY);
-    // 三角付近を優先、リング上なら次点
-    const score = tipD <= rn * 0.65 ? tipD : d + rn;
-    if (score < bestD) {
-      bestD = score;
-      best = p;
-    }
-  }
-  return best;
+  const hit = hitTestPiecePointer(board, scene, pitch, normX, normY);
+  return hit?.action === "rotate" ? hit.piece : null;
 }
 
 export function hitTestBall(

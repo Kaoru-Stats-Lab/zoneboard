@@ -37,6 +37,10 @@ import {
   textColorForBoard,
   zoneColorsForBoard,
 } from "../canvas/drawingInk";
+import {
+  normalizePieceColor,
+  normalizePieceNumber,
+} from "../canvas/pieceInk";
 import { formationPieces } from "../presets/formations";
 import {
   buildScenePreset,
@@ -619,8 +623,19 @@ export function useAppState() {
   const patchPiece = useCallback(
     (id: string, patch: Partial<Piece>, record = true) => {
       updateScene((s) => {
+        const existing = s.pieces.find((p) => p.id === id);
+        const normalized: Partial<Piece> = { ...patch };
+        if (patch.number !== undefined) {
+          normalized.number = normalizePieceNumber(patch.number);
+        }
+        if (patch.color !== undefined && existing) {
+          normalized.color = normalizePieceColor(
+            patch.color,
+            existing.team === "home" ? HOME_COLOR : AWAY_COLOR,
+          );
+        }
         const pieces = s.pieces.map((p) =>
-          p.id === id ? { ...p, ...patch } : p,
+          p.id === id ? { ...p, ...normalized } : p,
         );
         const piece = pieces.find((p) => p.id === id);
         let ball = s.ball;

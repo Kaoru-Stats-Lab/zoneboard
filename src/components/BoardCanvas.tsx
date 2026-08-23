@@ -11,7 +11,7 @@ import {
   hitTestBall,
   hitTestObject,
   hitTestPiece,
-  hitTestPieceFacing,
+  hitTestPiecePointer,
   hitTestWatermark,
   pitchToWorld,
 } from "../canvas/drawBoard";
@@ -528,15 +528,16 @@ export function BoardCanvas({
         bumpDragVisual();
         return;
       }
-      // 向き三角／外周 → その場回転。本体 → 移動
-      const facingPiece = hitTestPieceFacing(
+      // 重なりは上の駒を優先。本体 → 移動、空き地の向き三角 → 回転
+      const pieceHit = hitTestPiecePointer(
         board,
         scene,
         pitch,
         norm.x,
         norm.y,
       );
-      if (facingPiece) {
+      if (pieceHit?.action === "rotate") {
+        const facingPiece = pieceHit.piece;
         state.setSelectedBall(false);
         state.setSelectedPieceId(facingPiece.id);
         state.setSelectedObjectId(null);
@@ -554,7 +555,7 @@ export function BoardCanvas({
         bumpDragVisual();
         return;
       }
-      const piece = hitTestPiece(board, scene, pitch, norm.x, norm.y);
+      const piece = pieceHit?.piece ?? null;
       if (piece) {
         state.setSelectedBall(false);
         state.setSelectedPieceId(piece.id);

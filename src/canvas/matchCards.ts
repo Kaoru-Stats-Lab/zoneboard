@@ -80,6 +80,7 @@ export function formatCardTimelinePart(c: CardEntry, y2cLabel: string): string {
 }
 
 function pieceTeam(piece: Piece): "home" | "away" | null {
+  if (piece.team === "home" || piece.team === "away") return piece.team;
   if (piece.color === HOME_COLOR) return "home";
   if (piece.color === AWAY_COLOR) return "away";
   return null;

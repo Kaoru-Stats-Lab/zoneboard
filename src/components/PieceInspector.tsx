@@ -1,5 +1,6 @@
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
+import { normalizePieceNumber } from "../canvas/pieceInk";
 import {
   usesHeight,
   usesPreferredFoot,
@@ -33,6 +34,15 @@ export function PieceInspector({ state, t }: Props) {
   const showFoot = sport ? usesPreferredFoot(sport) : false;
   const showHeight = sport ? usesHeight(sport) : false;
   const showWeight = sport ? usesWeight(sport) : false;
+  const normalizedNumber = normalizePieceNumber(selected.number);
+  const duplicateNumber =
+    normalizedNumber.length > 0 &&
+    state.scene.pieces.some(
+      (p) =>
+        p.id !== selected.id &&
+        p.team === selected.team &&
+        normalizePieceNumber(p.number) === normalizedNumber,
+    );
 
   return (
     <div className="piece-inspector" role="dialog" aria-label={t("pieceProps")}>
@@ -56,6 +66,11 @@ export function PieceInspector({ state, t }: Props) {
             state.patchPiece(selected.id, { number: e.target.value })
           }
         />
+        {duplicateNumber && (
+          <p className="piece-inspector-warn" role="status">
+            {t("numberDupWarn")}
+          </p>
+        )}
       </label>
       <label>
         {t("name")}

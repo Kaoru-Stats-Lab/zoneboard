@@ -591,6 +591,13 @@ button.danger {
   font: inherit;
 }
 
+.piece-inspector-warn {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #b45309;
+  line-height: 1.3;
+}
+
 .piece-inspector button {
   align-self: flex-end;
 }
