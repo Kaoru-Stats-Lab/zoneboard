@@ -1,0 +1,250 @@
+:root {
+  --zb-ground: #0c0d0e;
+  --zb-ink: #f3f3f1;
+  --zb-muted: #9a9a96;
+  --zb-line: #2a2b2c;
+  --zb-brass: #c4a24a;
+  --zb-sans: "Barlow", "Zen Kaku Gothic New", "Segoe UI", "Yu Gothic UI",
+    "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --zb-display: "Barlow Semi Condensed", "Zen Kaku Gothic New", "Segoe UI",
+    system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--zb-ground);
+  color: var(--zb-ink);
+  font-family: var(--zb-sans);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--zb-brass);
+}
+
+a:hover {
+  color: #f3f3f1;
+}
+
+.skip {
+  position: absolute;
+  left: 0.75rem;
+  top: -3rem;
+  padding: 0.4rem 0.7rem;
+  background: var(--zb-brass);
+  color: #0c0d0e;
+  text-decoration: none;
+  z-index: 2;
+}
+
+.skip:focus {
+  top: 0.75rem;
+}
+
+.site-head,
+.site-foot {
+  width: min(72rem, calc(100% - 2.5rem));
+  margin: 0 auto;
+}
+
+.site-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  padding: 1rem 0 1.1rem;
+  border-bottom: 1px solid var(--zb-line);
+}
+
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--zb-ink);
+  text-decoration: none;
+  font-family: var(--zb-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.site-brand img {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+}
+
+.site-nav a {
+  color: var(--zb-muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+}
+
+.site-nav a[aria-current="page"],
+.site-nav a:hover {
+  color: var(--zb-ink);
+}
+
+.site-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.38rem 0.8rem;
+  background: var(--zb-brass);
+  color: #0c0d0e;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 2px;
+}
+
+.site-cta:hover {
+  color: #0c0d0e;
+  filter: brightness(1.06);
+}
+
+.site-main {
+  width: min(42rem, calc(100% - 2.5rem));
+  margin: 0 auto;
+  padding: 2.25rem 0 3.5rem;
+}
+
+.site-kicker {
+  margin: 0 0 0.4rem;
+  color: var(--zb-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.site-main h1 {
+  margin: 0 0 0.75rem;
+  font-family: var(--zb-display);
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.lede {
+  margin: 0 0 1.75rem;
+  color: var(--zb-muted);
+}
+
+.site-main h2 {
+  margin: 2rem 0 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+
+.site-main p,
+.site-main li {
+  color: #d8d8d4;
+}
+
+.site-main p {
+  margin: 0 0 0.9rem;
+}
+
+.site-main ul {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+}
+
+.lang-block + .lang-block {
+  margin-top: 2.75rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--zb-line);
+}
+
+.lang-label {
+  margin: 0 0 1rem;
+  color: var(--zb-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.site-form {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1.25rem 0 1.5rem;
+}
+
+.site-form label {
+  font-size: 0.85rem;
+  color: var(--zb-muted);
+}
+
+.site-form textarea,
+.site-form select {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--zb-line);
+  border-radius: 2px;
+  background: #161718;
+  color: var(--zb-ink);
+  font: inherit;
+}
+
+.site-form textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.site-form button {
+  justify-self: start;
+  padding: 0.45rem 0.9rem;
+  border: 0;
+  border-radius: 2px;
+  background: var(--zb-brass);
+  color: #0c0d0e;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form-status {
+  min-height: 1.3rem;
+  font-size: 0.85rem;
+  color: var(--zb-muted);
+}
+
+.site-foot {
+  padding: 1.25rem 0 2.25rem;
+  border-top: 1px solid var(--zb-line);
+  color: var(--zb-muted);
+  font-size: 0.75rem;
+}
+
+.site-foot nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.site-foot a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-foot a:hover {
+  color: var(--zb-ink);
+}
+
+@media (max-width: 40rem) {
+  .site-head,
+  .site-foot,
+  .site-main {
+    width: calc(100% - 1.75rem);
+  }
+}

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact — ZoneBoard</title>
+    <meta name="description" content="Contact the ZoneBoard operator for privacy requests, legal notices, and product feedback. No live chat. Do not paste a full tactics board." />
+    <link rel="canonical" href="https://zoneboard.app/contact/" />
+    <meta property="og:title" content="Contact — ZoneBoard" />
+    <meta property="og:description" content="Contact the ZoneBoard operator for privacy requests, legal notices, and product feedback. No live chat. Do not paste a full tactics board." />
+    <meta property="og:url" content="https://zoneboard.app/contact/" />
+    <meta name="theme-color" content="#0c0d0e" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/site-doc.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-head">
+      <a class="site-brand" href="/">
+        <img src="/brand/mark-color-dark.svg" alt="" width="24" height="24" />
+        ZoneBoard
+      </a>
+      <nav class="site-nav" aria-label="Site"><a href="/about/">About</a>
+<a href="/guide/">Guide</a>
+<a href="/faq/">FAQ</a>
+<a href="/privacy/">Privacy</a>
+<a href="/terms/">Terms</a>
+<a href="/cookies/">Cookies</a>
+<a href="/contact/" aria-current="page">Contact</a></nav>
+      <a class="site-cta" href="/board">Open board</a>
+    </header>
+    <main id="main" class="site-main">
+      <section class="lang-block" lang="en">
+<p class="lang-label">English</p>
+<h1>Contact</h1>
+<p class="lede">Kaoru Stats Lab · Japan · contact@zoneboard.app</p>
+<form class="site-form" id="contact-form">
+<label for="contact-kind">Topic</label>
+<select id="contact-kind" name="kind">
+  <option value="other">General</option>
+  <option value="ux">Product</option>
+  <option value="bug">Bug</option>
+</select>
+<label for="contact-message">Message</label>
+<textarea id="contact-message" name="message" maxlength="500" required></textarea>
+<button type="submit">Send</button>
+<p class="form-status" id="contact-status" role="status"></p>
+</form>
+<script>
+document.getElementById("contact-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const status = document.getElementById("contact-status");
+  const message = document.getElementById("contact-message").value.trim();
+  if (message.length < 3) {
+    status.textContent = "Write a little more.";
+    return;
+  }
+  status.textContent = "Sending…";
+  try {
+    const res = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tool_id: "zoneboard",
+        source: "contact",
+        kind: document.getElementById("contact-kind").value,
+        message,
+        ua_short: navigator.userAgent.slice(0, 120),
+        locale: document.documentElement.lang || "en",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+        viewport: window.innerWidth + "x" + window.innerHeight,
+        color_scheme: "dark",
+        page_path: location.pathname,
+        referrer: document.referrer || "",
+        utm: ""
+      })
+    });
+    const data = await res.json().catch(function () { return {}; });
+    if (!res.ok || !data.ok) {
+      status.textContent = "Could not send. Email contact@zoneboard.app instead.";
+      return;
+    }
+    status.textContent = "Sent. Thank you.";
+    document.getElementById("contact-message").value = "";
+  } catch (err) {
+    status.textContent = "Could not send. Email contact@zoneboard.app instead.";
+  }
+});
+</script>
+<h2>How to reach us</h2>
+<p>Email contact@zoneboard.app for privacy requests, terms questions, and notices. For a product bug or a missing control, the form on this page or the feedback control on the homepage is enough. We do not operate a telephone desk or a chat widget.</p>
+<p>Write in Japanese or English. Say whether you are asking about the board, the privacy policy, or an ad on a reading page. Do not attach identity documents unless we ask, and do not paste a full scene from the pitch.</p>
+<p>We read mail as a small operator. A reply may take several days. If you do not hear back, send once more. Three copies of the same mail do not speed the queue.</p>
+<h2>What we will not do</h2>
+<p>We will not recover a board you deleted in the browser. We never had it. We will not place an advertisement on your stream capture as a paid extra. We will not give support that requires remote control of your PC.</p>
+</section>
+      <section class="lang-block" lang="ja">
+<p class="lang-label">日本語</p>
+<h1>連絡先</h1>
+<p class="lede">Kaoru Stats Lab · 日本 · contact@zoneboard.app</p>
+<p lang="ja">英語欄のフォームでも、日本語で送ってください。</p>
+<h2>連絡方法</h2>
+<p>プライバシー請求、規約、通知は contact@zoneboard.app へ。製品の不具合や足りない操作は、このページのフォームか、ホームページのフィードバックで足ります。電話窓口とチャットウィジェットはありません。</p>
+<p>日本語または英語で書いてください。ボードの話か、プライバシーか、読み物ページの広告かを書いてください。求めない限り身分証は添付しないでください。ピッチの局面一式も貼らないでください。</p>
+<p>小さい運営なので、返信に数日かかることがあります。届かないと感じたら、もう一度だけ送ってください。同じメールを三通しても順番は早くなりません。</p>
+<h2>やらないこと</h2>
+<p>ブラウザで消したボードは復元しません。当方が持っていたことがないからです。配信キャプチャへ広告を有料オプションとして載せることもありません。PC の遠隔操作が必要なサポートもしません。</p>
+</section>
+    </main>
+    <footer class="site-foot">
+      <nav aria-label="Legal"><a href="/about/">About</a>
+<a href="/guide/">Guide</a>
+<a href="/faq/">FAQ</a>
+<a href="/privacy/">Privacy</a>
+<a href="/terms/">Terms</a>
+<a href="/cookies/">Cookies</a>
+<a href="/contact/" aria-current="page">Contact</a></nav>
+      <p>© 2026 ZoneBoard · Kaoru Stats Lab</p>
+    </footer>
+  </body>
+</html>

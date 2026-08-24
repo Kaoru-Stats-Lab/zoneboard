@@ -462,8 +462,10 @@ button:disabled {
 
 .lp-footer-links {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
+  justify-content: flex-end;
+  gap: 0.55rem 1rem;
 }
 
 .lp-footer-links a,

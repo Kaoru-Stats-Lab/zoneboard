@@ -5,7 +5,12 @@ const FIRST_REF_KEY = "zb-fb-referrer";
 const FIRST_UTM_KEY = "zb-fb-utm";
 
 export type FeedbackKind = "bug" | "ux" | "feature" | "other";
-export type FeedbackSource = "landing" | "settings" | "editor" | "footer";
+export type FeedbackSource =
+  | "landing"
+  | "settings"
+  | "editor"
+  | "footer"
+  | "contact";
 
 export type FeedbackPayload = {
   tool_id: string;

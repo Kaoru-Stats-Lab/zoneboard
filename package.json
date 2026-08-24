@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "site:pages": "node --experimental-strip-types scripts/write-site-pages.ts",
+    "build": "node --experimental-strip-types scripts/write-site-pages.ts && tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:ink": "npx --yes tsx scripts/pieceInk-check.ts",
     "brand:marks": "npx --yes tsx scripts/write-brand-marks.ts"

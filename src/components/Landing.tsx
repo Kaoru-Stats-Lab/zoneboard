@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
+import { SITE_NAV } from "../site/publisher";
 import { useFeedback } from "./FeedbackProvider";
 import { BrandLockup } from "./BrandMark";
 import { LpHeroBoard } from "./LpHeroBoard";
@@ -83,6 +84,11 @@ export function Landing() {
           <div className="lp-footer-row">
             <p>© 2026 zoneboard.app</p>
             <nav className="lp-footer-links" aria-label="Site">
+              {SITE_NAV.map((item) => (
+                <a key={item.slug} href={`/${item.slug}/`}>
+                  {APP_LOCALE === "ja" ? item.labelJa : item.labelEn}
+                </a>
+              ))}
               <a href="#why">{t("lpFooterWhy")}</a>
               <button
                 type="button"

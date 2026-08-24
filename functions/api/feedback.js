@@ -14,7 +14,7 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const KINDS = new Set(["bug", "ux", "feature", "other"]);
-const SOURCES = new Set(["landing", "settings", "editor", "footer"]);
+const SOURCES = new Set(["landing", "settings", "editor", "footer", "contact"]);
 const MAX_MESSAGE = 500;
 const RATE_LIMIT_PER_DAY = 10;
 
