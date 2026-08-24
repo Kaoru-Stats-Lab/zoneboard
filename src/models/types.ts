@@ -381,3 +381,7 @@ export const PIECE_SCALE = {
 
 export const UI_FONT_STACK =
   '"Segoe UI", "Yu Gothic UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+
+/** 試合帯・タイムライン（キリル・日本語・ラテン拡張）。Barlow は LP 見出し専用。 */
+export const BANNER_FONT_STACK =
+  '"Noto Sans", "Noto Sans JP", "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif';

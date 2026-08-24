@@ -1,5 +1,5 @@
 import type { BoardDocument, GoalEntry } from "../models/types";
-import { UI_FONT_STACK } from "../models/types";
+import { BANNER_FONT_STACK } from "../models/types";
 import { kitsFromBoard } from "../models/kits";
 import {
   buildMatchTimeline,
@@ -8,6 +8,11 @@ import {
   formatCardTotals,
   formatGoalTimelinePart,
 } from "./matchCards";
+
+const BANNER_BG = "#141414";
+const BANNER_IVORY = "#f3f3f1";
+const BANNER_MUTED = "#9a9a96";
+const SCORE_WHITE = "#ffffff";
 
 export function scoreForTeam(
   goals: GoalEntry[],
@@ -41,17 +46,50 @@ export function matchBannerHeight(
   return Math.max(52, oneLine * 1.65);
 }
 
-function truncate(
+/** 描画幅で省略（書記素単位。サロゲートを割らない） */
+export function truncateByWidth(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxW: number,
 ): string {
+  if (!text || maxW <= 0) return text;
   if (ctx.measureText(text).width <= maxW) return text;
-  let t = text;
-  while (t.length > 1 && ctx.measureText(`${t}…`).width > maxW) {
-    t = t.slice(0, -1);
+
+  const ellipsis = "…";
+  const ellipsisW = ctx.measureText(ellipsis).width;
+  const budget = maxW - ellipsisW;
+  if (budget <= 0) return ellipsis;
+
+  if (typeof Intl !== "undefined" && "Segmenter" in Intl) {
+    const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+    let out = "";
+    for (const { segment } of segmenter.segment(text)) {
+      const next = out + segment;
+      if (ctx.measureText(next).width > budget) break;
+      out = next;
+    }
+    return out.length > 0 ? out + ellipsis : ellipsis;
   }
-  return `${t}…`;
+
+  let out = "";
+  for (const cp of text) {
+    const next = out + cp;
+    if (ctx.measureText(next).width > budget) break;
+    out = next;
+  }
+  return out.length > 0 ? out + ellipsis : ellipsis;
+}
+
+function drawKitBar(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  h: number,
+  barW: number,
+  color: string,
+) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y - h / 2, barW, h);
 }
 
 export function drawMatchBanner(
@@ -63,11 +101,13 @@ export function drawMatchBanner(
 ) {
   if (bannerH <= 0) return;
 
-  ctx.fillStyle = "#141414";
+  ctx.fillStyle = BANNER_BG;
   ctx.fillRect(0, 0, canvasW, bannerH);
 
   const kits = kitsFromBoard(board);
   const padX = Math.max(12, canvasW * 0.018);
+  const barW = Math.max(3, Math.min(4, canvasW * 0.004));
+  const barGap = 4;
   const home = board.homeTeam.trim() || "Home";
   const away = board.awayTeam.trim() || "Away";
   const homeScore = scoreForTeam(board.goals, "home");
@@ -83,73 +123,161 @@ export function drawMatchBanner(
   const line2Y = bannerH * 0.78;
 
   const titleSize = Math.max(13, Math.min(18, bannerH * 0.28));
-  const scoreSize = Math.max(14, Math.min(20, bannerH * 0.32));
+  const scoreSize = Math.max(16, Math.min(24, bannerH * 0.38));
   const eventSize = Math.max(11, Math.min(15, bannerH * 0.22));
-  const cardBadgeSize = Math.max(10, Math.min(13, bannerH * 0.2));
+  const cardBadgeSize = Math.max(10, Math.min(12, bannerH * 0.19));
+  const gapSm = scoreSize * 0.2;
+  const gapMd = scoreSize * 0.35;
+  const dash = "–";
+  const barBlock = barW + barGap;
 
-  ctx.fillStyle = "#e8e8e8";
-  ctx.font = `600 ${titleSize}px ${UI_FONT_STACK}`;
-  ctx.textAlign = "left";
   ctx.textBaseline = "middle";
+
   const title = board.matchLabel.trim();
+  let titleW = 0;
   if (title) {
-    const titleMax = canvasW * 0.42;
-    ctx.fillText(truncate(ctx, title, titleMax), padX, line1Y);
+    ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+    const titleMax = canvasW * 0.38;
+    const titleText = truncateByWidth(ctx, title, titleMax);
+    titleW = ctx.measureText(titleText).width;
+    ctx.fillStyle = BANNER_IVORY;
+    ctx.textAlign = "left";
+    ctx.fillText(titleText, padX, line1Y);
   }
 
-  ctx.textAlign = "right";
-  ctx.textBaseline = "middle";
-  let xRight = canvasW - padX;
-  const parts: { text: string; color: string; size?: number }[] = [
-    { text: away, color: kits.away },
-  ];
-  if (awayCardStr) {
-    parts.push({ text: ` ${awayCardStr}`, color: "#cccccc", size: cardBadgeSize });
-  }
-  parts.push(
-    { text: `  ${awayScore}`, color: "#ffffff" },
-    { text: " - ", color: "#888888" },
-    { text: `${homeScore}  `, color: "#ffffff" },
+  ctx.font = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
+  const homeScoreStr = String(homeScore);
+  const awayScoreStr = String(awayScore);
+  const homeScoreW = ctx.measureText(homeScoreStr).width;
+  const awayScoreW = ctx.measureText(awayScoreStr).width;
+  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  const dashW = ctx.measureText(dash).width + gapMd * 2;
+
+  ctx.font = `500 ${cardBadgeSize}px ${BANNER_FONT_STACK}`;
+  const homeCardW = homeCardStr
+    ? ctx.measureText(homeCardStr).width + gapSm
+    : 0;
+  const awayCardW = awayCardStr
+    ? ctx.measureText(awayCardStr).width + gapSm
+    : 0;
+
+  const scoreCoreW = homeScoreW + dashW + awayScoreW;
+  const nameBudget = Math.max(
+    48,
+    canvasW - padX * 2 - titleW - gapSm * 4 - scoreCoreW - homeCardW - awayCardW - barBlock * 2,
   );
-  if (homeCardStr) {
-    parts.push({ text: `${homeCardStr} `, color: "#cccccc", size: cardBadgeSize });
-  }
-  parts.push({ text: home, color: kits.home });
+  const homeNameMax = nameBudget * 0.5;
+  const awayNameMax = nameBudget * 0.5;
 
-  for (const p of parts) {
-    ctx.font = `600 ${p.size ?? scoreSize}px ${UI_FONT_STACK}`;
-    ctx.fillStyle = p.color;
-    const w = ctx.measureText(p.text).width;
-    ctx.fillText(p.text, xRight, line1Y);
-    xRight -= w;
+  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  const homeNameStr = truncateByWidth(ctx, home, homeNameMax);
+  const awayNameStr = truncateByWidth(ctx, away, awayNameMax);
+  const homeNameW = ctx.measureText(homeNameStr).width;
+  const awayNameW = ctx.measureText(awayNameStr).width;
+
+  const clusterW =
+    barBlock +
+    homeNameW +
+    homeCardW +
+    gapSm +
+    homeScoreW +
+    dashW +
+    awayScoreW +
+    gapSm +
+    awayCardW +
+    awayNameW +
+    barBlock;
+
+  let x = canvasW - padX - clusterW;
+  const barH = titleSize * 0.92;
+
+  drawKitBar(ctx, x, line1Y, barH, barW, kits.home);
+  x += barBlock;
+  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  ctx.fillStyle = BANNER_IVORY;
+  ctx.textAlign = "left";
+  ctx.fillText(homeNameStr, x, line1Y);
+  x += homeNameW;
+
+  if (homeCardStr) {
+    x += gapSm * 0.35;
+    ctx.font = `500 ${cardBadgeSize}px ${BANNER_FONT_STACK}`;
+    ctx.fillStyle = BANNER_MUTED;
+    ctx.fillText(homeCardStr, x, line1Y);
+    x += homeCardW - gapSm * 0.35;
   }
+
+  x += gapSm;
+  ctx.font = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
+  ctx.fillStyle = SCORE_WHITE;
+  ctx.fillText(homeScoreStr, x, line1Y);
+  x += homeScoreW + gapMd;
+
+  ctx.fillStyle = BANNER_MUTED;
+  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  ctx.fillText(dash, x, line1Y);
+  x += ctx.measureText(dash).width + gapMd;
+
+  ctx.font = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
+  ctx.fillStyle = SCORE_WHITE;
+  ctx.fillText(awayScoreStr, x, line1Y);
+  x += awayScoreW + gapSm;
+
+  if (awayCardStr) {
+    ctx.font = `500 ${cardBadgeSize}px ${BANNER_FONT_STACK}`;
+    ctx.fillStyle = BANNER_MUTED;
+    ctx.fillText(awayCardStr, x, line1Y);
+    x += awayCardW;
+  }
+
+  x += gapSm * 0.35;
+  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  ctx.fillStyle = BANNER_IVORY;
+  ctx.fillText(awayNameStr, x, line1Y);
+  x += awayNameW;
+  drawKitBar(ctx, x, line1Y, barH, barW, kits.away);
 
   if (hasTimeline) {
-    ctx.font = `500 ${eventSize}px ${UI_FONT_STACK}`;
+    ctx.font = `500 ${eventSize}px ${BANNER_FONT_STACK}`;
     ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
     const maxW = canvasW - padX * 2;
-    let x = padX;
+    const dotR = Math.max(3, eventSize * 0.22);
+    let tx = padX;
+
     for (const ev of timeline) {
       const part =
         ev.kind === "goal"
           ? formatGoalTimelinePart(ev.entry)
           : formatCardTimelinePart(ev.entry, y2cLabel);
       const team = ev.entry.team;
-      const sep = x > padX ? " · " : "";
-      const sepW = sep ? ctx.measureText(sep).width : 0;
-      ctx.fillStyle = "#aaaaaa";
-      if (sep) ctx.fillText(sep, x, line2Y);
-      x += sepW;
-      ctx.fillStyle = team === "home" ? kits.home : kits.away;
-      const partW = ctx.measureText(part).width;
-      if (x + partW > padX + maxW) {
-        ctx.fillStyle = "#888888";
-        ctx.fillText("…", x, line2Y);
+      const kitColor = team === "home" ? kits.home : kits.away;
+
+      if (tx > padX) {
+        ctx.fillStyle = BANNER_MUTED;
+        const sep = " · ";
+        ctx.fillText(sep, tx, line2Y);
+        tx += ctx.measureText(sep).width;
+      }
+
+      ctx.fillStyle = kitColor;
+      ctx.beginPath();
+      ctx.arc(tx + dotR, line2Y, dotR, 0, Math.PI * 2);
+      ctx.fill();
+      tx += dotR * 2 + 4;
+
+      ctx.fillStyle = BANNER_IVORY;
+      const room = padX + maxW - tx;
+      const partText = truncateByWidth(ctx, part, room);
+      const partW = ctx.measureText(partText).width;
+      if (room < dotR * 2) {
+        ctx.fillStyle = BANNER_MUTED;
+        ctx.fillText("…", tx, line2Y);
         break;
       }
-      ctx.fillText(part, x, line2Y);
-      x += partW;
+      ctx.fillText(partText, tx, line2Y);
+      tx += partW;
+
+      if (partText.endsWith("…")) break;
     }
   }
 }
