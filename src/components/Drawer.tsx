@@ -15,9 +15,11 @@ import {
   usesPreferredFoot,
 } from "../models/types";
 import { kitsFromBoard, sportHasGk } from "../models/kits";
+import { numberFill } from "../canvas/pieceInk";
 import { STARTER_COUNT } from "../presets/roster";
 import { viewPresetsForSport } from "../presets/viewport";
 import { scenePresetsForSport, type ScenePresetId } from "../presets/scenePresets";
+import { LiveMatchControls } from "./LiveMatchControls";
 
 function startersPlaceholder(sport: SportId): string {
   const n = STARTER_COUNT[sport];
@@ -48,6 +50,7 @@ type PanelTab = "match" | "scenes" | "roster";
 type TeamSide = "home" | "away";
 
 export function Drawer({ state, t }: Props) {
+  const [prepOpen, setPrepOpen] = useState(false);
   const [tab, setTab] = useState<PanelTab>("scenes");
   const [teamSide, setTeamSide] = useState<TeamSide>("home");
   const [rosterText, setRosterText] = useState({ home: "", away: "" });
@@ -67,32 +70,61 @@ export function Drawer({ state, t }: Props) {
   const atLimit = state.store.boards.length >= MAX_BOARDS;
   const sceneLimit = board.scenes.length >= MAX_SCENES;
   const roster = board.roster[teamSide];
+  const kits = kitsFromBoard(board);
 
   return (
     <aside className="drawer">
-      <div className="drawer-tabs" role="tablist">
-        {(
-          [
-            ["scenes", "tabScenes"],
-            ["roster", "tabRoster"],
-            ["match", "tabMatch"],
-          ] as const
-        ).map(([id, key]) => (
+      <div className="drawer-phase-bar">
+        {prepOpen ? (
           <button
-            key={id}
             type="button"
-            role="tab"
-            aria-selected={tab === id}
-            className={tab === id ? "active" : ""}
-            onClick={() => setTab(id)}
+            className="drawer-phase-back"
+            onClick={() => setPrepOpen(false)}
           >
-            {t(key)}
+            ← {t("panelLive")}
           </button>
-        ))}
+        ) : (
+          <>
+            <span className="drawer-phase-label">{t("tabScenes")}</span>
+            <button
+              type="button"
+              className="drawer-prep-toggle"
+              onClick={() => {
+                setPrepOpen(true);
+                setTab("roster");
+              }}
+            >
+              {t("panelPrep")}
+            </button>
+          </>
+        )}
       </div>
 
+      {prepOpen && (
+        <div className="drawer-tabs" role="tablist">
+          {(
+            [
+              ["scenes", "tabScenes"],
+              ["roster", "tabRoster"],
+              ["match", "tabMatch"],
+            ] as const
+          ).map(([id, key]) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              className={tab === id ? "active" : ""}
+              onClick={() => setTab(id)}
+            >
+              {t(key)}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="drawer-body">
-        {tab === "scenes" && (
+        {(!prepOpen || tab === "scenes") && (
           <section className="drawer-panel">
             <p className="hint-muted">{t("scenesHint")}</p>
             <div className="scene-chips">
@@ -197,10 +229,13 @@ export function Drawer({ state, t }: Props) {
                 {t("viewReset")}
               </button>
             </details>
+            {!prepOpen && board.showMatchBanner && board.sport === "soccer" && (
+              <LiveMatchControls state={state} t={t} variant="drawer" />
+            )}
           </section>
         )}
 
-        {tab === "roster" && (
+        {prepOpen && tab === "roster" && (
           <section className="drawer-panel">
             <p className="hint-muted">
               {t(
@@ -219,6 +254,14 @@ export function Drawer({ state, t }: Props) {
                 role="tab"
                 className={`team-home${teamSide === "home" ? " active" : ""}`}
                 aria-selected={teamSide === "home"}
+                style={
+                  teamSide === "home"
+                    ? {
+                        background: kits.home,
+                        color: numberFill(kits.home),
+                      }
+                    : { borderLeft: `3px solid ${kits.home}` }
+                }
                 onClick={() => setTeamSide("home")}
               >
                 {t("teamHome")}
@@ -228,15 +271,83 @@ export function Drawer({ state, t }: Props) {
                 role="tab"
                 className={`team-away${teamSide === "away" ? " active" : ""}`}
                 aria-selected={teamSide === "away"}
+                style={
+                  teamSide === "away"
+                    ? {
+                        background: kits.away,
+                        color: numberFill(kits.away),
+                      }
+                    : { borderLeft: `3px solid ${kits.away}` }
+                }
                 onClick={() => setTeamSide("away")}
               >
                 {t("teamAway")}
               </button>
             </div>
+            <div className="kit-colors">
+              <div className="kit-colors-row">
+                <span className="kit-colors-team">{t("homeTeam")}</span>
+                <label className="kit-swatch">
+                  <span>
+                    {sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")}
+                  </span>
+                  <input
+                    type="color"
+                    value={kitsFromBoard(board).home}
+                    onChange={(e) =>
+                      state.setKitColor("home", "outfield", e.target.value)
+                    }
+                  />
+                </label>
+                {sportHasGk(board.sport) && (
+                  <label className="kit-swatch">
+                    <span>{t("kitGk")}</span>
+                    <input
+                      type="color"
+                      value={kitsFromBoard(board).homeGk}
+                      onChange={(e) =>
+                        state.setKitColor("home", "gk", e.target.value)
+                      }
+                    />
+                  </label>
+                )}
+              </div>
+              <div className="kit-colors-row">
+                <span className="kit-colors-team">{t("awayTeam")}</span>
+                <label className="kit-swatch">
+                  <span>
+                    {sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")}
+                  </span>
+                  <input
+                    type="color"
+                    value={kitsFromBoard(board).away}
+                    onChange={(e) =>
+                      state.setKitColor("away", "outfield", e.target.value)
+                    }
+                  />
+                </label>
+                {sportHasGk(board.sport) && (
+                  <label className="kit-swatch">
+                    <span>{t("kitGk")}</span>
+                    <input
+                      type="color"
+                      value={kitsFromBoard(board).awayGk}
+                      onChange={(e) =>
+                        state.setKitColor("away", "gk", e.target.value)
+                      }
+                    />
+                  </label>
+                )}
+              </div>
+              {sportHasGk(board.sport) && (
+                <p className="hint-muted">{t("kitHint")}</p>
+              )}
+            </div>
             <label className={`roster-field roster-${teamSide}`}>
               {t("rosterPaste")}
               <textarea
                 rows={4}
+                style={{ borderLeftColor: kits[teamSide] }}
                 value={rosterText[teamSide]}
                 onChange={(e) =>
                   setRosterText((prev) => ({
@@ -300,7 +411,7 @@ export function Drawer({ state, t }: Props) {
           </section>
         )}
 
-        {tab === "match" && (
+        {prepOpen && tab === "match" && (
           <section className="drawer-panel">
             <ul className="board-list">
               {state.store.boards.map((b) => (
@@ -348,66 +459,6 @@ export function Drawer({ state, t }: Props) {
                 placeholder={t("matchLabelPh")}
               />
             </label>
-
-            <div className="kit-colors">
-              <div className="kit-colors-row">
-                <span className="kit-colors-team">{t("homeTeam")}</span>
-                <label className="kit-swatch">
-                  <span>
-                    {sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")}
-                  </span>
-                  <input
-                    type="color"
-                    value={kitsFromBoard(board).home}
-                    onChange={(e) =>
-                      state.setKitColor("home", "outfield", e.target.value)
-                    }
-                  />
-                </label>
-                {sportHasGk(board.sport) && (
-                  <label className="kit-swatch">
-                    <span>{t("kitGk")}</span>
-                    <input
-                      type="color"
-                      value={kitsFromBoard(board).homeGk}
-                      onChange={(e) =>
-                        state.setKitColor("home", "gk", e.target.value)
-                      }
-                    />
-                  </label>
-                )}
-              </div>
-              <div className="kit-colors-row">
-                <span className="kit-colors-team">{t("awayTeam")}</span>
-                <label className="kit-swatch">
-                  <span>
-                    {sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")}
-                  </span>
-                  <input
-                    type="color"
-                    value={kitsFromBoard(board).away}
-                    onChange={(e) =>
-                      state.setKitColor("away", "outfield", e.target.value)
-                    }
-                  />
-                </label>
-                {sportHasGk(board.sport) && (
-                  <label className="kit-swatch">
-                    <span>{t("kitGk")}</span>
-                    <input
-                      type="color"
-                      value={kitsFromBoard(board).awayGk}
-                      onChange={(e) =>
-                        state.setKitColor("away", "gk", e.target.value)
-                      }
-                    />
-                  </label>
-                )}
-              </div>
-              {sportHasGk(board.sport) && (
-                <p className="hint-muted">{t("kitHint")}</p>
-              )}
-            </div>
 
             {board.sport === "soccer" && (
               <div className="stack match-banner-panel">

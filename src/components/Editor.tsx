@@ -25,10 +25,12 @@ function sceneLabelPhKey(sport: SportId | undefined): MessageKey {
       return "sceneLabelPhSoccer";
   }
 }
+import { Link } from "react-router-dom";
 import { BoardCanvas } from "./BoardCanvas";
-import { BrandMark } from "./BrandMark";
+import { BrandLockup } from "./BrandMark";
 import { BroadcastToolMenu } from "./BroadcastToolMenu";
 import { Drawer } from "./Drawer";
+import { LiveMatchControls } from "./LiveMatchControls";
 import { ExportPreviewFrame } from "./ExportPreviewFrame";
 import { PieceInspector } from "./PieceInspector";
 import { TextInspector } from "./TextInspector";
@@ -242,10 +244,16 @@ export function Editor({ state }: Props) {
       {!state.broadcast && (
         <header className="topbar">
           <div className="topbar-left">
-            <strong className="topbar-brand">
-              <BrandMark className="topbar-mark" title={t("brand")} />
-              {t("brand")}
-            </strong>
+            <Link className="topbar-brand" to="/" aria-label={t("brand")}>
+              <BrandLockup
+                className="topbar-lockup"
+                markClassName="topbar-mark"
+                variant="mark"
+                scheme="color"
+                on="dark"
+                word={t("brand")}
+              />
+            </Link>
             <button
               type="button"
               className={state.drawerOpen ? "active" : ""}
@@ -310,6 +318,11 @@ export function Editor({ state }: Props) {
               {t("broadcastFocusHint")}
             </div>
           )}
+          {state.broadcast &&
+            state.board?.showMatchBanner &&
+            state.board.sport === "soccer" && (
+              <LiveMatchControls state={state} t={t} variant="broadcast" />
+            )}
           {state.broadcast && (
             <div className="broadcast-chrome" aria-label={t("broadcast")}>
               <div className="broadcast-chrome-inner">

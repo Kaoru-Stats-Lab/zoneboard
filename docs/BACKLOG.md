@@ -59,8 +59,10 @@
 
 ### 1-5. UI chrome
 
-- パネル = 試合（局面 / 名簿 / 試合タブ）
+- パネル = 試合（局面 / 名簿 / 試合）。**常時3タブではない**（[`STUDIO.md`](STUDIO.md)）
+- キット色 = 名簿。クラブ名 = 試合
 - 設定 = 自分（ロゴ・書き出し・言語）
+- chrome の地は LP と同じスタジオ黒。白バーに戻さない
 - ツールはキャンバス縁レール。意味色はキャンバス描画色と一致
 - サブ人数は大会カテゴリではなく **人数そのもの（0–15）**
 - PNG 書き出しは範囲プレビュー＋設定ウィンドウ移動可
@@ -110,6 +112,12 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-012 | コート色（VTuber 向け） | Later 寄りだが要望あり |
 | B-013 | ホットキー一覧（`?` オーバーレイ） | 強制しない・任意 |
 | B-047 | Pen の追従・滑らかさ | 合算イベント＋中点ベジェ。スタビライザ禁止。[`PROMPT_PEN_SMOOTH.md`](PROMPT_PEN_SMOOTH.md) |
+| B-048 | スタジオ・トークン（LP＝ボード） | 地・字・角・Barlow。[`STUDIO.md`](STUDIO.md) 波1 |
+| B-049 | キット色を Roster へ | Match から移す。クラブ名は Match。波2 |
+| B-050 | パネルは局面既定＋準備 | 3タブ常時をやめる。波3 |
+| B-051 | 配信 chrome から得点 | バナー ON のとき Match に潜らない。波4 |
+| B-052 | 試合帯の文字（キット塗りをやめる） | チーム名は象牙。3文字強制なし。スコア字間。[`STUDIO.md`](STUDIO.md) §6–7 · [`AGENT_PROMPT_BANNER.md`](AGENT_PROMPT_BANNER.md) |
+| B-053 | 名簿 Home/Away をキット色に | セグメント背景＝フィールド色。帯の名前とは逆。同プロンプト |
 
 ### P2 — Pro / データ
 
@@ -220,6 +228,9 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 |------|------|
 | [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) | ジョブ・収益・流通 |
 | [`UI_UX.md`](UI_UX.md) | chrome・カード・色 |
+| [`STUDIO.md`](STUDIO.md) | LP＝ボードの世界・トークン・パネルフェーズ |
+| [`AGENT_PROMPT_STUDIO.md`](AGENT_PROMPT_STUDIO.md) | スタジオ実装を別 Agent に渡すプロンプト |
+| [`AGENT_PROMPT_BANNER.md`](AGENT_PROMPT_BANNER.md) | 試合帯・名簿セグメント（B-052/053） |
 | [`SPEC.md`](SPEC.md) | 実装仕様 |
 | [`SPORTS_SCOPE.md`](SPORTS_SCOPE.md) | 競技スコープ |
 | [`BALL_DESIGN.md`](BALL_DESIGN.md) | ボールアイコン |
