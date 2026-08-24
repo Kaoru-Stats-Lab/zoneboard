@@ -1045,6 +1045,16 @@ function strokeLineByKind(
     }
   };
 
+  // Run の黄は芝と十分差がある。白ハローはステッカーに見えるので付けない。
+  // パス／ドリブルと同じ薄い影だけ残す。
+  if (usesGrassInk(board) && kind === "run") {
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
+    ctx.shadowBlur = Math.max(1.5, lw * 0.55);
+    draw(ink, lw);
+    ctx.restore();
+    return;
+  }
   if (usesGrassInk(board)) {
     draw(HALO_INK_GRASS, grassHaloWidth(lw));
   }

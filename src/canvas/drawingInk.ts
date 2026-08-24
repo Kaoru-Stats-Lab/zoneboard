@@ -12,8 +12,8 @@ export function usesGrassInk(board?: BoardDocument | null): boolean {
 
 /**
  * 芝生ピッチ向けインク。
- * 白地パレットは彩度・輝度が足りず、Run の緑は地色と衝突する。
- * Run は放送グラフィック慣習に合わせ黄系へ（芝生時のみ）。
+ * 白地パレットは彩度・輝度が足りず、旧 Run の緑は地色と衝突した。
+ * Run は放送グラフィック慣習に合わせ黄系へ（芝生時のみ）。黄は芝と差があるので白ハローは付けない。
  */
 export const LINE_COLORS_GRASS = {
   pass: "#93c5fd",
