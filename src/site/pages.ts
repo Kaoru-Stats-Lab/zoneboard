@@ -157,15 +157,31 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        headingEn: "Rehearse the pieces before you go live",
+        headingJa: "本番の前に、駒を動かす練習をする",
+        en: [
+          "Broadcast mode hides the rail and the drawer. That is the point: the capture should be the pitch. After the chrome is gone, the language for the pieces is the keyboard. If you have not pressed those keys in the editor, you will not have them on air. Practice is not a separate product. It is the same board, before B.",
+          "Select a group first, then move it. Click one piece. Ctrl or Cmd-click to add or remove. Shift-click only adds. Drag empty grass for a marquee. There is no “CB” label on a piece, so a back line is a box you draw. Alt+1 and Alt+2 grab home and away. Ctrl or Cmd+A takes everyone still on the picture. Esc clears.",
+          "Drag any selected piece and the group keeps its spacing. That is a line step, a press jump, or a slide with the mark still attached. Arrow keys nudge; Shift makes a larger step. R turns facing only. Q and E rotate the shape around its centre — two or more pieces. Minus packs toward that centre; equals spreads. Shift+H and Shift+V mirror. Ctrl or Cmd+D duplicates and leaves the copies selected. Ctrl or Cmd+Shift+arrows align. Alt+Shift+arrows even the gaps. A group drop does not swap shirts; swap is for one piece.",
+          "In the editor, ? or F1 opens the same how-to. It is chrome, not grass, and it stays closed in broadcast so it cannot eat the capture. The public guide you are reading is the long copy. The in-app page is the one you can open between scenes.",
+        ],
+        ja: [
+          "配信モードはレールと引き出しを消します。それが目的です。キャプチャに乗るのはピッチです。枠が消えたあと、駒の言葉はキーボードです。エディタで押していないキーは、オンエアでも出ません。練習は別プロダクトではありません。同じボードで、B の前にやることです。",
+          "塊を先に選び、それから動かします。クリックは一人。Ctrl または Cmd クリックは足す／外す。Shift クリックは足すだけ。芝の空き地をドラッグすると範囲選択です。駒に CB というラベルは無いので、バックラインは枠で囲みます。Alt+1 と Alt+2 はホームとアウェイ。Ctrl または Cmd+A は絵に残っている全員。Esc で解除。",
+          "選んだ駒のどれかをドラッグすると、間隔を保ったまま動きます。ラインの上げ下げ、プレスの一段、マークを貼ったままのスライドです。矢印はナッジ。Shift で歩幅が上がります。R は向きだけ。Q と E は重心まわりに形を回します。二人以上。マイナスは重心へ寄せ、イコールは開きます。Shift+H と Shift+V は反転。Ctrl または Cmd+D は複製し、コピーが選ばれます。Ctrl または Cmd+Shift+矢印は整列。Alt+Shift+矢印は間隔。複数のままドロップしても入れ替えません。入れ替えは一人のときです。",
+          "エディタでは ? または F1 で同じ使い方が開きます。芝ではなく枠の側です。配信中は出さないので、キャプチャを食いません。いま読んでいる公開ガイドが長い版。アプリ内の画面は、局面と局面のあいだで開く版です。",
+        ],
+      },
+      {
         headingEn: "What this guide will not promise",
         headingJa: "このガイドが約束しないこと",
         en: [
           "We will not promise a thirty-second setup for every match. A clean XI still takes the time the numbers take. We will not promise that a slide habit disappears. Some hosts will keep slides for tables and use ZoneBoard only for the pitch. That is a valid split.",
-          "We will not put a tutorial overlay on the board the first time you open it. The tools are words. If a word is unclear, this guide and the FAQ are the place to read, not a modal on the grass.",
+          "We will not put a tutorial overlay on the board the first time you open it. The tools are words. If a word is unclear, read this guide, the FAQ, or How to in the editor chrome (? / F1). That panel is not on the grass, and it does not open in broadcast.",
         ],
         ja: [
           "どの試合でも30秒で組める、とは言いません。きれいな XI は、番号の数だけ時間が要ります。スライド癖が消えるとも言いません。表はスライド、ピッチだけ ZoneBoard、という分け方は成立します。",
-          "初回にボードへチュートリアルを重ねません。ツールは言葉です。言葉が分からなければ、芝の上のモーダルではなく、このガイドと FAQ を読んでください。",
+          "初回にボードへチュートリアルを重ねません。ツールは言葉です。言葉が分からなければ、このガイドと FAQ、またはエディタ枠の使い方（? / F1）を読んでください。あの画面は芝の上ではなく、配信中には開きません。",
         ],
       },
     ],

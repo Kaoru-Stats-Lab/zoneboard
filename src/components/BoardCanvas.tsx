@@ -137,6 +137,8 @@ type DragState =
   | {
       mode: "piece";
       id: string;
+      /** 一緒に動かす選択。単体なら [id] */
+      ids: string[];
       lastX: number;
       lastY: number;
       /** ドロップ入れ替え用の開始位置 */
@@ -193,6 +195,14 @@ type DragState =
       lastX: number;
       lastY: number;
       recorded: boolean;
+    }
+  | {
+      mode: "marquee";
+      x0: number;
+      y0: number;
+      x1: number;
+      y1: number;
+      additive: boolean;
     };
 
 export function BoardCanvas({
@@ -204,6 +214,7 @@ export function BoardCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const boardSurfaceRef = useRef<HTMLDivElement>(null);
   const drag = useRef<DragState | null>(null);
+  const selectedIdsRef = useRef<string[]>([]);
   const [dragTick, setDragTick] = useState(0);
   const [textEdit, setTextEdit] = useState<TextEditSession | null>(null);
   const textEditRef = useRef<TextEditSession | null>(null);
@@ -212,6 +223,7 @@ export function BoardCanvas({
   const raf = useRef<number | null>(null);
 
   textEditRef.current = textEdit;
+  selectedIdsRef.current = state.selectedPieceIds;
 
   const { board, scene } = state;
   const view = board ? (viewOverride ?? board.viewport) : null;
@@ -347,10 +359,14 @@ export function BoardCanvas({
     if (!canvas || !surface || !board || !scene || !view) return;
     const dpr = window.devicePixelRatio || 1;
     const { clientWidth: w, clientHeight: h } = surface;
-    canvas.width = Math.max(1, Math.floor(w * dpr));
-    canvas.height = Math.max(1, Math.floor(h * dpr));
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
+    const pixelW = Math.max(1, Math.floor(w * dpr));
+    const pixelH = Math.max(1, Math.floor(h * dpr));
+    if (canvas.width !== pixelW || canvas.height !== pixelH) {
+      canvas.width = pixelW;
+      canvas.height = pixelH;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+    }
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -362,12 +378,17 @@ export function BoardCanvas({
       state.broadcast,
     );
     const d = drag.current;
+    const draggingPieceId =
+      d?.mode === "piece" || d?.mode === "piece-line" || d?.mode === "piece-rotate"
+        ? d.id
+        : null;
     const frameArea = frame ? frame.w * frame.h : w * h;
     const pitchArea = (pitch.w * pitch.h) / frameArea;
     drawBoard(ctx, pitch, board, scene, {
-      selectedPieceId: state.selectedPieceId,
+      selectedPieceId: draggingPieceId ?? state.selectedPieceId,
+      selectedPieceIds: selectedIdsRef.current,
       selectedObjectId: state.selectedObjectId,
-      selectedBall: state.selectedBall,
+      selectedBall: d?.mode === "ball" ? true : state.selectedBall,
       selectionColor: state.selectionColor,
       watermark: state.watermark,
       watermarkImage,
@@ -386,6 +407,10 @@ export function BoardCanvas({
           : null,
       previewZone:
         d?.mode === "zone"
+          ? { x0: d.x0, y0: d.y0, x1: d.x1, y1: d.y1 }
+          : null,
+      previewMarquee:
+        d?.mode === "marquee"
           ? { x0: d.x0, y0: d.y0, x1: d.x1, y1: d.y1 }
           : null,
       previewPen:
@@ -420,6 +445,7 @@ export function BoardCanvas({
     board,
     scene,
     state.selectedPieceId,
+    state.selectedPieceIds,
     state.selectedObjectId,
     state.selectedBall,
     state.selectionColor,
@@ -616,19 +642,20 @@ export function BoardCanvas({
       state.setSelectedPieceId(null);
       drag.current = { mode: "ball", recorded: true, boost: 1.2 };
       canvas.setPointerCapture(e.pointerId);
-      bumpDragVisual();
+      paint();
       return;
     }
 
     if (state.tool === "select") {
       // ボール → 駒 → 描画（パス等）→ ロゴ
       if (hitTestBall(board, scene, pitch, norm.x, norm.y)) {
+        state.captureUndo();
         state.setSelectedBall(true);
         state.setSelectedPieceId(null);
         state.setSelectedObjectId(null);
-        drag.current = { mode: "ball", recorded: false, boost: 1.2 };
+        drag.current = { mode: "ball", recorded: true, boost: 1.2 };
         canvas.setPointerCapture(e.pointerId);
-        bumpDragVisual();
+        paint();
         return;
       }
       // 重なりは上の駒を優先。本体 → 移動、空き地の向き三角 → 回転
@@ -639,7 +666,12 @@ export function BoardCanvas({
         norm.x,
         norm.y,
       );
-      if (pieceHit?.action === "rotate") {
+      if (
+        pieceHit?.action === "rotate" &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.shiftKey
+      ) {
         const facingPiece = pieceHit.piece;
         state.setSelectedBall(false);
         state.setSelectedPieceId(facingPiece.id);
@@ -655,26 +687,53 @@ export function BoardCanvas({
           recorded: true,
         };
         canvas.setPointerCapture(e.pointerId);
-        bumpDragVisual();
+        paint();
         return;
       }
       const piece = pieceHit?.piece ?? null;
       if (piece) {
+        const toggle = e.ctrlKey || e.metaKey;
+        const add = e.shiftKey && !toggle;
+        if (toggle || add) {
+          const cur = selectedIdsRef.current;
+          const next = toggle
+            ? cur.includes(piece.id)
+              ? cur.filter((id) => id !== piece.id)
+              : [...cur, piece.id]
+            : cur.includes(piece.id)
+              ? cur
+              : [...cur, piece.id];
+          selectedIdsRef.current = next;
+          if (toggle) state.togglePieceSelected(piece.id);
+          else state.addPieceSelected(piece.id);
+          state.setSelectedBall(false);
+          state.setSelectedObjectId(null);
+          paint();
+          return;
+        }
+        const group =
+          selectedIdsRef.current.includes(piece.id) &&
+          selectedIdsRef.current.length > 0
+            ? selectedIdsRef.current
+            : [piece.id];
+        selectedIdsRef.current = group;
+        state.captureUndo();
         state.setSelectedBall(false);
-        state.setSelectedPieceId(piece.id);
+        if (group.length === 1) state.setSelectedPieceId(piece.id);
         state.setSelectedObjectId(null);
         drag.current = {
           mode: "piece",
           id: piece.id,
+          ids: group,
           lastX: world.x,
           lastY: world.y,
           startX: piece.x,
           startY: piece.y,
-          recorded: false,
+          recorded: true,
           boost: 1.18,
         };
         canvas.setPointerCapture(e.pointerId);
-        bumpDragVisual();
+        paint();
         return;
       }
       const obj = hitTestObject(board, scene, norm.x, norm.y);
@@ -705,9 +764,16 @@ export function BoardCanvas({
         canvas.setPointerCapture(e.pointerId);
         return;
       }
-      state.setSelectedBall(false);
-      state.setSelectedPieceId(null);
-      state.setSelectedObjectId(null);
+      drag.current = {
+        mode: "marquee",
+        x0: world.x,
+        y0: world.y,
+        x1: world.x,
+        y1: world.y,
+        additive: e.ctrlKey || e.metaKey || e.shiftKey,
+      };
+      canvas.setPointerCapture(e.pointerId);
+      bumpDragVisual();
       return;
     }
 
@@ -744,7 +810,7 @@ export function BoardCanvas({
           recorded: true,
         };
         canvas.setPointerCapture(e.pointerId);
-        bumpDragVisual();
+        paint();
         return;
       }
       const piece = pieceHit?.piece ?? null;
@@ -752,6 +818,7 @@ export function BoardCanvas({
         piece &&
         (state.tool === "run" || state.tool === "dribble")
       ) {
+        state.captureUndo();
         state.setSelectedBall(false);
         state.setSelectedPieceId(piece.id);
         state.setSelectedObjectId(null);
@@ -764,11 +831,11 @@ export function BoardCanvas({
           lastX: world.x,
           lastY: world.y,
           points: [{ x: piece.x, y: piece.y }],
-          recorded: false,
+          recorded: true,
           boost: 1.18,
         };
         canvas.setPointerCapture(e.pointerId);
-        bumpDragVisual();
+        paint();
         return;
       }
       const lineStart = piece
@@ -856,6 +923,13 @@ export function BoardCanvas({
     if (!hit?.norm) return;
     const world = pitchToWorld(hit.norm.x, hit.norm.y, board);
 
+    if (d.mode === "marquee") {
+      d.x1 = world.x;
+      d.y1 = world.y;
+      bumpDragVisual();
+      return;
+    }
+
     if (d.mode === "watermark") {
       state.updateWatermark({
         ...state.watermark,
@@ -887,8 +961,10 @@ export function BoardCanvas({
     }
 
     if (d.mode === "piece") {
-      const dx = world.x - d.lastX;
-      const dy = world.y - d.lastY;
+      const grab = scene.pieces.find((p) => p.id === d.id);
+      if (!grab) return;
+      const dx = world.x - grab.x;
+      const dy = world.y - grab.y;
       const dist = Math.hypot(dx, dy);
       let facing: number | undefined;
       if (dist > 0.004) {
@@ -897,8 +973,7 @@ export function BoardCanvas({
         d.lastY = world.y;
         d.boost = Math.min(1.28, 1.12 + dist * 8);
       }
-      state.movePiece(d.id, world.x, world.y, !d.recorded, facing);
-      d.recorded = true;
+      state.movePiecesBy(d.ids, dx, dy, false, d.id, facing);
       bumpDragVisual();
       return;
     }
@@ -983,6 +1058,23 @@ export function BoardCanvas({
     if (!hit?.norm) return;
     const world = pitchToWorld(hit.norm.x, hit.norm.y, board);
 
+    if (d.mode === "marquee") {
+      d.x1 = world.x;
+      d.y1 = world.y;
+      const tiny =
+        Math.abs(d.x1 - d.x0) < 0.012 && Math.abs(d.y1 - d.y0) < 0.012;
+      if (tiny) {
+        if (!d.additive) {
+          state.setSelectedBall(false);
+          state.setSelectedPieceId(null);
+          state.setSelectedObjectId(null);
+        }
+        return;
+      }
+      state.selectPiecesInRect(d.x0, d.y0, d.x1, d.y1, d.additive);
+      return;
+    }
+
     if (d.mode === "ball") {
       // 駒の近くにドロップするとくっつく（マルチ選択不要）
       state.dropBall(world.x, world.y);
@@ -990,6 +1082,7 @@ export function BoardCanvas({
     }
 
     if (d.mode === "piece") {
+      if (d.ids.length > 1) return;
       // 別の駒の上にドロップ → 位置入れ替え（交代・解説用）
       const target = hitTestPiece(
         board,

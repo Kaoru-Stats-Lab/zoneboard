@@ -203,6 +203,7 @@ export function drawBoard(
   scene: Scene,
   opts: {
     selectedPieceId?: string | null;
+    selectedPieceIds?: string[] | null;
     selectedObjectId?: string | null;
     selectedBall?: boolean;
     selectionColor?: string;
@@ -215,6 +216,13 @@ export function drawBoard(
     previewLine?: { kind: LineKind; points: { x: number; y: number }[] } | null;
     /** ゾーン矩形ドラッグ中のプレビュー（x0,y0=起点） */
     previewZone?: {
+      x0: number;
+      y0: number;
+      x1: number;
+      y1: number;
+    } | null;
+    /** セレクトツールの範囲選択 */
+    previewMarquee?: {
       x0: number;
       y0: number;
       x1: number;
@@ -303,6 +311,8 @@ export function drawBoard(
     drawPenPreview(ctx, pitch, board, opts.previewPen);
   }
 
+  const selectedIds = new Set(opts.selectedPieceIds ?? []);
+  if (opts.selectedPieceId) selectedIds.add(opts.selectedPieceId);
   const scale = board.pieceScale ?? 1;
   for (const piece of scene.pieces) {
     if (!isPieceDrawn(piece, scene.hideHalf)) continue;
@@ -315,7 +325,7 @@ export function drawBoard(
       board,
       piece,
       r,
-      piece.id === opts.selectedPieceId,
+      selectedIds.has(piece.id),
       boost > 1,
       sel,
     );
@@ -333,6 +343,10 @@ export function drawBoard(
       ballBoost > 1,
       opts.ballImage ?? null,
     );
+  }
+
+  if (opts.previewMarquee) {
+    drawMarqueePreview(ctx, pitch, board, opts.previewMarquee, sel);
   }
 }
 
@@ -462,8 +476,8 @@ function drawPiece(
   if (discipline.sentOff) ctx.restore();
   if (dragging) ctx.restore();
 
-  // 選択時: 白破線＋暗ハロー（芝上でも一目でアクティブ）
-  if (selected && !dragging) {
+  // 押した瞬間からリング。ドラッグ中に消すと「1テンポ遅れてアクティブ」に見える
+  if (selected) {
     drawPieceSelectionRing(ctx, x, y, r * 1.72);
   }
 
@@ -846,6 +860,35 @@ function drawObject(
 }
 
 /** ゾーン作成中: 起点マーカー + ラバーバンド楕円（クリック直後から見える） */
+function drawMarqueePreview(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  board: BoardDocument,
+  z: { x0: number; y0: number; x1: number; y1: number },
+  color: string,
+) {
+  const a = worldToPitch(z.x0, z.y0, board);
+  const b = worldToPitch(z.x1, z.y1, board);
+  if (!a || !b) return;
+  const p0 = fromNorm(a.x, a.y, pitch);
+  const p1 = fromNorm(b.x, b.y, pitch);
+  const x = Math.min(p0.x, p1.x);
+  const y = Math.min(p0.y, p1.y);
+  const w = Math.abs(p1.x - p0.x);
+  const h = Math.abs(p1.y - p0.y);
+  if (w < 2 && h < 2) return;
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.12;
+  ctx.fillRect(x, y, w, h);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(1.5, lwOnPitch(pitch, 1.5));
+  ctx.setLineDash([6, 4]);
+  ctx.strokeRect(x, y, w, h);
+  ctx.restore();
+}
+
 function drawZonePreview(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,

@@ -1646,6 +1646,64 @@ button:disabled {
   gap: 1rem;
 }
 
+.how-to-modal {
+  width: min(640px, 100%);
+  max-height: min(86vh, 800px);
+}
+
+.how-to-body {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.how-to-intro,
+.how-to-body p {
+  margin: 0;
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.how-to-body h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.how-to-keys {
+  margin: 0.6rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.how-to-key-row {
+  display: grid;
+  grid-template-columns: minmax(10rem, 38%) 1fr;
+  gap: 0.5rem 0.75rem;
+  align-items: baseline;
+}
+
+.how-to-keys dt,
+.how-to-keys dd {
+  margin: 0;
+}
+
+.how-to-modal kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  padding: 0.12rem 0.35rem;
+  border: 1px solid var(--zb-border, #ccc);
+  border-radius: 4px;
+  background: var(--zb-ground, #f4f4f2);
+}
+
+.how-to-modal footer {
+  font-size: 0.9rem;
+}
+
 .editor .modal {
   background: var(--zb-panel);
   color: var(--zb-ink);

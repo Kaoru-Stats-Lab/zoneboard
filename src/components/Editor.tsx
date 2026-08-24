@@ -35,6 +35,7 @@ import { ExportPreviewFrame } from "./ExportPreviewFrame";
 import { PieceInspector } from "./PieceInspector";
 import { TextInspector } from "./TextInspector";
 import { SettingsModal } from "./SettingsModal";
+import { HowToModal } from "./HowToModal";
 import { ToolRail } from "./ToolRail";
 import { useFeedback } from "./FeedbackProvider";
 
@@ -49,6 +50,7 @@ export function Editor({ state }: Props) {
   const [exportPreset, setExportPreset] = useState<ExportPresetId>("ig45");
   const [exportFocus, setExportFocus] = useState<ExportFocusId>("current");
   const [windowFocused, setWindowFocused] = useState(true);
+  const [howToOpen, setHowToOpen] = useState(false);
 
   useEffect(() => {
     if (!state.broadcast) {
@@ -120,6 +122,13 @@ export function Editor({ state }: Props) {
         return;
       }
 
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
+        if (typing) return;
+        e.preventDefault();
+        state.selectAllPieces();
+        return;
+      }
+
       if (
         (e.ctrlKey || e.metaKey) &&
         e.key === "Backspace" &&
@@ -132,6 +141,10 @@ export function Editor({ state }: Props) {
       }
 
       if (e.key === "Escape") {
+        if (howToOpen) {
+          setHowToOpen(false);
+          return;
+        }
         if (state.pieceInspectorId) {
           state.closePieceInspector();
           return;
@@ -144,12 +157,22 @@ export function Editor({ state }: Props) {
           state.exitBroadcast();
           return;
         }
+        if (
+          state.selectedPieceIds.length > 0 ||
+          state.selectedObjectId ||
+          state.selectedBall
+        ) {
+          state.setSelectedPieceId(null);
+          state.setSelectedObjectId(null);
+          state.setSelectedBall(false);
+          return;
+        }
       }
 
       // ボード選択中の Delete は入力フォーカスより優先
       // （キャンバスをクリックしてもフォーカスがパネル入力に残るケースがある）
       const hasBoardSelection = !!(
-        state.selectedPieceId ||
+        state.selectedPieceIds.length > 0 ||
         state.selectedObjectId ||
         state.selectedBall
       );
@@ -166,7 +189,126 @@ export function Editor({ state }: Props) {
         return;
       }
 
+      if (e.key === "F1" && !state.broadcast) {
+        e.preventDefault();
+        setHowToOpen((open) => !open);
+        return;
+      }
+
       if (typing) return;
+
+      if (howToOpen) return;
+
+      if (!state.broadcast && e.key === "?") {
+        e.preventDefault();
+        setHowToOpen(true);
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
+        if (state.selectedPieceIds.length === 0) return;
+        e.preventDefault();
+        state.duplicateSelected();
+        return;
+      }
+
+      if (e.altKey && !e.ctrlKey && !e.metaKey && e.key === "1") {
+        e.preventDefault();
+        state.selectTeam("home");
+        return;
+      }
+      if (e.altKey && !e.ctrlKey && !e.metaKey && e.key === "2") {
+        e.preventDefault();
+        state.selectTeam("away");
+        return;
+      }
+
+      if (state.selectedPieceIds.length > 0) {
+        const arrow =
+          e.key === "ArrowLeft"
+            ? "left"
+            : e.key === "ArrowRight"
+              ? "right"
+              : e.key === "ArrowUp"
+                ? "up"
+                : e.key === "ArrowDown"
+                  ? "down"
+                  : null;
+        if (arrow) {
+          e.preventDefault();
+          if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+            state.alignSelected(
+              arrow === "left"
+                ? "left"
+                : arrow === "right"
+                  ? "right"
+                  : arrow === "up"
+                    ? "top"
+                    : "bottom",
+            );
+            return;
+          }
+          if (e.altKey && e.shiftKey) {
+            state.distributeSelected(
+              arrow === "left" || arrow === "right" ? "x" : "y",
+            );
+            return;
+          }
+          const step = e.shiftKey ? 0.04 : 0.012;
+          state.nudgeSelected(
+            arrow === "left" ? -step : arrow === "right" ? step : 0,
+            arrow === "up" ? -step : arrow === "down" ? step : 0,
+          );
+          return;
+        }
+      }
+
+      if (
+        state.selectedPieceIds.length >= 2 &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
+        if (e.key === "q" || e.key === "Q") {
+          e.preventDefault();
+          state.rotateSelectedAroundCentroid(-15);
+          return;
+        }
+        if (e.key === "e" || e.key === "E") {
+          e.preventDefault();
+          state.rotateSelectedAroundCentroid(15);
+          return;
+        }
+        if (e.key === "-" || e.key === "_") {
+          e.preventDefault();
+          state.scaleSelectedFromCentroid(0.92);
+          return;
+        }
+        if (e.key === "=" || e.key === "+") {
+          e.preventDefault();
+          state.scaleSelectedFromCentroid(1.08);
+          return;
+        }
+      }
+
+      if (
+        e.shiftKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        state.selectedPieceIds.length > 0
+      ) {
+        if (e.key === "h" || e.key === "H") {
+          e.preventDefault();
+          state.flipSelectedHorizontal();
+          return;
+        }
+        if (e.key === "v" || e.key === "V") {
+          e.preventDefault();
+          state.flipSelectedVertical();
+          return;
+        }
+      }
 
       if (e.key.toLowerCase() === "b") {
         if (state.broadcast) state.exitBroadcast();
@@ -188,14 +330,17 @@ export function Editor({ state }: Props) {
         state.deleteSelected();
         return;
       }
-      if (e.key.toLowerCase() === "r" && state.selectedPieceId && state.scene) {
-        const p = state.scene.pieces.find(
-          (x) => x.id === state.selectedPieceId,
-        );
-        if (p) state.patchPiece(p.id, { facing: (p.facing + 45) % 360 });
+      if (e.key.toLowerCase() === "r" && state.selectedPieceIds.length > 0 && state.scene) {
+        state.captureUndo();
+        for (const id of state.selectedPieceIds) {
+          const p = state.scene.pieces.find((x) => x.id === id);
+          if (p) state.patchPiece(p.id, { facing: (p.facing + 45) % 360 }, false);
+        }
         return;
       }
-      if (e.key === "v" || e.key === "V") state.setTool("select");
+      if ((e.key === "v" || e.key === "V") && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        state.setTool("select");
+      }
       if (e.key === "1") state.setTool("pass");
       if (e.key === "2") state.setTool("run");
       if (e.key === "3") state.setTool("dribble");
@@ -208,7 +353,7 @@ export function Editor({ state }: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [state]);
+  }, [state, howToOpen]);
 
   const toolLabel = (() => {
     const map: Record<string, MessageKey> = {
@@ -260,6 +405,15 @@ export function Editor({ state }: Props) {
               onClick={() => state.setDrawerOpen(!state.drawerOpen)}
             >
               {t("drawer")}
+            </button>
+            <button
+              type="button"
+              className="topbar-icon-btn"
+              title={t("howTo")}
+              aria-label={t("howTo")}
+              onClick={() => setHowToOpen(true)}
+            >
+              ?
             </button>
             <button
               type="button"
@@ -368,6 +522,11 @@ export function Editor({ state }: Props) {
         <Drawer state={state} t={t} />
       </div>
 
+      <HowToModal
+        open={howToOpen && !state.broadcast}
+        onClose={() => setHowToOpen(false)}
+        t={t}
+      />
       <SettingsModal
         state={state}
         t={t}

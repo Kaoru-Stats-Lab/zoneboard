@@ -9,6 +9,7 @@ import { roleFromPosition } from "../models/pieceRole";
 import {
   createScene,
   getActiveScene,
+  isPieceDrawn,
   mapActiveScene,
 } from "../models/scene";
 import type {
@@ -67,6 +68,19 @@ import {
 } from "../presets/viewport";
 import { defaultTextFont } from "../presets/textStyle";
 import {
+  alignGroup,
+  distributeGroup,
+  duplicatePieces,
+  flipGroupHorizontal,
+  flipGroupVertical,
+  mergePieces,
+  nudgePieces,
+  piecesInRect,
+  rotateGroupAroundCentroid,
+  scaleGroupFromCentroid,
+  type AlignAxis,
+} from "../models/pieceCommands";
+import {
   defaultBoardTitle,
   defaultSceneLabel,
   defaultSceneName,
@@ -93,15 +107,27 @@ export function useAppState() {
     loadWatermark(),
   );
   const [tool, setTool] = useState<ToolId>("select");
-  const [selectedPieceId, setSelectedPieceIdState] = useState<string | null>(
-    null,
-  );
+  const [selectedPieceIds, setSelectedPieceIds] = useState<string[]>([]);
+  const selectedPieceId =
+    selectedPieceIds[selectedPieceIds.length - 1] ?? null;
   /** 駒カードは選択とは別。欲しいときだけ開く（単クリックでは出さない） */
   const [pieceInspectorId, setPieceInspectorId] = useState<string | null>(null);
 
-  /** 移動用の選択。カードは閉じる */
+  /** 単独選択。カードは閉じる */
   const setSelectedPieceId = useCallback((id: string | null) => {
-    setSelectedPieceIdState(id);
+    setSelectedPieceIds(id ? [id] : []);
+    setPieceInspectorId(null);
+  }, []);
+
+  const togglePieceSelected = useCallback((id: string) => {
+    setSelectedPieceIds((cur) =>
+      cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
+    );
+    setPieceInspectorId(null);
+  }, []);
+
+  const addPieceSelected = useCallback((id: string) => {
+    setSelectedPieceIds((cur) => (cur.includes(id) ? cur : [...cur, id]));
     setPieceInspectorId(null);
   }, []);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
@@ -619,6 +645,172 @@ export function useAppState() {
     [updateScene],
   );
 
+  const movePiecesBy = useCallback(
+    (
+      ids: string[],
+      dx: number,
+      dy: number,
+      record: boolean,
+      facingId?: string,
+      facing?: number,
+    ) => {
+      if (ids.length === 0) return;
+      if (dx === 0 && dy === 0 && facing === undefined) return;
+      const idSet = new Set(ids);
+      updateScene((s) => {
+        const pieces = s.pieces.map((p) => {
+          if (!idSet.has(p.id)) return p;
+          const x = p.x + dx;
+          const y = p.y + dy;
+          return {
+            ...p,
+            x,
+            y,
+            role: roleFromPosition(x, y),
+            facing:
+              p.id === facingId && facing !== undefined ? facing : p.facing,
+          };
+        });
+        let ball = s.ball;
+        if (ball.attachedTo && idSet.has(ball.attachedTo)) {
+          const host = pieces.find((p) => p.id === ball.attachedTo);
+          if (host) {
+            const followed = ballFollowingPiece(ball, host);
+            if (followed) ball = followed;
+          }
+        }
+        return { ...s, pieces, ball };
+      }, record);
+    },
+    [updateScene],
+  );
+
+  const selectAllPieces = useCallback(() => {
+    if (!scene) return;
+    setSelectedPieceIds(
+      scene.pieces.filter((p) => isPieceDrawn(p, scene.hideHalf)).map((p) => p.id),
+    );
+    setPieceInspectorId(null);
+    setSelectedObjectId(null);
+    setSelectedBall(false);
+  }, [scene]);
+
+  const applyToSelectedPieces = useCallback(
+    (transform: (group: Piece[]) => Piece[], record = true) => {
+      if (selectedPieceIds.length === 0) return;
+      const idSet = new Set(selectedPieceIds);
+      updateScene((s) => {
+        const group = s.pieces.filter((p) => idSet.has(p.id));
+        if (group.length === 0) return s;
+        const nextGroup = transform(group).map((p) => ({
+          ...p,
+          role: roleFromPosition(p.x, p.y),
+        }));
+        const pieces = mergePieces(s.pieces, nextGroup);
+        let ball = s.ball;
+        if (ball.attachedTo && idSet.has(ball.attachedTo)) {
+          const host = pieces.find((p) => p.id === ball.attachedTo);
+          if (host) {
+            const followed = ballFollowingPiece(ball, host);
+            if (followed) ball = followed;
+          }
+        }
+        return { ...s, pieces, ball };
+      }, record);
+    },
+    [selectedPieceIds, updateScene],
+  );
+
+  const nudgeSelected = useCallback(
+    (dx: number, dy: number) =>
+      applyToSelectedPieces((g) => nudgePieces(g, dx, dy)),
+    [applyToSelectedPieces],
+  );
+
+  const rotateSelectedAroundCentroid = useCallback(
+    (degrees: number) =>
+      applyToSelectedPieces((g) => rotateGroupAroundCentroid(g, degrees)),
+    [applyToSelectedPieces],
+  );
+
+  const scaleSelectedFromCentroid = useCallback(
+    (factor: number) =>
+      applyToSelectedPieces((g) => scaleGroupFromCentroid(g, factor)),
+    [applyToSelectedPieces],
+  );
+
+  const flipSelectedHorizontal = useCallback(
+    () => applyToSelectedPieces(flipGroupHorizontal),
+    [applyToSelectedPieces],
+  );
+
+  const flipSelectedVertical = useCallback(
+    () => applyToSelectedPieces(flipGroupVertical),
+    [applyToSelectedPieces],
+  );
+
+  const alignSelected = useCallback(
+    (axis: AlignAxis) => applyToSelectedPieces((g) => alignGroup(g, axis)),
+    [applyToSelectedPieces],
+  );
+
+  const distributeSelected = useCallback(
+    (along: "x" | "y") =>
+      applyToSelectedPieces((g) => distributeGroup(g, along)),
+    [applyToSelectedPieces],
+  );
+
+  const duplicateSelected = useCallback(() => {
+    if (selectedPieceIds.length === 0 || !scene) return;
+    const idSet = new Set(selectedPieceIds);
+    const group = scene.pieces.filter((p) => idSet.has(p.id));
+    if (group.length === 0) return;
+    const copies = duplicatePieces(group).map((p) => ({
+      ...p,
+      role: roleFromPosition(p.x, p.y),
+    }));
+    updateScene((s) => ({ ...s, pieces: [...s.pieces, ...copies] }));
+    setSelectedPieceIds(copies.map((p) => p.id));
+    setPieceInspectorId(null);
+    setSelectedObjectId(null);
+    setSelectedBall(false);
+  }, [scene, selectedPieceIds, updateScene]);
+
+  const selectTeam = useCallback(
+    (team: "home" | "away") => {
+      if (!scene) return;
+      setSelectedPieceIds(
+        scene.pieces
+          .filter((p) => p.team === team && isPieceDrawn(p, scene.hideHalf))
+          .map((p) => p.id),
+      );
+      setPieceInspectorId(null);
+      setSelectedObjectId(null);
+      setSelectedBall(false);
+    },
+    [scene],
+  );
+
+  const selectPiecesInRect = useCallback(
+    (x0: number, y0: number, x1: number, y1: number, additive: boolean) => {
+      if (!scene) return;
+      const visible = scene.pieces.filter((p) =>
+        isPieceDrawn(p, scene.hideHalf),
+      );
+      const hit = piecesInRect(visible, x0, y0, x1, y1).map((p) => p.id);
+      setSelectedPieceIds((cur) => {
+        if (!additive) return hit;
+        const next = new Set(cur);
+        for (const id of hit) next.add(id);
+        return [...next];
+      });
+      setPieceInspectorId(null);
+      setSelectedObjectId(null);
+      setSelectedBall(false);
+    },
+    [scene],
+  );
+
   /**
    * 駒同士のドロップ入れ替え（交代・位置交換）。
    * a を b の位置へ、b を a のドラッグ開始位置へ。role は位置から再計算。
@@ -968,12 +1160,13 @@ export function useAppState() {
   );
 
   const deleteSelected = useCallback(() => {
-    if (selectedPieceId) {
+    if (selectedPieceIds.length > 0) {
+      const drop = new Set(selectedPieceIds);
       updateScene((s) => ({
         ...s,
-        pieces: s.pieces.filter((p) => p.id !== selectedPieceId),
+        pieces: s.pieces.filter((p) => !drop.has(p.id)),
         ball:
-          s.ball.attachedTo === selectedPieceId
+          s.ball.attachedTo && drop.has(s.ball.attachedTo)
             ? { ...s.ball, attachedTo: null }
             : s.ball,
       }));
@@ -996,7 +1189,7 @@ export function useAppState() {
       setSelectedBall(false);
     }
   }, [
-    selectedPieceId,
+    selectedPieceIds,
     selectedObjectId,
     selectedBall,
     setSelectedPieceId,
@@ -1098,7 +1291,7 @@ export function useAppState() {
   );
 
   const openPieceInspector = useCallback((id: string) => {
-    setSelectedPieceIdState(id);
+    setSelectedPieceIds([id]);
     setSelectedBall(false);
     setSelectedObjectId(null);
     setPieceInspectorId(id);
@@ -1120,7 +1313,22 @@ export function useAppState() {
     tool,
     setTool,
     selectedPieceId,
+    selectedPieceIds,
     setSelectedPieceId,
+    togglePieceSelected,
+    addPieceSelected,
+    selectAllPieces,
+    movePiecesBy,
+    nudgeSelected,
+    rotateSelectedAroundCentroid,
+    scaleSelectedFromCentroid,
+    flipSelectedHorizontal,
+    flipSelectedVertical,
+    alignSelected,
+    distributeSelected,
+    duplicateSelected,
+    selectTeam,
+    selectPiecesInRect,
     pieceInspectorId,
     openPieceInspector,
     closePieceInspector,
