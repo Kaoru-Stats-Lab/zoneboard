@@ -524,7 +524,8 @@ function drawPieceNameCaption(
   const name = captionNameForPiece(piece, board);
   if (!name) return;
   const fs = Math.max(11, r * 0.52);
-  ctx.font = `600 ${fs}px ${BANNER_FONT_STACK}`;
+  // 700: Noto Sans JP の実体ウェイト。600 だとラテン専用フェイスに落ちて CJK が消える
+  ctx.font = `700 ${fs}px ${BANNER_FONT_STACK}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   const shown = truncateByWidth(ctx, name, r * 3.8);

@@ -58,6 +58,7 @@ import {
   parseRosterText,
   parseStarterNumbers,
   upsertRosterPlayer,
+  withRosterIdentity,
 } from "../presets/roster";
 import {
   DEFAULT_VIEWPORT,
@@ -149,6 +150,10 @@ export function useAppState() {
     if (history.current.length > 50) history.current.shift();
     future.current = [];
   }, []);
+
+  const captureUndo = useCallback(() => {
+    if (board) pushHistory(board);
+  }, [board, pushHistory]);
 
   const updateBoard = useCallback(
     (updater: (b: BoardDocument) => BoardDocument, record = true) => {
@@ -377,7 +382,11 @@ export function useAppState() {
             ...s,
             label: defaultSceneLabel(sport, loc),
             hideHalf: "none",
-            pieces: formationPieces(sport, true, benchCount, kitsFromBoard(b)),
+            pieces: withRosterIdentity(
+              formationPieces(sport, true, benchCount, kitsFromBoard(b)),
+              b.roster,
+              s.pieces,
+            ),
             objects: [],
             ball: { x: 0.5, y: 0.5 },
           }),
@@ -393,11 +402,15 @@ export function useAppState() {
     if (!board) return;
     updateScene((s) => ({
       ...s,
-      pieces: formationPieces(
-        board.sport,
-        true,
-        board.benchCount,
-        kitsFromBoard(board),
+      pieces: withRosterIdentity(
+        formationPieces(
+          board.sport,
+          true,
+          board.benchCount,
+          kitsFromBoard(board),
+        ),
+        board.roster,
+        s.pieces,
       ),
       objects: [],
     }));
@@ -408,7 +421,11 @@ export function useAppState() {
       updateBoard((b) =>
         mapActiveScene({ ...b, benchCount }, (s) => ({
           ...s,
-          pieces: formationPieces(b.sport, true, benchCount, kitsFromBoard(b)),
+          pieces: withRosterIdentity(
+            formationPieces(b.sport, true, benchCount, kitsFromBoard(b)),
+            b.roster,
+            s.pieces,
+          ),
         })),
       );
     },
@@ -1152,6 +1169,7 @@ export function useAppState() {
     movePieceWithLine,
     swapPieces,
     patchPiece,
+    captureUndo,
     setKitColor,
     addLine,
     addZone,

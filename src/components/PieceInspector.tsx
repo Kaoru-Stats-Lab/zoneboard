@@ -63,8 +63,9 @@ export function PieceInspector({ state, t }: Props) {
         <input
           value={selected.number}
           placeholder={t("pieceNumberPh")}
+          onFocus={() => state.captureUndo()}
           onChange={(e) =>
-            state.patchPiece(selected.id, { number: e.target.value })
+            state.patchPiece(selected.id, { number: e.target.value }, false)
           }
         />
         {duplicateNumber && (
@@ -78,8 +79,9 @@ export function PieceInspector({ state, t }: Props) {
         <input
           value={selected.label}
           placeholder={t("pieceNamePh")}
+          onFocus={() => state.captureUndo()}
           onChange={(e) =>
-            state.patchPiece(selected.id, { label: e.target.value })
+            state.patchPiece(selected.id, { label: e.target.value }, false)
           }
         />
       </label>

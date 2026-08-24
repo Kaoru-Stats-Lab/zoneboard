@@ -208,6 +208,7 @@ export function BoardCanvas({
   const [textEdit, setTextEdit] = useState<TextEditSession | null>(null);
   const textEditRef = useRef<TextEditSession | null>(null);
   const [ballImage, setBallImage] = useState<HTMLImageElement | null>(null);
+  const [fontsEpoch, setFontsEpoch] = useState(0);
   const raf = useRef<number | null>(null);
 
   textEditRef.current = textEdit;
@@ -226,6 +227,20 @@ export function BoardCanvas({
       cancelled = true;
     };
   }, [board?.sport]);
+
+  useEffect(() => {
+    let alive = true;
+    const bump = () => {
+      if (alive) setFontsEpoch((n) => n + 1);
+    };
+    void document.fonts.load('700 16px "Noto Sans JP"').then(bump);
+    void document.fonts.ready.then(bump);
+    document.fonts.addEventListener("loadingdone", bump);
+    return () => {
+      alive = false;
+      document.fonts.removeEventListener("loadingdone", bump);
+    };
+  }, []);
 
   /** タブレット / 大型タッチ: ピンチズーム・2本指パン（ホットキー不要） */
   useEffect(() => {
@@ -415,6 +430,7 @@ export function BoardCanvas({
     dragTick,
     view,
     textEdit,
+    fontsEpoch,
   ]);
 
   if (!board || !scene || !view) return null;

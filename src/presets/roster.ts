@@ -1,3 +1,4 @@
+import { normalizePieceNumber } from "../canvas/pieceInk";
 import type { KitPalette } from "../models/kits";
 import { colorForKit, defaultKitPalette, sportHasGk } from "../models/kits";
 import type { Piece, RosterPlayer, SportId, TeamRoster } from "../models/types";
@@ -270,6 +271,35 @@ export function piecesFromRoster(
   });
 
   return pieces;
+}
+
+/** フォーメ再配置でも、直前の駒または名簿の名前・身体情報を背番号で戻す */
+export function withRosterIdentity(
+  pieces: Piece[],
+  roster: { home: TeamRoster; away: TeamRoster },
+  previous: Piece[] = [],
+): Piece[] {
+  return pieces.map((piece) => {
+    const num = normalizePieceNumber(piece.number);
+    if (!num) return piece;
+    const prev = previous.find(
+      (p) =>
+        p.team === piece.team && normalizePieceNumber(p.number) === num,
+    );
+    const row = roster[piece.team].players.find(
+      (p) => normalizePieceNumber(p.number) === num,
+    );
+    if (!prev && !row) return piece;
+    const label = (prev?.label || row?.label || piece.label).trim();
+    return {
+      ...piece,
+      label: label || piece.label,
+      preferredFoot:
+        prev?.preferredFoot ?? row?.preferredFoot ?? piece.preferredFoot ?? null,
+      heightCm: prev?.heightCm ?? row?.heightCm ?? piece.heightCm ?? null,
+      weightKg: prev?.weightKg ?? row?.weightKg ?? piece.weightKg ?? null,
+    };
+  });
 }
 
 /** 両チーム分をマージ（既存の相手チーム駒は残す場合は呼び出し側で結合） */

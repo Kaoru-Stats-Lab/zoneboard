@@ -3,8 +3,12 @@ import { BANNER_FONT_STACK } from "../models/types";
 import { kitsFromBoard } from "../models/kits";
 import {
   buildMatchTimeline,
-  formatCardTimelinePart,
+  cardTimelineName,
+  drawTimelineBallMark,
+  drawTimelineCardMark,
   formatGoalTimelinePart,
+  goalTimelineName,
+  timelineMinute,
 } from "./matchCards";
 
 const BANNER_BG = "#141414";
@@ -208,19 +212,35 @@ export function drawMatchBanner(
     const dotR = Math.max(3, eventSize * 0.22);
     let tx = padX;
 
+    const markH = Math.max(9, eventSize * 0.92);
+    const markGap = Math.max(3, eventSize * 0.22);
+
     for (const ev of timeline) {
-      const part =
+      const minute = timelineMinute(ev.entry.minute);
+      const name =
         ev.kind === "goal"
-          ? formatGoalTimelinePart(ev.entry)
-          : formatCardTimelinePart(ev.entry, y2cLabel);
+          ? goalTimelineName(ev.entry)
+          : cardTimelineName(ev.entry, y2cLabel);
       const team = ev.entry.team;
       const kitColor = team === "home" ? kits.home : kits.away;
+      const markW =
+        ev.kind === "card" && ev.entry.kind === "Y2C" ? markH * 0.92 : markH * 0.78;
 
       if (tx > padX) {
         ctx.fillStyle = BANNER_MUTED;
         const sep = " · ";
         ctx.fillText(sep, tx, line2Y);
         tx += ctx.measureText(sep).width;
+      }
+
+      const minuteW = minute ? ctx.measureText(minute).width : 0;
+      const needed =
+        dotR * 2 + 4 + (minuteW ? minuteW + markGap : 0) + markW + (name ? markGap : 0);
+      const room = padX + maxW - tx;
+      if (room < needed * 0.45) {
+        ctx.fillStyle = BANNER_MUTED;
+        ctx.fillText("…", tx, line2Y);
+        break;
       }
 
       ctx.fillStyle = kitColor;
@@ -230,18 +250,33 @@ export function drawMatchBanner(
       tx += dotR * 2 + 4;
 
       ctx.fillStyle = BANNER_IVORY;
-      const room = padX + maxW - tx;
-      const partText = truncateByWidth(ctx, part, room);
-      const partW = ctx.measureText(partText).width;
-      if (room < dotR * 2) {
-        ctx.fillStyle = BANNER_MUTED;
-        ctx.fillText("…", tx, line2Y);
-        break;
+      if (minute) {
+        ctx.fillText(minute, tx, line2Y);
+        tx += minuteW + markGap;
       }
-      ctx.fillText(partText, tx, line2Y);
-      tx += partW;
 
-      if (partText.endsWith("…")) break;
+      if (ev.kind === "goal") {
+        drawTimelineBallMark(ctx, tx + markW / 2, line2Y, markH * 0.42);
+      } else {
+        drawTimelineCardMark(
+          ctx,
+          tx + markW / 2,
+          line2Y,
+          markH,
+          ev.entry.kind,
+        );
+      }
+      tx += markW;
+
+      if (name) {
+        tx += markGap;
+        const nameRoom = padX + maxW - tx;
+        const nameText = truncateByWidth(ctx, name, nameRoom);
+        ctx.fillStyle = BANNER_IVORY;
+        ctx.fillText(nameText, tx, line2Y);
+        tx += ctx.measureText(nameText).width;
+        if (nameText.endsWith("…")) break;
+      }
     }
   }
 }

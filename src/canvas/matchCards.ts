@@ -61,22 +61,130 @@ export function buildMatchTimeline(board: BoardDocument): MatchTimelineEntry[] {
   return out;
 }
 
+export function timelineMinute(minute?: string): string {
+  const min = minute?.trim();
+  return min ? `${min}'` : "";
+}
+
+export function goalTimelineName(g: GoalEntry): string {
+  return g.scorer.trim();
+}
+
+export function cardTimelineName(c: CardEntry, y2cLabel: string): string {
+  const name = c.player.trim();
+  const suffix = c.kind === "Y2C" ? ` (${y2cLabel})` : "";
+  return `${name}${suffix}`.trim();
+}
+
+/** 帯・ログ用。記号はキャンバス側で描く。絵文字は入れない */
 export function formatGoalTimelinePart(g: GoalEntry): string {
-  const name = g.scorer.trim();
-  const min = g.minute?.trim();
-  if (min && name) return `${min}' ⚽ ${name}`;
-  if (name) return `⚽ ${name}`;
-  return min ? `${min}' ⚽` : "⚽";
+  return [timelineMinute(g.minute), goalTimelineName(g)].filter(Boolean).join(" ");
 }
 
 export function formatCardTimelinePart(c: CardEntry, y2cLabel: string): string {
-  const name = c.player.trim();
-  const min = c.minute?.trim();
-  const icon = c.kind === "YC" ? "🟨" : "🟥";
-  const suffix = c.kind === "Y2C" ? ` (${y2cLabel})` : "";
-  if (min && name) return `${min}' ${icon} ${name}${suffix}`;
-  if (name) return `${icon} ${name}${suffix}`;
-  return min ? `${min}' ${icon}${suffix}` : icon;
+  return [timelineMinute(c.minute), cardTimelineName(c, y2cLabel)]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function roundCardRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.lineTo(x + w - rr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
+  ctx.lineTo(x + w, y + h - rr);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+  ctx.lineTo(x + rr, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - rr);
+  ctx.lineTo(x, y + rr);
+  ctx.quadraticCurveTo(x, y, x + rr, y);
+  ctx.closePath();
+}
+
+function paintCardFace(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  w: number,
+  h: number,
+  fill: string,
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  roundCardRect(ctx, -w / 2, -h / 2, w, h, Math.max(0.7, h * 0.08));
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.55)";
+  ctx.lineWidth = Math.max(0.7, h * 0.06);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** 放送の警告カード。絵文字の四角ではない */
+export function drawTimelineCardMark(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  h: number,
+  kind: CardKind,
+) {
+  const w = h * 0.66;
+  if (kind === "Y2C") {
+    paintCardFace(ctx, cx - h * 0.12, cy - h * 0.06, w, h, CARD_YELLOW);
+    paintCardFace(ctx, cx + h * 0.12, cy + h * 0.06, w, h, CARD_RED);
+    return;
+  }
+  paintCardFace(ctx, cx, cy, w, h, kind === "YC" ? CARD_YELLOW : CARD_RED);
+}
+
+/** 幾何の球。OS 絵文字のサッカーボールは使わない */
+export function drawTimelineBallMark(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = "#f2f2ef";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(12,12,12,0.82)";
+  ctx.lineWidth = Math.max(0.85, r * 0.13);
+  ctx.stroke();
+
+  ctx.beginPath();
+  const pr = r * 0.3;
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const x = cx + Math.cos(a) * pr;
+    const y = cy + Math.sin(a) * pr;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = "#161616";
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(18,18,18,0.88)";
+  ctx.lineWidth = Math.max(0.65, r * 0.1);
+  ctx.lineCap = "round";
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * (pr * 0.92), cy + Math.sin(a) * (pr * 0.92));
+    ctx.lineTo(cx + Math.cos(a) * r * 0.86, cy + Math.sin(a) * r * 0.86);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function pieceTeam(piece: Piece): "home" | "away" | null {
