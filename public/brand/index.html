@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZoneBoard — マーク展開</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --studio: #0c0d0e;
+        --ivory: #f3f3f1;
+        --brass: #c4a24a;
+        --brass-deep: #7a5c20;
+        --pitch: #1a3a24;
+        --home: #e74c3c;
+        --away: #3498db;
+        --gk: #f1c40f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--studio);
+        color: var(--ivory);
+        font-family: "Zen Kaku Gothic New", "Barlow", sans-serif;
+        line-height: 1.45;
+      }
+      main {
+        width: min(72rem, calc(100% - 2.5rem));
+        margin: 0 auto;
+        padding: 2.5rem 0 4rem;
+      }
+      h1 {
+        margin: 0 0 0.35rem;
+        font-family: Barlow, sans-serif;
+        font-size: 1.35rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .lede {
+        margin: 0 0 2rem;
+        max-width: 40rem;
+        color: #9a9a96;
+        font-size: 0.92rem;
+      }
+      h2 {
+        margin: 2.25rem 0 0.85rem;
+        color: #8a8a86;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+        gap: 0.75rem;
+      }
+      .card {
+        margin: 0;
+        padding: 1rem 1rem 0.85rem;
+        border-radius: 10px;
+        background: #161718;
+      }
+      .card .swatch {
+        display: grid;
+        place-items: center;
+        height: 7.5rem;
+        border-radius: 8px;
+      }
+      .card img {
+        width: 3.5rem;
+        height: 3.5rem;
+      }
+      .card figcaption {
+        margin-top: 0.7rem;
+      }
+      .card strong {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+      .card span {
+        display: block;
+        margin-top: 0.2rem;
+        color: #8a8a86;
+        font-size: 0.75rem;
+      }
+      .on-dark {
+        background: var(--studio);
+      }
+      .on-light {
+        background: var(--ivory);
+      }
+      .on-brass {
+        background: var(--brass);
+      }
+      .on-pitch {
+        background: var(--pitch);
+      }
+      .on-white {
+        background: #fff;
+      }
+      .on-home {
+        background: var(--home);
+      }
+      .on-away {
+        background: var(--away);
+      }
+      .on-gk {
+        background: var(--gk);
+      }
+      .matrix {
+        display: grid;
+        gap: 0.65rem;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 7.5rem repeat(4, 1fr);
+        gap: 0.5rem;
+        align-items: stretch;
+      }
+      .row > p {
+        margin: 0;
+        display: grid;
+        place-items: center;
+        padding: 0.4rem;
+        color: #8a8a86;
+        font-size: 0.72rem;
+        text-align: left;
+        justify-items: start;
+      }
+      .cell {
+        display: grid;
+        place-items: center;
+        min-height: 4.75rem;
+        border-radius: 8px;
+        position: relative;
+      }
+      .cell img {
+        width: 2.35rem;
+        height: 2.35rem;
+      }
+      .cell.no::after {
+        content: "使わない";
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: rgba(12, 13, 14, 0.55);
+        color: #f3f3f1;
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+      }
+      .rules {
+        margin: 0;
+        padding-left: 1.1rem;
+        color: #b8b8b4;
+        font-size: 0.88rem;
+      }
+      .rules li {
+        margin: 0.35rem 0;
+      }
+      code {
+        font-size: 0.85em;
+      }
+      @media (max-width: 52rem) {
+        .row {
+          grid-template-columns: 4.5rem repeat(4, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>ZoneBoard マーク展開</h1>
+      <p class="lede">
+        正はカラー（暗地）。明地ではインクを反転し、第一マーカーだけブラスを一段落とす。ブラスそのものは白に乗らない。モノクロは写真・キット色・印刷用。
+      </p>
+
+      <h2>正・逆・モノ・単色</h2>
+      <div class="grid">
+        <figure class="card">
+          <div class="swatch on-dark">
+            <img src="mark-color-dark.svg" alt="" />
+          </div>
+          <figcaption>
+            <strong>カラー 正</strong>
+            <span>スタジオ・芝。第一マーカー #c4a24a</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-light">
+            <img src="mark-color-light.svg" alt="" />
+          </div>
+          <figcaption>
+            <strong>カラー 逆</strong>
+            <span>紙・白。マーカーは #7a5c20（3:1 確保）</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-dark">
+            <img src="mark-mono-white.svg" alt="" />
+          </div>
+          <figcaption>
+            <strong>モノクロ 白</strong>
+            <span>写真、暗芝、配信フレーム</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-light">
+            <img src="mark-mono-black.svg" alt="" />
+          </div>
+          <figcaption>
+            <strong>モノクロ 黒</strong>
+            <span>紙、ブラス地、明るいキット</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-dark">
+            <img src="mark-brass.svg" alt="" />
+          </div>
+          <figcaption>
+            <strong>単色ブラス</strong>
+            <span>暗地のみ。箔・ワンカラー</span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>アイコン（タイル）</h2>
+      <div class="grid">
+        <figure class="card">
+          <div class="swatch on-light">
+            <img src="icon-color.svg" alt="" />
+          </div>
+          <figcaption>
+            <strong>カラー</strong>
+            <span>favicon。ページ色に依存しない</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-dark">
+            <img src="icon-inverse.svg" alt="" />
+          </div>
+          <figcaption>
+            <strong>逆タイル</strong>
+            <span>暗いバーに置く明るいバッジ</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-light">
+            <img src="icon-mono-dark.svg" alt="" />
+          </div>
+          <figcaption>
+            <strong>モノ 暗タイル</strong>
+            <span>印刷・単色アプリアイコン</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-dark">
+            <img src="icon-mono-light.svg" alt="" />
+          </div>
+          <figcaption>
+            <strong>モノ 明タイル</strong>
+            <span>暗い面に置く白バッジ</span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>背景 × 使う／使わない</h2>
+      <div class="matrix">
+        <div class="row">
+          <p></p>
+          <p>カラー正</p>
+          <p>カラー逆</p>
+          <p>モノ白</p>
+          <p>モノ黒</p>
+        </div>
+        <div class="row">
+          <p>スタジオ</p>
+          <div class="cell on-dark">
+            <img src="mark-color-dark.svg" alt="" />
+          </div>
+          <div class="cell on-dark no">
+            <img src="mark-color-light.svg" alt="" />
+          </div>
+          <div class="cell on-dark">
+            <img src="mark-mono-white.svg" alt="" />
+          </div>
+          <div class="cell on-dark no">
+            <img src="mark-mono-black.svg" alt="" />
+          </div>
+        </div>
+        <div class="row">
+          <p>紙</p>
+          <div class="cell on-light no">
+            <img src="mark-color-dark.svg" alt="" />
+          </div>
+          <div class="cell on-light">
+            <img src="mark-color-light.svg" alt="" />
+          </div>
+          <div class="cell on-light no">
+            <img src="mark-mono-white.svg" alt="" />
+          </div>
+          <div class="cell on-light">
+            <img src="mark-mono-black.svg" alt="" />
+          </div>
+        </div>
+        <div class="row">
+          <p>ブラス</p>
+          <div class="cell on-brass no">
+            <img src="mark-color-dark.svg" alt="" />
+          </div>
+          <div class="cell on-brass no">
+            <img src="mark-color-light.svg" alt="" />
+          </div>
+          <div class="cell on-brass no">
+            <img src="mark-mono-white.svg" alt="" />
+          </div>
+          <div class="cell on-brass">
+            <img src="mark-mono-black.svg" alt="" />
+          </div>
+        </div>
+        <div class="row">
+          <p>芝</p>
+          <div class="cell on-pitch">
+            <img src="mark-color-dark.svg" alt="" />
+          </div>
+          <div class="cell on-pitch no">
+            <img src="mark-color-light.svg" alt="" />
+          </div>
+          <div class="cell on-pitch">
+            <img src="mark-mono-white.svg" alt="" />
+          </div>
+          <div class="cell on-pitch no">
+            <img src="mark-mono-black.svg" alt="" />
+          </div>
+        </div>
+        <div class="row">
+          <p>ホーム</p>
+          <div class="cell on-home no">
+            <img src="mark-color-dark.svg" alt="" />
+          </div>
+          <div class="cell on-home no">
+            <img src="mark-color-light.svg" alt="" />
+          </div>
+          <div class="cell on-home no">
+            <img src="mark-mono-white.svg" alt="" />
+          </div>
+          <div class="cell on-home">
+            <img src="mark-mono-black.svg" alt="" />
+          </div>
+        </div>
+        <div class="row">
+          <p>アウェイ</p>
+          <div class="cell on-away no">
+            <img src="mark-color-dark.svg" alt="" />
+          </div>
+          <div class="cell on-away no">
+            <img src="mark-color-light.svg" alt="" />
+          </div>
+          <div class="cell on-away no">
+            <img src="mark-mono-white.svg" alt="" />
+          </div>
+          <div class="cell on-away">
+            <img src="mark-mono-black.svg" alt="" />
+          </div>
+        </div>
+        <div class="row">
+          <p>GK</p>
+          <div class="cell on-gk no">
+            <img src="mark-color-dark.svg" alt="" />
+          </div>
+          <div class="cell on-gk">
+            <img src="mark-color-light.svg" alt="" />
+          </div>
+          <div class="cell on-gk no">
+            <img src="mark-mono-white.svg" alt="" />
+          </div>
+          <div class="cell on-gk">
+            <img src="mark-mono-black.svg" alt="" />
+          </div>
+        </div>
+      </div>
+
+      <h2>規則</h2>
+      <ul class="rules">
+        <li>
+          正は <code>mark-color-dark</code>（<code>/logo.svg</code>）。タブは
+          <code>icon-color</code>（<code>/favicon.svg</code>）で固定。ページ色で
+          favicon を反転しない。
+        </li>
+        <li>
+          カノンブラス <code>#c4a24a</code> は暗地専用。白・紙では 2.2:1
+          しか出ないので、逆展開のマーカーは <code>#7a5c20</code>。
+        </li>
+        <li>
+          ブラス地にカラーも白モノも置かない（マーカーが消える／2.2:1）。黒ヌキだけ。
+        </li>
+        <li>
+          キット赤・青の上はモノ黒。ブラスもアイボリーも 3:1 を割る。
+        </li>
+        <li>
+          コンポーネントは <code>BrandMark scheme on</code>。不正な組み合わせは黒／白モノに落として描画する。
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

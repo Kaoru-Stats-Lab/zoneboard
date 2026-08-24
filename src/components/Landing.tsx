@@ -3,7 +3,7 @@ import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
 import { useFeedback } from "./FeedbackProvider";
-import { BrandMark } from "./BrandMark";
+import { BrandLockup } from "./BrandMark";
 import { LpHeroBoard } from "./LpHeroBoard";
 
 export function Landing() {
@@ -15,8 +15,13 @@ export function Landing() {
       <div className="lp-stage">
         <header className="lp-hero">
           <p className="lp-eyebrow">
-            <BrandMark className="lp-mark" />
-            zoneboard.app
+            <BrandLockup
+              className="lp-lockup"
+              markClassName="lp-mark"
+              scheme="color"
+              on="dark"
+              word={t("brand")}
+            />
           </p>
           <h1>
             {t("lpHeadline1")}
@@ -66,7 +71,15 @@ export function Landing() {
         </main>
 
         <footer className="lp-footer">
-          <p className="lp-footer-brand">{t("brand")}</p>
+          <p className="lp-footer-brand">
+            <BrandLockup
+              className="lp-lockup"
+              markClassName="lp-mark"
+              scheme="color"
+              on="dark"
+              word={t("brand")}
+            />
+          </p>
           <div className="lp-footer-row">
             <p>© 2026 zoneboard.app</p>
             <nav className="lp-footer-links" aria-label="Site">

@@ -1,36 +1,91 @@
-type Props = {
+import {
+  MARK,
+  type MarkGround,
+  type MarkScheme,
+  type MarkVariant,
+  resolveMarkPaint,
+} from "../brand/mark";
+
+type MarkProps = {
   className?: string;
   title?: string;
+  variant?: MarkVariant;
+  scheme?: MarkScheme;
+  /** Ground behind the mark. For `icon`, this is the tile colour. */
+  on?: MarkGround;
 };
 
 /** Canonical ZB mark: Z from formation dots + 57° stroke. Brass first marker. */
-export function BrandMark({ className, title }: Props) {
+export function BrandMark({
+  className,
+  title,
+  variant = "icon",
+  scheme = "color",
+  on = "dark",
+}: MarkProps) {
+  const isMark = variant === "mark";
+  const paint = resolveMarkPaint({ variant, scheme, on });
   return (
     <svg
       className={className}
-      viewBox="0 0 32 32"
+      viewBox={isMark ? MARK.viewBoxMark : MARK.viewBoxIcon}
       width="32"
       height="32"
       role={title ? "img" : "presentation"}
       aria-hidden={title ? undefined : true}
     >
       {title ? <title>{title}</title> : null}
-      <rect width="32" height="32" rx="6" fill="#0c0d0e" />
+      {paint.plate ? (
+        <rect width="32" height="32" rx="6" fill={paint.plate} />
+      ) : null}
       <line
         x1="22.5"
         y1="9.5"
         x2="9.5"
         y2="22.5"
-        stroke="#f3f3f1"
-        strokeWidth="2.2"
+        stroke={paint.ink}
+        strokeWidth={MARK.stroke}
         strokeLinecap="round"
       />
-      <circle cx="9" cy="9" r="2.45" fill="#f3f3f1" />
-      <circle cx="16" cy="9" r="2.45" fill="#f3f3f1" />
-      <circle cx="23" cy="9" r="2.45" fill="#f3f3f1" />
-      <circle cx="9" cy="23" r="2.45" fill="#f3f3f1" />
-      <circle cx="16" cy="23" r="2.45" fill="#f3f3f1" />
-      <circle cx="23" cy="23" r="2.45" fill="#c4a24a" />
+      {MARK.dots.map(([cx, cy], i) => (
+        <circle
+          key={`${cx}-${cy}`}
+          cx={cx}
+          cy={cy}
+          r={MARK.r}
+          fill={i === MARK.first ? paint.accent : paint.ink}
+        />
+      ))}
     </svg>
+  );
+}
+
+type LockupProps = {
+  className?: string;
+  markClassName?: string;
+  word: string;
+  variant?: MarkVariant;
+  scheme?: MarkScheme;
+  on?: MarkGround;
+};
+
+export function BrandLockup({
+  className,
+  markClassName,
+  word,
+  variant = "mark",
+  scheme = "color",
+  on = "dark",
+}: LockupProps) {
+  return (
+    <span className={className}>
+      <BrandMark
+        className={markClassName}
+        variant={variant}
+        scheme={scheme}
+        on={on}
+      />
+      {word}
+    </span>
   );
 }
