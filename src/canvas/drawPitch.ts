@@ -56,8 +56,12 @@ function line(
   ctx.stroke();
 }
 
+/** ピッチ外周〜キャンバス地。芝ならランオフ緑、ズームのレターボックスもこれ。 */
 export function outerFillForBoard(board: BoardDocument): string {
-  return usesGrassPitch(board) ? "#1f5230" : "#ffffff";
+  if (usesGrassPitch(board)) return "#1f5230";
+  if (board.sport === "beach_soccer") return "#e8d4a8";
+  if (board.sport === "basketball" && board.showWoodCourt) return "#8f5e32";
+  return "#ffffff";
 }
 
 export function pitchLineWidth(pitch: PitchRect): number {

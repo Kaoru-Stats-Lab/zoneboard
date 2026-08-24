@@ -9,6 +9,7 @@ import {
   type ViewPresetId,
 } from "../presets/viewport";
 import { drawBoard } from "./drawBoard";
+import { outerFillForBoard } from "./drawPitch";
 import { fitField } from "./layout";
 import { drawMatchBanner, matchBannerHeight } from "./matchBanner";
 
@@ -69,8 +70,6 @@ const PRESET_SIZE: Record<
   story: { w: 1080, h: 1920 },
 };
 
-const PAD = "#f4f4f4";
-
 export async function exportBoardPng(
   board: BoardDocument,
   watermark: WatermarkSettings,
@@ -113,7 +112,8 @@ export async function exportBoardPng(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas");
 
-  ctx.fillStyle = PAD;
+  const ground = outerFillForBoard(board);
+  ctx.fillStyle = ground;
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   const boardH = canvasH - captionH;
@@ -130,7 +130,7 @@ export async function exportBoardPng(
   const scene = getActiveScene(board);
   drawBoard(ctx, pitch, board, scene, {
     outer,
-    background: PAD,
+    background: ground,
     selectionColor,
     watermark: options.bakeWatermark ? watermark : null,
     watermarkImage: options.bakeWatermark ? watermarkImage : null,

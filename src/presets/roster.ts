@@ -145,6 +145,55 @@ export function emptyRoster(): TeamRoster {
   return { players: [], starterNumbers: [] };
 }
 
+/** 名簿をペースト欄と同じ文法に戻す（番号,名前[,足|身長,体重]） */
+export function formatRosterText(players: RosterPlayer[]): string {
+  return players
+    .map((p) => {
+      const parts = [p.number];
+      const name = p.label.trim();
+      if (name) parts.push(name);
+      if (p.preferredFoot) {
+        if (!name) parts.push("");
+        parts.push(p.preferredFoot);
+      } else if (p.heightCm) {
+        if (!name) parts.push("");
+        parts.push(String(p.heightCm));
+        if (p.weightKg) parts.push(String(p.weightKg));
+      }
+      return parts.join(",");
+    })
+    .join("\n");
+}
+
+/** 駒カードからの名前を名簿行に載せる。背番号がキー。 */
+export function upsertRosterPlayer(
+  team: TeamRoster,
+  previousNumber: string,
+  next: RosterPlayer,
+): TeamRoster {
+  const prev = previousNumber.trim();
+  const number = next.number.trim();
+  if (!number) return team;
+
+  const row: RosterPlayer = {
+    number,
+    label: next.label,
+    preferredFoot: next.preferredFoot ?? null,
+    heightCm: next.heightCm ?? null,
+    weightKg: next.weightKg ?? null,
+  };
+  const players = [...team.players];
+  const idx = players.findIndex((p) => p.number === prev || p.number === number);
+  if (idx < 0) players.push(row);
+  else players[idx] = { ...players[idx], ...row };
+
+  const starterNumbers =
+    prev !== number
+      ? team.starterNumbers.map((n) => (n === prev ? number : n))
+      : team.starterNumbers;
+  return { ...team, players, starterNumbers };
+}
+
 /**
  * 名簿 + スタメン背番号から駒を生成。
  * スタメンはフォーメ位置、残りはベンチ帯。

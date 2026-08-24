@@ -69,17 +69,16 @@ export function LiveMatchControls({ state, t, variant }: Props) {
         >
           {t("addGoal")}
         </button>
-      </div>
-      {variant === "drawer" && (
         <button
           type="button"
           className="live-match-card-toggle"
           onClick={() => setShowCard((v) => !v)}
+          aria-expanded={showCard}
         >
           {showCard ? t("liveCardHide") : t("liveCardShow")}
         </button>
-      )}
-      {(variant === "broadcast" || showCard) && (
+      </div>
+      {showCard && (
         <div className="live-match-goal-row">
           <select
             value={cardTeam}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { loadBallImage } from "../assets/ballImages";
 import { drawBoard } from "../canvas/drawBoard";
+import { outerFillForBoard } from "../canvas/drawPitch";
 import { fitField } from "../canvas/layout";
 import {
   pointOnPolyline,
@@ -127,7 +128,7 @@ export function LpHeroBoard() {
       const sceneDraw = heroSceneAt(t, scene, board);
       drawBoard(ctx, pitch, board, sceneDraw, {
         outer,
-        background: "#e8e8e8",
+        background: outerFillForBoard(board),
         previewLine: heroPreviewLine(t),
         ballImage: ballImageRef.current,
       });

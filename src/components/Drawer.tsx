@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { scoreForTeam } from "../canvas/matchBanner";
 import {
   cardsForTeam,
@@ -16,7 +16,7 @@ import {
 } from "../models/types";
 import { kitsFromBoard, sportHasGk } from "../models/kits";
 import { numberFill } from "../canvas/pieceInk";
-import { STARTER_COUNT } from "../presets/roster";
+import { STARTER_COUNT, formatRosterText } from "../presets/roster";
 import { viewPresetsForSport } from "../presets/viewport";
 import { scenePresetsForSport, type ScenePresetId } from "../presets/scenePresets";
 import { LiveMatchControls } from "./LiveMatchControls";
@@ -54,6 +54,7 @@ export function Drawer({ state, t }: Props) {
   const [tab, setTab] = useState<PanelTab>("scenes");
   const [teamSide, setTeamSide] = useState<TeamSide>("home");
   const [rosterText, setRosterText] = useState({ home: "", away: "" });
+  const [rosterDirty, setRosterDirty] = useState({ home: false, away: false });
   const [xiText, setXiText] = useState({ home: "", away: "" });
   const [goalTeam, setGoalTeam] = useState<TeamSide>("home");
   const [goalScorer, setGoalScorer] = useState("");
@@ -62,6 +63,19 @@ export function Drawer({ state, t }: Props) {
   const [cardPlayer, setCardPlayer] = useState("");
   const [cardMinute, setCardMinute] = useState("");
   const [cardKind, setCardKind] = useState<CardKind>("YC");
+
+  const boardRoster = state.board?.roster;
+  useEffect(() => {
+    if (!boardRoster) return;
+    setRosterText((prev) => ({
+      home: rosterDirty.home
+        ? prev.home
+        : formatRosterText(boardRoster.home.players),
+      away: rosterDirty.away
+        ? prev.away
+        : formatRosterText(boardRoster.away.players),
+    }));
+  }, [boardRoster, rosterDirty.home, rosterDirty.away]);
 
   if (!state.drawerOpen || state.broadcast || !state.board || !state.scene)
     return null;
@@ -349,12 +363,13 @@ export function Drawer({ state, t }: Props) {
                 rows={4}
                 style={{ borderLeftColor: kits[teamSide] }}
                 value={rosterText[teamSide]}
-                onChange={(e) =>
+                onChange={(e) => {
+                  setRosterDirty((d) => ({ ...d, [teamSide]: true }));
                   setRosterText((prev) => ({
                     ...prev,
                     [teamSide]: e.target.value,
-                  }))
-                }
+                  }));
+                }}
                 placeholder={t(
                   board.sport === "basketball"
                     ? "rosterPlaceholderBasket"
@@ -371,6 +386,8 @@ export function Drawer({ state, t }: Props) {
               onClick={() => {
                 if (!state.importRoster(teamSide, rosterText[teamSide])) {
                   window.alert(t("rosterParseFail"));
+                } else {
+                  setRosterDirty((d) => ({ ...d, [teamSide]: false }));
                 }
               }}
             >

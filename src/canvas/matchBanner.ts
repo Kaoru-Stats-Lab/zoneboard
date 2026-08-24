@@ -3,9 +3,7 @@ import { BANNER_FONT_STACK } from "../models/types";
 import { kitsFromBoard } from "../models/kits";
 import {
   buildMatchTimeline,
-  cardsForTeam,
   formatCardTimelinePart,
-  formatCardTotals,
   formatGoalTimelinePart,
 } from "./matchCards";
 
@@ -112,11 +110,6 @@ export function drawMatchBanner(
   const away = board.awayTeam.trim() || "Away";
   const homeScore = scoreForTeam(board.goals, "home");
   const awayScore = scoreForTeam(board.goals, "away");
-  const cards = board.cards ?? [];
-  const homeCards = cardsForTeam(cards, "home");
-  const awayCards = cardsForTeam(cards, "away");
-  const homeCardStr = formatCardTotals(homeCards);
-  const awayCardStr = formatCardTotals(awayCards);
   const timeline = buildMatchTimeline(board);
   const hasTimeline = timeline.length > 0;
   const line1Y = hasTimeline ? bannerH * 0.36 : bannerH * 0.5;
@@ -125,8 +118,6 @@ export function drawMatchBanner(
   const titleSize = Math.max(13, Math.min(18, bannerH * 0.28));
   const scoreSize = Math.max(16, Math.min(24, bannerH * 0.38));
   const eventSize = Math.max(11, Math.min(15, bannerH * 0.22));
-  const cardBadgeSize = Math.max(10, Math.min(12, bannerH * 0.19));
-  const gapSm = scoreSize * 0.2;
   const gapMd = scoreSize * 0.35;
   const dash = "–";
   const barBlock = barW + barGap;
@@ -153,18 +144,10 @@ export function drawMatchBanner(
   ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
   const dashW = ctx.measureText(dash).width + gapMd * 2;
 
-  ctx.font = `500 ${cardBadgeSize}px ${BANNER_FONT_STACK}`;
-  const homeCardW = homeCardStr
-    ? ctx.measureText(homeCardStr).width + gapSm
-    : 0;
-  const awayCardW = awayCardStr
-    ? ctx.measureText(awayCardStr).width + gapSm
-    : 0;
-
   const scoreCoreW = homeScoreW + dashW + awayScoreW;
   const nameBudget = Math.max(
     48,
-    canvasW - padX * 2 - titleW - gapSm * 4 - scoreCoreW - homeCardW - awayCardW - barBlock * 2,
+    canvasW - padX * 2 - titleW - gapMd * 4 - scoreCoreW - barBlock * 2,
   );
   const homeNameMax = nameBudget * 0.5;
   const awayNameMax = nameBudget * 0.5;
@@ -178,13 +161,11 @@ export function drawMatchBanner(
   const clusterW =
     barBlock +
     homeNameW +
-    homeCardW +
-    gapSm +
+    gapMd +
     homeScoreW +
     dashW +
     awayScoreW +
-    gapSm +
-    awayCardW +
+    gapMd +
     awayNameW +
     barBlock;
 
@@ -197,17 +178,8 @@ export function drawMatchBanner(
   ctx.fillStyle = BANNER_IVORY;
   ctx.textAlign = "left";
   ctx.fillText(homeNameStr, x, line1Y);
-  x += homeNameW;
+  x += homeNameW + gapMd;
 
-  if (homeCardStr) {
-    x += gapSm * 0.35;
-    ctx.font = `500 ${cardBadgeSize}px ${BANNER_FONT_STACK}`;
-    ctx.fillStyle = BANNER_MUTED;
-    ctx.fillText(homeCardStr, x, line1Y);
-    x += homeCardW - gapSm * 0.35;
-  }
-
-  x += gapSm;
   ctx.font = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
   ctx.fillStyle = SCORE_WHITE;
   ctx.fillText(homeScoreStr, x, line1Y);
@@ -221,16 +193,8 @@ export function drawMatchBanner(
   ctx.font = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
   ctx.fillStyle = SCORE_WHITE;
   ctx.fillText(awayScoreStr, x, line1Y);
-  x += awayScoreW + gapSm;
+  x += awayScoreW + gapMd;
 
-  if (awayCardStr) {
-    ctx.font = `500 ${cardBadgeSize}px ${BANNER_FONT_STACK}`;
-    ctx.fillStyle = BANNER_MUTED;
-    ctx.fillText(awayCardStr, x, line1Y);
-    x += awayCardW;
-  }
-
-  x += gapSm * 0.35;
   ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
   ctx.fillStyle = BANNER_IVORY;
   ctx.fillText(awayNameStr, x, line1Y);

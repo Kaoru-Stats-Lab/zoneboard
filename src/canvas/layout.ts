@@ -15,7 +15,7 @@ export interface PitchRect {
 }
 
 export interface FieldLayout {
-  /** カメラに映る白バッファ込み領域（キャンバス上） */
+  /** カメラに映る外周バッファ込み領域（キャンバス上） */
   outer: PitchRect;
   /** プレーイングエリア（ライン内） */
   pitch: PitchRect;
@@ -24,14 +24,12 @@ export interface FieldLayout {
 
 /**
  * ピッチ寸法に対する外周バッファ比。
- * サブ・スローイン・コーナー・ゴール裏を白地で確保。
+ * サブ・スローイン・コーナー・ゴール裏。塗りは outerFillForBoard。
  */
 export const FIELD_BUFFER = 0.14;
 
 /** OBS 配信キャンバス想定（16:9）。ピッチは歪めず contain。 */
 export const BROADCAST_FRAME_ASPECT = 16 / 9;
-
-export const BROADCAST_LETTERBOX = "#e8e8e8";
 
 /** キャンバス内に収まる最大の 16:9 矩形（中央配置） */
 export function broadcastFrameRect(canvasW: number, canvasH: number): PitchRect {

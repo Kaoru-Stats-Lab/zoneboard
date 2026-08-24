@@ -9,9 +9,11 @@ import type {
   WatermarkSettings,
 } from "../models/types";
 import {
+  BANNER_FONT_STACK,
   UI_FONT_STACK,
   usesPreferredFoot,
 } from "../models/types";
+import { truncateByWidth } from "./matchBanner";
 import {
   fitNumberFontSize,
   normalizePieceNumber,
@@ -227,7 +229,7 @@ export function drawBoard(
   } = {},
 ) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.fillStyle = opts.background ?? "#e8e8e8";
+  ctx.fillStyle = opts.background ?? outerFillForBoard(board);
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   const outer =
@@ -329,7 +331,6 @@ export function drawBoard(
       ballRadius(pitch, scale) * ballBoost,
       !!opts.selectedBall || !!opts.dragVisual?.ball,
       ballBoost > 1,
-      sel,
       opts.ballImage ?? null,
     );
   }
@@ -372,8 +373,6 @@ function drawPiece(
   const { x, y } = fromNorm(mapped.x, mapped.y, pitch);
   const discipline = pieceDiscipline(board, piece);
   const fillColor = pieceFillColor(piece);
-  const ink = numberFill(fillColor);
-  const inkHalo = numberHalo(fillColor);
   const darkFill = relativeLuminance(fillColor) < 0.15;
   const idleEdgeW = darkFill ? 2 : 1.5;
 
@@ -449,12 +448,12 @@ function drawPiece(
   ctx.lineTo(fx - ox, fy - oy);
   ctx.lineTo(fx + ox, fy + oy);
   ctx.closePath();
-  ctx.fillStyle = ink;
+  ctx.fillStyle = "#fff";
   ctx.fill();
-  // 向きは二次情報。選択ハローは円と破線リングに任せ、三角は芝から切るヘアラインだけ。
+  // 向きは二次情報。キットの番号インクに追従させない（黄GKだけ黒三角になる）
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
-  ctx.strokeStyle = inkHalo;
+  ctx.strokeStyle = "rgba(0,0,0,0.55)";
   ctx.lineWidth = Math.max(0.7, Math.min(1.05, r * 0.048));
   ctx.stroke();
   ctx.lineJoin = "miter";
@@ -472,6 +471,8 @@ function drawPiece(
   if (displayNumber) {
     drawPieceNumberLabel(ctx, x, y, displayNumber, fillColor, r);
   }
+
+  drawPieceNameCaption(ctx, x, y, r, piece, board);
 
   // 利き足（サカ系のみ）。番号優先のため外側に配置
   const foot = usesPreferredFoot(board.sport) ? piece.preferredFoot : null;
@@ -493,6 +494,45 @@ function drawPiece(
     ctx.textBaseline = "middle";
     ctx.fillText(mark, mx, my);
   }
+}
+
+function captionNameForPiece(piece: Piece, board: BoardDocument): string {
+  const own = piece.label.trim();
+  if (own) return own;
+  const num = normalizePieceNumber(piece.number);
+  if (!num) return "";
+  return (
+    board.roster[piece.team].players
+      .find((p) => p.number === num)
+      ?.label.trim() ?? ""
+  );
+}
+
+/** PL lineup 文法: 円の下に `11 Salah`。写真は使わない。番号は円内にも残す。 */
+function drawPieceNameCaption(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  piece: Piece,
+  board: BoardDocument,
+) {
+  const name = captionNameForPiece(piece, board);
+  if (!name) return;
+  const num = normalizePieceNumber(piece.number);
+  const text = num ? `${num} ${name}` : name;
+  const fs = Math.max(10, Math.min(14, r * 0.58));
+  ctx.font = `600 ${fs}px ${BANNER_FONT_STACK}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  const shown = truncateByWidth(ctx, text, r * 4.4);
+  const ty = y + r + Math.max(3, r * 0.18);
+  ctx.lineJoin = "round";
+  ctx.lineWidth = Math.max(2.4, fs * 0.22);
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.72)";
+  ctx.strokeText(shown, x, ty);
+  ctx.fillStyle = "#f3f3f1";
+  ctx.fillText(shown, x, ty);
 }
 
 /** 芝上でも読める選択リング（暗ハロー＋白〜淡黄破線） */
@@ -519,6 +559,33 @@ function drawPieceSelectionRing(
   ctx.restore();
 }
 
+/** 芝上のアクティブ縁。ボールはキットではないので設定の選択色は使わない。 */
+function strokeBallRim(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  selected: boolean,
+  idleColor: string,
+) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  if (selected) {
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "rgba(0,0,0,0.55)";
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.lineWidth = 2.25;
+    ctx.strokeStyle = "#fff";
+    ctx.stroke();
+  } else {
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = idleColor;
+    ctx.stroke();
+  }
+}
+
 function drawBall(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,
@@ -527,7 +594,6 @@ function drawBall(
   r: number,
   selected: boolean,
   dragging: boolean,
-  selectionColor: string,
   ballImage: HTMLImageElement | null,
 ) {
   const mapped = worldToPitch(ball.x, ball.y, board);
@@ -541,6 +607,9 @@ function drawBall(
     ctx.shadowOffsetY = r * 0.2;
   }
 
+  const idleRim =
+    board.sport === "basketball" ? "#5d3a1a" : "#1a1a1a";
+
   if (ballImage && ballImage.complete && ballImage.naturalWidth > 0) {
     // 画像の透明ギャップからピッチが透けないよう、不透明な下地円を先に塗る
     ctx.beginPath();
@@ -549,17 +618,13 @@ function drawBall(
     ctx.fill();
     const d = r * 2;
     ctx.drawImage(ballImage, x - r, y - r, d, d);
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.lineWidth = selected ? 2.5 : 1.2;
-    ctx.strokeStyle = selected ? selectionColor : "#1a1a1a";
-    ctx.stroke();
+    strokeBallRim(ctx, x, y, r, selected, idleRim);
   } else if (board.sport === "basketball") {
-    drawBasketballBall(ctx, x, y, r, selected, selectionColor);
+    drawBasketballBall(ctx, x, y, r, selected);
   } else if (board.sport === "volleyball") {
-    drawVolleyballBall(ctx, x, y, r, selected, selectionColor);
+    drawVolleyballBall(ctx, x, y, r, selected);
   } else {
-    drawSoccerBallFallback(ctx, x, y, r, selected, selectionColor);
+    drawSoccerBallFallback(ctx, x, y, r, selected);
   }
 
   if (dragging) ctx.restore();
@@ -578,15 +643,11 @@ function drawSoccerBallFallback(
   y: number,
   r: number,
   selected: boolean,
-  selectionColor: string,
 ) {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = "#000000";
   ctx.fill();
-  ctx.lineWidth = selected ? 2.5 : 1.4;
-  ctx.strokeStyle = selected ? selectionColor : "#1a1a1a";
-  ctx.stroke();
 
   ctx.save();
   ctx.translate(x, y);
@@ -620,6 +681,7 @@ function drawSoccerBallFallback(
     ctx.stroke();
   }
   ctx.restore();
+  strokeBallRim(ctx, x, y, r, selected, "#1a1a1a");
 }
 
 function drawBasketballBall(
@@ -628,15 +690,11 @@ function drawBasketballBall(
   y: number,
   r: number,
   selected: boolean,
-  selectionColor: string,
 ) {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = "#e67e22";
   ctx.fill();
-  ctx.lineWidth = selected ? 2.5 : 1.4;
-  ctx.strokeStyle = selected ? selectionColor : "#5d3a1a";
-  ctx.stroke();
   ctx.save();
   ctx.translate(x, y);
   ctx.strokeStyle = "#5d3a1a";
@@ -656,6 +714,7 @@ function drawBasketballBall(
   ctx.arc(0, 0, r * 0.55, Math.PI / 2, -Math.PI / 2);
   ctx.stroke();
   ctx.restore();
+  strokeBallRim(ctx, x, y, r, selected, "#5d3a1a");
 }
 
 function drawVolleyballBall(
@@ -664,15 +723,11 @@ function drawVolleyballBall(
   y: number,
   r: number,
   selected: boolean,
-  selectionColor: string,
 ) {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = "#f8f8f8";
   ctx.fill();
-  ctx.lineWidth = selected ? 2.5 : 1.4;
-  ctx.strokeStyle = selected ? selectionColor : "#1a1a1a";
-  ctx.stroke();
   ctx.save();
   ctx.translate(x, y);
   const colors = ["#2980b9", "#e74c3c", "#f8f8f8"];
@@ -686,12 +741,8 @@ function drawVolleyballBall(
     ctx.fillStyle = colors[i];
     ctx.fill();
   }
-  ctx.beginPath();
-  ctx.arc(0, 0, r, 0, Math.PI * 2);
-  ctx.strokeStyle = selected ? selectionColor : "#1a1a1a";
-  ctx.lineWidth = selected ? 2.5 : 1.4;
-  ctx.stroke();
   ctx.restore();
+  strokeBallRim(ctx, x, y, r, selected, "#1a1a1a");
 }
 
 function drawObject(

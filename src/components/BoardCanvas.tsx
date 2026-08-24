@@ -15,8 +15,8 @@ import {
   hitTestWatermark,
   pitchToWorld,
 } from "../canvas/drawBoard";
+import { outerFillForBoard } from "../canvas/drawPitch";
 import {
-  BROADCAST_LETTERBOX,
   broadcastFrameRect,
   fitSurfaceLayout,
   toNorm,
@@ -357,7 +357,7 @@ export function BoardCanvas({
       watermark: state.watermark,
       watermarkImage,
       outer,
-      background: BROADCAST_LETTERBOX,
+      background: outerFillForBoard(board),
       dragVisual:
         d?.mode === "piece" || d?.mode === "piece-line"
           ? { pieceId: d.id, boost: d.boost }
@@ -1056,6 +1056,7 @@ export function BoardCanvas({
       ref={boardSurfaceRef}
       data-board-surface="true"
       data-tool={state.tool}
+      style={{ background: outerFillForBoard(board) }}
     >
       <canvas
         ref={canvasRef}

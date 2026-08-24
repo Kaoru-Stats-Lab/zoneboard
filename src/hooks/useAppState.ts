@@ -57,6 +57,7 @@ import {
   applyLineupToScenePieces,
   parseRosterText,
   parseStarterNumbers,
+  upsertRosterPlayer,
 } from "../presets/roster";
 import {
   DEFAULT_VIEWPORT,
@@ -642,37 +643,82 @@ export function useAppState() {
 
   const patchPiece = useCallback(
     (id: string, patch: Partial<Piece>, record = true) => {
-      updateScene((s) => {
-        const existing = s.pieces.find((p) => p.id === id);
+      const touchesIdentity =
+        patch.label !== undefined ||
+        patch.number !== undefined ||
+        patch.preferredFoot !== undefined ||
+        patch.heightCm !== undefined ||
+        patch.weightKg !== undefined;
+
+      updateBoard((b) => {
+        const scene = getActiveScene(b);
+        const existing = scene.pieces.find((p) => p.id === id);
+        if (!existing) return b;
         const normalized: Partial<Piece> = { ...patch };
         if (patch.number !== undefined) {
           normalized.number = normalizePieceNumber(patch.number);
         }
-        if (patch.kit !== undefined && existing && board) {
+        if (patch.kit !== undefined) {
           normalized.color = colorForKit(
-            kitsFromBoard(board),
+            kitsFromBoard(b),
             existing.team,
             patch.kit === "gk" ? "gk" : "outfield",
           );
-        } else if (patch.color !== undefined && existing) {
+        } else if (patch.color !== undefined) {
           normalized.color = normalizePieceColor(
             patch.color,
             existing.team === "home" ? HOME_COLOR : AWAY_COLOR,
           );
         }
-        const pieces = s.pieces.map((p) =>
-          p.id === id ? { ...p, ...normalized } : p,
-        );
-        const piece = pieces.find((p) => p.id === id);
-        let ball = s.ball;
-        if (piece) {
-          const followed = ballFollowingPiece(ball, piece);
-          if (followed) ball = followed;
+        const nextPiece = { ...existing, ...normalized };
+        const identity = {
+          number: nextPiece.number,
+          label: nextPiece.label,
+          preferredFoot: nextPiece.preferredFoot,
+          heightCm: nextPiece.heightCm,
+          weightKg: nextPiece.weightKg,
+        };
+        const prevNum = normalizePieceNumber(existing.number);
+        let roster = b.roster;
+        if (touchesIdentity && identity.number.trim()) {
+          roster = {
+            ...b.roster,
+            [existing.team]: upsertRosterPlayer(
+              b.roster[existing.team],
+              existing.number,
+              identity,
+            ),
+          };
         }
-        return { ...s, pieces, ball };
+        return {
+          ...b,
+          roster,
+          scenes: b.scenes.map((s) => {
+            const pieces = s.pieces.map((p) => {
+              if (p.id === id) return { ...p, ...normalized };
+              if (
+                touchesIdentity &&
+                p.team === existing.team &&
+                normalizePieceNumber(p.number) === prevNum
+              ) {
+                return { ...p, ...identity };
+              }
+              return p;
+            });
+            let ball = s.ball;
+            if (s.id === b.activeSceneId) {
+              const piece = pieces.find((p) => p.id === id);
+              if (piece) {
+                const followed = ballFollowingPiece(ball, piece);
+                if (followed) ball = followed;
+              }
+            }
+            return { ...s, pieces, ball };
+          }),
+        };
       }, record);
     },
-    [board, updateScene],
+    [updateBoard],
   );
 
   const setKitColor = useCallback(

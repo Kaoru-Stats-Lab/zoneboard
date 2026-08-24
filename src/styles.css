@@ -913,7 +913,7 @@ button:disabled {
 }
 
 .board-surface.broadcast {
-  background: #e8e8e8;
+  background: #1f5230;
 }
 
 .board-surface canvas {
@@ -1369,14 +1369,16 @@ button:disabled {
   position: absolute;
   left: 8px;
   bottom: 8px;
-  z-index: 20;
+  z-index: 22;
   max-width: min(calc(100% - 120px), 520px);
-  padding: 0.35rem 0.45rem;
+  padding: 0.4rem 0.5rem;
   border-radius: var(--zb-radius);
-  background: rgba(18, 18, 18, 0.58);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 0.78rem;
+  background: var(--zb-panel);
+  border: 1px solid var(--zb-border-strong);
+  color: var(--zb-ink);
+  font-size: 0.82rem;
+  color-scheme: dark;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
 }
 
 .live-match-score {
@@ -1395,7 +1397,7 @@ button:disabled {
 .live-match-controls select,
 .live-match-controls input {
   flex: 1;
-  min-width: 3.5rem;
+  min-width: 4.5rem;
   padding: 0.22rem 0.35rem;
   border: 1px solid var(--zb-border);
   border-radius: var(--zb-radius);
@@ -1404,20 +1406,30 @@ button:disabled {
   color: var(--zb-ink);
 }
 
+.live-match-controls input:not(.live-match-minute) {
+  min-width: 8rem;
+}
+
 .live-match-controls--broadcast select,
 .live-match-controls--broadcast input {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: inherit;
+  background: var(--zb-panel-elevated);
+  border-color: var(--zb-border-strong);
+  color: var(--zb-ink);
 }
 
 .live-match-controls--broadcast input::placeholder {
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--zb-ink-muted);
+  opacity: 1;
+}
+
+.live-match-controls--broadcast option {
+  background: var(--zb-panel);
+  color: var(--zb-ink);
 }
 
 .live-match-minute {
-  max-width: 3.25rem;
-  flex: 0 0 3.25rem !important;
+  max-width: 3.5rem;
+  flex: 0 0 3.5rem !important;
 }
 
 .live-match-controls button {
@@ -1427,19 +1439,27 @@ button:disabled {
 }
 
 .live-match-controls--broadcast button {
-  border-color: rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.1);
-  color: inherit;
+  border-color: var(--zb-border-strong);
+  background: var(--zb-panel-elevated);
+  color: var(--zb-ink);
 }
 
 .live-match-card-toggle {
-  align-self: flex-start;
   font-size: 0.75rem;
   color: var(--zb-ink-muted);
   border: none;
   background: transparent;
-  padding: 0.15rem 0;
+  padding: 0.22rem 0.35rem;
   text-decoration: underline;
+}
+
+.live-match-controls--broadcast .live-match-card-toggle {
+  text-decoration: none;
+  border: 1px solid var(--zb-border-strong);
+  background: var(--zb-panel-elevated);
+  color: var(--zb-ink);
+  padding: 0.22rem 0.45rem;
+  font-size: 0.78rem;
 }
 
 .broadcast-focus-hint {
