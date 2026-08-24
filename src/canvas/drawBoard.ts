@@ -508,7 +508,11 @@ function captionNameForPiece(piece: Piece, board: BoardDocument): string {
   );
 }
 
-/** PL lineup 文法: 円の下に `11 Salah`。写真は使わない。番号は円内にも残す。 */
+/**
+ * 円内が背番号。下は名前だけ。番号を二度出さない。
+ * サイズは円に比例（ズームで伸びる）。下限は 1080p 全画面＋隅ワイプで読める線。
+ * ZB 自身が小さいワイプのときは番号が残ればよい。名前をそのケースまで大きくしない。
+ */
 function drawPieceNameCaption(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -519,13 +523,11 @@ function drawPieceNameCaption(
 ) {
   const name = captionNameForPiece(piece, board);
   if (!name) return;
-  const num = normalizePieceNumber(piece.number);
-  const text = num ? `${num} ${name}` : name;
-  const fs = Math.max(10, Math.min(14, r * 0.58));
+  const fs = Math.max(11, r * 0.52);
   ctx.font = `600 ${fs}px ${BANNER_FONT_STACK}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  const shown = truncateByWidth(ctx, text, r * 4.4);
+  const shown = truncateByWidth(ctx, name, r * 3.8);
   const ty = y + r + Math.max(3, r * 0.18);
   ctx.lineJoin = "round";
   ctx.lineWidth = Math.max(2.4, fs * 0.22);
