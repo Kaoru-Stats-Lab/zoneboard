@@ -894,6 +894,39 @@ button:disabled {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   max-height: calc(100% - 16px);
   overflow-y: auto;
+  touch-action: none;
+}
+
+.tool-rail-grip {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 14px;
+  padding: 2px 0 4px;
+  margin: -2px 0 0;
+  border: none;
+  border-radius: var(--zb-radius);
+  background: transparent;
+  color: var(--zb-ink-muted);
+  cursor: grab;
+}
+
+.tool-rail-grip:active {
+  cursor: grabbing;
+}
+
+.tool-rail-grip:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tool-rail-grip-bars {
+  display: block;
+  width: 18px;
+  height: 4px;
+  border-top: 2px dotted currentColor;
+  border-bottom: 2px dotted currentColor;
+  opacity: 0.65;
 }
 
 .tool-rail button {
@@ -940,6 +973,23 @@ button:disabled {
 .tool-rail-wipe:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.view-template-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.view-template-row button:first-child {
+  flex: 1;
+  text-align: left;
+}
+
+.view-template-row .danger-text {
+  color: var(--zb-danger, #c0392b);
+  font-size: 0.78rem;
 }
 
 /* Piece inspector — selection properties */

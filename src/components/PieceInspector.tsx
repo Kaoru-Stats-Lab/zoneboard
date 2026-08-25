@@ -42,7 +42,6 @@ export function PieceInspector({ state, t }: Props) {
           (p) => normalizePieceNumber(p.number) === normalizedNumber,
         )?.label.trim() ?? "")
       : "";
-  const displayName = selected.label.trim() || rosterName;
   const duplicateNumber =
     normalizedNumber.length > 0 &&
     state.scene.pieces.some(
@@ -84,8 +83,8 @@ export function PieceInspector({ state, t }: Props) {
       <label>
         {t("name")}
         <input
-          value={displayName}
-          placeholder={t("pieceNamePh")}
+          value={selected.label}
+          placeholder={rosterName || t("pieceNamePh")}
           onFocus={() => state.captureUndo()}
           onChange={(e) =>
             state.patchPiece(selected.id, { label: e.target.value }, false)

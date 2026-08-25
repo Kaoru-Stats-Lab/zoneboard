@@ -77,6 +77,7 @@ export function createBoard(
     pieces: formationPieces(sport, true, benchCount, kits),
     ball: { x: 0.5, y: 0.5 },
     objects: [],
+    viewport: { ...DEFAULT_VIEWPORT },
   });
   return {
     schemaVersion: 2,
@@ -173,6 +174,7 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     scenes = scenes.map((s) => ({
       ...s,
       hideHalf: s.hideHalf ?? "none",
+      teamFocus: s.teamFocus ?? "both",
       phase: s.phase ?? "custom",
       label: s.label || defaultSceneName(1, raw.sport ?? "soccer"),
       pieces: (s.pieces ?? []).map((p) => ({
@@ -209,6 +211,16 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     ...s,
     pieces: applyGkColorsOnMigrate(tagKeepers(sport, s.pieces ?? []), kits),
   }));
+
+  const legacyViewport = raw.viewport ?? { ...DEFAULT_VIEWPORT };
+  scenes = scenes.map((s) => ({
+    ...s,
+    viewport: s.viewport ?? { ...legacyViewport },
+  }));
+
+  const viewportTemplates =
+    (raw as { viewportTemplates?: BoardDocument["viewportTemplates"] })
+      .viewportTemplates ?? undefined;
 
   return {
     schemaVersion: 2,
@@ -258,7 +270,8 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     benchCount,
     scenes,
     activeSceneId: activeSceneId!,
-    viewport: raw.viewport ?? { ...DEFAULT_VIEWPORT },
+    viewport: legacyViewport,
+    viewportTemplates,
     roster: raw.roster ?? { home: emptyRoster(), away: emptyRoster() },
     updatedAt: raw.updatedAt ?? new Date().toISOString(),
   };

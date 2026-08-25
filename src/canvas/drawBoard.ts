@@ -49,6 +49,7 @@ import {
   outerFillForBoard,
 } from "./drawPitch";
 import { fromNorm, pointerHitSlop, type PitchRect } from "./layout";
+import { ZOOM_MAX, ZOOM_MIN } from "../presets/viewport";
 
 type ZoneBounds = {
   x0: number;
@@ -176,17 +177,44 @@ export function pitchToWorld(
   return { x: 0.5 + x / 2, y };
 }
 
+/**
+ * Match Piece Size は触らず、ズームで半径だけ抑える。
+ * 画面上はフル画角と同程度の大きさ（ピッチ線だけ寄る）。
+ */
+function densityZoom(board: BoardDocument): number {
+  const z = board.viewport?.zoom ?? 1;
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
+}
+
 function pieceRadius(
   pitch: PitchRect,
-  scale: number,
+  board: BoardDocument,
   role: "starter" | "bench" = "starter",
 ): number {
-  const base = Math.min(pitch.w, pitch.h) * 0.028 * scale;
+  const scale = board.pieceScale ?? 1;
+  const base =
+    (Math.min(pitch.w, pitch.h) * 0.028 * scale) / densityZoom(board);
   return role === "bench" ? base * 0.48 : base;
 }
 
-function ballRadius(pitch: PitchRect, scale: number): number {
-  return Math.min(pitch.w, pitch.h) * 0.016 * Math.min(1.1, scale);
+function ballRadius(pitch: PitchRect, board: BoardDocument): number {
+  const scale = board.pieceScale ?? 1;
+  return (
+    (Math.min(pitch.w, pitch.h) * 0.016 * Math.min(1.1, scale)) /
+    densityZoom(board)
+  );
+}
+
+/** Pen は駒と同じ密度補正。芝ハローなし前提の細めマーカー。 */
+function penStrokeWidth(
+  pitch: PitchRect,
+  board: BoardDocument,
+  strokeWidth: number,
+): number {
+  return Math.max(
+    1.25,
+    (Math.min(pitch.w, pitch.h) * 0.002 * strokeWidth) / densityZoom(board),
+  );
 }
 
 export type DragVisual = {
@@ -278,6 +306,7 @@ export function drawBoard(
       ctx,
       pitch,
       board,
+      scene,
       obj,
       obj.id === opts.selectedObjectId,
       sel,
@@ -290,6 +319,7 @@ export function drawBoard(
       ctx,
       pitch,
       board,
+      scene,
       {
         id: "__preview__",
         type: "line",
@@ -313,12 +343,11 @@ export function drawBoard(
 
   const selectedIds = new Set(opts.selectedPieceIds ?? []);
   if (opts.selectedPieceId) selectedIds.add(opts.selectedPieceId);
-  const scale = board.pieceScale ?? 1;
   for (const piece of scene.pieces) {
-    if (!isPieceDrawn(piece, scene.hideHalf)) continue;
+    if (!isPieceDrawn(piece, scene)) continue;
     const boost =
       opts.dragVisual?.pieceId === piece.id ? opts.dragVisual.boost : 1;
-    const r = pieceRadius(pitch, scale, piece.role) * boost;
+    const r = pieceRadius(pitch, board, piece.role) * boost;
     drawPiece(
       ctx,
       pitch,
@@ -338,7 +367,7 @@ export function drawBoard(
       pitch,
       board,
       scene.ball,
-      ballRadius(pitch, scale) * ballBoost,
+      ballRadius(pitch, board) * ballBoost,
       !!opts.selectedBall || !!opts.dragVisual?.ball,
       ballBoost > 1,
       opts.ballImage ?? null,
@@ -834,31 +863,33 @@ function drawObject(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,
   board: BoardDocument,
+  scene: Scene,
   obj: DrawObject,
   selected: boolean,
   selectionColor: string,
 ) {
   if (obj.type === "line") {
-    const pts = linePointsToPixels(obj.points, board, pitch);
-    if (pts.length < 2) return;
+    const raw = linePointsToPixels(obj.points, board, pitch);
+    if (raw.length < 2) return;
     const lw = Math.max(
       1.5,
       Math.min(pitch.w, pitch.h) * 0.004 * obj.strokeWidth,
     );
     const ink = lineColorForBoard(board, obj.kind);
+    const laid = layoutLineForArrow(raw, board, pitch, scene, lw);
     if (selected && obj.kind !== "pass") {
       ctx.strokeStyle = selectionColor;
       ctx.lineWidth = lw + 4;
       ctx.globalAlpha = 0.35;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      strokePolyline(ctx, pts);
+      strokePolyline(ctx, laid.pts);
       ctx.globalAlpha = 1;
     }
     if (selected && obj.kind === "pass") {
-      strokePassLine(ctx, pts, lw + 1.5, selectionColor, board, { alpha: 0.4 });
+      strokePassLine(ctx, laid, lw + 1.5, selectionColor, board, { alpha: 0.4 });
     }
-    strokeLineByKind(ctx, pts, lw, ink, obj.kind, board);
+    strokeLineByKind(ctx, laid, lw, ink, obj.kind, board);
     return;
   }
 
@@ -882,15 +913,13 @@ function drawObject(
 
   if (obj.type === "pen") {
     if (obj.points.length < 2) return;
-    const lw = Math.max(
-      1.5,
-      Math.min(pitch.w, pitch.h) * 0.003 * obj.strokeWidth,
-    );
+    // 芝の白ハローは不要（白インク自体が読める。ハローは太く見えてホバーっぽい）
+    const lw = penStrokeWidth(pitch, board, obj.strokeWidth);
     const ink = penColorForBoard(board);
-    if (selected) {
+    if (selected && !usesGrassInk(board)) {
       strokePenPath(ctx, board, pitch, obj.points, lw + 4, selectionColor, 0.35);
     }
-    strokePenPath(ctx, board, pitch, obj.points, lw, ink, 1, usesGrassInk(board));
+    strokePenPath(ctx, board, pitch, obj.points, lw, ink, 1, false);
     return;
   }
 
@@ -1046,7 +1075,7 @@ function drawPenPreview(
   board: BoardDocument,
   points: { x: number; y: number }[],
 ) {
-  const lw = Math.max(1.5, Math.min(pitch.w, pitch.h) * 0.003 * 2);
+  const lw = penStrokeWidth(pitch, board, 2);
   const ink = penColorForBoard(board);
 
   if (points.length === 1) {
@@ -1070,7 +1099,7 @@ function drawPenPreview(
     return;
   }
 
-  strokePenPath(ctx, board, pitch, points, lw, ink, 1, usesGrassInk(board));
+  strokePenPath(ctx, board, pitch, points, lw, ink, 1, false);
 }
 
 function lwOnPitch(pitch: PitchRect, base: number): number {
@@ -1079,22 +1108,23 @@ function lwOnPitch(pitch: PitchRect, base: number): number {
 
 function strokeLineByKind(
   ctx: CanvasRenderingContext2D,
-  pts: { x: number; y: number }[],
+  laid: LaidArrowLine,
   lw: number,
   ink: string,
   kind: LineKind,
   board: BoardDocument,
 ) {
   if (kind === "dribble") {
-    strokeDribbleLine(ctx, pts, lw, ink, board);
+    strokeDribbleLine(ctx, laid, lw, ink, board);
     return;
   }
 
   if (kind === "pass") {
-    strokePassLine(ctx, pts, lw, ink, board);
+    strokePassLine(ctx, laid, lw, ink, board);
     return;
   }
 
+  const pts = laid.pts;
   const draw = (color: string, width: number) => {
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
@@ -1104,7 +1134,9 @@ function strokeLineByKind(
       ctx.setLineDash([]);
       ctx.lineCap = "round";
       strokePolyline(ctx, pts);
-      if (color === ink) drawArrowHead(ctx, pts, width, ink);
+      if (color === ink) {
+        drawArrowHeadAt(ctx, laid.tip, laid.ang, lw, ink, laid.head);
+      }
     } else if (kind === "screen") {
       ctx.setLineDash([]);
       ctx.lineCap = "round";
@@ -1132,12 +1164,13 @@ function strokeLineByKind(
 /** 欧米標準: 破線 = パス。芝生では白ハロー不可（隙間から白矩形が見える）→ 影のみ */
 function strokePassLine(
   ctx: CanvasRenderingContext2D,
-  pts: { x: number; y: number }[],
+  laid: LaidArrowLine,
   lw: number,
   ink: string,
   board: BoardDocument,
   opts?: { alpha?: number },
 ) {
+  const pts = laid.pts;
   const dash = Math.max(8, lw * 2.4);
   const gap = Math.max(10, lw * 3);
   ctx.save();
@@ -1153,17 +1186,18 @@ function strokePassLine(
   }
   strokePolyline(ctx, pts);
   ctx.restore();
-  drawArrowHead(ctx, pts, lw, ink);
+  drawArrowHeadAt(ctx, laid.tip, laid.ang, lw, ink, laid.head);
 }
 
 /** ドリブル波線: 白ハロー二重描画はモアレになるので影のみ */
 function strokeDribbleLine(
   ctx: CanvasRenderingContext2D,
-  pts: { x: number; y: number }[],
+  laid: LaidArrowLine,
   lw: number,
   ink: string,
   board: BoardDocument,
 ) {
+  const pts = laid.pts;
   const amp = Math.max(2.2, lw * 0.72);
   const wavy = wavyPathFromPolyline(pts, amp);
 
@@ -1183,8 +1217,8 @@ function strokeDribbleLine(
     strokeWavyPath(ctx, wavy);
   }
 
-  const tip = wavy[wavy.length - 1];
-  drawArrowHeadAt(ctx, tip, endTangentAngle(pts), lw, ink);
+  // 波の先端ではなく、駒クリア後の tip／接線を使う
+  drawArrowHeadAt(ctx, laid.tip, laid.ang, lw, ink, laid.head);
 }
 
 function strokePenPath(
@@ -1323,6 +1357,116 @@ function linePointsToPixels(
   return out;
 }
 
+type LaidArrowLine = {
+  pts: { x: number; y: number }[];
+  tip: { x: number; y: number };
+  ang: number;
+  head: number;
+};
+
+/** 終点が駒上なら、駒半径＋余白ぶん線を手前で止め矢印を駒の外に置く。 */
+function layoutLineForArrow(
+  pts: { x: number; y: number }[],
+  board: BoardDocument,
+  pitch: PitchRect,
+  scene: Scene,
+  lw: number,
+): LaidArrowLine {
+  const fallbackAng = endTangentAngle(pts);
+  const fallbackHead = arrowHeadLen(lw, null);
+  if (pts.length < 2) {
+    const tip = pts[pts.length - 1] ?? { x: 0, y: 0 };
+    return { pts, tip, ang: fallbackAng, head: fallbackHead };
+  }
+
+  const end = pts[pts.length - 1];
+  const host = pieceNearPixel(scene, board, pitch, end.x, end.y);
+  const head = arrowHeadLen(lw, host?.r ?? null);
+  if (!host) {
+    return { pts, tip: end, ang: fallbackAng, head };
+  }
+
+  // 先端が駒縁の外側に来るよう、半径＋ギャップ＋矢印の厚み分を手前に下げる
+  const inset = host.r + Math.max(2, lw * 0.85) + head * 0.12;
+  const trimmed = trimPolylineEnd(pts, inset);
+  if (trimmed.length < 2) {
+    return { pts, tip: end, ang: fallbackAng, head };
+  }
+  const tip = trimmed[trimmed.length - 1];
+  return {
+    pts: trimmed,
+    tip,
+    ang: endTangentAngle(trimmed),
+    head,
+  };
+}
+
+function arrowHeadLen(lw: number, pieceR: number | null): number {
+  const byStroke = 8 + lw * 2;
+  if (pieceR == null) return byStroke;
+  return Math.max(byStroke, pieceR * 0.55);
+}
+
+function pieceNearPixel(
+  scene: Scene,
+  board: BoardDocument,
+  pitch: PitchRect,
+  px: number,
+  py: number,
+): { piece: Piece; r: number; cx: number; cy: number } | null {
+  let best: { piece: Piece; r: number; cx: number; cy: number; d: number } | null =
+    null;
+  for (const piece of scene.pieces) {
+    if (!isPieceDrawn(piece, scene)) continue;
+    const mapped = worldToPitch(piece.x, piece.y, board);
+    if (!mapped) continue;
+    const { x: cx, y: cy } = fromNorm(mapped.x, mapped.y, pitch);
+    const r = pieceRadius(pitch, board, piece.role);
+    const d = Math.hypot(px - cx, py - cy);
+    if (d > r * 1.45) continue;
+    if (!best || d < best.d) best = { piece, r, cx, cy, d };
+  }
+  return best;
+}
+
+/** パス終点から inset px 手前で切る（短すぎるときは全長の 45% まで）。 */
+function trimPolylineEnd(
+  pts: { x: number; y: number }[],
+  inset: number,
+): { x: number; y: number }[] {
+  if (pts.length < 2 || inset <= 0) return pts.map((p) => ({ ...p }));
+  let total = 0;
+  for (let i = 1; i < pts.length; i++) {
+    total += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+  }
+  const cut = Math.min(inset, total * 0.45);
+  if (cut <= 0) return pts.map((p) => ({ ...p }));
+
+  let remaining = cut;
+  const out = pts.map((p) => ({ ...p }));
+  while (out.length >= 2 && remaining > 0) {
+    const a = out[out.length - 2];
+    const b = out[out.length - 1];
+    const seg = Math.hypot(b.x - a.x, b.y - a.y);
+    if (seg <= 1e-6) {
+      out.pop();
+      continue;
+    }
+    if (seg <= remaining) {
+      remaining -= seg;
+      out.pop();
+      continue;
+    }
+    const t = 1 - remaining / seg;
+    out[out.length - 1] = {
+      x: a.x + (b.x - a.x) * t,
+      y: a.y + (b.y - a.y) * t,
+    };
+    remaining = 0;
+  }
+  return out.length >= 2 ? out : pts.map((p) => ({ ...p }));
+}
+
 /** 中点を通る二次曲線でなめらかに（制御点操作なし） */
 function strokePolyline(
   ctx: CanvasRenderingContext2D,
@@ -1344,32 +1488,6 @@ function strokePolyline(
     ctx.quadraticCurveTo(prev.x, prev.y, last.x, last.y);
   }
   ctx.stroke();
-}
-
-function drawArrowHead(
-  ctx: CanvasRenderingContext2D,
-  pts: { x: number; y: number }[],
-  lw: number,
-  fill: string,
-) {
-  if (pts.length < 2) return;
-  const p2 = pts[pts.length - 1];
-  const p1 = pts[pts.length - 2];
-  const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-  const head = 8 + lw * 2;
-  ctx.beginPath();
-  ctx.moveTo(p2.x, p2.y);
-  ctx.lineTo(
-    p2.x - head * Math.cos(ang - Math.PI / 7),
-    p2.y - head * Math.sin(ang - Math.PI / 7),
-  );
-  ctx.lineTo(
-    p2.x - head * Math.cos(ang + Math.PI / 7),
-    p2.y - head * Math.sin(ang + Math.PI / 7),
-  );
-  ctx.closePath();
-  ctx.fillStyle = fill;
-  ctx.fill();
 }
 
 /** スクリーン（T字）— 線先端に走行方向へ垂直なバー */
@@ -1451,8 +1569,7 @@ function pieceHitRadiusNorm(
   pitch: PitchRect,
   piece: Piece,
 ): number {
-  const scale = board.pieceScale ?? 1;
-  const r = pieceRadius(pitch, scale, piece.role);
+  const r = pieceRadius(pitch, board, piece.role);
   return (r / Math.min(pitch.w, pitch.h)) * pointerHitSlop();
 }
 
@@ -1513,7 +1630,7 @@ function hitTestPieceFromTop(
   for (let i = scene.pieces.length - 1; i >= 0; i--) {
     const p = scene.pieces[i];
     if (excludeId && p.id === excludeId) continue;
-    if (!isPieceDrawn(p, scene.hideHalf)) continue;
+    if (!isPieceDrawn(p, scene)) continue;
     const m = pieceCenterNorm(board, p);
     if (!m) continue;
     const rn = pieceHitRadiusNorm(board, pitch, p) * pad;
@@ -1538,7 +1655,7 @@ export function hitTestPiecePointer(
 ): PiecePointerHit | null {
   for (let i = scene.pieces.length - 1; i >= 0; i--) {
     const p = scene.pieces[i];
-    if (!isPieceDrawn(p, scene.hideHalf)) continue;
+    if (!isPieceDrawn(p, scene)) continue;
     const m = pieceCenterNorm(board, p);
     if (!m) continue;
     const rn = pieceHitRadiusNorm(board, pitch, p);
@@ -1578,7 +1695,7 @@ export function hitTestBall(
   if (!scene.ball) return false;
   const m = worldToPitch(scene.ball.x, scene.ball.y, board);
   if (!m) return false;
-  const r = ballRadius(pitch, board.pieceScale ?? 1);
+  const r = ballRadius(pitch, board);
   const rn = (r / Math.min(pitch.w, pitch.h)) * 1.4 * pointerHitSlop();
   return Math.hypot(m.x - normX, m.y - normY) <= rn;
 }

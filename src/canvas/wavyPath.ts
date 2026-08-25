@@ -161,8 +161,9 @@ export function drawArrowHeadAt(
   angle: number,
   lw: number,
   fill: string,
+  headLen?: number,
 ) {
-  const head = 8 + lw * 2;
+  const head = headLen ?? 8 + lw * 2;
   ctx.beginPath();
   ctx.moveTo(tip.x, tip.y);
   ctx.lineTo(

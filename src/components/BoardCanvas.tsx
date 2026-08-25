@@ -23,6 +23,7 @@ import {
   zoomAt,
 } from "../canvas/layout";
 import { drawMatchBanner, matchBannerHeight } from "../canvas/matchBanner";
+import { activeViewport, boardWithActiveViewport } from "../models/scene";
 import { smoothLinePath } from "../canvas/smoothPath";
 import { textOverlayRect } from "../canvas/textOverlayLayout";
 import type { AppState } from "../hooks/useAppState";
@@ -226,7 +227,9 @@ export function BoardCanvas({
   selectedIdsRef.current = state.selectedPieceIds;
 
   const { board, scene } = state;
-  const view = board ? (viewOverride ?? board.viewport) : null;
+  const view = board
+    ? (viewOverride ?? activeViewport(board))
+    : null;
   const viewLocked = viewOverride != null;
 
   useEffect(() => {
@@ -384,7 +387,7 @@ export function BoardCanvas({
         : null;
     const frameArea = frame ? frame.w * frame.h : w * h;
     const pitchArea = (pitch.w * pitch.h) / frameArea;
-    drawBoard(ctx, pitch, board, scene, {
+    drawBoard(ctx, pitch, boardWithActiveViewport(board), scene, {
       selectedPieceId: draggingPieceId ?? state.selectedPieceId,
       selectedPieceIds: selectedIdsRef.current,
       selectedObjectId: state.selectedObjectId,

@@ -106,6 +106,7 @@ export function createLpHeroData(): { board: BoardDocument; scene: Scene } {
     ball: { ...ballStart, attachedTo: LP_HERO_PIECE.home8 },
     objects: [],
     hideHalf: "none",
+    teamFocus: "both",
   };
   const board: BoardDocument = {
     ...base,

@@ -5,6 +5,109 @@ export const DEFAULT_VIEWPORT: Viewport = { zoom: 1, cx: 0.5, cy: 0.5 };
 export const ZOOM_MIN = 1;
 export const ZOOM_MAX = 4;
 
+export function clampViewport(vp: Viewport): Viewport {
+  const zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, vp.zoom));
+  return {
+    zoom,
+    cx: Math.min(1.1, Math.max(-0.1, vp.cx)),
+    cy: Math.min(1.1, Math.max(-0.1, vp.cy)),
+  };
+}
+
+/**
+ * layout.FIELD_BUFFER と揃える（viewport → layout の依存を避けるためここにも定数）。
+ * cam 辺 = WORLD_SPAN / zoom。
+ */
+const FIELD_BUFFER_FOR_CAM = 0.14;
+const WORLD_SPAN = 1 + 2 * FIELD_BUFFER_FOR_CAM;
+
+/**
+ * ゴール裏・ピッチサイドのはみ出し上限（ピッチ正規化 0..1）。
+ * キャプチャ再現・ブランド用の「規定余白」。中心合わせで外側を広げない。
+ */
+export const CAPTURE_OUTSIDE_MARGIN = 0.035;
+
+type OutsidePin = {
+  left?: boolean;
+  right?: boolean;
+  top?: boolean;
+  bottom?: boolean;
+};
+
+/**
+ * 必須矩形を覆う正方形カメラ。外側ピン辺は CAPTURE_OUTSIDE_MARGIN までに抑え、
+ * 余った辺長はピッチ内側へ回す（ゴール前センター寄せでゴール裏が膨らむのを防ぐ）。
+ */
+export function viewportCoveringRect(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  pin: OutsidePin,
+  margin = CAPTURE_OUTSIDE_MARGIN,
+): Viewport {
+  const left = Math.min(x0, x1);
+  const right = Math.max(x0, x1);
+  const top = Math.min(y0, y1);
+  const bottom = Math.max(y0, y1);
+
+  let side = Math.max(right - left, bottom - top, 0.2);
+  if (pin.left) side = Math.max(side, right + margin);
+  if (pin.right) side = Math.max(side, 1 + margin - left);
+  if (pin.top) side = Math.max(side, bottom + margin);
+  if (pin.bottom) side = Math.max(side, 1 + margin - top);
+
+  let camLeft = pin.left
+    ? -margin
+    : pin.right
+      ? 1 + margin - side
+      : (left + right) / 2 - side / 2;
+  let camTop = pin.top
+    ? -margin
+    : pin.bottom
+      ? 1 + margin - side
+      : (top + bottom) / 2 - side / 2;
+
+  for (let i = 0; i < 3; i++) {
+    if (right > camLeft + side) {
+      if (pin.left) side = right - camLeft;
+      else if (pin.right) {
+        side = Math.max(side, right - left, 1 + margin - left);
+        camLeft = 1 + margin - side;
+      } else camLeft = right - side;
+    }
+    if (left < camLeft) {
+      if (pin.right) {
+        side = Math.max(side, right - left, 1 + margin - left);
+        camLeft = 1 + margin - side;
+      } else if (pin.left) side = Math.max(side, right - camLeft);
+      else camLeft = left;
+    }
+    if (bottom > camTop + side) {
+      if (pin.top) side = bottom - camTop;
+      else if (pin.bottom) {
+        side = Math.max(side, bottom - top, 1 + margin - top);
+        camTop = 1 + margin - side;
+      } else camTop = bottom - side;
+    }
+    if (top < camTop) {
+      if (pin.bottom) {
+        side = Math.max(side, bottom - top, 1 + margin - top);
+        camTop = 1 + margin - side;
+      } else if (pin.top) side = Math.max(side, bottom - camTop);
+      else camTop = top;
+    }
+  }
+
+  const zoom = WORLD_SPAN / side;
+  const half = side / 2;
+  return clampViewport({
+    zoom,
+    cx: camLeft + half,
+    cy: camTop + half,
+  });
+}
+
 /**
  * 画角プリセット（駒は消さない・カメラだけ動かす）
  * 競技ごとに語彙・画角が違う（局面タブで出し分け）
@@ -43,21 +146,45 @@ export type ViewPresetId =
   | "mid-left"
   | "mid-right";
 
+/** CK 解説の必須面積（角〜ハーフ付近）。外側はピンで規定余白のみ */
+const CK_TO_HALF = 0.52;
+const CK_FAR_Y = 0.22; // ペナ遠方〜反対タッチ側の動き
+
 export const VIEW_PRESETS: Record<ViewPresetId, Viewport> = {
   full: { zoom: 1, cx: 0.5, cy: 0.5 },
   "final-third-left": { zoom: 2.35, cx: 0.17, cy: 0.5 },
   "final-third-right": { zoom: 2.35, cx: 0.83, cy: 0.5 },
-  "corner-tl": { zoom: 2.4, cx: 0.14, cy: 0.14 },
-  "corner-tr": { zoom: 2.4, cx: 0.86, cy: 0.14 },
-  "corner-bl": { zoom: 2.4, cx: 0.14, cy: 0.86 },
-  "corner-br": { zoom: 2.4, cx: 0.86, cy: 0.86 },
+  /**
+   * CK 角: 必須面積＋外側は規定余白のみ（ゴール裏をセンター寄せで膨らませない）。
+   * docs/VIEWPORT_RESEARCH.md
+   */
+  "corner-tl": viewportCoveringRect(0, 0, CK_TO_HALF, 1 - CK_FAR_Y, {
+    left: true,
+    top: true,
+  }),
+  "corner-tr": viewportCoveringRect(1 - CK_TO_HALF, 0, 1, 1 - CK_FAR_Y, {
+    right: true,
+    top: true,
+  }),
+  "corner-bl": viewportCoveringRect(0, CK_FAR_Y, CK_TO_HALF, 1, {
+    left: true,
+    bottom: true,
+  }),
+  "corner-br": viewportCoveringRect(1 - CK_TO_HALF, CK_FAR_Y, 1, 1, {
+    right: true,
+    bottom: true,
+  }),
   "throw-top": { zoom: 2.1, cx: 0.5, cy: 0.06 },
   "throw-bottom": { zoom: 2.1, cx: 0.5, cy: 0.94 },
   "pen-left": { zoom: 2.5, cx: 0.12, cy: 0.5 },
   "pen-right": { zoom: 2.5, cx: 0.88, cy: 0.5 },
-  /** 攻撃ハーフ全体（CK 配置・ゾーン説明向け） */
-  "ck-setup-right": { zoom: 1.95, cx: 0.83, cy: 0.5 },
-  "ck-setup-left": { zoom: 1.95, cx: 0.17, cy: 0.5 },
+  /** 攻撃エンド俯瞰。ゴール裏は規定余白、幅はピッチ内寄り */
+  "ck-setup-left": viewportCoveringRect(0, 0.06, CK_TO_HALF, 0.94, {
+    left: true,
+  }),
+  "ck-setup-right": viewportCoveringRect(1 - CK_TO_HALF, 0.06, 1, 0.94, {
+    right: true,
+  }),
   // バスケ（フロントコート中心・ペイント・コーナー・トランジション）
   "bball-front-right": { zoom: 1.45, cx: 0.7, cy: 0.5 },
   "bball-front-left": { zoom: 1.45, cx: 0.3, cy: 0.5 },
@@ -134,13 +261,4 @@ export function viewPresetsForSport(sport: SportId): ViewPresetEntry[] {
     { id: "pen-left", key: "viewPenL" },
     { id: "pen-right", key: "viewPenR" },
   ];
-}
-
-export function clampViewport(vp: Viewport): Viewport {
-  const zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, vp.zoom));
-  return {
-    zoom,
-    cx: Math.min(1.1, Math.max(-0.1, vp.cx)),
-    cy: Math.min(1.1, Math.max(-0.1, vp.cy)),
-  };
 }

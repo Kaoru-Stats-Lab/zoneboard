@@ -6,9 +6,11 @@ import type {
   Piece,
   Scene,
   ScenePhase,
+  TeamFocus,
   Viewport,
 } from "./types";
 import { uid } from "./id";
+import { clampViewport, DEFAULT_VIEWPORT } from "../presets/viewport";
 
 function mirrorX(x: number): number {
   return 1 - x;
@@ -68,10 +70,30 @@ export function mirrorViewportHorizontal(vp: Viewport): Viewport {
   return { ...vp, cx: mirrorX(vp.cx) };
 }
 
+/** 局面の画角。未指定は board 移行値 → DEFAULT */
+export function sceneViewport(
+  scene: Pick<Scene, "viewport">,
+  boardFallback?: Viewport,
+): Viewport {
+  return clampViewport(
+    scene.viewport ?? boardFallback ?? DEFAULT_VIEWPORT,
+  );
+}
+
+/** アクティブ局面の画角（描画・Export の正本） */
+export function activeViewport(board: BoardDocument): Viewport {
+  return sceneViewport(getActiveScene(board), board.viewport);
+}
+
+/** drawBoard / fitField 用。viewport をアクティブ局面に揃えた board */
+export function boardWithActiveViewport(board: BoardDocument): BoardDocument {
+  return { ...board, viewport: activeViewport(board) };
+}
+
 export function createScene(
   label: string,
   phase: ScenePhase = "custom",
-  base?: Pick<Scene, "pieces" | "ball" | "objects">,
+  base?: Pick<Scene, "pieces" | "ball" | "objects" | "viewport">,
 ): Scene {
   return {
     id: uid(),
@@ -81,6 +103,8 @@ export function createScene(
     ball: base ? { ...base.ball } : { x: 0.5, y: 0.5 },
     objects: base ? structuredClone(base.objects) : [],
     hideHalf: "none",
+    teamFocus: "both",
+    viewport: base?.viewport ? { ...base.viewport } : undefined,
   };
 }
 
@@ -101,11 +125,21 @@ export function mapActiveScene(
   };
 }
 
-/** ピッチ内かつ指定ハーフの駒を隠す。ベンチ帯は常に表示 */
-export function isPieceDrawn(piece: Piece, hideHalf: HideHalf): boolean {
+/**
+ * 描画・ヒット対象か。
+ * teamFocus（所属）→ visible → hideHalf（空間）。ベンチは hideHalf では隠さない。
+ */
+export function isPieceDrawn(
+  piece: Piece,
+  scene: Pick<Scene, "hideHalf" | "teamFocus">,
+): boolean {
   if (piece.visible === false) return false;
+  const focus: TeamFocus = scene.teamFocus ?? "both";
+  if (focus === "home" && piece.team !== "home") return false;
+  if (focus === "away" && piece.team !== "away") return false;
   if (piece.role === "bench") return true;
   if (piece.x < 0 || piece.x > 1 || piece.y < 0 || piece.y > 1) return true;
+  const hideHalf = scene.hideHalf;
   if (hideHalf === "left" && piece.x < 0.5) return false;
   if (hideHalf === "right" && piece.x >= 0.5) return false;
   return true;

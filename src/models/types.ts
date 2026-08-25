@@ -123,6 +123,9 @@ export type ScenePhase = "pre" | "live" | "post" | "setpiece" | "custom";
 /** セットプレー等: 指定ハーフのピッチ内駒を隠す（ベンチ帯は残す） */
 export type HideHalf = "none" | "left" | "right";
 
+/** 試合前・試合後の準備用。所属チームの表示フィルタ（駒は消さない） */
+export type TeamFocus = "both" | "home" | "away";
+
 export interface Piece {
   id: string;
   x: number;
@@ -216,7 +219,23 @@ export interface Scene {
    * 推奨は viewport ズームで画角だけ変える（駒は全部残す）。
    */
   hideHalf: HideHalf;
+  /**
+   * 試合前・試合後の準備用。Home / Away / Both。
+   * 実況 chrome 本線ではない。未指定は both。
+   */
+  teamFocus?: TeamFocus;
+  /** 局面ごとのカメラ。未指定は board.viewport（移行用）→ DEFAULT */
+  viewport?: Viewport;
 }
+
+/** Pro: 試合をまたぐ名前付き画角テンプレ（UI は FEATURE_PRO まで非表示） */
+export interface ViewportTemplate {
+  id: string;
+  label: string;
+  viewport: Viewport;
+}
+
+export const MAX_VIEWPORT_TEMPLATES = 12;
 
 /** カメラ（駒は消さない。ズーム／パンで見せ場を変える） */
 export interface Viewport {
@@ -283,8 +302,10 @@ export interface BoardDocument {
   benchCount: number;
   scenes: Scene[];
   activeSceneId: string;
-  /** ライブカメラ。局面切替とは独立（同じ配置のまま CK 等に寄れる） */
+  /** @deprecated 移行用。正本は各 scene.viewport */
   viewport: Viewport;
+  /** Pro: 名前付き画角ライブラリ（UI は FEATURE_PRO まで非表示） */
+  viewportTemplates?: ViewportTemplate[];
   /** ベンチ入り名簿。スタメン発表後に一括配置 */
   roster: MatchRoster;
   updatedAt: string;
@@ -305,10 +326,19 @@ export interface WatermarkSettings {
   opacity: number;
 }
 
+/** Normalized tool-rail anchor within the board stage (0–1). */
+export interface ToolRailPosition {
+  xRatio: number;
+  yRatio: number;
+}
+
+export const DEFAULT_TOOL_RAIL: ToolRailPosition = { xRatio: 0, yRatio: 0.5 };
+
 export interface Prefs {
   locale?: "ja" | "en";
   lastSport?: SportId;
   selectionColor?: string;
+  toolRail?: ToolRailPosition;
 }
 
 export const DEFAULT_SELECTION_COLOR = "#111111";

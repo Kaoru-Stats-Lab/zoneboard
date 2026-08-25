@@ -7,7 +7,7 @@ import {
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { BENCH_COUNT_OPTIONS } from "../presets/bench";
-import type { CardKind, HideHalf, RosterPlayer, SportId } from "../models/types";
+import type { CardKind, HideHalf, RosterPlayer, SportId, TeamFocus } from "../models/types";
 import {
   MAX_BOARDS,
   MAX_SCENES,
@@ -19,6 +19,7 @@ import { normalizePieceNumber, numberFill } from "../canvas/pieceInk";
 import { STARTER_COUNT, formatRosterText } from "../presets/roster";
 import { viewPresetsForSport } from "../presets/viewport";
 import { scenePresetsForSport, type ScenePresetId } from "../presets/scenePresets";
+import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
 import { LiveMatchControls } from "./LiveMatchControls";
 
 function startersPlaceholder(sport: SportId): string {
@@ -265,6 +266,20 @@ export function Drawer({ state, t }: Props) {
               {t("sceneMirrorEnds")}
             </button>
             <p className="hint-muted">{t("sceneMirrorEndsHint")}</p>
+            <label>
+              {t("teamFocus")}
+              <select
+                value={scene.teamFocus ?? "both"}
+                onChange={(e) =>
+                  state.setTeamFocus(e.target.value as TeamFocus)
+                }
+              >
+                <option value="both">{t("teamFocusBoth")}</option>
+                <option value="home">{t("teamFocusHome")}</option>
+                <option value="away">{t("teamFocusAway")}</option>
+              </select>
+            </label>
+            <p className="hint-muted">{t("teamFocusHint")}</p>
             {board.sport === "soccer" && (
               <label>
                 {t("hideHalf")}
@@ -299,6 +314,50 @@ export function Drawer({ state, t }: Props) {
                 {t("viewReset")}
               </button>
             </details>
+            {FEATURE_PRO_VIEWPORT_TEMPLATES && (
+              <details className="drawer-details">
+                <summary>{t("viewTemplates")}</summary>
+                <p className="hint-muted">{t("viewTemplatesHint")}</p>
+                <label className="field-stack">
+                  {t("viewTemplateLabel")}
+                  <input
+                    type="text"
+                    id="view-template-label"
+                    placeholder={t("viewTemplatePlaceholder")}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById(
+                      "view-template-label",
+                    ) as HTMLInputElement | null;
+                    if (el && state.saveViewportTemplate(el.value)) {
+                      el.value = "";
+                    }
+                  }}
+                >
+                  {t("viewTemplateSave")}
+                </button>
+                {(board.viewportTemplates ?? []).map((tpl) => (
+                  <div key={tpl.id} className="view-template-row">
+                    <button
+                      type="button"
+                      onClick={() => state.applyViewportTemplate(tpl.id)}
+                    >
+                      {tpl.label}
+                    </button>
+                    <button
+                      type="button"
+                      className="danger-text"
+                      onClick={() => state.deleteViewportTemplate(tpl.id)}
+                    >
+                      {t("viewTemplateDelete")}
+                    </button>
+                  </div>
+                ))}
+              </details>
+            )}
             {!prepOpen && board.showMatchBanner && board.sport === "soccer" && (
               <LiveMatchControls state={state} t={t} variant="drawer" />
             )}
@@ -1170,9 +1229,7 @@ export function Drawer({ state, t }: Props) {
                 {t("sizePosition")}
               </button>
             </div>
-            <button type="button" onClick={state.applyFormation}>
-              {t("formation")}
-            </button>
+            {/* 運営フォーメ再適用は出さない — PRODUCT_NOTE 決定ログ 2026-08-25 */}
           </section>
         )}
       </div>

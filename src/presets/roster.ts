@@ -166,11 +166,13 @@ export function formatRosterText(players: RosterPlayer[]): string {
     .join("\n");
 }
 
-/** 駒カードからの名前を名簿行に載せる。背番号がキー（チーム内）。空文字で既存名を消さない。 */
+/** 駒カードからの名前を名簿行に載せる。背番号がキー（チーム内）。
+ *  既定は空文字で既存名を消さない。`replaceLabel` でカードからの明示更新（空含む）を許す。 */
 export function upsertRosterPlayer(
   team: TeamRoster,
   previousNumber: string,
   next: RosterPlayer,
+  opts?: { replaceLabel?: boolean },
 ): TeamRoster {
   const prev = normalizePieceNumber(previousNumber);
   const number = normalizePieceNumber(next.number);
@@ -185,7 +187,9 @@ export function upsertRosterPlayer(
   const nextLabel = next.label.trim();
   const row: RosterPlayer = {
     number,
-    label: nextLabel || existing?.label?.trim() || "",
+    label: opts?.replaceLabel
+      ? nextLabel
+      : nextLabel || existing?.label?.trim() || "",
     preferredFoot:
       next.preferredFoot !== undefined
         ? next.preferredFoot

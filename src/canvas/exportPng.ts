@@ -1,4 +1,4 @@
-import { getActiveScene } from "../models/scene";
+import { getActiveScene, activeViewport } from "../models/scene";
 import type { BoardDocument, WatermarkSettings } from "../models/types";
 import { UI_FONT_STACK } from "../models/types";
 import type { Viewport } from "../models/types";
@@ -43,7 +43,7 @@ export function viewportForFocus(
   board: BoardDocument,
   focus: ExportFocusId,
 ): Viewport {
-  if (focus === "current") return board.viewport;
+  if (focus === "current") return activeViewport(board);
   if (focus === "full") return { ...DEFAULT_VIEWPORT };
   return { ...VIEW_PRESETS[focus as ViewPresetId] };
 }
@@ -79,6 +79,7 @@ export async function exportBoardPng(
 ): Promise<Blob> {
   const selectionColor = options.selectionColor ?? "#111111";
   const viewport = viewportForFocus(board, options.focus);
+  const boardView: BoardDocument = { ...board, viewport };
 
   const caption = options.bakeCaption
     ? [board.matchLabel, getActiveScene(board).label]
@@ -91,7 +92,7 @@ export async function exportBoardPng(
   let canvasW: number;
   let canvasH: number;
   if (options.preset === "native") {
-    const probe = fitField(1920, 1920, board, 0, viewport);
+    const probe = fitField(1920, 1920, boardView, 0, viewport);
     const aspect = probe.outer.w / probe.outer.h;
     if (aspect >= 1) {
       canvasW = 1920;
@@ -112,23 +113,23 @@ export async function exportBoardPng(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas");
 
-  const ground = outerFillForBoard(board);
+  const ground = outerFillForBoard(boardView);
   ctx.fillStyle = ground;
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   const boardH = canvasH - captionH;
-  const bannerH = matchBannerHeight(canvasW, boardH, board);
+  const bannerH = matchBannerHeight(canvasW, boardH, boardView);
   const { outer, pitch } = fitField(
     canvasW,
     boardH,
-    board,
+    boardView,
     24,
     viewport,
     bannerH,
   );
   // fitField は y=0 基準なので、キャプション分は下に残すだけ（上から配置）
-  const scene = getActiveScene(board);
-  drawBoard(ctx, pitch, board, scene, {
+  const scene = getActiveScene(boardView);
+  drawBoard(ctx, pitch, boardView, scene, {
     outer,
     background: ground,
     selectionColor,
@@ -137,7 +138,7 @@ export async function exportBoardPng(
     ballImage,
   });
   if (bannerH > 0) {
-    drawMatchBanner(ctx, canvasW, bannerH, board, options.y2cLabel);
+    drawMatchBanner(ctx, canvasW, bannerH, boardView, options.y2cLabel);
   }
 
   if (caption) {

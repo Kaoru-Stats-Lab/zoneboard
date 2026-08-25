@@ -7,17 +7,20 @@ import {
 } from "../models/ballAttach";
 import { roleFromPosition } from "../models/pieceRole";
 import {
+  activeViewport,
   createScene,
   getActiveScene,
   isPieceDrawn,
   mapActiveScene,
   mirrorSceneHorizontal,
   mirrorViewportHorizontal,
+  sceneViewport,
 } from "../models/scene";
 import type {
   BoardDocument,
   BoardStore,
   HideHalf,
+  TeamFocus,
   LineKind,
   Piece,
   CardKind,
@@ -25,6 +28,7 @@ import type {
   SportId,
   TextFontId,
   ToolId,
+  Viewport,
   WatermarkSettings,
 } from "../models/types";
 import {
@@ -33,6 +37,7 @@ import {
   HOME_COLOR,
   MAX_BOARDS,
   MAX_SCENES,
+  MAX_VIEWPORT_TEMPLATES,
 } from "../models/types";
 import {
   lineColorForBoard,
@@ -91,8 +96,8 @@ import {
   defaultSceneName,
   detectLocaleForDefaults,
 } from "../i18n/localeDefaults";
-import type { Viewport } from "../models/types";
 import { clampViewport } from "../presets/viewport";
+import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
 import {
   loadPrefs,
   loadStore,
@@ -306,7 +311,12 @@ export function useAppState() {
       const next = createScene(
         label ?? defaultSceneName(board.scenes.length + 1, board.sport),
         phase,
-        scene,
+        {
+          pieces: scene.pieces,
+          ball: scene.ball,
+          objects: scene.objects,
+          viewport: { ...activeViewport(board) },
+        },
       );
       updateBoard((b) => ({
         ...b,
@@ -334,12 +344,12 @@ export function useAppState() {
         pieces: preset.pieces,
         ball: preset.ball,
         objects: [],
+        viewport: { ...preset.viewport },
       });
       updateBoard((b) => ({
         ...b,
         scenes: [...b.scenes, next],
         activeSceneId: next.id,
-        viewport: preset.viewport,
       }));
       setSelectedPieceId(null);
       setSelectedBall(false);
@@ -413,6 +423,7 @@ export function useAppState() {
             ...s,
             label: defaultSceneLabel(sport, loc),
             hideHalf: "none",
+            teamFocus: "both",
             pieces: withRosterIdentity(
               formationPieces(sport, true, benchCount, kitsFromBoard(b)),
               b.roster,
@@ -470,25 +481,49 @@ export function useAppState() {
     [updateScene],
   );
 
+  const setTeamFocus = useCallback(
+    (teamFocus: TeamFocus) => {
+      updateScene((s) => ({ ...s, teamFocus }), false);
+      if (!scene) return;
+      const focusScene = { ...scene, teamFocus };
+      setSelectedPieceIds((ids) => {
+        if (!ids.length) return ids;
+        const next = ids.filter((id) => {
+          const p = scene.pieces.find((x) => x.id === id);
+          return p ? isPieceDrawn(p, focusScene) : false;
+        });
+        return next.length === ids.length ? ids : next;
+      });
+      setPieceInspectorId((id) => {
+        if (!id) return id;
+        const p = scene.pieces.find((x) => x.id === id);
+        if (!p) return null;
+        return isPieceDrawn(p, focusScene) ? id : null;
+      });
+    },
+    [updateScene, scene],
+  );
+
   /** 前後半のエンドチェンジ: 現局面の配置をピッチ中心で左右入れ替え */
   const mirrorSceneEnds = useCallback(() => {
-    updateBoard((b) => {
-      const next = mapActiveScene(b, mirrorSceneHorizontal);
-      return {
-        ...next,
-        viewport: clampViewport(mirrorViewportHorizontal(next.viewport)),
-      };
-    });
+    updateBoard((b) =>
+      mapActiveScene(b, (s) => ({
+        ...mirrorSceneHorizontal(s),
+        viewport: clampViewport(
+          mirrorViewportHorizontal(sceneViewport(s, b.viewport)),
+        ),
+      })),
+    );
   }, [updateBoard]);
 
   const setViewport = useCallback(
     (viewport: Viewport, record = false) => {
-      updateBoard(
-        (b) => ({ ...b, viewport: clampViewport(viewport) }),
+      updateScene(
+        (s) => ({ ...s, viewport: clampViewport(viewport) }),
         record,
       );
     },
-    [updateBoard],
+    [updateScene],
   );
 
   const applyViewPreset = useCallback(
@@ -501,6 +536,57 @@ export function useAppState() {
   const resetViewport = useCallback(() => {
     setViewport({ ...DEFAULT_VIEWPORT }, false);
   }, [setViewport]);
+
+  const saveViewportTemplate = useCallback(
+    (label: string) => {
+      if (!FEATURE_PRO_VIEWPORT_TEMPLATES || !board) return false;
+      const trimmed = label.trim();
+      if (!trimmed) return false;
+      const templates = board.viewportTemplates ?? [];
+      if (templates.length >= MAX_VIEWPORT_TEMPLATES) return false;
+      const vp = activeViewport(board);
+      updateBoard((b) => ({
+        ...b,
+        viewportTemplates: [
+          ...(b.viewportTemplates ?? []),
+          { id: uid(), label: trimmed, viewport: { ...vp } },
+        ],
+      }));
+      return true;
+    },
+    [board, updateBoard],
+  );
+
+  const applyViewportTemplate = useCallback(
+    (templateId: string) => {
+      if (!FEATURE_PRO_VIEWPORT_TEMPLATES || !board) return false;
+      const tpl = board.viewportTemplates?.find((t) => t.id === templateId);
+      if (!tpl) return false;
+      setViewport(tpl.viewport, false);
+      return true;
+    },
+    [board, setViewport],
+  );
+
+  const deleteViewportTemplate = useCallback(
+    (templateId: string) => {
+      if (!FEATURE_PRO_VIEWPORT_TEMPLATES || !board) return false;
+      updateBoard((b) => ({
+        ...b,
+        viewportTemplates: (b.viewportTemplates ?? []).filter(
+          (t) => t.id !== templateId,
+        ),
+      }));
+      return true;
+    },
+    [board, updateBoard],
+  );
+
+  /** アクティブ局面の画角（描画・Export 正本） */
+  const viewport = useMemo(
+    () => (board ? activeViewport(board) : null),
+    [board],
+  );
 
   /** ベンチ入り名簿を一括インポート。同チームを XI＋控えでピッチに載せ直す */
   const importRoster = useCallback(
@@ -771,7 +857,7 @@ export function useAppState() {
   const selectAllPieces = useCallback(() => {
     if (!scene) return;
     setSelectedPieceIds(
-      scene.pieces.filter((p) => isPieceDrawn(p, scene.hideHalf)).map((p) => p.id),
+      scene.pieces.filter((p) => isPieceDrawn(p, scene)).map((p) => p.id),
     );
     setPieceInspectorId(null);
     setSelectedObjectId(null);
@@ -864,7 +950,7 @@ export function useAppState() {
       if (!scene) return;
       setSelectedPieceIds(
         scene.pieces
-          .filter((p) => p.team === team && isPieceDrawn(p, scene.hideHalf))
+          .filter((p) => p.team === team && isPieceDrawn(p, scene))
           .map((p) => p.id),
       );
       setPieceInspectorId(null);
@@ -878,7 +964,7 @@ export function useAppState() {
     (x0: number, y0: number, x1: number, y1: number, additive: boolean) => {
       if (!scene) return;
       const visible = scene.pieces.filter((p) =>
-        isPieceDrawn(p, scene.hideHalf),
+        isPieceDrawn(p, scene),
       );
       const hit = piecesInRect(visible, x0, y0, x1, y1).map((p) => p.id);
       setSelectedPieceIds((cur) => {
@@ -967,10 +1053,11 @@ export function useAppState() {
           patch.label !== undefined ? patch.label.trim() : undefined;
         const identity = {
           number: nextPiece.number,
+          // カードから空にしたときは名簿も空にする（再編集で頭文字が消えない問題の解消）
           label:
-            incomingLabel !== undefined && incomingLabel !== ""
+            incomingLabel !== undefined
               ? incomingLabel
-              : nextPiece.label.trim() || existing.label,
+              : nextPiece.label.trim() || existing.label.trim(),
           preferredFoot: nextPiece.preferredFoot,
           heightCm: nextPiece.heightCm,
           weightKg: nextPiece.weightKg,
@@ -990,6 +1077,7 @@ export function useAppState() {
                 heightCm: identity.heightCm,
                 weightKg: identity.weightKg,
               },
+              { replaceLabel: incomingLabel !== undefined },
             ),
           };
         }
@@ -1000,23 +1088,8 @@ export function useAppState() {
             const pieces = s.pieces.map((p) => {
               if (p.id === id) {
                 const merged = { ...p, ...normalized };
-                // 空ラベルで既存名を落とさない（名簿取込後・未配置の駒）
-                if (
-                  patch.label !== undefined &&
-                  !patch.label.trim() &&
-                  p.label.trim()
-                ) {
-                  merged.label = p.label;
-                } else if (
-                  patch.label !== undefined &&
-                  !patch.label.trim()
-                ) {
-                  const row = b.roster[existing.team].players.find(
-                    (r) =>
-                      normalizePieceNumber(r.number) ===
-                      normalizePieceNumber(merged.number || existing.number),
-                  );
-                  if (row?.label.trim()) merged.label = row.label;
+                if (patch.label !== undefined) {
+                  merged.label = patch.label.trim();
                 }
                 return merged;
               }
@@ -1025,9 +1098,7 @@ export function useAppState() {
                 p.team === existing.team &&
                 normalizePieceNumber(p.number) === prevNum
               ) {
-                const nextLabel =
-                  identity.label.trim() || p.label.trim() || p.label;
-                return { ...p, ...identity, label: nextLabel };
+                return { ...p, ...identity };
               }
               return p;
             });
@@ -1426,6 +1497,7 @@ export function useAppState() {
     store,
     board,
     scene,
+    viewport,
     watermark,
     tool,
     setTool,
@@ -1477,10 +1549,14 @@ export function useAppState() {
     deleteScene,
     cycleScene,
     setHideHalf,
+    setTeamFocus,
     mirrorSceneEnds,
     setViewport,
     applyViewPreset,
     resetViewport,
+    saveViewportTemplate,
+    applyViewportTemplate,
+    deleteViewportTemplate,
     importRoster,
     setStarters,
     setStarterNumbers,

@@ -7,7 +7,7 @@ import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
 import { kitsFromBoard } from "../models/kits";
-import { createScene } from "../models/scene";
+import { createScene, sceneViewport } from "../models/scene";
 import type { BoardDocument, Scene } from "../models/types";
 import {
   createLpHeroData,
@@ -41,13 +41,11 @@ function frames(): Record<AfterTab, { board: BoardDocument; scene: Scene }> {
     pieces: preset.pieces,
     ball: preset.ball,
     objects: [],
+    viewport: { ...preset.viewport },
   });
   return {
     kickoff: { board, scene: kickoffScene },
-    "ck-right": {
-      board: { ...board, viewport: preset.viewport },
-      scene: ckScene,
-    },
+    "ck-right": { board, scene: ckScene },
   };
 }
 
@@ -87,8 +85,10 @@ export function LpAfterBoard() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       const { board, scene } = frame;
-      const { outer, pitch } = fitField(w, h, board, 4, board.viewport, 0);
-      drawBoard(ctx, pitch, board, scene, {
+      const view = sceneViewport(scene, board.viewport);
+      const boardView = { ...board, viewport: view };
+      const { outer, pitch } = fitField(w, h, boardView, 4, view, 0);
+      drawBoard(ctx, pitch, boardView, scene, {
         outer,
         background: outerFillForBoard(board),
         ballImage: ballImageRef.current,

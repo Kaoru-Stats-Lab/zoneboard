@@ -11,6 +11,7 @@ import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
 import { ballPosOnPiece } from "../models/ballAttach";
+import { sceneViewport } from "../models/scene";
 import type { BallState, LineKind, Scene } from "../models/types";
 import {
   createLpHeroData,
@@ -121,10 +122,11 @@ export function LpHeroBoard() {
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const view = board.viewport;
-      const { outer, pitch } = fitField(w, h, board, 4, view, 0);
+      const view = sceneViewport(scene, board.viewport);
+      const boardView = { ...board, viewport: view };
+      const { outer, pitch } = fitField(w, h, boardView, 4, view, 0);
       const sceneDraw = heroSceneAt(t, scene, board);
-      drawBoard(ctx, pitch, board, sceneDraw, {
+      drawBoard(ctx, pitch, boardView, sceneDraw, {
         outer,
         background: outerFillForBoard(board),
         previewLine: heroPreviewLine(t),

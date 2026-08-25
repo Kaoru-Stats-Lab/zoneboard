@@ -69,7 +69,7 @@ export function toolColorForBoard(
   return TOOL_COLORS[tool];
 }
 
-/** 芝生上の線・ペン用白ハロー幅 */
+/** 芝生上の戦術線用白ハロー幅。Pen には使わない（白インク＋ハローは太くホバーに見える）。 */
 export function grassHaloWidth(lw: number): number {
   return Math.max(2.5, lw * 1.85);
 }
