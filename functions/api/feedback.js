@@ -3,7 +3,7 @@
  * duo·reader / SUGUDASU と同じ経路。ボード内容は受け取らない。
  *
  * Cloudflare Pages secret:
- *   GITHUB_FEEDBACK_TOKEN — Issues: Read and write
+ *   GITHUB_FEEDBACK_TOKEN — Issues: Read and write (90-day PAT; rotate via docs/FEEDBACK.md)
  *   GITHUB_FEEDBACK_OWNER — default Kaoru-Stats-Lab
  *   GITHUB_FEEDBACK_REPO  — default zoneboard
  */

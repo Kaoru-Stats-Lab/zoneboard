@@ -2212,6 +2212,8 @@ button:disabled {
   border-radius: 12px;
   border: 1px solid #e5e5e5;
   background: #fff;
+  color: #161718;
+  color-scheme: light;
   box-shadow: 0 12px 40px rgb(0 0 0 / 0.12);
 }
 
@@ -2226,6 +2228,7 @@ button:disabled {
   margin: 0;
   font-size: 0.9375rem;
   font-weight: 600;
+  color: #161718;
 }
 
 .zb-feedback-panel__x {
@@ -2256,6 +2259,7 @@ button:disabled {
   align-items: center;
   gap: 0.3rem;
   font-size: 0.8125rem;
+  color: #161718;
   cursor: pointer;
 }
 
@@ -2263,7 +2267,7 @@ button:disabled {
   display: block;
   margin: 0.85rem 0 0.35rem;
   font-size: 0.75rem;
-  color: #777;
+  color: #555555;
 }
 
 .zb-feedback-panel__ta {
@@ -2273,8 +2277,15 @@ button:disabled {
   border: 1px solid #d0d0d0;
   border-radius: 8px;
   background: #fff;
+  color: #161718;
+  font: inherit;
   font-size: 0.875rem;
   resize: vertical;
+}
+
+.zb-feedback-panel__ta::placeholder {
+  color: #666666;
+  opacity: 1;
 }
 
 .zb-feedback-panel__actions {

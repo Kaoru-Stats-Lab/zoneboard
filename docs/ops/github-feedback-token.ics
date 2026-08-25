@@ -1,0 +1,32 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//ZoneBoard//Feedback token rotate//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:zoneboard-feedback-token-warn-20261116@zoneboard.app
+DTSTAMP:20260825T015400Z
+DTSTART;VALUE=DATE:20261116
+DTEND;VALUE=DATE:20261117
+SUMMARY:ZoneBoard: rotate GITHUB_FEEDBACK_TOKEN (7 days left)
+DESCRIPTION:Cloudflare Pages → zoneboard → GITHUB_FEEDBACK_TOKEN. See docs/FEEDBACK.md. Do not put the token in git or Issues.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Rotate ZoneBoard GITHUB_FEEDBACK_TOKEN
+TRIGGER:-P0D
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:zoneboard-feedback-token-due-20261123@zoneboard.app
+DTSTAMP:20260825T015400Z
+DTSTART;VALUE=DATE:20261123
+DTEND;VALUE=DATE:20261124
+SUMMARY:ZoneBoard: GITHUB_FEEDBACK_TOKEN expires today
+DESCRIPTION:In-page Feedback will fail until you issue a new fine-grained PAT, update the Cloudflare secret, and redeploy. Then update docs/ops/feedback-token.json. See docs/FEEDBACK.md.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:GITHUB_FEEDBACK_TOKEN expires today
+TRIGGER:-P0D
+END:VALARM
+END:VEVENT
+END:VCALENDAR
