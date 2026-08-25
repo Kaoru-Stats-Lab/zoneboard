@@ -58,11 +58,12 @@ import {
 } from "../presets/scenePresets";
 import {
   applyLineupToScenePieces,
+  missingStarterNumbers,
   parseRosterText,
   parseStarterNumbers,
   upsertRosterPlayer,
   withRosterIdentity,
-  paintPiecesFromRoster,
+  applyTeamLineupToScenePieces,
 } from "../presets/roster";
 import {
   DEFAULT_VIEWPORT,
@@ -500,7 +501,7 @@ export function useAppState() {
     setViewport({ ...DEFAULT_VIEWPORT }, false);
   }, [setViewport]);
 
-  /** ベンチ入り名簿を一括インポート（番号,名前）。同チーム・同背番号の駒にも名前を載せる */
+  /** ベンチ入り名簿を一括インポート。同チームを XI＋控えでピッチに載せ直す */
   const importRoster = useCallback(
     (team: "home" | "away", text: string) => {
       const players = parseRosterText(text);
@@ -510,40 +511,76 @@ export function useAppState() {
           ...b.roster[team],
           players,
         };
+        const roster = {
+          ...b.roster,
+          [team]: nextTeam,
+        };
+        const kits = kitsFromBoard({ ...b, roster });
         return {
           ...b,
-          roster: {
-            ...b.roster,
-            [team]: nextTeam,
-          },
+          roster,
           scenes: b.scenes.map((s) => ({
             ...s,
-            pieces: paintPiecesFromRoster(s.pieces, team, nextTeam),
+            pieces: applyTeamLineupToScenePieces(
+              s.pieces,
+              b.sport,
+              team,
+              nextTeam,
+              b.benchCount,
+              kits,
+            ),
           })),
         };
       });
+      setSelectedPieceId(null);
       return true;
     },
-    [updateBoard],
+    [setSelectedPieceId, updateBoard],
   );
 
-  /** スタメン背番号をセット（発表直後） */
+  /**
+   * スタメン背番号をセットし、そのチームをピッチ＋ベンチに反映。
+   * 戻り値: false=パース失敗、string[]=名簿にない背番号（空なら全部ヒット）
+   */
   const setStarters = useCallback(
-    (team: "home" | "away", text: string) => {
+    (team: "home" | "away", text: string): false | string[] => {
       const starterNumbers = parseStarterNumbers(text);
-      updateBoard((b) => ({
-        ...b,
-        roster: {
-          ...b.roster,
-          [team]: {
-            ...b.roster[team],
-            starterNumbers,
-          },
-        },
-      }));
-      return starterNumbers.length > 0;
+      if (starterNumbers.length === 0) return false;
+      let missing: string[] = [];
+      updateBoard((b) => {
+        const nextTeam = {
+          ...b.roster[team],
+          starterNumbers,
+        };
+        missing = missingStarterNumbers(nextTeam);
+        if (nextTeam.players.length === 0) {
+          return {
+            ...b,
+            roster: { ...b.roster, [team]: nextTeam },
+          };
+        }
+        const roster = { ...b.roster, [team]: nextTeam };
+        const kits = kitsFromBoard({ ...b, roster });
+        return {
+          ...b,
+          roster,
+          scenes: b.scenes.map((s) => ({
+            ...s,
+            pieces: applyTeamLineupToScenePieces(
+              s.pieces,
+              b.sport,
+              team,
+              nextTeam,
+              b.benchCount,
+              kits,
+            ),
+          })),
+        };
+      });
+      setSelectedPieceId(null);
+      return missing;
     },
-    [updateBoard],
+    [setSelectedPieceId, updateBoard],
   );
 
   /** 名簿＋スタメンから現局面に一括配置 */

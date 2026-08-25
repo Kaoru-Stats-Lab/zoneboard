@@ -412,7 +412,19 @@ export function Drawer({ state, t }: Props) {
             </label>
             <button
               type="button"
-              onClick={() => state.setStarters(teamSide, xiText[teamSide])}
+              className="active"
+              onClick={() => {
+                const result = state.setStarters(teamSide, xiText[teamSide]);
+                if (result === false) {
+                  window.alert(t("xiParseFail"));
+                  return;
+                }
+                if (result.length > 0) {
+                  window.alert(
+                    t("xiMissing").replace("{nums}", result.join(", ")),
+                  );
+                }
+              }}
             >
               {t("setXi")}
             </button>
@@ -420,15 +432,16 @@ export function Drawer({ state, t }: Props) {
               {t("rosterCount")}: {roster.players.length}/
               {roster.starterNumbers.length}
             </p>
+            <p className="hint-muted">{t("setXiHint")}</p>
             <button
               type="button"
-              className="active"
               onClick={() => {
                 if (!state.applyLineup()) window.alert(t("lineupFail"));
               }}
             >
               {t("applyLineup")}
             </button>
+            <p className="hint-muted">{t("applyLineupHint")}</p>
           </section>
         )}
 

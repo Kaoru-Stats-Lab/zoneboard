@@ -486,7 +486,11 @@ function drawPiece(
     drawPieceNumberLabel(ctx, x, y, displayNumber, fillColor, r);
   }
 
-  drawPieceNameCaption(ctx, x, y, r, piece, board);
+  if (piece.role === "bench") {
+    drawBenchNameChip(ctx, pitch, x, y, r, piece, board, selected);
+  } else {
+    drawPieceNameCaption(ctx, x, y, r, piece, board);
+  }
 
   // 利き足（サカ系のみ）。番号優先のため外側に配置
   const foot = usesPreferredFoot(board.sport) ? piece.preferredFoot : null;
@@ -520,6 +524,68 @@ function captionNameForPiece(piece: Piece, board: BoardDocument): string {
       .find((p) => normalizePieceNumber(p.number) === num)
       ?.label.trim() ?? ""
   );
+}
+
+/** スペース区切りなら末尾（姓）。単一語・日本語はそのまま */
+function shortPlayerName(full: string): string {
+  const t = full.trim();
+  if (!t) return "";
+  const parts = t.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return parts[parts.length - 1]!;
+  return t;
+}
+
+/**
+ * 控え帯: 円下に暗いチップ。通常は短い姓、選択時はフル寄り。
+ * 小さな円の下キャプションだと名前が消えるので帯で幅を取る。
+ */
+function drawBenchNameChip(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  x: number,
+  y: number,
+  r: number,
+  piece: Piece,
+  board: BoardDocument,
+  selected: boolean,
+) {
+  const full = captionNameForPiece(piece, board);
+  if (!full) return;
+  const prefer = selected ? full : shortPlayerName(full);
+  const fs = Math.max(10, Math.min(selected ? 13 : 12, r * 1.05));
+  ctx.font = `700 ${fs}px ${BANNER_FONT_STACK}`;
+  const maxW = selected
+    ? Math.max(r * 10, pitch.w * 0.14)
+    : Math.max(r * 7.5, pitch.w * 0.078);
+  const shown = truncateByWidth(ctx, prefer, maxW);
+  const textW = ctx.measureText(shown).width;
+  const padX = Math.max(5, fs * 0.4);
+  const padY = Math.max(2.5, fs * 0.22);
+  const chipW = textW + padX * 2;
+  const chipH = fs + padY * 2;
+  const top = y + r + Math.max(3, r * 0.28);
+  const left = x - chipW / 2;
+  const radius = Math.min(3, chipH / 2);
+
+  ctx.beginPath();
+  ctx.moveTo(left + radius, top);
+  ctx.arcTo(left + chipW, top, left + chipW, top + chipH, radius);
+  ctx.arcTo(left + chipW, top + chipH, left, top + chipH, radius);
+  ctx.arcTo(left, top + chipH, left, top, radius);
+  ctx.arcTo(left, top, left + chipW, top, radius);
+  ctx.closePath();
+  ctx.fillStyle = selected ? "rgba(12,13,14,0.92)" : "rgba(12,13,14,0.78)";
+  ctx.fill();
+  if (selected) {
+    ctx.strokeStyle = "rgba(243,243,241,0.35)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "#f3f3f1";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(shown, x, top + chipH / 2);
 }
 
 /**

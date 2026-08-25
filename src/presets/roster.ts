@@ -268,7 +268,9 @@ export function piecesFromRoster(
     starters = roster.players.slice(0, nStart);
   }
 
-  const starterSet = new Set(starters.map((p) => p.number));
+  const starterSet = new Set(
+    starters.map((p) => normalizePieceNumber(p.number)),
+  );
   const pieces: Piece[] = [];
 
   starters.forEach((p, i) => {
@@ -294,7 +296,7 @@ export function piecesFromRoster(
   const benchY = team === "home" ? 1.08 : -0.08;
   const maxBench = benchCount;
   const benchPlayers = roster.players
-    .filter((p) => !starterSet.has(p.number))
+    .filter((p) => !starterSet.has(normalizePieceNumber(p.number)))
     .slice(0, maxBench);
 
   benchPlayers.forEach((p, i) => {
@@ -364,4 +366,37 @@ export function applyLineupToScenePieces(
     ...piecesFromRoster(sport, "home", home, benchCount, kits),
     ...piecesFromRoster(sport, "away", away, benchCount, kits),
   ];
+}
+
+/** 指定チームだけ XI＋控えで差し替え。相手チームの駒は残す */
+export function applyTeamLineupToScenePieces(
+  existing: Piece[],
+  sport: SportId,
+  team: "home" | "away",
+  roster: TeamRoster,
+  benchCount: number = DEFAULT_BENCH_COUNT,
+  kits: KitPalette = defaultKitPalette(),
+): Piece[] {
+  const kept = existing.filter((p) => p.team !== team);
+  if (roster.players.length === 0) return kept;
+  return [
+    ...kept,
+    ...piecesFromRoster(sport, team, roster, benchCount, kits),
+  ];
+}
+
+/** XI に書いたが名簿にいない背番号 */
+export function missingStarterNumbers(roster: TeamRoster): string[] {
+  const have = new Set(
+    roster.players.map((p) => normalizePieceNumber(p.number)),
+  );
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of roster.starterNumbers) {
+    const n = normalizePieceNumber(raw);
+    if (!n || seen.has(n) || have.has(n)) continue;
+    seen.add(n);
+    out.push(raw.trim() || n);
+  }
+  return out;
 }
