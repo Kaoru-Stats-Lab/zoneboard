@@ -492,25 +492,27 @@ function drawPiece(
     drawPieceNameCaption(ctx, x, y, r, piece, board);
   }
 
-  // 利き足（サカ系のみ）。番号優先のため外側に配置
+  // 利き足（サカ系のみ）。向きに対して L=左 / R=右。両利きは両方出す（B 一文字にしない）
   const foot = usesPreferredFoot(board.sport) ? piece.preferredFoot : null;
   if (foot === "L" || foot === "R" || foot === "B") {
-    const mark = foot === "B" ? "B" : foot;
-    const footRad =
-      foot === "B" ? rad + Math.PI : rad + (foot === "L" ? -Math.PI / 2 : Math.PI / 2);
-    const footDist = r * 0.9;
-    const mx = x + Math.cos(footRad) * footDist;
-    const my = y + Math.sin(footRad) * footDist;
-    const fs = r * 0.42;
-    ctx.beginPath();
-    ctx.arc(mx, my, fs * 0.72, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(0,0,0,0.55)";
-    ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.font = `700 ${fs}px ${UI_FONT_STACK}`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(mark, mx, my);
+    const marks: ("L" | "R")[] =
+      foot === "B" ? ["L", "R"] : [foot];
+    for (const mark of marks) {
+      const footRad = rad + (mark === "L" ? -Math.PI / 2 : Math.PI / 2);
+      const footDist = r * 0.9;
+      const mx = x + Math.cos(footRad) * footDist;
+      const my = y + Math.sin(footRad) * footDist;
+      const fs = r * 0.42;
+      ctx.beginPath();
+      ctx.arc(mx, my, fs * 0.72, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.font = `700 ${fs}px ${UI_FONT_STACK}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(mark, mx, my);
+    }
   }
 }
 
