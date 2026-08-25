@@ -163,3 +163,19 @@ export function railCollapsed(t: number): boolean {
 export function obsVisible(t: number): boolean {
   return t >= LP_T_OBS_START;
 }
+
+/** Pass and dribble already on the pitch — still for the after-match band. */
+export function lpHeroSceneComplete(
+  base: Scene,
+  board: BoardDocument,
+): Scene {
+  const p7 = base.pieces.find((p) => p.id === LP_HERO_PIECE.home7);
+  const ball = p7
+    ? { ...ballPosOnPiece(p7), attachedTo: LP_HERO_PIECE.home7 }
+    : base.ball;
+  return {
+    ...base,
+    ball,
+    objects: [lpHeroPassLine(board), lpHeroDribbleLine(board)],
+  };
+}

@@ -8,6 +8,7 @@ import { CONSENT_BANNER } from "../site/consentCopy";
 import { useFeedback } from "./FeedbackProvider";
 import { BrandLockup } from "./BrandMark";
 import { ConsentBanner, useConsentBanner } from "./ConsentBanner";
+import { LpAfterBoard } from "./LpAfterBoard";
 import { LpHeroBoard } from "./LpHeroBoard";
 
 export function Landing() {
@@ -66,23 +67,13 @@ export function Landing() {
               {t("lpAfterTitle")}
             </h2>
             <p className="lp-close-copy">{t("lpAfterBody")}</p>
+            <p className="lp-price">
+              {t("lpPriceBody")}{" "}
+              <a href="/pricing/">{t("lpPriceLink")}</a>
+            </p>
           </section>
-          <section
-            id="why"
-            className="lp-creed"
-            aria-labelledby="lp-creed-title"
-          >
-            <h2 id="lp-creed-title" className="lp-kicker">
-              {t("lpCreedTitle")}
-            </h2>
-            <p className="lp-close-copy">{t("lpCreedBody")}</p>
-          </section>
+          <LpAfterBoard />
         </main>
-
-        <p className="lp-price">
-          {t("lpPriceBody")}{" "}
-          <a href="/pricing/">{t("lpPriceLink")}</a>
-        </p>
 
         <footer className="lp-footer">
           <p className="lp-footer-brand">
@@ -102,7 +93,6 @@ export function Landing() {
                   {item.labelEn}
                 </a>
               ))}
-              <a href="#why">{t("lpFooterWhy")}</a>
               <button
                 type="button"
                 className="lp-footer-fb"
