@@ -279,7 +279,6 @@ export function Drawer({ state, t }: Props) {
                 <option value="away">{t("teamFocusAway")}</option>
               </select>
             </label>
-            <p className="hint-muted">{t("teamFocusHint")}</p>
             {board.sport === "soccer" && (
               <label>
                 {t("hideHalf")}
@@ -359,7 +358,10 @@ export function Drawer({ state, t }: Props) {
               </details>
             )}
             {!prepOpen && board.showMatchBanner && board.sport === "soccer" && (
-              <LiveMatchControls state={state} t={t} variant="drawer" />
+              <details className="drawer-details">
+                <summary>{t("liveMatchQuick")}</summary>
+                <LiveMatchControls state={state} t={t} variant="drawer" />
+              </details>
             )}
           </section>
         )}

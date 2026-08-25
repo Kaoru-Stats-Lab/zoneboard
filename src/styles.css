@@ -746,6 +746,17 @@ button:disabled {
 
 .topbar-right {
   justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.topbar-title-gap {
+  min-width: 0;
 }
 
 .title-input {
@@ -833,25 +844,33 @@ button:disabled {
 }
 
 .broadcast-btn {
-  background: transparent;
+  background: color-mix(in srgb, var(--zb-accent) 16%, var(--zb-ground));
   color: var(--zb-ink);
-  border-color: rgba(243, 243, 241, 0.35);
-  font-weight: 500;
+  border-color: color-mix(in srgb, var(--zb-accent) 55%, var(--zb-border));
+  font-weight: 600;
 }
 
 .broadcast-btn:hover {
-  background: var(--zb-panel);
-  border-color: rgba(243, 243, 241, 0.5);
+  background: color-mix(in srgb, var(--zb-accent) 26%, var(--zb-ground));
+  border-color: var(--zb-accent);
 }
 
 .topbar-fb {
   margin-top: 0;
   width: auto;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--zb-ink-muted);
-  font-size: 0.85rem;
-  text-decoration: underline;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.35rem 0.45rem;
+  text-decoration: none;
+}
+
+.topbar-fb:hover {
+  color: var(--zb-ink);
+  background: var(--zb-panel);
+  border-color: var(--zb-border);
 }
 
 /* 390px: keep the ZoneBoard word. Shrink the scene field, not the lockup. */
@@ -1325,6 +1344,25 @@ button:disabled {
   min-height: 0;
   overflow: auto;
   padding: 0.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(243, 243, 241, 0.22) transparent;
+}
+
+.drawer-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.drawer-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.drawer-body::-webkit-scrollbar-thumb {
+  background: rgba(243, 243, 241, 0.18);
+  border-radius: 3px;
+}
+
+.drawer-body:hover::-webkit-scrollbar-thumb {
+  background: rgba(243, 243, 241, 0.32);
 }
 
 .drawer-panel {

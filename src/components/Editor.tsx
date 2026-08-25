@@ -406,42 +406,51 @@ export function Editor({ state }: Props) {
             >
               {t("drawer")}
             </button>
-            <button
-              type="button"
-              className="topbar-icon-btn"
-              title={t("howTo")}
-              aria-label={t("howTo")}
-              onClick={() => setHowToOpen(true)}
-            >
-              ?
-            </button>
-            <button
-              type="button"
-              className="topbar-icon-btn"
-              title={t("settings")}
-              aria-label={t("settings")}
-              onClick={() => state.setSettingsOpen(true)}
-            >
-              ⚙
-            </button>
           </div>
-          <input
-            className="title-input"
-            value={state.scene?.label ?? ""}
-            onChange={(e) =>
-              state.updateScene((s) => ({ ...s, label: e.target.value }), false)
-            }
-            aria-label={t("sceneLabel")}
-            placeholder={t(sceneLabelPhKey(state.board?.sport))}
-          />
+          {!state.drawerOpen ? (
+            <input
+              className="title-input"
+              value={state.scene?.label ?? ""}
+              onChange={(e) =>
+                state.updateScene(
+                  (s) => ({ ...s, label: e.target.value }),
+                  false,
+                )
+              }
+              aria-label={t("sceneLabel")}
+              placeholder={t(sceneLabelPhKey(state.board?.sport))}
+            />
+          ) : (
+            <div className="topbar-title-gap" aria-hidden />
+          )}
           <div className="topbar-right">
-            <button
-              type="button"
-              className="topbar-fb"
-              onClick={() => openFeedback("editor")}
-            >
-              {t("feedbackOpen")}
-            </button>
+            <div className="topbar-meta">
+              <button
+                type="button"
+                className="topbar-icon-btn"
+                title={t("howTo")}
+                aria-label={t("howTo")}
+                onClick={() => setHowToOpen(true)}
+              >
+                ?
+              </button>
+              <button
+                type="button"
+                className="topbar-icon-btn"
+                title={t("settings")}
+                aria-label={t("settings")}
+                onClick={() => state.setSettingsOpen(true)}
+              >
+                ⚙
+              </button>
+              <button
+                type="button"
+                className="topbar-fb"
+                onClick={() => openFeedback("editor")}
+              >
+                {t("feedbackOpen")}
+              </button>
+            </div>
             <button
               type="button"
               className="broadcast-btn"
