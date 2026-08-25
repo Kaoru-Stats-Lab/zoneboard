@@ -23,15 +23,9 @@ export function scoreForTeam(
   return goals.filter((g) => g.team === team).length;
 }
 
+/** 試合帯 ON なら 0–0 / Home–Away でも出す。空帯はトグル OFF だけ。 */
 export function bannerHasContent(board: BoardDocument): boolean {
-  if (!board.showMatchBanner) return false;
-  return (
-    !!board.matchLabel.trim() ||
-    !!board.homeTeam.trim() ||
-    !!board.awayTeam.trim() ||
-    board.goals.length > 0 ||
-    (board.cards?.length ?? 0) > 0
-  );
+  return board.showMatchBanner;
 }
 
 /** 得点・カードタイムライン2行目 */
@@ -91,7 +85,29 @@ function drawKitBar(
   color: string,
 ) {
   ctx.fillStyle = color;
-  ctx.fillRect(x, y - h / 2, barW, h);
+  const r = Math.min(1.5, barW * 0.35);
+  ctx.beginPath();
+  ctx.roundRect(x, y - h / 2, barW, h, r);
+  ctx.fill();
+}
+
+/** 行クラスタの光学的高さ（スコア桁とチーム名の大きい方） */
+function lineClusterHeight(
+  ctx: CanvasRenderingContext2D,
+  nameFont: string,
+  scoreFont: string,
+): number {
+  const prev = ctx.font;
+  ctx.font = nameFont;
+  const nameM = ctx.measureText("Ay");
+  ctx.font = scoreFont;
+  const scoreM = ctx.measureText("0");
+  ctx.font = prev;
+  const nameH =
+    (nameM.actualBoundingBoxAscent ?? 0) + (nameM.actualBoundingBoxDescent ?? 0);
+  const scoreH =
+    (scoreM.actualBoundingBoxAscent ?? 0) + (scoreM.actualBoundingBoxDescent ?? 0);
+  return Math.max(nameH, scoreH, 1);
 }
 
 export function drawMatchBanner(
@@ -108,8 +124,6 @@ export function drawMatchBanner(
 
   const kits = kitsFromBoard(board);
   const padX = Math.max(12, canvasW * 0.018);
-  const barW = Math.max(3, Math.min(4, canvasW * 0.004));
-  const barGap = 4;
   const home = board.homeTeam.trim() || "Home";
   const away = board.awayTeam.trim() || "Away";
   const homeScore = scoreForTeam(board.goals, "home");
@@ -122,9 +136,16 @@ export function drawMatchBanner(
   const titleSize = Math.max(13, Math.min(18, bannerH * 0.28));
   const scoreSize = Math.max(16, Math.min(24, bannerH * 0.38));
   const eventSize = Math.max(11, Math.min(15, bannerH * 0.22));
-  const gapMd = scoreSize * 0.35;
+  const nameFont = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  const scoreFont = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
+  const rowH = lineClusterHeight(ctx, nameFont, scoreFont);
+  const barH = rowH * 0.94;
+  const barW = Math.max(4, Math.min(5, canvasW * 0.0045));
+  const gapBarName = Math.max(5, titleSize * 0.38);
+  const gapNameScore = Math.max(6, scoreSize * 0.3);
+  const gapScoreInner = scoreSize * 0.35;
   const dash = "–";
-  const barBlock = barW + barGap;
+  const barBlock = barW + gapBarName;
 
   ctx.textBaseline = "middle";
 
@@ -140,23 +161,23 @@ export function drawMatchBanner(
     ctx.fillText(titleText, padX, line1Y);
   }
 
-  ctx.font = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
+  ctx.font = scoreFont;
   const homeScoreStr = String(homeScore);
   const awayScoreStr = String(awayScore);
   const homeScoreW = ctx.measureText(homeScoreStr).width;
   const awayScoreW = ctx.measureText(awayScoreStr).width;
-  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
-  const dashW = ctx.measureText(dash).width + gapMd * 2;
+  ctx.font = `500 ${Math.round(scoreSize * 0.72)}px ${BANNER_FONT_STACK}`;
+  const dashW = ctx.measureText(dash).width + gapScoreInner * 2;
 
   const scoreCoreW = homeScoreW + dashW + awayScoreW;
   const nameBudget = Math.max(
     48,
-    canvasW - padX * 2 - titleW - gapMd * 4 - scoreCoreW - barBlock * 2,
+    canvasW - padX * 2 - titleW - gapNameScore * 2 - scoreCoreW - barBlock * 2,
   );
   const homeNameMax = nameBudget * 0.5;
   const awayNameMax = nameBudget * 0.5;
 
-  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  ctx.font = nameFont;
   const homeNameStr = truncateByWidth(ctx, home, homeNameMax);
   const awayNameStr = truncateByWidth(ctx, away, awayNameMax);
   const homeNameW = ctx.measureText(homeNameStr).width;
@@ -165,44 +186,43 @@ export function drawMatchBanner(
   const clusterW =
     barBlock +
     homeNameW +
-    gapMd +
+    gapNameScore +
     homeScoreW +
     dashW +
     awayScoreW +
-    gapMd +
+    gapNameScore +
     awayNameW +
     barBlock;
 
   let x = canvasW - padX - clusterW;
-  const barH = titleSize * 0.92;
 
   drawKitBar(ctx, x, line1Y, barH, barW, kits.home);
   x += barBlock;
-  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  ctx.font = nameFont;
   ctx.fillStyle = BANNER_IVORY;
   ctx.textAlign = "left";
   ctx.fillText(homeNameStr, x, line1Y);
-  x += homeNameW + gapMd;
+  x += homeNameW + gapNameScore;
 
-  ctx.font = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
+  ctx.font = scoreFont;
   ctx.fillStyle = SCORE_WHITE;
   ctx.fillText(homeScoreStr, x, line1Y);
-  x += homeScoreW + gapMd;
+  x += homeScoreW + gapScoreInner;
 
   ctx.fillStyle = BANNER_MUTED;
-  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  ctx.font = `500 ${Math.round(scoreSize * 0.72)}px ${BANNER_FONT_STACK}`;
   ctx.fillText(dash, x, line1Y);
-  x += ctx.measureText(dash).width + gapMd;
+  x += ctx.measureText(dash).width + gapScoreInner;
 
-  ctx.font = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
+  ctx.font = scoreFont;
   ctx.fillStyle = SCORE_WHITE;
   ctx.fillText(awayScoreStr, x, line1Y);
-  x += awayScoreW + gapMd;
+  x += awayScoreW + gapNameScore;
 
-  ctx.font = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
+  ctx.font = nameFont;
   ctx.fillStyle = BANNER_IVORY;
   ctx.fillText(awayNameStr, x, line1Y);
-  x += awayNameW;
+  x += awayNameW + gapBarName;
   drawKitBar(ctx, x, line1Y, barH, barW, kits.away);
 
   if (hasTimeline) {
