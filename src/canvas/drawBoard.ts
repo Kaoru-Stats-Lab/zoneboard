@@ -517,7 +517,7 @@ function captionNameForPiece(piece: Piece, board: BoardDocument): string {
   if (!num) return "";
   return (
     board.roster[piece.team].players
-      .find((p) => p.number === num)
+      .find((p) => normalizePieceNumber(p.number) === num)
       ?.label.trim() ?? ""
   );
 }

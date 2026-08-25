@@ -36,6 +36,13 @@ export function PieceInspector({ state, t }: Props) {
   const showHeight = sport ? usesHeight(sport) : false;
   const showWeight = sport ? usesWeight(sport) : false;
   const normalizedNumber = normalizePieceNumber(selected.number);
+  const rosterName =
+    normalizedNumber && state.board
+      ? (state.board.roster[selected.team].players.find(
+          (p) => normalizePieceNumber(p.number) === normalizedNumber,
+        )?.label.trim() ?? "")
+      : "";
+  const displayName = selected.label.trim() || rosterName;
   const duplicateNumber =
     normalizedNumber.length > 0 &&
     state.scene.pieces.some(
@@ -77,7 +84,7 @@ export function PieceInspector({ state, t }: Props) {
       <label>
         {t("name")}
         <input
-          value={selected.label}
+          value={displayName}
           placeholder={t("pieceNamePh")}
           onFocus={() => state.captureUndo()}
           onChange={(e) =>

@@ -109,7 +109,7 @@ document.getElementById("contact-form").addEventListener("submit", async (event)
 }
 
 function consentBanner(): string {
-  return `<aside id="site-consent" class="site-consent" hidden role="region" aria-labelledby="site-consent-title">
+  return `<aside id="site-consent" class="site-consent site-consent--compact" hidden role="region" aria-labelledby="site-consent-title">
   <div class="site-consent__inner">
     <p class="site-consent__title" id="site-consent-title">${esc(CONSENT_BANNER.title)}</p>
     <p class="site-consent__copy">

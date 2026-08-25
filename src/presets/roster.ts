@@ -166,33 +166,77 @@ export function formatRosterText(players: RosterPlayer[]): string {
     .join("\n");
 }
 
-/** 駒カードからの名前を名簿行に載せる。背番号がキー。 */
+/** 駒カードからの名前を名簿行に載せる。背番号がキー（チーム内）。空文字で既存名を消さない。 */
 export function upsertRosterPlayer(
   team: TeamRoster,
   previousNumber: string,
   next: RosterPlayer,
 ): TeamRoster {
-  const prev = previousNumber.trim();
-  const number = next.number.trim();
+  const prev = normalizePieceNumber(previousNumber);
+  const number = normalizePieceNumber(next.number);
   if (!number) return team;
 
+  const players = [...team.players];
+  const idx = players.findIndex((p) => {
+    const n = normalizePieceNumber(p.number);
+    return n === prev || n === number;
+  });
+  const existing = idx >= 0 ? players[idx] : undefined;
+  const nextLabel = next.label.trim();
   const row: RosterPlayer = {
     number,
-    label: next.label,
-    preferredFoot: next.preferredFoot ?? null,
-    heightCm: next.heightCm ?? null,
-    weightKg: next.weightKg ?? null,
+    label: nextLabel || existing?.label?.trim() || "",
+    preferredFoot:
+      next.preferredFoot !== undefined
+        ? next.preferredFoot
+        : (existing?.preferredFoot ?? null),
+    heightCm:
+      next.heightCm !== undefined
+        ? next.heightCm
+        : (existing?.heightCm ?? null),
+    weightKg:
+      next.weightKg !== undefined
+        ? next.weightKg
+        : (existing?.weightKg ?? null),
   };
-  const players = [...team.players];
-  const idx = players.findIndex((p) => p.number === prev || p.number === number);
   if (idx < 0) players.push(row);
-  else players[idx] = { ...players[idx], ...row };
+  else players[idx] = { ...existing!, ...row };
 
   const starterNumbers =
-    prev !== number
-      ? team.starterNumbers.map((n) => (n === prev ? number : n))
+    prev && prev !== number
+      ? team.starterNumbers.map((n) =>
+          normalizePieceNumber(n) === prev ? number : n,
+        )
       : team.starterNumbers;
   return { ...team, players, starterNumbers };
+}
+
+/** 名簿の名前を、同じチーム・背番号の駒へ載せる（取込直後の空ラベルを埋める） */
+export function paintPiecesFromRoster(
+  pieces: Piece[],
+  team: "home" | "away",
+  roster: TeamRoster,
+): Piece[] {
+  if (roster.players.length === 0) return pieces;
+  const byNum = new Map(
+    roster.players.map((p) => [normalizePieceNumber(p.number), p]),
+  );
+  return pieces.map((piece) => {
+    if (piece.team !== team) return piece;
+    const num = normalizePieceNumber(piece.number);
+    if (!num) return piece;
+    const row = byNum.get(num);
+    if (!row) return piece;
+    const label = piece.label.trim() || row.label.trim();
+    return {
+      ...piece,
+      label: label || piece.label,
+      preferredFoot:
+        piece.preferredFoot ?? row.preferredFoot ?? null,
+      heightCm: piece.heightCm ?? row.heightCm ?? null,
+      weightKg: piece.weightKg ?? row.weightKg ?? null,
+    };
+  });
 }
 
 /**
@@ -211,9 +255,11 @@ export function piecesFromRoster(
   let spots = starterSpots(sport);
   if (team === "away") spots = mirrorX(spots);
 
-  const byNum = new Map(roster.players.map((p) => [p.number, p]));
+  const byNum = new Map(
+    roster.players.map((p) => [normalizePieceNumber(p.number), p]),
+  );
   let starters = roster.starterNumbers
-    .map((n) => byNum.get(n))
+    .map((n) => byNum.get(normalizePieceNumber(n)))
     .filter((p): p is RosterPlayer => !!p)
     .slice(0, nStart);
 
@@ -273,7 +319,7 @@ export function piecesFromRoster(
   return pieces;
 }
 
-/** フォーメ再配置でも、直前の駒または名簿の名前・身体情報を背番号で戻す */
+/** フォーメ再配置でも、直前の駒または名簿の名前・身体情報を背番号で戻す（チーム内） */
 export function withRosterIdentity(
   pieces: Piece[],
   roster: { home: TeamRoster; away: TeamRoster },
@@ -290,7 +336,11 @@ export function withRosterIdentity(
       (p) => normalizePieceNumber(p.number) === num,
     );
     if (!prev && !row) return piece;
-    const label = (prev?.label || row?.label || piece.label).trim();
+    const label = (
+      prev?.label?.trim() ||
+      row?.label?.trim() ||
+      piece.label
+    ).trim();
     return {
       ...piece,
       label: label || piece.label,

@@ -209,6 +209,10 @@ export function Drawer({ state, t }: Props) {
                 placeholder={t(sceneLabelPhKey(board.sport))}
               />
             </label>
+            <button type="button" onClick={state.mirrorSceneEnds}>
+              {t("sceneMirrorEnds")}
+            </button>
+            <p className="hint-muted">{t("sceneMirrorEndsHint")}</p>
             {board.sport === "soccer" && (
               <label>
                 {t("hideHalf")}

@@ -2,9 +2,9 @@
 export const CONSENT_BANNER = {
   title: "Privacy choices",
   titleJa: "プライバシーの選択",
-  copy: "Necessary storage keeps the board on this device and remembers this choice. Google Analytics 4 is optional: it measures visits and whether the board was opened. It does not receive scenes, roster text, or drawings. Google AdSense is optional and used only on reading pages, never on the pitch. Allow advertising also allows analytics, which AdSense uses to measure ads. Both stay off until you choose.",
+  copy: "Analytics and ads stay off until you choose. The board stays on this device.",
   copyJa:
-    "必要な保存は、この端末のボードと、この選択の記録です。Google Analytics 4 は任意で、来訪とボードを開いたかを測ります。局面、名簿、描画は受け取りません。Google AdSense は任意で、読み物ページのみ。ピッチには出しません。Allow advertising は広告計測のため analytics も許可します。選ぶまでどちらもオフです。",
+    "計測と広告は、選ぶまでオフです。ボードはこの端末に残ります。",
   reject: "Reject optional",
   rejectJa: "任意を拒否",
   analytics: "Allow analytics",

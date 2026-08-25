@@ -66,7 +66,7 @@ export function ConsentBanner({
   return (
     <aside
       id="site-consent"
-      className="site-consent"
+      className="site-consent site-consent--compact"
       hidden={!open}
       role="region"
       aria-labelledby="site-consent-title"

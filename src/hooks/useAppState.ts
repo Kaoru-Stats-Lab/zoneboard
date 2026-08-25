@@ -11,6 +11,8 @@ import {
   getActiveScene,
   isPieceDrawn,
   mapActiveScene,
+  mirrorSceneHorizontal,
+  mirrorViewportHorizontal,
 } from "../models/scene";
 import type {
   BoardDocument,
@@ -60,6 +62,7 @@ import {
   parseStarterNumbers,
   upsertRosterPlayer,
   withRosterIdentity,
+  paintPiecesFromRoster,
 } from "../presets/roster";
 import {
   DEFAULT_VIEWPORT,
@@ -465,6 +468,17 @@ export function useAppState() {
     [updateScene],
   );
 
+  /** 前後半のエンドチェンジ: 現局面の配置をピッチ中心で左右入れ替え */
+  const mirrorSceneEnds = useCallback(() => {
+    updateBoard((b) => {
+      const next = mapActiveScene(b, mirrorSceneHorizontal);
+      return {
+        ...next,
+        viewport: clampViewport(mirrorViewportHorizontal(next.viewport)),
+      };
+    });
+  }, [updateBoard]);
+
   const setViewport = useCallback(
     (viewport: Viewport, record = false) => {
       updateBoard(
@@ -486,21 +500,28 @@ export function useAppState() {
     setViewport({ ...DEFAULT_VIEWPORT }, false);
   }, [setViewport]);
 
-  /** ベンチ入り名簿を一括インポート（番号,名前） */
+  /** ベンチ入り名簿を一括インポート（番号,名前）。同チーム・同背番号の駒にも名前を載せる */
   const importRoster = useCallback(
     (team: "home" | "away", text: string) => {
       const players = parseRosterText(text);
       if (players.length === 0) return false;
-      updateBoard((b) => ({
-        ...b,
-        roster: {
-          ...b.roster,
-          [team]: {
-            ...b.roster[team],
-            players,
+      updateBoard((b) => {
+        const nextTeam = {
+          ...b.roster[team],
+          players,
+        };
+        return {
+          ...b,
+          roster: {
+            ...b.roster,
+            [team]: nextTeam,
           },
-        },
-      }));
+          scenes: b.scenes.map((s) => ({
+            ...s,
+            pieces: paintPiecesFromRoster(s.pieces, team, nextTeam),
+          })),
+        };
+      });
       return true;
     },
     [updateBoard],
@@ -880,9 +901,14 @@ export function useAppState() {
           );
         }
         const nextPiece = { ...existing, ...normalized };
+        const incomingLabel =
+          patch.label !== undefined ? patch.label.trim() : undefined;
         const identity = {
           number: nextPiece.number,
-          label: nextPiece.label,
+          label:
+            incomingLabel !== undefined && incomingLabel !== ""
+              ? incomingLabel
+              : nextPiece.label.trim() || existing.label,
           preferredFoot: nextPiece.preferredFoot,
           heightCm: nextPiece.heightCm,
           weightKg: nextPiece.weightKg,
@@ -895,7 +921,13 @@ export function useAppState() {
             [existing.team]: upsertRosterPlayer(
               b.roster[existing.team],
               existing.number,
-              identity,
+              {
+                number: identity.number,
+                label: identity.label,
+                preferredFoot: identity.preferredFoot,
+                heightCm: identity.heightCm,
+                weightKg: identity.weightKg,
+              },
             ),
           };
         }
@@ -904,13 +936,36 @@ export function useAppState() {
           roster,
           scenes: b.scenes.map((s) => {
             const pieces = s.pieces.map((p) => {
-              if (p.id === id) return { ...p, ...normalized };
+              if (p.id === id) {
+                const merged = { ...p, ...normalized };
+                // 空ラベルで既存名を落とさない（名簿取込後・未配置の駒）
+                if (
+                  patch.label !== undefined &&
+                  !patch.label.trim() &&
+                  p.label.trim()
+                ) {
+                  merged.label = p.label;
+                } else if (
+                  patch.label !== undefined &&
+                  !patch.label.trim()
+                ) {
+                  const row = b.roster[existing.team].players.find(
+                    (r) =>
+                      normalizePieceNumber(r.number) ===
+                      normalizePieceNumber(merged.number || existing.number),
+                  );
+                  if (row?.label.trim()) merged.label = row.label;
+                }
+                return merged;
+              }
               if (
                 touchesIdentity &&
                 p.team === existing.team &&
                 normalizePieceNumber(p.number) === prevNum
               ) {
-                return { ...p, ...identity };
+                const nextLabel =
+                  identity.label.trim() || p.label.trim() || p.label;
+                return { ...p, ...identity, label: nextLabel };
               }
               return p;
             });
@@ -1360,6 +1415,7 @@ export function useAppState() {
     deleteScene,
     cycleScene,
     setHideHalf,
+    mirrorSceneEnds,
     setViewport,
     applyViewPreset,
     resetViewport,
