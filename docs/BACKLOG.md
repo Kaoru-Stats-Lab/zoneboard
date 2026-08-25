@@ -127,6 +127,12 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-051 | 配信 chrome から得点 | バナー ON のとき Match に潜らない。波4 |
 | B-052 | 試合帯の文字（キット塗りをやめる） | チーム名は象牙。3文字強制なし。スコア字間。[`STUDIO.md`](STUDIO.md) §6–7 · [`AGENT_PROMPT_BANNER.md`](AGENT_PROMPT_BANNER.md) |
 | B-053 | 名簿 Home/Away をキット色に | セグメント背景＝フィールド色。帯の名前とは逆。同プロンプト |
+| B-054 | ズーム時の駒密度補正 | **済** ピッチと一緒に膨らませない。`pieceScale` は乗算のみ。[`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 決定ログ 2026-08-25 |
+| B-055 | チーム表示 Home/Away/Both | **済** 試合前・試合後。Scenes。`teamFocus`。配信 chrome に出さない |
+| B-056 | 画角プリセットのランドマーク監査 | CK は教本面積まで **再定義済**。FT・ペナ・スロー・バスケ・Export 余白は [`VIEWPORT_RESEARCH.md`](VIEWPORT_RESEARCH.md) |
+| B-057 | 局面ごとの画角（`scene.viewport`） | **済** 2026-08-25。Pro 画角テンプレは実装済・`FEATURE_PRO_VIEWPORT_TEMPLATES=false` |
+| B-058 | Pass ＝ ボール軌道（ユーザ認知） | **済** 2026-08-25 `passHint` / `deleteHint` ja·en。ボタンラベルは Pass のまま |
+| B-059 | `shot` 線種 | Later。[TacticsBoard](https://tacticsboard.app/) / FTB は Pass と Shot 分離。Pass=配球・クロス、Shot=ゴール向け軌道 |
 
 ### P2 — Pro / データ
 
@@ -182,6 +188,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 - PL 百科レベルの駒カード（国籍・成績・プレースタイル長文）
 - **ブロック専用ツール**（「ブロックを敷く」は Pen。面の塗りが要るなら B-046）
 - **ピッチ／配信モードの広告**（2026-08-24。運営・ユーザ設定とも禁止。議論で戻さない）
+- **視野角の扇形**（2026-08-25。Football の視線／視界は概念として認識。`facing` 一本で足りる。議論で戻さない）
 
 ---
 
