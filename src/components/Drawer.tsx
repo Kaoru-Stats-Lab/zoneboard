@@ -7,7 +7,7 @@ import {
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { BENCH_COUNT_OPTIONS } from "../presets/bench";
-import type { CardKind, HideHalf, SportId } from "../models/types";
+import type { CardKind, HideHalf, RosterPlayer, SportId } from "../models/types";
 import {
   MAX_BOARDS,
   MAX_SCENES,
@@ -15,7 +15,7 @@ import {
   usesPreferredFoot,
 } from "../models/types";
 import { kitsFromBoard, sportHasGk } from "../models/kits";
-import { numberFill } from "../canvas/pieceInk";
+import { normalizePieceNumber, numberFill } from "../canvas/pieceInk";
 import { STARTER_COUNT, formatRosterText } from "../presets/roster";
 import { viewPresetsForSport } from "../presets/viewport";
 import { scenePresetsForSport, type ScenePresetId } from "../presets/scenePresets";
@@ -24,6 +24,23 @@ import { LiveMatchControls } from "./LiveMatchControls";
 function startersPlaceholder(sport: SportId): string {
   const n = STARTER_COUNT[sport];
   return Array.from({ length: n }, (_, i) => String(i + 1)).join(",");
+}
+
+/** チップ用の短い表示名。番号が主役、名前は添え */
+function chipName(label: string): string {
+  const t = label.trim();
+  if (!t) return "";
+  const parts = t.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return parts[parts.length - 1]!;
+  return t;
+}
+
+function playerByNormalizedNumber(
+  players: RosterPlayer[],
+  num: string,
+): RosterPlayer | undefined {
+  const n = normalizePieceNumber(num);
+  return players.find((p) => normalizePieceNumber(p.number) === n);
 }
 
 function sceneLabelPhKey(sport: SportId): MessageKey {
@@ -65,6 +82,8 @@ export function Drawer({ state, t }: Props) {
   const [cardKind, setCardKind] = useState<CardKind>("YC");
 
   const boardRoster = state.board?.roster;
+  const homeXiKey = boardRoster?.home.starterNumbers.join(",") ?? "";
+  const awayXiKey = boardRoster?.away.starterNumbers.join(",") ?? "";
   useEffect(() => {
     if (!boardRoster) return;
     setRosterText((prev) => ({
@@ -77,6 +96,10 @@ export function Drawer({ state, t }: Props) {
     }));
   }, [boardRoster, rosterDirty.home, rosterDirty.away]);
 
+  useEffect(() => {
+    setXiText({ home: homeXiKey, away: awayXiKey });
+  }, [homeXiKey, awayXiKey]);
+
   if (!state.drawerOpen || state.broadcast || !state.board || !state.scene)
     return null;
   const board = state.board;
@@ -85,6 +108,35 @@ export function Drawer({ state, t }: Props) {
   const sceneLimit = board.scenes.length >= MAX_SCENES;
   const roster = board.roster[teamSide];
   const kits = kitsFromBoard(board);
+  const xiMax = STARTER_COUNT[board.sport];
+  const starterNorm = new Set(
+    roster.starterNumbers.map((n) => normalizePieceNumber(n)).filter(Boolean),
+  );
+  const xiPlayers = roster.starterNumbers
+    .map((n) => playerByNormalizedNumber(roster.players, n))
+    .filter((p): p is RosterPlayer => !!p);
+  const squadPlayers = roster.players.filter(
+    (p) => !starterNorm.has(normalizePieceNumber(p.number)),
+  );
+
+  const commitXi = (numbers: string[]) => {
+    setXiText((prev) => ({ ...prev, [teamSide]: numbers.join(",") }));
+    state.setStarterNumbers(teamSide, numbers);
+  };
+
+  const addToXi = (number: string) => {
+    const n = normalizePieceNumber(number);
+    if (!n || starterNorm.has(n)) return;
+    if (xiPlayers.length >= xiMax) return;
+    commitXi([...roster.starterNumbers, number]);
+  };
+
+  const removeFromXi = (number: string) => {
+    const n = normalizePieceNumber(number);
+    commitXi(
+      roster.starterNumbers.filter((x) => normalizePieceNumber(x) !== n),
+    );
+  };
 
   return (
     <aside className="drawer">
@@ -397,42 +449,123 @@ export function Drawer({ state, t }: Props) {
             >
               {t("importRoster")}
             </button>
-            <label>
-              {t("startersXi")}
-              <input
-                value={xiText[teamSide]}
-                onChange={(e) =>
-                  setXiText((prev) => ({
-                    ...prev,
-                    [teamSide]: e.target.value,
-                  }))
-                }
-                placeholder={startersPlaceholder(board.sport)}
-              />
-            </label>
-            <button
-              type="button"
-              className="active"
-              onClick={() => {
-                const result = state.setStarters(teamSide, xiText[teamSide]);
-                if (result === false) {
-                  window.alert(t("xiParseFail"));
-                  return;
-                }
-                if (result.length > 0) {
-                  window.alert(
-                    t("xiMissing").replace("{nums}", result.join(", ")),
-                  );
-                }
-              }}
-            >
-              {t("setXi")}
-            </button>
+
+            {roster.players.length > 0 && (
+              <>
+                <div className="roster-chip-block">
+                  <div className="roster-chip-head">
+                    <h3>
+                      {t("xiChips")} · {xiPlayers.length}/{xiMax}
+                    </h3>
+                  </div>
+                  <p className="hint-muted">{t("xiChipsHint")}</p>
+                  <div className="roster-chips" role="list">
+                    {xiPlayers.length === 0 ? (
+                      <p className="roster-chips-empty">{t("xiChipsEmpty")}</p>
+                    ) : (
+                      xiPlayers.map((p) => {
+                        const name = chipName(p.label);
+                        return (
+                          <button
+                            key={`xi-${p.number}`}
+                            type="button"
+                            role="listitem"
+                            className="roster-chip roster-chip--xi"
+                            title={t("xiChipRemove")}
+                            onClick={() => removeFromXi(p.number)}
+                          >
+                            <span className="roster-chip-num">{p.number}</span>
+                            {name ? (
+                              <span className="roster-chip-name">{name}</span>
+                            ) : null}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                <div className="roster-chip-block">
+                  <div className="roster-chip-head">
+                    <h3>{t("squadChips")}</h3>
+                  </div>
+                  <p className="hint-muted">{t("squadChipsHint")}</p>
+                  <div className="roster-chips" role="list">
+                    {squadPlayers.length === 0 ? (
+                      <p className="roster-chips-empty">{t("squadChipsEmpty")}</p>
+                    ) : (
+                      squadPlayers.map((p) => {
+                        const name = chipName(p.label);
+                        const full = xiPlayers.length >= xiMax;
+                        return (
+                          <button
+                            key={`sq-${p.number}`}
+                            type="button"
+                            role="listitem"
+                            className="roster-chip roster-chip--squad"
+                            disabled={full}
+                            title={
+                              full ? t("xiChipsFull") : t("xiChipAdd")
+                            }
+                            onClick={() => addToXi(p.number)}
+                          >
+                            <span className="roster-chip-num">{p.number}</span>
+                            {name ? (
+                              <span className="roster-chip-name">{name}</span>
+                            ) : null}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
             <p className="hint-muted">
               {t("rosterCount")}: {roster.players.length}/
               {roster.starterNumbers.length}
             </p>
-            <p className="hint-muted">{t("setXiHint")}</p>
+
+            <details className="drawer-details">
+              <summary>{t("xiPasteDetails")}</summary>
+              <label>
+                {t("startersXi")}
+                <input
+                  value={xiText[teamSide]}
+                  onChange={(e) =>
+                    setXiText((prev) => ({
+                      ...prev,
+                      [teamSide]: e.target.value,
+                    }))
+                  }
+                  placeholder={startersPlaceholder(board.sport)}
+                />
+              </label>
+              <button
+                type="button"
+                className="active"
+                onClick={() => {
+                  const result = state.setStarters(
+                    teamSide,
+                    xiText[teamSide],
+                  );
+                  if (result === false) {
+                    window.alert(t("xiParseFail"));
+                    return;
+                  }
+                  if (result.length > 0) {
+                    window.alert(
+                      t("xiMissing").replace("{nums}", result.join(", ")),
+                    );
+                  }
+                }}
+              >
+                {t("setXi")}
+              </button>
+              <p className="hint-muted">{t("setXiHint")}</p>
+            </details>
+
             <button
               type="button"
               onClick={() => {

@@ -58,12 +58,13 @@ import {
 } from "../presets/scenePresets";
 import {
   applyLineupToScenePieces,
+  applyTeamLineupToScenePieces,
   missingStarterNumbers,
   parseRosterText,
   parseStarterNumbers,
+  STARTER_COUNT,
   upsertRosterPlayer,
   withRosterIdentity,
-  applyTeamLineupToScenePieces,
 } from "../presets/roster";
 import {
   DEFAULT_VIEWPORT,
@@ -507,9 +508,22 @@ export function useAppState() {
       const players = parseRosterText(text);
       if (players.length === 0) return false;
       updateBoard((b) => {
+        const nStart = STARTER_COUNT[b.sport];
+        const prevXi = b.roster[team].starterNumbers ?? [];
+        const keptXi = prevXi.filter((n) =>
+          players.some(
+            (p) =>
+              normalizePieceNumber(p.number) === normalizePieceNumber(n),
+          ),
+        );
+        const starterNumbers =
+          keptXi.length > 0
+            ? keptXi.slice(0, nStart)
+            : players.slice(0, nStart).map((p) => p.number);
         const nextTeam = {
           ...b.roster[team],
           players,
+          starterNumbers,
         };
         const roster = {
           ...b.roster,
@@ -540,12 +554,11 @@ export function useAppState() {
 
   /**
    * スタメン背番号をセットし、そのチームをピッチ＋ベンチに反映。
-   * 戻り値: false=パース失敗、string[]=名簿にない背番号（空なら全部ヒット）
+   * 空配列可（名簿先頭から自動XI）。
+   * 戻り値: 名簿にない背番号（空なら全部ヒット）
    */
-  const setStarters = useCallback(
-    (team: "home" | "away", text: string): false | string[] => {
-      const starterNumbers = parseStarterNumbers(text);
-      if (starterNumbers.length === 0) return false;
+  const setStarterNumbers = useCallback(
+    (team: "home" | "away", starterNumbers: string[]): string[] => {
       let missing: string[] = [];
       updateBoard((b) => {
         const nextTeam = {
@@ -581,6 +594,18 @@ export function useAppState() {
       return missing;
     },
     [setSelectedPieceId, updateBoard],
+  );
+
+  /**
+   * テキストからスタメンをセット。非空なのに番号ゼロなら false。
+   */
+  const setStarters = useCallback(
+    (team: "home" | "away", text: string): false | string[] => {
+      const starterNumbers = parseStarterNumbers(text);
+      if (text.trim() !== "" && starterNumbers.length === 0) return false;
+      return setStarterNumbers(team, starterNumbers);
+    },
+    [setStarterNumbers],
   );
 
   /** 名簿＋スタメンから現局面に一括配置 */
@@ -1458,6 +1483,7 @@ export function useAppState() {
     resetViewport,
     importRoster,
     setStarters,
+    setStarterNumbers,
     applyLineup,
     changeSport,
     applyFormation,

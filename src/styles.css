@@ -1363,6 +1363,73 @@ button:disabled {
   border-left-style: solid;
 }
 
+.roster-chip-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.roster-chip-head h3 {
+  margin: 0;
+}
+
+.roster-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.roster-chips-empty {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--zb-ink-muted);
+}
+
+.roster-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  max-width: 100%;
+  padding: 0.28rem 0.45rem;
+  border: 1px solid var(--zb-border);
+  border-radius: var(--zb-radius);
+  background: var(--zb-ground);
+  color: var(--zb-ink);
+  font-size: 0.8rem;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.roster-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.roster-chip--xi {
+  border-color: var(--zb-accent);
+  background: color-mix(in srgb, var(--zb-accent) 14%, var(--zb-panel));
+}
+
+.roster-chip--squad:hover:not(:disabled) {
+  border-color: var(--zb-border-strong);
+  background: var(--zb-panel-elevated);
+}
+
+.roster-chip-num {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.roster-chip-name {
+  color: var(--zb-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 7.5rem;
+}
+
 .drawer-details {
   border: 1px solid var(--zb-border);
   border-radius: var(--zb-radius);
