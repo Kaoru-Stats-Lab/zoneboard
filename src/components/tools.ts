@@ -18,7 +18,7 @@ export const TOOL_ITEMS: ToolItem[] = [
   { id: "run", key: "run", hint: "runHint" },
   { id: "dribble", key: "dribble", hint: "dribbleHint" },
   { id: "zone", key: "zone" },
-  { id: "pen", key: "pen" },
+  { id: "pen", key: "pen", hint: "penHint" },
   { id: "text", key: "text" },
 ];
 

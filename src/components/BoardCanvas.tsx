@@ -189,6 +189,8 @@ type DragState =
       x0: number;
       y0: number;
       points?: { x: number; y: number }[];
+      /** Shift 押下開始 → 始点–終点の直線のみ（Figma 型） */
+      straight: boolean;
     }
   | {
       mode: "text";
@@ -878,6 +880,7 @@ export function BoardCanvas({
         x0: world.x,
         y0: world.y,
         points: [{ x: world.x, y: world.y }],
+        straight: e.shiftKey,
       };
       canvas.setPointerCapture(e.pointerId);
       bumpDragVisual();
@@ -1044,7 +1047,11 @@ export function BoardCanvas({
     }
 
     if (d.mode === "pen" && d.points) {
-      if (
+      if (d.straight) {
+        d.points.length = 0;
+        d.points.push({ x: d.x0, y: d.y0 }, { x: world.x, y: world.y });
+        bumpDragVisual();
+      } else if (
         samplePenPointerEvents(e.nativeEvent, d.points, board, normFromClient)
       ) {
         bumpDragVisual();
@@ -1142,8 +1149,19 @@ export function BoardCanvas({
       const h = Math.abs(corner.y - d.y0);
       if (w > 0.01 && h > 0.01) state.addZone(x, y, w, h);
     } else if (d.mode === "pen" && d.points) {
-      samplePenPointerEvents(e.nativeEvent, d.points, board, normFromClient);
-      if (d.points.length >= 2) state.addPen(d.points);
+      if (d.straight) {
+        d.points.length = 0;
+        d.points.push({ x: d.x0, y: d.y0 }, { x: world.x, y: world.y });
+      } else {
+        samplePenPointerEvents(e.nativeEvent, d.points, board, normFromClient);
+      }
+      const end = d.points[d.points.length - 1]!;
+      if (
+        d.points.length >= 2 &&
+        Math.hypot(end.x - d.x0, end.y - d.y0) >= 0.008
+      ) {
+        state.addPen(d.points);
+      }
     }
   };
 

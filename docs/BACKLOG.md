@@ -133,6 +133,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-057 | 局面ごとの画角（`scene.viewport`） | **済** 2026-08-25。Pro 画角テンプレは実装済・`FEATURE_PRO_VIEWPORT_TEMPLATES=false` |
 | B-058 | Pass ＝ ボール軌道（ユーザ認知） | **済** 2026-08-25 `passHint` / `deleteHint` ja·en。ボタンラベルは Pass のまま |
 | B-059 | `shot` 線種 | Later。[TacticsBoard](https://tacticsboard.app/) / FTB は Pass と Shot 分離。Pass=配球・クロス、Shot=ゴール向け軌道 |
+| B-060 | Pen + Shift = 直線 | **済** 2026-08-25。Figma 型。構造リンク・チャネル境界。第4線種は作らない |
 
 ### P2 — Pro / データ
 
