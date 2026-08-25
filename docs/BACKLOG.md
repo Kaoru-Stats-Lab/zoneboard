@@ -1,6 +1,6 @@
 # ZoneBoard — Backlog
 
-**更新:** 2026-08-23  
+**更新:** 2026-08-24  
 **リポジトリ:** 本リポ専用（SUGUDASU / 他 GitHub プロジェクトとは分離）  
 **正本の方針:** [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) · [`UI_UX.md`](UI_UX.md) · [`SPEC.md`](SPEC.md)
 
@@ -87,6 +87,15 @@
 
 Pen は解説用インクであり、液タブ＋描画アプリの域には合わせない。目標は丸と囲みが配信で角ばらないこと。手段は **合算イベント（`getCoalescedEvents`）＋中点二次ベジェ**。スタビライザー・筆圧・新規 npm はやらない。パス用 RDP 平滑は Pen に流用しない（[`PROMPT_PEN_SMOOTH.md`](PROMPT_PEN_SMOOTH.md)、B-047）。
 
+### 1-8. 言語・市場（2026-08-24）
+
+正本: [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md)。
+
+- 公開面は英語一本。同一 URL に第二言語を積まない
+- UI の次点は **es → pt-BR → fr**。5大リーグ（英西伊独仏）を chrome で揃えない
+- 5大向けに先にやるならキット・フォーメ。決済は言語と別
+- `messages.fr` / `de` / `it` は流入トリガーまで作らない
+
 ---
 
 ## 2. アクティブ Backlog（近い順の目安）
@@ -135,8 +144,8 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 |----|------|------|
 | B-030 | ビーチ射線ガイド | **済** ON/OFF |
 | B-034 | フットサル／ビーチ現場 FB | [`FUTSAL_BEACH_RESEARCH.md`](FUTSAL_BEACH_RESEARCH.md) §6 の問い |
-| B-035 | 海外事情（es/pt 圏・強豪国） | **調査済**（ChatGPT/Claude/Gemini 統合）。言語は es→pt-BR |
-| B-036 | UI 言語 es | v1.1+。西語圏戦術スレッド・マイロゴ需要 |
+| B-035 | 海外事情（es/pt 圏・強豪国） | **調査済**。言語順は [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) で再確認（es→pt-BR→fr） |
+| B-036 | UI 言語 es | 流入トリガー後。`/es/`。同一ページ併記はしない |
 | B-037 | UI 言語 pt-BR | es の直後。ビーチは *futebol de areia* |
 | B-038 | バスケ補助線リサーチ | **済**。ハーフ＋Must補助線実装 |
 | B-039 | バスケ スクリーンT字線種 | **済** バスケのみ・紫・T字先端 |
@@ -154,7 +163,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-041 | クラウド同期 | OBS 別プロファイル問題あり（[`OBS.md`](OBS.md)） |
 | B-042 | アニメ / GIF | v1.1 候補 |
 | B-043 | ラグビー・アメフト・野球・eSports | SPORTS_SCOPE Later |
-| B-044 | es UI | v1 は ja/en |
+| B-044 | es UI | 公開は en。ja は `/ja/` 用にソース残置。[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) |
 | B-045 | 向き（facing）の完全削除 | 現状は任意加速として残置 |
 | B-046 | ゾーンに横長の角丸帯（ブロックの塗り） | いまは Pen。専用「ブロック」ツールは作らない |
 

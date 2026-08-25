@@ -1,5 +1,7 @@
 import { PUBLISHER, type SiteSlug } from "./publisher.ts";
 
+/** Japanese fields stay for a later /ja/ surface. The public HTML is English only. */
+
 export type SiteSection = {
   headingEn: string;
   headingJa: string;
@@ -210,6 +212,16 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        headingEn: "Is it free?",
+        headingJa: "無料か",
+        en: [
+          "Yes. The board is free. No account, no card. If a paid plan appears later, it will be for named squads you reuse across matches — not for drawing, broadcast, or your logo. Details stay on the pricing page. There is no checkout today.",
+        ],
+        ja: [
+          "はい。ボードは無料です。アカウントもカードも要りません。あとから有料プランが出るなら、試合をまたいで使う名前付きセット用であり、描画・配信・ロゴではありません。詳細は料金ページ。いま決済はありません。",
+        ],
+      },
+      {
         headingEn: "Why is the pitch blank in my encoder?",
         headingJa: "エンコーダでピッチが空白になる",
         en: [
@@ -302,13 +314,64 @@ export const SITE_PAGES: SitePage[] = [
     ],
   },
   {
+    slug: "pricing",
+    titleEn: "Pricing",
+    titleJa: "料金",
+    descriptionEn:
+      "ZoneBoard is free today. A paid plan, if it comes, will be for named squads — not for the pitch, broadcast, or your logo.",
+    descriptionJa:
+      "ZoneBoard はいま無料です。有料が出るなら名前付きセット用であり、ピッチ・配信・ロゴではありません。",
+    ledeEn: `Last updated ${PUBLISHER.updatedEn}. There is no checkout on this site today.`,
+    ledeJa: `最終更新 ${PUBLISHER.updatedJa}。いまこのサイトに決済はありません。`,
+    sections: [
+      {
+        headingEn: "Now",
+        headingJa: "いま",
+        en: [
+          "The board is free. You do not create an account. You do not enter a card. Drawing, broadcast mode, local save, and your own logo watermark are part of that free board.",
+          "We do not publish a price list until a payment form exists. A table of plans with no button that charges you would be a promise we cannot keep.",
+        ],
+        ja: [
+          "ボードは無料です。アカウントは作りません。カードは使いません。描画、配信モード、ローカル保存、自分のロゴ透かしは、その無料のボードの一部です。",
+          "決済フォームができるまで、価格表は出しません。課金できないプラン表は、守れない約束になります。",
+        ],
+      },
+      {
+        headingEn: "If we charge later",
+        headingJa: "あとから課金する場合",
+        en: [
+          "If a paid plan appears, it will be for named squads: the lists of numbers and optional names you reuse from one match to the next. The free board will still let you paste a roster for the match you are on.",
+          "The wedge is extra sets, not a locked pitch. Broadcast mode, drawing tools, and the logo you choose stay available without paying. We will not sell a free tier that cannot draw.",
+          "Currency, tax, and the exact fee come with checkout — not before. English copy can sit next to a euro charge. That decision is separate from this page.",
+        ],
+        ja: [
+          "有料プランが出るなら、名前付きセット用です。試合をまたいで使う背番号と任意の名前のリストです。無料ボードでも、いまの試合の名簿は貼れます。",
+          "楔はセットの数であり、閉じたピッチではありません。配信モード、描画、選んだロゴは、払わなくても使えます。描けない無料枠は売りません。",
+          "通貨、税、金額は決済と同時に出します。その前には出しません。英語の文面のままユーロ課金はできます。その判断はこのページとは別です。",
+        ],
+      },
+      {
+        headingEn: "What we will not sell",
+        headingJa: "売らないもの",
+        en: [
+          "We will not put ads on the grass or in broadcast mode, as a free extra or as a paid extra. The window you capture for a stream is not a commercial break.",
+          "We will not invent three product names to fill a pricing table. When checkout exists, the plans on this page will match the plans you can actually buy.",
+        ],
+        ja: [
+          "芝の上と配信モードに、無料の特典としても有料の特典としても広告は出しません。配信でキャプチャする窓は、コマーシャルではありません。",
+          "料金表を埋めるためだけの商品名は作りません。決済ができたとき、このページのプランは実際に買えるプランと一致します。",
+        ],
+      },
+    ],
+  },
+  {
     slug: "privacy",
     titleEn: "Privacy policy",
     titleJa: "プライバシーポリシー",
     descriptionEn:
-      "How ZoneBoard handles local board data, optional feedback, cookies, Google Fonts, Cloudflare, and Google AdSense on informational pages.",
+      "How ZoneBoard handles local board data, optional feedback, cookies, Google Analytics 4, Google Fonts, Cloudflare, and Google AdSense on informational pages.",
     descriptionJa:
-      "ZoneBoard がボードのローカルデータ、任意のフィードバック、Cookie、Google Fonts、Cloudflare、読み物ページの Google AdSense をどう扱うか。",
+      "ZoneBoard がボードのローカルデータ、任意のフィードバック、Cookie、Google Analytics 4、Google Fonts、Cloudflare、読み物ページの Google AdSense をどう扱うか。",
     ledeEn: `Operator: ${PUBLISHER.legalName} (${PUBLISHER.countryEn}). Site: ${PUBLISHER.siteUrl}. Last updated ${PUBLISHER.updatedEn}.`,
     ledeJa: `運営者: ${PUBLISHER.legalNameJa}（${PUBLISHER.countryJa}）。サイト: ${PUBLISHER.siteUrl}。最終更新 ${PUBLISHER.updatedJa}。`,
     sections: [
@@ -369,56 +432,78 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
-        headingEn: "6. Advertising (Google AdSense)",
-        headingJa: "6. 広告（Google AdSense）",
+        headingEn: "6. Analytics (Google Analytics 4)",
+        headingJa: "6. 計測（Google Analytics 4）",
         en: [
-          "We may display Google AdSense advertisements on informational pages of this site (About, Guide, FAQ, legal pages, and possibly the landing page). We do not display ads on the tactics pitch or in broadcast mode. The window you capture for a stream is not an ad surface.",
+          "If you allow analytics, we use Google Analytics 4 to understand visits to the public site: which pages were viewed, and whether someone opened the board from the landing page. The tag does not run until you allow analytics. Rejecting analytics is as easy as allowing it. You can change that choice later from Cookie choices in the footer.",
+          "GA4 does not receive scenes, roster text, piece names or numbers, kit colours, or drawings. Broadcast mode (/board?broadcast=1) does not send hits. The pitch never asks for this consent.",
+          "Lawful basis under UK/EU GDPR: consent (Article 6(1)(a)). Google may process the measurement in the United States. Details of cookies and similar storage are on the cookie page.",
+        ],
+        ja: [
+          "計測を許可した場合、Google Analytics 4 で公開サイトの来訪を把握します。どのページが見られたか、ランディングからボードを開いたかです。許可するまでタグは動きません。拒否は許可と同じ操作です。フッターの Cookie choices から後で変えられます。",
+          "GA4 は局面、名簿、駒の名前や番号、キット色、描画を受け取りません。配信モード（/board?broadcast=1）ではヒットを送りません。ピッチではこの同意を尋ねません。",
+          "英国・EU GDPR 上の根拠は同意（6条1項(a)）です。計測は米国で処理され得ます。Cookie 等の詳細は Cookie のページにあります。",
+        ],
+      },
+      {
+        headingEn: "7. Advertising (Google AdSense)",
+        headingJa: "7. 広告（Google AdSense）",
+        en: [
+          "We may display Google AdSense advertisements on informational pages of this site (About, Guide, FAQ, legal pages). We do not display ads on the landing page, the tactics pitch, or in broadcast mode. The window you capture for a stream is not an ad surface.",
+          "AdSense does not load until you allow advertising cookies on a reading page. Allow advertising also allows analytics, which AdSense uses to measure ads. Rejecting advertising is as easy as allowing it. You can change that choice later from Cookie choices in the footer. The pitch never asks.",
           "Third-party vendors, including Google, use cookies to serve ads based on a user’s prior visits to this website or other websites. Google’s use of advertising cookies enables it and its partners to serve ads to users based on their visit to this site and/or other sites on the Internet.",
-          "Users may opt out of personalised advertising by visiting Google Ads Settings at https://www.google.com/settings/ads. You can also visit https://www.aboutads.info to opt out of some third-party vendors’ use of cookies for personalised advertising.",
+          "Users in the UK and EEA may also opt out of personalised advertising at Google Ads Settings: https://www.google.com/settings/ads. You can also visit https://www.aboutads.info to opt out of some third-party vendors’ use of cookies for personalised advertising.",
           "If we use other ad technology later, we will name it here. We will not add an ad slot to the capture surface in order to raise fill rate.",
         ],
         ja: [
-          "本サイトの読み物ページ（About、使い方、FAQ、法務ページ、場合によりランディング）に Google AdSense 広告を表示することがあります。戦術ピッチおよび配信モードには広告を表示しません。配信でキャプチャする窓は広告面ではありません。",
+          "本サイトの読み物ページ（About、使い方、FAQ、法務ページ）に Google AdSense 広告を表示することがあります。ランディング、戦術ピッチ、配信モードには出しません。配信でキャプチャする窓は広告面ではありません。",
+          "読み物ページで広告 Cookie を許可するまで、AdSense は読み込みません。Allow advertising は広告計測のため analytics も許可します。拒否は許可と同じ操作です。フッターの Cookie choices から後で変えられます。ピッチでは尋ねません。",
           "Google を含む第三者ベンダーは、Cookie を使用して、ユーザーが本サイトまたは他のサイトを過去に訪問した情報に基づき広告を配信します。Google の広告 Cookie の使用により、Google およびパートナーは、本サイトやインターネット上の他サイトへの訪問情報に基づいて広告を配信できます。",
-          "パーソナライズド広告は、Google 広告設定 https://www.google.com/settings/ads から無効化できます。一部の第三者ベンダーの Cookie については https://www.aboutads.info からもオプトアウトできます。",
+          "英国・EEA では、パーソナライズド広告を Google 広告設定 https://www.google.com/settings/ads から無効化できます。一部の第三者ベンダーの Cookie については https://www.aboutads.info からもオプトアウトできます。",
           "別の広告技術を後から使う場合は、ここに名前を書きます。配信キャプチャ面に広告枠を足して埋まり率を上げる、ということはしません。",
         ],
       },
       {
-        headingEn: "7. Cookies and similar technologies",
-        headingJa: "7. Cookie 等",
+        headingEn: "8. Cookies and similar technologies",
+        headingJa: "8. Cookie 等",
         en: [
-          "The board’s own save uses local storage, which is not a cookie. AdSense and Google Fonts may set or read cookies or similar identifiers as described above. Details are on the cookie page.",
+          "The board’s own save uses local storage on your device. That is strictly necessary to run the product. It is not an advertising or analytics cookie.",
+          "Your privacy choice is also stored locally (zb-consent). That record is necessary to remember a yes or a no for analytics and for advertising, so we do not ask on every page load. It expires after 180 days.",
+          "Google Analytics 4 and Google AdSense cookies are optional and run only after you allow them. Google Fonts may still be requested to render these pages; that request can include an IP address. Details of each tool are on the cookie page.",
+          "Lawful basis under UK/EU GDPR: the board save and the consent record are strictly necessary to provide the service you asked for. Analytics and advertising cookies run only on consent (Article 6(1)(a)). You can refuse without losing the board.",
         ],
         ja: [
-          "ボード自身の保存は localStorage であり、Cookie ではありません。AdSense と Google Fonts は、上記のとおり Cookie 等を設定または参照することがあります。詳細は Cookie のページにあります。",
+          "ボード自身の保存は端末の localStorage です。製品を動かすために必要なもので、広告 Cookie でも計測 Cookie でもありません。",
+          "プライバシーの選択も端末内（zb-consent）に残します。計測とはい／いいえ、広告のはい／いいえを覚え、毎回尋ねないために必要です。180日で期限切れです。",
+          "Google Analytics 4 と Google AdSense の Cookie は任意で、許可したあとだけ動きます。これらのページの表示のため Google Fonts は引き続き要求され、その要求には IP アドレスが含まれ得ます。各ツールの詳細は Cookie のページにあります。",
+          "英国・EU GDPR 上の根拠: ボード保存と同意記録は、求めたサービス提供に必要なものです。計測と広告の Cookie は同意（6条1項(a)）のときだけ動きます。ボードを失わずに拒否できます。",
         ],
       },
       {
-        headingEn: "8. Purpose of use (Japan APPI)",
-        headingJa: "8. 利用目的（個人情報保護法）",
+        headingEn: "9. Purpose of use (Japan APPI)",
+        headingJa: "9. 利用目的（個人情報保護法）",
         en: [
-          "We use information only to operate the site, answer a message you sent, fix defects, resist abuse, and — on informational pages only — to fund the site with advertising. We do not sell personal data. We do not use board diagrams for advertising profiles, because we do not receive them in ordinary use.",
+          "We use information only to operate the site, answer a message you sent, fix defects, resist abuse, understand how the public site is used after you allow analytics (visits and whether the board was opened), and — on informational pages only — to fund the site with advertising. We do not sell personal data. We do not use board diagrams for advertising or analytics profiles, because we do not receive them in ordinary use.",
         ],
         ja: [
-          "情報は、サイトの運営、利用者からの連絡への回答、不具合の修正、不正利用への対応、および読み物ページに限った広告による運営費にのみ使います。個人情報は販売しません。通常利用では図を受け取らないため、戦術図を広告プロファイルにも使いません。",
+          "情報は、サイトの運営、利用者からの連絡への回答、不具合の修正、不正利用への対応、計測を許可されたあとの公開サイトの利用把握（来訪とボードを開いたか）、および読み物ページに限った広告による運営費にのみ使います。個人情報は販売しません。通常利用では図を受け取らないため、戦術図を広告や計測のプロファイルにも使いません。",
         ],
       },
       {
-        headingEn: "9. Your rights",
-        headingJa: "9. 利用者の権利",
+        headingEn: "10. Your rights",
+        headingJa: "10. 利用者の権利",
         en: [
-          `Depending on where you live, you may have rights to access, correct, delete, or restrict personal data we hold, or to object to certain processing. Because we keep so little, many requests will be answered by explaining that we have no account record. Email ${PUBLISHER.email}. We may need to confirm that the request comes from you.`,
-          "You can delete local board data yourself with the browser’s site-data controls. That deletion happens on your device; it is not a request we process on a server.",
+          `Depending on where you live, you may have rights to access, correct, delete, or restrict personal data we hold, or to object to certain processing. In the UK and EEA that includes GDPR rights, and the right to withdraw analytics and advertising consent as easily as you gave it (Cookie choices in the footer). Because we keep so little, many requests will be answered by explaining that we have no account record. Email ${PUBLISHER.email}. We may need to confirm that the request comes from you.`,
+          "You can complain to your local data-protection authority. In the UK that is the ICO. You can delete local board data yourself with the browser’s site-data controls. That deletion happens on your device; it is not a request we process on a server.",
         ],
         ja: [
-          `お住まいの地域により、当方が保有する個人データへの開示、訂正、削除、利用停止、または一部処理への異議の権利がある場合があります。保有が少ないため、アカウント記録が無い、という回答になることが多いです。${PUBLISHER.email} へご連絡ください。本人確認を求めることがあります。`,
-          "ローカルのボードデータは、ブラウザのサイトデータ削除で自分で消せます。それは端末上の操作であり、サーバで処理する請求ではありません。",
+          `お住まいの地域により、当方が保有する個人データへの開示、訂正、削除、利用停止、または一部処理への異議の権利がある場合があります。英国・EEA では GDPR 上の権利と、計測および広告の同意を出したときと同じ簡単さで撤回する権利（フッターの Cookie choices）を含みます。保有が少ないため、アカウント記録が無い、という回答になることが多いです。${PUBLISHER.email} へご連絡ください。本人確認を求めることがあります。`,
+          "お住まいの地域のデータ保護機関に苦情を出せます。英国では ICO です。ローカルのボードデータは、ブラウザのサイトデータ削除で自分で消せます。それは端末上の操作であり、サーバで処理する請求ではありません。",
         ],
       },
       {
-        headingEn: "10. Children",
-        headingJa: "10. 子ども",
+        headingEn: "11. Children",
+        headingJa: "11. 子ども",
         en: [
           "The product is aimed at people who run or watch football streams and at coaches. It is not directed at children under 16. We do not knowingly collect personal data from children. If you believe we have, write to us and we will delete what we can identify.",
         ],
@@ -427,18 +512,18 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
-        headingEn: "11. International transfers",
-        headingJa: "11. 国外転送",
+        headingEn: "12. International transfers",
+        headingJa: "12. 国外転送",
         en: [
-          "Cloudflare, Google Fonts, and Google AdSense may process data outside Japan, including in the United States. If that is not acceptable, do not load the informational pages that use those services, and do not send us email you do not want processed by a mail provider.",
+          "Cloudflare, Google Fonts, Google Analytics 4, and Google AdSense may process data outside Japan, including in the United States. If that is not acceptable, reject optional cookies, do not load the informational pages that use those services, and do not send us email you do not want processed by a mail provider.",
         ],
         ja: [
-          "Cloudflare、Google Fonts、Google AdSense は、日本国外（米国を含む）でデータを処理することがあります。それが受け入れられない場合は、それらのサービスを使う読み物ページを開かないでください。メール提供者に処理されたくない内容は送らないでください。",
+          "Cloudflare、Google Fonts、Google Analytics 4、Google AdSense は、日本国外（米国を含む）でデータを処理することがあります。それが受け入れられない場合は、任意 Cookie を拒否し、それらのサービスを使う読み物ページを開かないでください。メール提供者に処理されたくない内容は送らないでください。",
         ],
       },
       {
-        headingEn: "12. Changes",
-        headingJa: "12. 変更",
+        headingEn: "13. Changes",
+        headingJa: "13. 変更",
         en: [
           "We will change this policy when the product or the law requires it. The date at the top of the page is the current version. Material changes to advertising or data collection will be reflected here before we rely on them.",
         ],
@@ -497,7 +582,7 @@ export const SITE_PAGES: SitePage[] = [
         headingEn: "4. Advertising",
         headingJa: "4. 広告",
         en: [
-          "Informational pages may show third-party ads, including Google AdSense. The tactics pitch and broadcast mode do not show ads. Ads are not part of the diagram you capture for a stream.",
+          "Informational pages may show third-party ads, including Google AdSense, only after you allow advertising cookies. The tactics pitch, the landing page, and broadcast mode do not show ads. Ads are not part of the diagram you capture for a stream.",
         ],
         ja: [
           "読み物ページには、Google AdSense を含む第三者広告を出すことがあります。戦術ピッチと配信モードには広告を出しません。配信用にキャプチャする図の一部ではありません。",
@@ -530,9 +615,9 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Cookie policy",
     titleJa: "Cookie ポリシー",
     descriptionEn:
-      "Cookies and local storage on ZoneBoard: board save on your device, Google Fonts, and Google AdSense on informational pages only.",
+      "Cookies and local storage on ZoneBoard: board save on your device, Google Analytics 4, Google Fonts, and Google AdSense on informational pages only.",
     descriptionJa:
-      "ZoneBoard の Cookie とローカル保存。ボードは端末内。Google Fonts。Google AdSense は読み物ページのみ。",
+      "ZoneBoard の Cookie とローカル保存。ボードは端末内。Google Analytics 4。Google Fonts。Google AdSense は読み物ページのみ。",
     ledeEn: `Last updated ${PUBLISHER.updatedEn}. Read with the privacy policy.`,
     ledeJa: `最終更新 ${PUBLISHER.updatedJa}。プライバシーポリシーとあわせて読んでください。`,
     sections: [
@@ -540,12 +625,12 @@ export const SITE_PAGES: SitePage[] = [
         headingEn: "What we use",
         headingJa: "使うもの",
         en: [
-          "ZoneBoard’s own board state is stored in local storage on your device. That is how scenes survive a refresh. It is not an advertising cookie. Clearing site data deletes it.",
-          "The site may set a cookie or similar identifier only as needed to run a third-party service described here. We do not run a first-party analytics cookie today. If that changes, this page will name the tool.",
+          "ZoneBoard’s own board state is stored in local storage on your device. That is how scenes survive a refresh. It is not an advertising or analytics cookie. Clearing site data deletes it.",
+          "The site may set a cookie or similar identifier only as needed to run a third-party service described here. Optional tools are named below. You can refuse them without losing the board.",
         ],
         ja: [
-          "ZoneBoard 自身のボード状態は、端末の localStorage に入ります。再読み込み後も局面が残るためです。広告 Cookie ではありません。サイトデータを消すと削除されます。",
-          "ここに書いた第三者サービスを動かすために必要な場合に限り、Cookie 等を使うことがあります。現時点でファーストパーティの計測 Cookie は置いていません。変わる場合は、このページにツール名を書きます。",
+          "ZoneBoard 自身のボード状態は、端末の localStorage に入ります。再読み込み後も局面が残るためです。広告 Cookie でも計測 Cookie でもありません。サイトデータを消すと削除されます。",
+          "ここに書いた第三者サービスを動かすために必要な場合に限り、Cookie 等を使うことがあります。任意のツールは以下に名前があります。ボードを失わずに拒否できます。",
         ],
       },
       {
@@ -556,6 +641,18 @@ export const SITE_PAGES: SitePage[] = [
         ],
         ja: [
           "ページが Google からフォントファイルを取得することがあります。その要求には IP アドレスが含まれ得ます。取扱いは Google の説明を見てください。",
+        ],
+      },
+      {
+        headingEn: "Google Analytics 4",
+        headingJa: "Google Analytics 4",
+        en: [
+          "After you allow analytics, Google Analytics 4 may set cookies or use similar storage to measure page views on the landing page, reading pages, and the board editor, and to record that the landing page Open board control was used. It does not receive board contents. It does not run in broadcast mode.",
+          "Until you allow analytics, the GA4 tag is not loaded. Consent Mode defaults keep analytics and ad storage denied. You can refuse without losing the board.",
+        ],
+        ja: [
+          "計測を許可したあと、Google Analytics 4 は Cookie 等を使い、ランディング・読み物・ボード編集のページビューと、ランディングの Open board が使われたかを測ることがあります。ボードの中身は受け取りません。配信モードでは動きません。",
+          "許可するまで GA4 のタグは読み込みません。Consent Mode の既定は計測・広告ストレージとも denied です。ボードを失わずに拒否できます。",
         ],
       },
       {
@@ -576,10 +673,14 @@ export const SITE_PAGES: SitePage[] = [
         headingEn: "Consent",
         headingJa: "同意",
         en: [
-          "We do not put a consent banner on the broadcast board. Stream capture must stay a pitch. If a region requires a choice before advertising cookies run, that choice will be collected on the informational pages, not over the grass.",
+          "We do not put a consent banner on the pitch or in broadcast mode. Stream capture must stay a pitch.",
+          "On the landing page and on reading pages, a choice is required before analytics or advertising cookies run. Three equal-size controls: Reject optional, Allow analytics, and Allow advertising. Allow advertising also allows analytics. Until you choose, neither GA4 nor AdSense loads. Reject is the default for anyone who never chooses (including when JavaScript is off).",
+          "You can change the choice from Cookie choices in the footer (landing and reading pages). The stored choice expires after 180 days. That is UK GDPR, EU GDPR, and ePrivacy practice: consent is informed, specific, and as easy to refuse as to give.",
         ],
         ja: [
-          "配信ボードの上に同意バナーは出しません。キャプチャ面はピッチのままにします。広告 Cookie の前に選択が必要な地域では、その選択は読み物ページで取り、芝の上では取りません。",
+          "ピッチ上および配信モードに同意バナーは出しません。キャプチャ面はピッチのままにします。",
+          "ランディングと読み物ページでは、計測または広告の Cookie の前に選択が必要です。Reject optional、Allow analytics、Allow advertising は同じ大きさです。Allow advertising は analytics も許可します。選ぶまで GA4 も AdSense も読み込みません。選ばない人（JavaScript オフを含む）は拒否が既定です。",
+          "フッターの Cookie choices（ランディングと読み物）から後で変えられます。記録は180日で期限切れです。英国 GDPR・EU GDPR・ePrivacy の運用として、同意は特定・十分な情報に基づき、拒否は許可と同じ簡単さです。",
         ],
       },
     ],
@@ -601,7 +702,7 @@ export const SITE_PAGES: SitePage[] = [
         headingJa: "連絡方法",
         en: [
           `Email ${PUBLISHER.email} for privacy requests, terms questions, and notices. For a product bug or a missing control, the form on this page or the feedback control on the homepage is enough. We do not operate a telephone desk or a chat widget.`,
-          "Write in Japanese or English. Say whether you are asking about the board, the privacy policy, or an ad on a reading page. Do not attach identity documents unless we ask, and do not paste a full scene from the pitch.",
+          "Write in English. Say whether you are asking about the board, the privacy policy, or an ad on a reading page. Do not attach identity documents unless we ask, and do not paste a full scene from the pitch.",
           "We read mail as a small operator. A reply may take several days. If you do not hear back, send once more. Three copies of the same mail do not speed the queue.",
         ],
         ja: [

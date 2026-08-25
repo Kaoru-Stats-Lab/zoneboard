@@ -175,13 +175,7 @@ export function resolveMarkPaint({
   };
 }
 
-export function renderMarkSvg(spec: MarkSpec): string {
-  const paint = resolveMarkPaint(spec);
-  const isMark = spec.variant === "mark";
-  const viewBox = isMark ? MARK.viewBoxMark : MARK.viewBoxIcon;
-  const plate = paint.plate
-    ? `  <rect width="32" height="32" rx="6" fill="${paint.plate}"/>\n`
-    : "";
+export function markInnerSvg(paint: MarkPaint): string {
   const line = `  <line x1="22.5" y1="9.5" x2="9.5" y2="22.5" stroke="${paint.ink}" stroke-width="${MARK.stroke}" stroke-linecap="round"/>`;
   const dots = MARK.dots
     .map(([cx, cy], i) => {
@@ -189,7 +183,17 @@ export function renderMarkSvg(spec: MarkSpec): string {
       return `  <circle cx="${cx}" cy="${cy}" r="${MARK.r}" fill="${fill}"/>`;
     })
     .join("\n");
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">\n${plate}${line}\n${dots}\n</svg>\n`;
+  return `${line}\n${dots}`;
+}
+
+export function renderMarkSvg(spec: MarkSpec): string {
+  const paint = resolveMarkPaint(spec);
+  const isMark = spec.variant === "mark";
+  const viewBox = isMark ? MARK.viewBoxMark : MARK.viewBoxIcon;
+  const plate = paint.plate
+    ? `  <rect width="32" height="32" rx="6" fill="${paint.plate}"/>\n`
+    : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">\n${plate}${markInnerSvg(paint)}\n</svg>\n`;
 }
 
 export const BRAND_ASSETS: Array<MarkSpec & { file: string; alias?: string }> =

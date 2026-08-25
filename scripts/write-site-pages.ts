@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { PUBLISHER, SITE_NAV } from "../src/site/publisher.ts";
 import { SITE_PAGES, type SitePage } from "../src/site/pages.ts";
+import { CONSENT_BANNER } from "../src/site/consentCopy.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
 const publicDir = path.join(root, "public");
@@ -34,33 +35,21 @@ function nav(current: string): string {
   }).join("\n");
 }
 
-function langBlock(
-  lang: "en" | "ja",
-  title: string,
-  lede: string,
-  page: SitePage,
-): string {
-  const label = lang === "en" ? "English" : "日本語";
+/** Public pages ship English only. Japanese copy on SitePage is not written to HTML. */
+function article(page: SitePage): string {
   const sections = page.sections
-    .map((section) => {
-      const heading = lang === "en" ? section.headingEn : section.headingJa;
-      const body = lang === "en" ? section.en : section.ja;
-      return `<h2>${esc(heading)}</h2>\n${paragraphs(body)}`;
-    })
+    .map(
+      (section) =>
+        `<h2>${esc(section.headingEn)}</h2>\n${paragraphs(section.en)}`,
+    )
     .join("\n");
-  const form =
-    page.showContactForm && lang === "en"
-      ? contactForm()
-      : page.showContactForm && lang === "ja"
-        ? `<p lang="ja">英語欄のフォームでも、日本語で送ってください。</p>`
-        : "";
-  return `<section class="lang-block" lang="${lang}">
-<p class="lang-label">${label}</p>
-<h1>${esc(title)}</h1>
-<p class="lede">${linkify(lede)}</p>
+  const form = page.showContactForm ? contactForm() : "";
+  return `<article>
+<h1>${esc(page.titleEn)}</h1>
+<p class="lede">${linkify(page.ledeEn)}</p>
 ${form}
 ${sections}
-</section>`;
+</article>`;
 }
 
 function contactForm(): string {
@@ -119,25 +108,69 @@ document.getElementById("contact-form").addEventListener("submit", async (event)
 </script>`;
 }
 
-function documentFor(page: SitePage): string {
-  const url = `${PUBLISHER.siteUrl}/${page.slug}/`;
+function consentBanner(): string {
+  return `<aside id="site-consent" class="site-consent" hidden role="region" aria-labelledby="site-consent-title">
+  <div class="site-consent__inner">
+    <p class="site-consent__title" id="site-consent-title">${esc(CONSENT_BANNER.title)}</p>
+    <p class="site-consent__copy">
+      ${esc(CONSENT_BANNER.copy)}
+    </p>
+    <div class="site-consent__actions">
+      <button type="button" class="site-consent__btn" data-consent="reject">
+        ${esc(CONSENT_BANNER.reject)}
+      </button>
+      <button type="button" class="site-consent__btn" data-consent="analytics">
+        ${esc(CONSENT_BANNER.analytics)}
+      </button>
+      <button type="button" class="site-consent__btn site-consent__btn--allow" data-consent="ads">
+        ${esc(CONSENT_BANNER.ads)}
+      </button>
+      <a href="${esc(CONSENT_BANNER.policyHref)}">${esc(CONSENT_BANNER.policyLabel)}</a>
+    </div>
+  </div>
+</aside>
+<script src="/consent.js" defer></script>`;
+}
+
+type ShellOpts = {
+  title: string;
+  description: string;
+  canonical?: string;
+  robots?: string;
+  currentNav?: string;
+  main: string;
+  consent: boolean;
+};
+
+function documentShell(opts: ShellOpts): string {
+  const canonical = opts.canonical
+    ? `    <link rel="canonical" href="${esc(opts.canonical)}" />\n`
+    : "";
+  const robots = opts.robots
+    ? `    <meta name="robots" content="${esc(opts.robots)}" />\n`
+    : "";
+  const ogUrl = opts.canonical
+    ? `    <meta property="og:url" content="${esc(opts.canonical)}" />\n`
+    : "";
   return `<!doctype html>
 <html lang="en-GB">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${esc(page.titleEn)} — ${esc(PUBLISHER.product)}</title>
-    <meta name="description" content="${esc(page.descriptionEn)}" />
-    <link rel="canonical" href="${url}" />
-    <meta property="og:title" content="${esc(page.titleEn)} — ${esc(PUBLISHER.product)}" />
-    <meta property="og:description" content="${esc(page.descriptionEn)}" />
-    <meta property="og:url" content="${url}" />
+    <title>${esc(opts.title)} — ${esc(PUBLISHER.product)}</title>
+    <meta name="description" content="${esc(opts.description)}" />
+${canonical}${robots}    <meta property="og:title" content="${esc(opts.title)} — ${esc(PUBLISHER.product)}" />
+    <meta property="og:description" content="${esc(opts.description)}" />
+${ogUrl}    <meta property="og:locale" content="en_GB" />
+    <meta property="og:image" content="${PUBLISHER.siteUrl}/brand/lockup-og.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="theme-color" content="#0c0d0e" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/site-doc.css" />
@@ -146,28 +179,58 @@ function documentFor(page: SitePage): string {
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-head">
       <a class="site-brand" href="/">
-        <img src="/brand/mark-color-dark.svg" alt="" width="24" height="24" />
-        ${esc(PUBLISHER.product)}
+        <img src="/brand/lockup-color-dark.svg" alt="${esc(PUBLISHER.product)}" height="28" />
       </a>
-      <nav class="site-nav" aria-label="Site">${nav(page.slug)}</nav>
+      <nav class="site-nav" aria-label="Site">${nav(opts.currentNav ?? "")}</nav>
       <a class="site-cta" href="/board">Open board</a>
     </header>
     <main id="main" class="site-main">
-      ${langBlock("en", page.titleEn, page.ledeEn, page)}
-      ${langBlock("ja", page.titleJa, page.ledeJa, page)}
+      ${opts.main}
     </main>
     <footer class="site-foot">
-      <nav aria-label="Legal">${nav(page.slug)}</nav>
-      <p>© ${new Date().getFullYear()} ${esc(PUBLISHER.product)} · ${esc(PUBLISHER.legalName)}</p>
+      <nav aria-label="Legal">${nav(opts.currentNav ?? "")}</nav>
+      <p>© ${new Date().getFullYear()} ${esc(PUBLISHER.product)} · ${esc(PUBLISHER.legalName)}${
+        opts.consent
+          ? ` · <button type="button" class="site-foot-action" data-consent-open>Cookie choices</button>`
+          : ""
+      }</p>
     </footer>
+    ${opts.consent ? consentBanner() : ""}
   </body>
 </html>
 `;
 }
 
+function documentFor(page: SitePage): string {
+  return documentShell({
+    title: page.titleEn,
+    description: page.descriptionEn,
+    canonical: `${PUBLISHER.siteUrl}/${page.slug}/`,
+    currentNav: page.slug,
+    main: article(page),
+    consent: true,
+  });
+}
+
+function statusMain(opts: {
+  kicker: string;
+  heading: string;
+  copy: string;
+  actions: string;
+}): string {
+  return `<article class="site-status">
+<p class="site-kicker">${esc(opts.kicker)}</p>
+<h1>${esc(opts.heading)}</h1>
+<p class="lede">${esc(opts.copy)}</p>
+<p class="site-status-actions">
+${opts.actions}
+</p>
+</article>`;
+}
+
 function wordCount(page: SitePage): number {
-  const blob = page.sections
-    .flatMap((s) => [...s.en, ...s.ja, s.headingEn, s.headingJa])
+  const blob = [page.titleEn, page.ledeEn, page.descriptionEn]
+    .concat(page.sections.flatMap((s) => [s.headingEn, ...s.en]))
     .join(" ");
   return blob.trim().split(/\s+/).length;
 }
@@ -200,4 +263,40 @@ Sitemap: ${PUBLISHER.siteUrl}/sitemap.xml
 `,
 );
 
+await writeFile(
+  path.join(publicDir, "404.html"),
+  documentShell({
+    title: "Page not found",
+    description: "This address is not a ZoneBoard page.",
+    robots: "noindex, nofollow",
+    main: statusMain({
+      kicker: "404",
+      heading: "This page is not here",
+      copy: "The address is wrong, or the page has moved. The tactics board is still at /board.",
+      actions: `  <a class="primary" href="/board">Open board</a>
+  <a class="ghost" href="/">Home</a>
+  <a class="ghost" href="/guide/">Guide</a>`,
+    }),
+    consent: false,
+  }),
+);
+
+await writeFile(
+  path.join(publicDir, "maintenance.html"),
+  documentShell({
+    title: "Temporarily unavailable",
+    description: "ZoneBoard is offline for a short maintenance window.",
+    robots: "noindex, nofollow",
+    main: statusMain({
+      kicker: "Unavailable",
+      heading: "The board is offline for a short time",
+      copy: `We are doing maintenance. Try again in a few minutes. If this stays up, email ${PUBLISHER.email}.`,
+      actions: `  <a class="primary" href="/">Try again</a>
+  <a class="ghost" href="mailto:${esc(PUBLISHER.email)}">Email</a>`,
+    }),
+    consent: false,
+  }),
+);
+
 console.log(`wrote ${SITE_PAGES.length} pages, ~${totalWords} words`);
+console.log("wrote 404.html and maintenance.html");

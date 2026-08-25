@@ -5,6 +5,7 @@
 /about    /about/    301
 /guide    /guide/    301
 /faq      /faq/      301
+/pricing  /pricing/  301
 /privacy  /privacy/  301
 /terms    /terms/    301
 /cookies  /cookies/  301
@@ -12,8 +13,13 @@
 /about/   /about/index.html    200
 /guide/   /guide/index.html    200
 /faq/     /faq/index.html      200
+/pricing/ /pricing/index.html  200
 /privacy/ /privacy/index.html  200
 /terms/   /terms/index.html    200
 /cookies/ /cookies/index.html  200
 /contact/ /contact/index.html  200
-/*        /index.html 200
+/board    /index.html          200
+/board/   /index.html          200
+
+# Maintenance: comment the two /board lines above and uncomment:
+# /*    /maintenance.html   200

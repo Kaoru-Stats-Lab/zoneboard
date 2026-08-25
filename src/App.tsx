@@ -6,8 +6,11 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { Editor } from "./components/Editor";
+import { AppErrorBoundary } from "./components/AppErrorBoundary";
+import { AnalyticsRoot } from "./components/AnalyticsRoot";
 import { FeedbackProvider } from "./components/FeedbackProvider";
 import { Landing } from "./components/Landing";
+import { NotFoundPage } from "./components/StudioStatus";
 import { useAppState } from "./hooks/useAppState";
 
 function BoardRoute() {
@@ -55,14 +58,17 @@ function LandingRoute() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LandingRoute />} />
-      <Route path="/board" element={<BoardRoute />} />
-      <Route path="/en" element={<Navigate to="/" replace />} />
-      <Route path="/en/board" element={<Navigate to="/board" replace />} />
-      <Route path="/ja" element={<Navigate to="/" replace />} />
-      <Route path="/ja/board" element={<Navigate to="/board" replace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <AppErrorBoundary>
+      <AnalyticsRoot />
+      <Routes>
+        <Route path="/" element={<LandingRoute />} />
+        <Route path="/board" element={<BoardRoute />} />
+        <Route path="/en" element={<Navigate to="/" replace />} />
+        <Route path="/en/board" element={<Navigate to="/board" replace />} />
+        <Route path="/ja" element={<Navigate to="/" replace />} />
+        <Route path="/ja/board" element={<Navigate to="/board" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </AppErrorBoundary>
   );
 }

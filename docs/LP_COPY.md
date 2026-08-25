@@ -27,8 +27,9 @@
 | キャプション | 顔とチャットは今の場所のまま。ボードは別ウィンドウ。 | `lpHeroCaption` |
 | クレド見出し | なぜ小さく作るか | `lpCreedTitle`（据え置き可） |
 | クレド本文 | 戦術ツールは機能でピッチを小さくする。ZoneBoard はボードだけ。 | `lpCreedBody` |
+| 料金（一段） | ボードは無料。名前付きセットは、あとから有料にするかもしれない。 | `lpPriceBody` / `lpPriceLink` → `/pricing/` |
 
-promises の見出しは「置く / 描く / 出す」。本文は上表の一文。
+promises の見出しは「置く / 描く / 出す」。本文は上表の一文。料金の表は LP に置かない。決済が動くまで `/pricing/` は方針文だけ。
 
 ### English
 
@@ -44,6 +45,7 @@ promises の見出しは「置く / 描く / 出す」。本文は上表の一�
 | Show | Hide the tools in broadcast mode and put the pitch on screen. | promise 3 |
 | Caption | Keep face and chat where they are. The board is a separate window. | `lpHeroCaption` |
 | Creed | Tactical tools shrink the pitch. ZoneBoard is just the board. | `lpCreedBody` |
+| Price | The board is free. Named squads may become a paid extra later. | `lpPriceBody` · link `Pricing` |
 
 ### 本番との差（現行 → 決定稿）
 

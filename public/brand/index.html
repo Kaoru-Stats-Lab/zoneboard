@@ -79,6 +79,21 @@
         width: 3.5rem;
         height: 3.5rem;
       }
+      .card img.lockup {
+        width: min(14rem, 90%);
+        height: auto;
+      }
+      .card img.lockup-og {
+        width: min(16rem, 92%);
+        height: auto;
+      }
+      .card img.lockup-stack {
+        width: min(8.5rem, 72%);
+        height: auto;
+      }
+      .swatch.tall {
+        height: 11rem;
+      }
       .card figcaption {
         margin-top: 0.7rem;
       }
@@ -184,6 +199,104 @@
       <p class="lede">
         正はカラー（暗地）。明地ではインクを反転し、第一マーカーだけブラスを一段落とす。ブラスそのものは白に乗らない。モノクロは写真・キット色・印刷用。
       </p>
+
+      <h2>ロックアップ（字はアウトライン）</h2>
+      <div class="grid">
+        <figure class="card">
+          <div class="swatch on-dark">
+            <img src="lockup-color-dark.svg" alt="ZoneBoard" class="lockup" />
+          </div>
+          <figcaption>
+            <strong>カラー 正</strong>
+            <span>スタジオ。lockup.svg</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-light">
+            <img src="lockup-color-light.svg" alt="ZoneBoard" class="lockup" />
+          </div>
+          <figcaption>
+            <strong>カラー 逆</strong>
+            <span>紙。マーカーは深いブラス</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-dark">
+            <img src="lockup-mono-white.svg" alt="ZoneBoard" class="lockup" />
+          </div>
+          <figcaption>
+            <strong>モノクロ 白</strong>
+            <span>写真、暗芝</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-light">
+            <img src="lockup-mono-black.svg" alt="ZoneBoard" class="lockup" />
+          </div>
+          <figcaption>
+            <strong>モノクロ 黒</strong>
+            <span>紙、ブラス地</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-dark">
+            <img src="lockup-og.svg" alt="ZoneBoard" class="lockup-og" />
+          </div>
+          <figcaption>
+            <strong>OG カード</strong>
+            <span>1200×630。スタジオ地</span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2>縦ロックアップ（正方形・狭い枠）</h2>
+      <div class="grid">
+        <figure class="card">
+          <div class="swatch on-dark tall">
+            <img src="lockup-stack-color-dark.svg" alt="ZoneBoard" class="lockup-stack" />
+          </div>
+          <figcaption>
+            <strong>カラー 正</strong>
+            <span>正方形・プロフィール。lockup-stack.svg</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-light tall">
+            <img src="lockup-stack-color-light.svg" alt="ZoneBoard" class="lockup-stack" />
+          </div>
+          <figcaption>
+            <strong>カラー 逆</strong>
+            <span>紙。マーカーは深いブラス</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-dark tall">
+            <img src="lockup-stack-mono-white.svg" alt="ZoneBoard" class="lockup-stack" />
+          </div>
+          <figcaption>
+            <strong>モノクロ 白</strong>
+            <span>写真、暗芝</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-light tall">
+            <img src="lockup-stack-mono-black.svg" alt="ZoneBoard" class="lockup-stack" />
+          </div>
+          <figcaption>
+            <strong>モノクロ 黒</strong>
+            <span>紙、ブラス地</span>
+          </figcaption>
+        </figure>
+        <figure class="card">
+          <div class="swatch on-dark tall">
+            <img src="lockup-stack-og.svg" alt="ZoneBoard" class="lockup-stack" />
+          </div>
+          <figcaption>
+            <strong>OG 正方形</strong>
+            <span>1080×1080。スタジオ地</span>
+          </figcaption>
+        </figure>
+      </div>
 
       <h2>正・逆・モノ・単色</h2>
       <div class="grid">
@@ -396,6 +509,11 @@
           正は <code>mark-color-dark</code>（<code>/logo.svg</code>）。タブは
           <code>icon-color</code>（<code>/favicon.svg</code>）で固定。ページ色で
           favicon を反転しない。
+        </li>
+        <li>
+          横ロックアップは <code>lockup-color-dark</code>（<code>/lockup.svg</code>）。LP とトップバーは横。
+          縦は <code>lockup-stack-color-dark</code>（<code>/lockup-stack.svg</code>）。正方形・狭い枠。
+          OG 横は <code>lockup-og.svg</code>（1200×630）、OG 正方は <code>lockup-stack-og.svg</code>（1080×1080）。字はアウトライン。語を消さない。
         </li>
         <li>
           カノンブラス <code>#c4a24a</code> は暗地専用。白・紙では 2.2:1

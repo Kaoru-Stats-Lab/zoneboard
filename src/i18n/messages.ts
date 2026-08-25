@@ -21,6 +21,9 @@ export const messages = {
     lpAfterBody: "局面を残す。図のまま出す。白板は消える。",
     lpCreedTitle: "なぜ小さく作るか",
     lpCreedBody: "戦術ツールは機能でピッチを小さくする。ZoneBoard はボードだけ。",
+    lpPriceBody:
+      "ボードは無料。名前付きセットは、あとから有料にするかもしれない。",
+    lpPriceLink: "料金",
     lpFooterWhy: "Why",
     lpBullet1: "配信モード · キャンバス ≥80%",
     lpBullet2: "ロゴ透かし対応",
@@ -380,6 +383,9 @@ export const messages = {
     lpAfterBody: "Keep the scenes. Export the diagram. The whiteboard wipes.",
     lpCreedTitle: "Why it's this small",
     lpCreedBody: "Tactical tools shrink the pitch. ZoneBoard is just the board.",
+    lpPriceBody:
+      "The board is free. Named squads may become a paid extra later.",
+    lpPriceLink: "Pricing",
     lpFooterWhy: "Why",
     lpBullet1: "Broadcast mode — pitch fills ≥80% of the screen",
     lpBullet2: "Your club logo as a watermark",

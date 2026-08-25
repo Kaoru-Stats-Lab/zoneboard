@@ -15,7 +15,7 @@
 | サッカー5レーン | **使わない**（チグハグ） | **完全不要** |
 | 配信文化 | 国内＋**es/pt-BR 圏で戦術図＋SNS/YouTube が厚い** | 個人配信は少なめ（BSWW寡占）。講習・解説収録需要 |
 | ZoneBoard の楔 | 正しい線がある軽量 Web（TacticalPad の隙） | **黄9m＋射線が最初からある希少ボード** |
-| 次の言語 | ja/en の次は **es → pt-BR**（海外調査統合） | 同左。ビーチ表記は areia / praia 分岐注意 |
+| 次の言語 | ja/en の次は **es → pt-BR**（海外調査統合）。公開順の正本は [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) | 同左。ビーチ表記は areia / praia 分岐注意 |
 
 海外詳細: [`FUTSAL_BEACH_OVERSEAS_BRIEF.md`](FUTSAL_BEACH_OVERSEAS_BRIEF.md) 結果メモ。
 

@@ -85,7 +85,7 @@ export function BrandLockup({
         scheme={scheme}
         on={on}
       />
-      {word}
+      <span className="brand-word">{word}</span>
     </span>
   );
 }

@@ -11,6 +11,7 @@ import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
 import { captureLandingHints, type FeedbackSource } from "../lib/feedbackClient";
+import { trackEvent } from "../lib/ga";
 import { FeedbackPanel } from "./FeedbackPanel";
 
 type FeedbackContextValue = {
@@ -36,6 +37,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
       openFeedback: (nextSource: FeedbackSource) => {
         setSource(nextSource);
         setOpen(true);
+        trackEvent("feedback_open");
       },
     }),
     [],

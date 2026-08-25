@@ -32,9 +32,9 @@ PL / CL を見ている目が先にがっかりするのは機能不足ではな
 | 角 | 2px 前後 | 8px の「アプリ」角はやめる |
 | 字の顔 | Barlow / Zen Kaku Gothic New | エディタだけ Segoe にしない |
 
-ピッチの芝は今のまま。芝をスタジオ黒にしない。
+ロックアップの字は Barlow Semi Condensed 600、Title case の ZoneBoard 一語、象牙。金は字に塗らない。Web は生テキスト（`BrandLockup`）。OG・印刷・クローラ向けはアウトライン SVG。横（[`lockup-color-dark.svg`](../public/brand/lockup-color-dark.svg)）が LP とトップバーの正。縦（[`lockup-stack-color-dark.svg`](../public/brand/lockup-stack-color-dark.svg)）は正方形・狭い枠。OG は横 [`lockup-og.svg`](../public/brand/lockup-og.svg) と正方 [`lockup-stack-og.svg`](../public/brand/lockup-stack-og.svg)。マーク展開は [`public/brand/`](../public/brand/) と `src/brand/mark.ts`。favicon はページ色で反転しない。390px でもワードマークの語は残す（フィードバックは隠してよい）。他モデルで見るときは [`AGENT_PROMPT_LOCKUP_REVIEW.md`](AGENT_PROMPT_LOCKUP_REVIEW.md) をそのまま渡す。
 
-マーク展開（正・逆・モノ・ブラス地）は [`public/brand/`](../public/brand/) と `src/brand/mark.ts`。favicon はページ色で反転しない。
+ピッチの芝は今のまま。芝をスタジオ黒にしない。
 
 ---
 

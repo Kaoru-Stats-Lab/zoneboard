@@ -2,14 +2,18 @@ import { Link } from "react-router-dom";
 import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
+import { trackEvent } from "../lib/ga";
 import { SITE_NAV } from "../site/publisher";
+import { CONSENT_BANNER } from "../site/consentCopy";
 import { useFeedback } from "./FeedbackProvider";
 import { BrandLockup } from "./BrandMark";
+import { ConsentBanner, useConsentBanner } from "./ConsentBanner";
 import { LpHeroBoard } from "./LpHeroBoard";
 
 export function Landing() {
   const t = (k: MessageKey) => messages[APP_LOCALE][k];
   const { openFeedback } = useFeedback();
+  const consent = useConsentBanner();
 
   return (
     <div className="lp">
@@ -31,7 +35,11 @@ export function Landing() {
             <span className="lp-payoff">{t("lpPayoff")}</span>
           </h1>
           <p className="lp-lede">{t("lpLede")}</p>
-          <Link className="lp-cta" to="/board">
+          <Link
+            className="lp-cta"
+            to="/board"
+            onClick={() => trackEvent("open_board")}
+          >
             {t("openBoard")}
           </Link>
           <LpHeroBoard />
@@ -71,6 +79,11 @@ export function Landing() {
           </section>
         </main>
 
+        <p className="lp-price">
+          {t("lpPriceBody")}{" "}
+          <a href="/pricing/">{t("lpPriceLink")}</a>
+        </p>
+
         <footer className="lp-footer">
           <p className="lp-footer-brand">
             <BrandLockup
@@ -86,7 +99,7 @@ export function Landing() {
             <nav className="lp-footer-links" aria-label="Site">
               {SITE_NAV.map((item) => (
                 <a key={item.slug} href={`/${item.slug}/`}>
-                  {APP_LOCALE === "ja" ? item.labelJa : item.labelEn}
+                  {item.labelEn}
                 </a>
               ))}
               <a href="#why">{t("lpFooterWhy")}</a>
@@ -97,10 +110,23 @@ export function Landing() {
               >
                 {t("feedbackOpen")}
               </button>
+              <button
+                type="button"
+                className="lp-footer-fb"
+                onClick={consent.openChoices}
+              >
+                {CONSENT_BANNER.choices}
+              </button>
             </nav>
           </div>
         </footer>
       </div>
+      <ConsentBanner
+        open={consent.open}
+        onReject={consent.reject}
+        onAnalytics={consent.allowAnalytics}
+        onAds={consent.allowAds}
+      />
     </div>
   );
 }
