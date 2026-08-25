@@ -64,6 +64,20 @@ const ja: HowToDoc = {
       ],
     },
     {
+      heading: "準備で描く",
+      paragraphs: [
+        "配信前にパス・ラン・ペンを引くなら、ツールレールを使います。Pass はボールの軌道（パス・クロス・シュート）。Run は走り。Dribble は運ぶ人です。",
+        "ペンはパスでもランでもない一本です。ブロックの線、守備チェーン、チャネルの境界。Shift を押したままドラッグすると直線になります（Figma と同じ）。丸や囲みは Shift なしの自由描きです。",
+      ],
+      keys: [
+        { combo: "Pass", meaning: "ボールの軌道（破線）。駒は動かない" },
+        { combo: "Run / Dribble", meaning: "走り／ドリブル（駒からドラッグ可）" },
+        { combo: "Pen", meaning: "自由記述のインク" },
+        { combo: "Shift+Pen drag", meaning: "始点–終点の直線" },
+        { combo: "Zone + Shift", meaning: "正円に近いゾーン" },
+      ],
+    },
+    {
       heading: "配信の前後",
       paragraphs: [
         "本番前に、ラインを上げて戻し、ホームだけ選んでコンパクトにする、まで一度やっておくと、オンエアで手が止まりません。B で配信モードに入ります。この使い方画面は配信中には出しません。キャプチャを食うからです。",
@@ -126,6 +140,20 @@ const en: HowToDoc = {
         { combo: "Ctrl/Cmd+Shift+Arrow", meaning: "Align to an edge or axis" },
         { combo: "Alt+Shift+Arrow", meaning: "Even spacing (left-right = x, up-down = y)" },
         { combo: "Delete", meaning: "Remove the selected pieces" },
+      ],
+    },
+    {
+      heading: "Draw in prep",
+      paragraphs: [
+        "Before broadcast, use the tool rail for passes, runs, and pen marks. Pass is the ball path — pass, cross, or shot. Run is off-ball movement. Dribble is a carrier.",
+        "Pen is the mark that is not a pass or a run: a block line, a defensive chain, a channel edge. Hold Shift while dragging Pen for a straight segment (same as Figma). Circles and loops stay freehand without Shift.",
+      ],
+      keys: [
+        { combo: "Pass", meaning: "Ball path (dashed). Players stay put" },
+        { combo: "Run / Dribble", meaning: "Run or dribble (drag from a piece)" },
+        { combo: "Pen", meaning: "Freehand ink" },
+        { combo: "Shift+Pen drag", meaning: "Straight line from start to end" },
+        { combo: "Zone + Shift", meaning: "Near-circular zone" },
       ],
     },
     {

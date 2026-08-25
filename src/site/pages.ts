@@ -124,12 +124,12 @@ export const SITE_PAGES: SitePage[] = [
         en: [
           "Pass, run, and dribble are different lines because they mean different things on a football graphic. A pass is a ball. A run is a body without the ball. A dribble is a carrier moving with it. If you use one colour for all three, the viewer has to guess. Use the labelled tools. Do not turn the pitch into a highlighter pack.",
           "Zones are for space, not for decoration. A pressing trap, a box to attack, or a rest-defence block should be large enough to read and transparent enough that the grass and the numbers still show. If a zone hides a player, the zone is wrong.",
-          "Pen is for the one mark that is not a pass or a run: a block line, a cover shadow, a keeper’s starting position. Text is for a short title on the picture, not for a paragraph. If you need a paragraph, say it with your voice. The board is the diagram.",
+          "Pen is for the one mark that is not a pass or a run: a block line, a cover shadow, a defensive chain between players, or a channel edge. Hold Shift while dragging Pen for a straight segment—the same habit as Figma. Circles and freehand loops stay unmodified. Text is for a short title on the picture, not for a paragraph. If you need a paragraph, say it with your voice. The board is the diagram.",
         ],
         ja: [
           "パス、ラン、ドリブルは線が違います。意味が違うからです。パスはボール。ランはボールを持たない体。ドリブルは運ぶ人です。三本を同じ色にすると、視聴者は推測します。名前のついたツールを使ってください。ピッチを蛍光ペンの束にしないでください。",
           "ゾーンは空間用であり、飾りではありません。プレスの罠、攻める箱、レストディフェンスの塊は、読める大きさで、芝と番号が残る透明度にします。ゾーンが選手を隠すなら、そのゾーンは失敗です。",
-          "ペンは、パスでもランでもない一本です。ブロックの線、カバーシャドウ、GKの開始位置。文字は絵の短い題であり、段落ではありません。段落が必要なら声で言ってください。ボードは図です。",
+          "ペンは、パスでもランでもない一本です。ブロックの線、カバーシャドウ、選手どうしを結ぶ守備チェーン、チャネルの境界。Pen 使用中に Shift を押したままドラッグすると直線になります（Figma と同じ）。丸や囲みは Shift なしの自由描きです。文字は絵の短い題であり、段落ではありません。段落が必要なら声で言ってください。ボードは図です。",
         ],
       },
       {
