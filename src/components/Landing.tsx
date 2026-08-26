@@ -9,6 +9,7 @@ import { useFeedback } from "./FeedbackProvider";
 import { BrandLockup } from "./BrandMark";
 import { ConsentBanner, useConsentBanner } from "./ConsentBanner";
 import { LpAfterBoard } from "./LpAfterBoard";
+import { LpEndCardDemo } from "./LpEndCardDemo";
 import { LpHeroBoard } from "./LpHeroBoard";
 
 export function Landing() {
@@ -73,6 +74,7 @@ export function Landing() {
             </p>
           </section>
           <LpAfterBoard />
+          <LpEndCardDemo />
         </main>
 
         <footer className="lp-footer">

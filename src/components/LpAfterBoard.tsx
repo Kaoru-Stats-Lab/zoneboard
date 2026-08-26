@@ -22,6 +22,8 @@ const TABS: { id: AfterTab; key: MessageKey }[] = [
   { id: "ck-right", key: "scenePresetCkRightZonal" },
 ];
 
+const CUT_MS = 140;
+
 function frames(): Record<AfterTab, { board: BoardDocument; scene: Scene }> {
   const { board, scene } = createLpHeroData();
   const kickoffScene = lpHeroSceneComplete(scene, board);
@@ -59,6 +61,11 @@ export function LpAfterBoard() {
   const ballImageRef = useRef<HTMLImageElement | null>(null);
   const paintRef = useRef<() => void>(() => {});
   const [tab, setTab] = useState<AfterTab>("kickoff");
+  const [cutting, setCutting] = useState(false);
+  const reduceMotion = useRef(
+    typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   tabRef.current = tab;
 
   useEffect(() => {
@@ -115,13 +122,26 @@ export function LpAfterBoard() {
     paintRef.current();
   }, [tab]);
 
+  const selectTab = (id: AfterTab) => {
+    if (id === tabRef.current) return;
+    if (reduceMotion.current) {
+      setTab(id);
+      return;
+    }
+    setCutting(true);
+    window.setTimeout(() => {
+      setTab(id);
+      window.setTimeout(() => setCutting(false), CUT_MS);
+    }, CUT_MS);
+  };
+
   const onTabKey = (e: KeyboardEvent<HTMLButtonElement>, id: AfterTab) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     e.preventDefault();
     const i = TABS.findIndex((item) => item.id === id);
     const next =
       TABS[(i + (e.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length];
-    setTab(next.id);
+    selectTab(next.id);
     const el = e.currentTarget.parentElement?.querySelector<HTMLButtonElement>(
       `[data-after-tab="${next.id}"]`,
     );
@@ -142,7 +162,7 @@ export function LpAfterBoard() {
             aria-controls="lp-after-panel"
             tabIndex={tab === id ? 0 : -1}
             className={tab === id ? "is-on" : undefined}
-            onClick={() => setTab(id)}
+            onClick={() => selectTab(id)}
             onKeyDown={(e) => onTabKey(e, id)}
           >
             {t(key)}
@@ -150,7 +170,11 @@ export function LpAfterBoard() {
         ))}
       </div>
       <div
-        className="lp-board-canvas-wrap lp-after-canvas"
+        className={
+          cutting
+            ? "lp-board-canvas-wrap lp-after-canvas is-cutting"
+            : "lp-board-canvas-wrap lp-after-canvas"
+        }
         id="lp-after-panel"
         ref={wrapRef}
         role="tabpanel"

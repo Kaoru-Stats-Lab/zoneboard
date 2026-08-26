@@ -19,6 +19,11 @@ export const messages = {
     lpStepsLabel: "使い方",
     lpAfterTitle: "試合のあとにも。",
     lpAfterBody: "局面を残す。図のまま出す。白板は消える。",
+    lpEndCardLabel: "収録の締め",
+    lpEndCardBody: "ウィンドウキャプチャのあとに、エンドカードを置く。",
+    lpEndCardPlay: "エンドカードを再生",
+    lpEndCardReplay: "もう一度",
+    lpEndCardStatic: "エンドカード（静止）",
     lpPriceBody:
       "ボードは無料。名前付きセットは、あとから有料にするかもしれない。",
     lpPriceLink: "料金",
@@ -409,6 +414,11 @@ export const messages = {
     lpStepsLabel: "How",
     lpAfterTitle: "After the match, too.",
     lpAfterBody: "Keep the scenes. Export the diagram. The whiteboard wipes.",
+    lpEndCardLabel: "End of the capture",
+    lpEndCardBody: "After the window capture, drop the brand end card.",
+    lpEndCardPlay: "Play end card",
+    lpEndCardReplay: "Replay",
+    lpEndCardStatic: "End card (still)",
     lpPriceBody:
       "The board is free. Named squads may become a paid extra later.",
     lpPriceLink: "Pricing",

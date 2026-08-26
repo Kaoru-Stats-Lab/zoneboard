@@ -18,6 +18,23 @@ PL / CL を見ている目が先にがっかりするのは機能不足ではな
 
 競合との差: 最初から放送室で、名簿とスタメンはその机の引き出しに入っている。見栄えスキンでも白 SaaS でもない。
 
+### Sports signal（2026-08）
+
+Football を扱う **ツール** であり、スタジアム CM ではない。性格は引き続き **precise / composed / intentional**。
+
+欠けるのは「熱」ではなく **気配**。量は **signal のみ**（warm / hot にしない）。
+
+| 面 | やる | やらない |
+|---|---|---|
+| **LP** | After 帯で「試合後」の時間軸（局面デモ → 収録の締め）を見せる | ヒーロー全画面 autoplay、ループ動画、派手なスポーツパレット |
+| **デモ** | ヒーローのパス／ドリブル、After の局面切替に短い遷移 | パーティクル、カメラシェイク、無限ループの「盛り」 |
+| **ボード chrome** | ピッチを唯一の光源のまま。chrome はスタジオ黒に寄せ、芝との境界をはっきり（パネル・レール・枠は ground 寄り／境界は細い） | chrome を芝色・大会色にする、ツールのアイコン化、ピッチと同等の明度のグレー帯 |
+| **ブランドスティング** | Clipchamp 等の **試合後** エンドカード。LP ではワークフロー例 | Broadcast／ピッチ上、サウンドロジ、Sports感の主力 |
+
+判定: 画面からロゴとコピーを外しても「サッカーの机の上」と分かるか。分かれば signal 十分。CM に見えるならやりすぎ。
+
+詳細・ファイル: [`BRAND_MOTION.md`](BRAND_MOTION.md)。
+
 ---
 
 ## 2. トークン（LP とボードで同一）
@@ -28,11 +45,12 @@ PL / CL を見ている目が先にがっかりするのは機能不足ではな
 | 字 | `#f3f3f1` | 本文・ロックアップ |
 | 金 | `#c4a24a` | 第一マーカー、LP の「ボードを開く」 |
 | 金（明地） | `#7a5c20` | 紙の上のマーカーだけ。カノン金は白で 2.2:1 |
-| パネル面 | `#161718` 前後 | 入力・ドロワー。白カードにしない |
+| パネル面 | `#121314` 前後 | 入力・ドロワー。白カードにしない。芝より明らかに暗い |
+| 境界 | `#1e1f20` 前後 | chrome の線。ピッチ緑と競合しない細さ |
 | 角 | 2px 前後 | 8px の「アプリ」角はやめる |
 | 字の顔 | Barlow / Zen Kaku Gothic New | エディタだけ Segoe にしない |
 
-ロックアップの字は Barlow Semi Condensed 600、Title case の ZoneBoard 一語、象牙。金は字に塗らない。Web は生テキスト（`BrandLockup`）。OG・印刷・クローラ向けはアウトライン SVG。横（[`lockup-color-dark.svg`](../public/brand/lockup-color-dark.svg)）が LP とトップバーの正。縦（[`lockup-stack-color-dark.svg`](../public/brand/lockup-stack-color-dark.svg)）は正方形・狭い枠。OG は横 [`lockup-og.svg`](../public/brand/lockup-og.svg) と正方 [`lockup-stack-og.svg`](../public/brand/lockup-stack-og.svg)。マーク展開は [`public/brand/`](../public/brand/) と `src/brand/mark.ts`。favicon はページ色で反転しない。390px でもワードマークの語は残す（フィードバックは隠してよい）。他モデルで見るときは [`AGENT_PROMPT_LOCKUP_REVIEW.md`](AGENT_PROMPT_LOCKUP_REVIEW.md) をそのまま渡す。
+ロックアップの字は Barlow Semi Condensed 600、Title case の ZoneBoard 一語、象牙。金は字に塗らない。Web は生テキスト（`BrandLockup`）。OG・印刷・クローラ向けはアウトライン SVG。横（[`lockup-color-dark.svg`](../public/brand/lockup-color-dark.svg)）が LP とトップバーの正。縦（[`lockup-stack-color-dark.svg`](../public/brand/lockup-stack-color-dark.svg)）は正方形・狭い枠。OG は横 [`lockup-og.svg`](../public/brand/lockup-og.svg) と正方 [`lockup-stack-og.svg`](../public/brand/lockup-stack-og.svg)。マーク展開は [`public/brand/`](../public/brand/) と `src/brand/mark.ts`。**VOD エンドカード用モーション**（Clipchamp 等・試合後のみ）は [`BRAND_MOTION.md`](BRAND_MOTION.md) — 既定は `public/brand/motion/exports/A/sting-lockup-plate-16x9.mp4`。favicon はページ色で反転しない。390px でもワードマークの語は残す（フィードバックは隠してよい）。他モデルで見るときは [`AGENT_PROMPT_LOCKUP_REVIEW.md`](AGENT_PROMPT_LOCKUP_REVIEW.md) をそのまま渡す。
 
 ピッチの芝は今のまま。芝をスタジオ黒にしない。
 

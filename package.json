@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:ink": "npx --yes tsx scripts/pieceInk-check.ts",
-    "brand:marks": "npx --yes tsx scripts/write-brand-marks.ts"
+    "brand:marks": "npx --yes tsx scripts/write-brand-marks.ts",
+    "brand:motion": "python scripts/export-brand-motion.py"
   },
   "dependencies": {
     "react": "^19.1.0",

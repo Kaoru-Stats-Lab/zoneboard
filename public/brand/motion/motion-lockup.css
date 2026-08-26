@@ -1,0 +1,209 @@
+/* ZoneBoard lockup sting — mark v4 + wordmark wipe (Surface A discovery end card).
+   Mark clock 1600ms; wordmark 2200ms; outro/hold total 3000ms.
+*/
+:root {
+  --p2m-duration: 1600ms;
+  --p2m-word-duration: 2200ms;
+  --p2m-total: 3000ms;
+  --p2m-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --p2m-ease-settle: cubic-bezier(0.4, 0, 0.2, 1);
+  --p2m-ease-natural: cubic-bezier(0.4, 0, 0.2, 1);
+  --p2m-overshoot: 1.0;
+}
+
+#plate,
+#lockup {
+  animation: zb-outro var(--p2m-total) both;
+}
+
+#dot-0,
+#dot-1,
+#dot-2,
+#dot-3,
+#dot-4,
+#dot-accent {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: zb-dot var(--p2m-duration) both;
+}
+
+#dot-0 { animation-name: zb-dot-0; }
+#dot-1 { animation-name: zb-dot-1; }
+#dot-2 { animation-name: zb-dot-2; }
+#dot-3 { animation-name: zb-dot-3; }
+#dot-4 { animation-name: zb-dot-4; }
+#dot-accent { animation-name: zb-dot-accent; }
+
+#link {
+  stroke-dasharray: 1 1.2;
+  stroke-dashoffset: 1.1;
+  animation: zb-draw var(--p2m-duration) both;
+}
+
+#wordmark {
+  /* Mask wipe LTR — no opacity ramp (keeps ivory ink weight) */
+  clip-path: inset(0 100% 0 0);
+  animation: zb-word var(--p2m-word-duration) both;
+}
+
+@keyframes zb-dot-0 {
+  0%, 18% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  18% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1); /* --p2m-ease-enter */
+  }
+  38% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* --p2m-ease-settle */
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zb-dot-1 {
+  0%, 22% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  22% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+  42% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zb-dot-2 {
+  0%, 26% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  26% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+  46% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zb-dot-3 {
+  0%, 30% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  30% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zb-dot-4 {
+  0%, 34% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  34% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+  54% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Brass — full #c4a24a (no opacity ramp over dark = muddy brown).
+   Appear after link settles (~80ms), then whisper scale 0.98→1 only. */
+@keyframes zb-dot-accent {
+  0%, 91% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  /* Hard cut to full brass — avoids translucent brown mid-frames */
+  91.01% {
+    opacity: 1;
+    transform: scale(0.98);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* --p2m-ease-settle */
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Zone stroke — ~160ms after ivory settle (54% → 64%) for clearer cause→effect */
+@keyframes zb-draw {
+  0%, 64% {
+    stroke-dashoffset: 1.1;
+  }
+  64% {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* --p2m-ease-natural */
+  }
+  86% {
+    stroke-dashoffset: 0;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Hold tail: full opacity through ~2.0s, then whisper fade for editor cuts */
+@keyframes zb-outro {
+  0%, 80% {
+    opacity: 1;
+  }
+  80% {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+
+/* Wordmark after brass (~1600ms = 72.7% of 2200ms) + ~80ms beat */
+@keyframes zb-word {
+  0%, 76% {
+    clip-path: inset(0 100% 0 0);
+  }
+  76% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1); /* --p2m-ease-enter */
+  }
+  92% {
+    clip-path: inset(0 0 0 0);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}

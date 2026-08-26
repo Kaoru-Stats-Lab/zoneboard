@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 40 40" width="320" height="320" role="img" aria-label="ZoneBoard">
+  <!-- Motion-ready ZoneBoard mark. Final Frame Contract = exports/icon-color geometry at icon coords. -->
+  <rect id="plate" x="0" y="0" width="32" height="32" rx="6" fill="#141516" stroke="#1c1d1f" stroke-width="0.35"/>
+  <g id="mark">
+    <line
+      id="link"
+      x1="22.5" y1="9.5" x2="9.5" y2="22.5"
+      stroke="#f3f3f1"
+      stroke-width="2.2"
+      stroke-linecap="round"
+      pathLength="1"
+      fill="none"
+    />
+    <circle id="dot-0" cx="9" cy="9" r="2.45" fill="#f3f3f1"/>
+    <circle id="dot-1" cx="16" cy="9" r="2.45" fill="#f3f3f1"/>
+    <circle id="dot-2" cx="23" cy="9" r="2.45" fill="#f3f3f1"/>
+    <circle id="dot-3" cx="9" cy="23" r="2.45" fill="#f3f3f1"/>
+    <circle id="dot-4" cx="16" cy="23" r="2.45" fill="#f3f3f1"/>
+    <circle id="dot-accent" cx="23" cy="23" r="2.45" fill="#c4a24a"/>
+  </g>
+</svg>

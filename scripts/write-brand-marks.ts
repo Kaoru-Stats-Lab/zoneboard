@@ -147,6 +147,111 @@ ${lockupInner("color", "dark", "stack")}
 `;
 await writeFile(path.join(brandDir, "lockup-stack-og.svg"), stackOgSvg);
 
+/** Flat exports for SVGator / Haiku / Clipchamp — no nested <svg>, studio plate. */
+const exportDir = path.join(brandDir, "exports");
+await mkdir(exportDir, { recursive: true });
+
+const MARK_SPAN = 21; // viewBoxMark is 5.5..26.5
+
+function flatMarkGroup(
+  paint: ReturnType<typeof resolveMarkPaint>,
+  box: number,
+  x: number,
+  y: number,
+): string {
+  const s = box / MARK_SPAN;
+  const tx = x - 5.5 * s;
+  const ty = y - 5.5 * s;
+  const inner = markInnerSvg(paint)
+    .split("\n")
+    .map((line) => `    ${line.trimStart()}`)
+    .join("\n");
+  return `  <g transform="translate(${tx.toFixed(3)} ${ty.toFixed(3)}) scale(${s.toFixed(6)})">
+${inner}
+  </g>`;
+}
+
+function flatLockup(
+  scheme: MarkScheme,
+  on: MarkGround,
+  layout: "row" | "stack",
+  withPlate: boolean,
+): string {
+  const paint = resolveMarkPaint({ variant: "mark", scheme, on });
+  const box = layout === "stack" ? STACK_MARK : MARK_BOX;
+  const mx = layout === "stack" ? stackMarkX : PAD;
+  const my = layout === "stack" ? stackMarkY : PAD;
+  const wx = layout === "stack" ? stackWordX : wordX;
+  const by = layout === "stack" ? stackBaseline : baseline;
+  const w = layout === "stack" ? stackWidth : lockupWidth;
+  const h = layout === "stack" ? stackHeight : lockupHeight;
+  const plate = withPlate
+    ? `  <rect width="${w.toFixed(2)}" height="${h.toFixed(2)}" rx="8" fill="${BRAND.studio}"/>\n`
+    : "";
+  const mark = flatMarkGroup(paint, box, mx, my);
+  const word = `  <path fill="${paint.ink}" d="${LOCKUP_WORD.d}" transform="translate(${wx.toFixed(2)} ${by.toFixed(2)})"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w.toFixed(2)} ${h.toFixed(2)}" role="img" aria-label="ZoneBoard">
+${plate}${mark}
+${word}
+</svg>
+`;
+}
+
+function flatMarkPlate(scheme: MarkScheme, on: MarkGround): string {
+  const paint = resolveMarkPaint({ variant: "mark", scheme, on });
+  const size = 64;
+  const inset = 12;
+  const box = size - inset * 2;
+  const mark = flatMarkGroup(paint, box, inset, inset);
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="ZoneBoard">
+  <rect width="${size}" height="${size}" rx="12" fill="${BRAND.studio}"/>
+${mark}
+</svg>
+`;
+}
+
+const EXPORT_FILES: Array<{ file: string; svg: string }> = [
+  {
+    file: "icon-color.svg",
+    svg: renderMarkSvg({ variant: "icon", scheme: "color", on: "dark" }),
+  },
+  {
+    file: "mark-color-dark.svg",
+    svg: flatMarkPlate("color", "dark"),
+  },
+  {
+    file: "mark-brass.svg",
+    svg: flatMarkPlate("brass", "dark"),
+  },
+  {
+    file: "lockup-color-dark.svg",
+    svg: flatLockup("color", "dark", "row", true),
+  },
+  {
+    file: "lockup-stack-color-dark.svg",
+    svg: flatLockup("color", "dark", "stack", true),
+  },
+];
+
+for (const asset of EXPORT_FILES) {
+  await writeFile(path.join(exportDir, asset.file), asset.svg);
+}
+
+const exportReadme = `# Brand exports (animation tools)
+
+Flat SVGs for SVGator, Haiku, Clipchamp, etc.
+
+- **No nested \`<svg>\`** — tools often drop the mark otherwise
+- **Studio plate** (\`${BRAND.studio}\`) — ivory ink stays visible on light canvases
+- Prefer \`mark-brass.svg\` or \`icon-color.svg\` for a 1–2s logo loop
+- Prefer \`lockup-color-dark.svg\` / \`lockup-stack-color-dark.svg\` for end cards
+
+Regenerate with \`npm run brand:marks\` (writes \`public/brand/\` and this folder).
+`;
+await writeFile(path.join(exportDir, "README.md"), exportReadme);
+
 console.log(
   `wrote ${BRAND_ASSETS.length} marks, ${LOCKUP_ASSETS.length + 1} row lockups, ${STACK_ASSETS.length + 1} stacked lockups to public/brand/`,
 );
+console.log(`wrote ${EXPORT_FILES.length} flat exports to public/brand/exports/`);
+

@@ -1,0 +1,192 @@
+/* ZoneBoard mark — Pixel2Motion choreography
+   Tokens for documentation / animation shorthands only.
+   Inside @keyframes, easing MUST be literal cubic-bezier (Chromium drops var()).
+
+   v3 (peer review #2): longer post-cascade beat before link; quieter brass
+   (scale 0.92→1, no pop); soft plate/mark fade across export hold tail.
+*/
+:root {
+  --p2m-duration: 1600ms;
+  --p2m-total: 2400ms; /* motion + hold (exports / outro) */
+  --p2m-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --p2m-ease-settle: cubic-bezier(0.4, 0, 0.2, 1);
+  --p2m-ease-natural: cubic-bezier(0.4, 0, 0.2, 1);
+  --p2m-overshoot: 1.0;
+}
+
+/* Soft outro across hold — parent opacity; children keep Final Frame geometry */
+#plate,
+#mark {
+  animation: zb-outro var(--p2m-total) both;
+}
+
+#dot-0,
+#dot-1,
+#dot-2,
+#dot-3,
+#dot-4,
+#dot-accent {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: zb-dot var(--p2m-duration) both;
+}
+
+/* Shared clock; stagger encoded as keyframe %. Reading order + accent last. */
+#dot-0 { animation-name: zb-dot-0; }
+#dot-1 { animation-name: zb-dot-1; }
+#dot-2 { animation-name: zb-dot-2; }
+#dot-3 { animation-name: zb-dot-3; }
+#dot-4 { animation-name: zb-dot-4; }
+#dot-accent { animation-name: zb-dot-accent; }
+
+#link {
+  stroke-dasharray: 1 1.2;
+  stroke-dashoffset: 1.1;
+  animation: zb-draw var(--p2m-duration) both;
+}
+
+/* --- Ivory dots (complete by 54% ≈ 864ms) --- */
+@keyframes zb-dot-0 {
+  0%, 18% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  18% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1); /* --p2m-ease-enter */
+  }
+  38% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* --p2m-ease-settle */
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zb-dot-1 {
+  0%, 22% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  22% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+  42% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zb-dot-2 {
+  0%, 26% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  26% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+  46% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zb-dot-3 {
+  0%, 30% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  30% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zb-dot-4 {
+  0%, 34% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  34% {
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+  54% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Brass — full #c4a24a (no opacity ramp over dark = muddy brown).
+   Appear after link settles (~80ms), then whisper scale 0.98→1 only. */
+@keyframes zb-dot-accent {
+  0%, 91% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  /* Hard cut to full brass — avoids translucent brown mid-frames */
+  91.01% {
+    opacity: 1;
+    transform: scale(0.98);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* --p2m-ease-settle */
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Zone stroke — ~160ms after ivory settle (54% → 64%) for clearer cause→effect */
+@keyframes zb-draw {
+  0%, 64% {
+    stroke-dashoffset: 1.1;
+  }
+  64% {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* --p2m-ease-natural */
+  }
+  86% {
+    stroke-dashoffset: 0;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Hold tail: full opacity through ~2.0s, then whisper fade for editor cuts */
+@keyframes zb-outro {
+  0%, 83.333% {
+    opacity: 1;
+  }
+  83.333% {
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    opacity: 0.9;
+  }
+}

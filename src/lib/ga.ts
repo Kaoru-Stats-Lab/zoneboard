@@ -165,7 +165,9 @@ export function sendPageView(): void {
   flushPageView();
 }
 
-export function trackEvent(name: "open_board" | "feedback_open"): void {
+export function trackEvent(
+  name: "open_board" | "feedback_open" | "preview_end_card",
+): void {
   if (isBroadcastMode()) return;
   if (!measurementId()) return;
   const consent = readConsent();
