@@ -145,6 +145,7 @@ export function SettingsModal({
         focus: exportFocus,
         selectionColor: state.selectionColor,
         y2cLabel: t("cardY2CLabel"),
+        injLabel: t("subInjured"),
         stageAspect: exportStageAspect,
         cropAnchor: exportCropAnchor,
       },

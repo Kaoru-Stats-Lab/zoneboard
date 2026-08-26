@@ -1803,15 +1803,47 @@ button:disabled {
   left: 8px;
   bottom: 8px;
   z-index: 22;
-  max-width: min(calc(100% - 120px), 520px);
-  padding: 0.4rem 0.5rem;
+  max-width: min(calc(100% - 120px), 480px);
+  padding: 0.35rem 0.45rem;
   border-radius: var(--zb-radius);
-  background: var(--zb-panel);
-  border: 1px solid var(--zb-border-strong);
+  background: rgba(20, 20, 20, 0.82);
+  border: 1px solid rgba(243, 243, 241, 0.16);
   color: var(--zb-ink);
   font-size: 0.82rem;
   color-scheme: dark;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+.live-match-controls--broadcast.live-match-controls--tucked {
+  max-width: none;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.live-match-tuck-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--zb-radius);
+  border: 1px solid rgba(243, 243, 241, 0.2);
+  background: rgba(20, 20, 20, 0.78);
+  color: var(--zb-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.live-match-tuck-btn:hover {
+  border-color: rgba(243, 243, 241, 0.4);
+}
+
+.live-match-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .live-match-controls--broadcast.live-match-controls--pk {

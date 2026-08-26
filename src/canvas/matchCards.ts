@@ -1,4 +1,11 @@
-import type { BoardDocument, CardEntry, CardKind, GoalEntry, Piece } from "../models/types";
+import type {
+  BoardDocument,
+  CardEntry,
+  CardKind,
+  GoalEntry,
+  Piece,
+  SubEntry,
+} from "../models/types";
 import { AWAY_COLOR, HOME_COLOR } from "../models/types";
 
 export const CARD_YELLOW = "#FFCC00";
@@ -37,7 +44,8 @@ export function parseMinuteSort(minute?: string): number {
 
 export type MatchTimelineEntry =
   | { kind: "goal"; sort: number; id: string; entry: GoalEntry }
-  | { kind: "card"; sort: number; id: string; entry: CardEntry };
+  | { kind: "card"; sort: number; id: string; entry: CardEntry }
+  | { kind: "sub"; sort: number; id: string; entry: SubEntry };
 
 export function buildMatchTimeline(board: BoardDocument): MatchTimelineEntry[] {
   const out: MatchTimelineEntry[] = [];
@@ -55,6 +63,14 @@ export function buildMatchTimeline(board: BoardDocument): MatchTimelineEntry[] {
       sort: parseMinuteSort(c.minute),
       id: `c-${c.id}`,
       entry: c,
+    });
+  }
+  for (const s of board.subs ?? []) {
+    out.push({
+      kind: "sub",
+      sort: parseMinuteSort(s.minute),
+      id: `s-${s.id}`,
+      entry: s,
     });
   }
   out.sort((a, b) => a.sort - b.sort || a.id.localeCompare(b.id));
@@ -85,6 +101,21 @@ export function formatGoalTimelinePart(g: GoalEntry): string {
 
 export function formatCardTimelinePart(c: CardEntry, y2cLabel: string): string {
   return [timelineMinute(c.minute), cardTimelineName(c, y2cLabel)]
+    .filter(Boolean)
+    .join(" ");
+}
+
+/** Banner body after the minute — numbers only (docs/BROADCAST_SUBS.md L2). */
+export function subTimelineBody(s: SubEntry, injLabel = "INJ"): string {
+  const body = `${s.outNumber}↓ ${s.inNumber}↑`;
+  return s.injured ? `${body} ${injLabel}` : body;
+}
+
+export function formatSubTimelinePart(
+  s: SubEntry,
+  injLabel = "INJ",
+): string {
+  return [timelineMinute(s.minute), subTimelineBody(s, injLabel)]
     .filter(Boolean)
     .join(" ");
 }

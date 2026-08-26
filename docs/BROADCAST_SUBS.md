@@ -47,10 +47,11 @@ ZoneBoard は **試合映像の scorebug ではない**（顔・時計は OBS）
 
 | ある | 無い / 弱い |
 |---|---|
-| ベンチ帯・ドラッグ交代（swap） | `injured` 状態 |
-| Broadcast の得点・YC/RC 1行 | Broadcast の **SUB イベント行** |
-| ベンチ小半径＋破線 | **OUT 済み**の視覚（芝にいない以外の記号） |
-| 番号優先の製品方針 | OUT/IN/INJ の **状態記号**（枠残数は持たない） |
+| ベンチ帯・ドラッグ交代（swap） | — |
+| Broadcast の得点・YC/RC · **SUB（OUT↓ IN↑ · 負傷）** 帯タイムライン | — |
+| 駒上 OUT / IN / INJ 記号 | — |
+| ベンチ小半径＋破線 | — |
+| 番号優先の製品方針 | 枠残数 UI（作らない決定） |
 
 配信中に Drawer / Inspector は閉じる → **交代・負傷を Broadcast chrome か駒そのもので完結**させる必要がある。
 

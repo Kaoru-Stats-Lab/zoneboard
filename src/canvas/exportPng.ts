@@ -47,6 +47,8 @@ export interface ExportOptions {
   focus: ExportFocusId;
   selectionColor?: string;
   y2cLabel?: string;
+  /** Injured sub suffix on the match banner timeline */
+  injLabel?: string;
   /** 画面上のボード面の幅/高さ。プレビュー枠と揃えるときに渡す */
   stageAspect?: number;
   /** プレビュー枠の位置（0–1。0.5 = 中央） */
@@ -123,6 +125,7 @@ function paintBoardSurface(
     ballImage: HTMLImageElement | null;
     selectionColor: string;
     y2cLabel?: string;
+    injLabel?: string;
     pad?: number;
   },
 ) {
@@ -148,7 +151,14 @@ function paintBoardSurface(
     ballImage: options.ballImage,
   });
   if (bannerH > 0) {
-    drawMatchBanner(ctx, canvasW, canvasH, boardView, options.y2cLabel);
+    drawMatchBanner(
+      ctx,
+      canvasW,
+      canvasH,
+      boardView,
+      options.y2cLabel,
+      options.injLabel,
+    );
   }
 }
 
@@ -207,6 +217,7 @@ export async function exportBoardPng(
     ballImage,
     selectionColor,
     y2cLabel: options.y2cLabel,
+    injLabel: options.injLabel,
   };
 
   const stageAspect = options.stageAspect;

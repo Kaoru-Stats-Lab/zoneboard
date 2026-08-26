@@ -31,7 +31,9 @@ PH 当日の X 1本は [`PH_LAUNCH.md`](PH_LAUNCH.md) §3.5。**その前後も�
 | **4** | コーチ・分析（後） | 同じボードだが、今の楔は配信が先 |
 | **現場メモ** | 日本・天皇杯 同時視聴（2026-08-26） | §2F — 磁石板 / PS / 自作図が現場。ZB の差し替え先がそのまま見える |
 
-言語: **まず英語。** ES/DE/IT は相手が母語で来たら返す（UI はまだ英語でよい、と正直に）。日本同時視聴は紹介文 JA + **ボード chrome は Settings / `?lang=ja` で JA 可**（LP・PH は英語のまま）。
+言語: **まず英語。** ES/DE/IT は相手が母語で来たら返す（UI はまだ英語でよい、と正直に）。日本同時視聴は紹介文 JA + **ボード chrome は Settings / `?lang=ja` で JA 可**（LP·PH は英語のまま）。
+
+**現場メモ（在独 YouTuber · 2026-08-26）:** 英語はできるが、**仕事のやり取りはドイツ語でしたい。** → 「英語ができる」≠「営業・壁打ちも英語でよい」。独圏への DM / 紹介文は **DE を優先**（製品 UI・LP は EN のままでよい、と一文で正直に）。UI の de は流入が出るまで切らない（[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md)）。
 
 ---
 
@@ -217,6 +219,20 @@ ZB の差別化（この現場向けに言うなら）: **登録なし · OBS �
 
 DM は **A/G から先**（TACTICALista 透かし勢は特に対比が効く）。テンプレは下の「差し替え」版。
 
+### 2G. 現場メモ — ASEAN Cup 決勝 · VN / TH（2026-08-26）
+
+**英語大会名検索では公式（ASEAN United FC）が占有。** 個人勢は **ベトナム語 / タイ語タイトル**側。日本人同時視聴（§2F）とは経路が違う。
+
+| 市場 | 典型レイアウト | 規模感（この夜の例） | ZB との距離 |
+|---|---|---|---|
+| **VN** | 顔+ヘッドセットの watchalong · 複数人通話 · **PPT/スライドのスタメン図**（写真+レーティング）· 投げ銭 QR | 数十〜百人前後の小さめ枠が多い | デジタル「ピッチ窓」は薄い。図はあるが **静止スライド**寄り |
+| **TH** | 顔+スコア/スタメングラフィック · ライブスコア盤 · ラジオスタジオ実況 · LINE/SMS 帯 · 試合画が乗る／乗らない混在 | **1万前後同時**も普通（大型パーソナリティ · 数十万〜100万登録） | OBS 戦術板より **実況+オーバーレイ産業**。差し替え席は狭い |
+| **JP（対比 · §2F）** | 磁石 / PS / **デジタルピッチ窓**（TACTICALista 等）· 映像なし明示 | 数十〜数千 | A/G が ZB の本命 |
+
+共通（SEA）: チャットは現地語 · タイトルも現地語 · 権利は公式 YT / True / FPT と並走。英クエリでは見つからない。
+
+**プロダクト含意:** ASEAN 決勝は「天皇杯 A/G と同じ掘り方」をしない。VN–TH 決勝は **TV／配信で観戦して盛り上がる** が本線（人口・経済・権利者の厚みも違う）。戦術板で局面を切る同時視聴は副次か別ジョブ。今の楔は **英・欧・JP のピッチ窓勢**。`messages.th` / `vi` や現地 DM は **流入が出てから**（UI 優先は es → pt-BR のまま）。
+
 **JA（A/G · デジタルピッチ勢）:**
 ```
 こんにちは。同時視聴拝見しました（ピッチ図が主役のレイアウト）。
@@ -273,6 +289,12 @@ https://zoneboard.app
 
 ```
 Hi — I built a browser football tactics board meant to sit beside cam/chat in OBS (not another overlay suite). Press B and the tools hide so you can window-capture only the pitch. No account, your badge not ours. If useful for watchalongs: https://zoneboard.app — happy to take notes from anyone who already runs a match show.
+```
+
+**独圏向け（DE 優先 · UI は英語のまま）:**
+
+```
+Hallo — ich habe ein Fußball-Taktikboard im Browser gebaut, das neben Cam/Chat in OBS sitzen soll (keine weitere Overlay-Suite). Mit B verschwinden die Tools, sodass du nur das Spielfeld per Window Capture nehmen kannst. Kein Account, dein Badge auf dem Rasen — nicht unseres. Die Oberfläche ist vorerst auf Englisch; wenn’s für Watchalongs passt: https://zoneboard.app — Feedback aus echten Match-Shows freue ich mich.
 ```
 
 ### E. 後回しでよい

@@ -480,10 +480,10 @@ export function BoardCanvas({
       if (frame) {
         ctx.save();
         ctx.translate(frame.x, frame.y);
-        drawMatchBanner(ctx, frame.w, frame.h, board, t("cardY2CLabel"));
+        drawMatchBanner(ctx, frame.w, frame.h, board, t("cardY2CLabel"), t("subInjured"));
         ctx.restore();
       } else {
-        drawMatchBanner(ctx, w, h, board, t("cardY2CLabel"));
+        drawMatchBanner(ctx, w, h, board, t("cardY2CLabel"), t("subInjured"));
       }
     }
     surface.dataset.pitchRatio = String(pitchArea);

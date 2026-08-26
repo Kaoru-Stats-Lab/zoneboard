@@ -14,6 +14,7 @@ import {
   drawTimelineCardMark,
   formatGoalTimelinePart,
   goalTimelineName,
+  subTimelineBody,
   timelineMinute,
 } from "./matchCards";
 
@@ -54,7 +55,9 @@ export function matchBannerBands(
   }
   const scoreBand = Math.max(34, canvasH * 0.042);
   const hasTimeline =
-    board.goals.length > 0 || (board.cards?.length ?? 0) > 0;
+    board.goals.length > 0 ||
+    (board.cards?.length ?? 0) > 0 ||
+    (board.subs?.length ?? 0) > 0;
   const timelineBand = hasTimeline
     ? Math.max(20, scoreBand * 0.72)
     : 0;
@@ -274,6 +277,7 @@ export function drawMatchBanner(
   canvasH: number,
   board: BoardDocument,
   y2cLabel = "2nd YC",
+  injLabel = "INJ",
 ) {
   const { scoreBand, timelineBand, pkBand, total: bannerH } =
     matchBannerBands(canvasH, board);
@@ -403,11 +407,19 @@ export function drawMatchBanner(
       const name =
         ev.kind === "goal"
           ? goalTimelineName(ev.entry)
-          : cardTimelineName(ev.entry, y2cLabel);
+          : ev.kind === "card"
+            ? cardTimelineName(ev.entry, y2cLabel)
+            : subTimelineBody(ev.entry, injLabel);
       const team = ev.entry.team;
       const kitColor = team === "home" ? kits.home : kits.away;
       const markW =
-        ev.kind === "card" && ev.entry.kind === "Y2C" ? markH * 0.92 : markH * 0.78;
+        ev.kind === "goal"
+          ? markH * 0.78
+          : ev.kind === "card"
+            ? ev.entry.kind === "Y2C"
+              ? markH * 0.92
+              : markH * 0.78
+            : 0;
 
       if (tx > padX) {
         ctx.fillStyle = BANNER_MUTED;
@@ -418,7 +430,12 @@ export function drawMatchBanner(
 
       const minuteW = minute ? ctx.measureText(minute).width : 0;
       const needed =
-        dotR * 2 + 4 + (minuteW ? minuteW + markGap : 0) + markW + (name ? markGap : 0);
+        dotR * 2 +
+        4 +
+        (minuteW ? minuteW + markGap : 0) +
+        markW +
+        (name ? markGap : 0) +
+        (name ? ctx.measureText(name).width * 0.35 : 0);
       const room = padX + maxW - tx;
       if (room < needed * 0.45) {
         ctx.fillStyle = BANNER_MUTED;
@@ -440,7 +457,8 @@ export function drawMatchBanner(
 
       if (ev.kind === "goal") {
         drawTimelineBallMark(ctx, tx + markW / 2, line2Y, markH * 0.42);
-      } else {
+        tx += markW;
+      } else if (ev.kind === "card") {
         drawTimelineCardMark(
           ctx,
           tx + markW / 2,
@@ -448,8 +466,8 @@ export function drawMatchBanner(
           markH,
           ev.entry.kind,
         );
+        tx += markW;
       }
-      tx += markW;
 
       if (name) {
         tx += markGap;
