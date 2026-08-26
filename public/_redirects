@@ -22,8 +22,10 @@
 /terms/   /terms/index.html    200
 /cookies/ /cookies/index.html  200
 /contact/ /contact/index.html  200
-/board    /index.html          200
-/board/   /index.html          200
+# Prefer a real board/index.html (copied at build) so hard links work.
+# Rewriting /board → /index.html alone was 308'ing to / on Cloudflare Pages.
+/board    /board/index.html    200
+/board/   /board/index.html    200
 
 # Maintenance: comment the two /board lines above and uncomment:
 # /*    /maintenance.html   200

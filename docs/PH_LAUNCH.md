@@ -1,8 +1,10 @@
 # Product Hunt — 準備ログ
 
-**更新:** 2026-08-26（Broadcast 出荷済 · `/updates` · ギャラリーは後回し）  
-**判定:** **キット準備中。Launch ボタンはまだ押さない。ギャラリー撮影は後回しで文案・下書きを先に進める。**  
-**本番:** https://zoneboard.app（Cloudflare Pages · `main` 自動デプロイ）
+**更新:** 2026-08-26（スモーク中 · `/board` 直リンク 308 を修正中）  
+**判定:** **Draft Ready。`/board` ハードナビが本番で `/` に 308 されていた → 修正デプロイが先。その後スモーク完了 → 日程。**  
+**本番:** https://zoneboard.app（Cloudflare Pages · `main` 自動デプロイ）  
+**X:** [@usezoneboard](https://x.com/usezoneboard)（公式 · bio 更新済 · 旧 waitlist ピン解除）  
+**PH Draft:** https://www.producthunt.com/products/zoneboard-for-obs · `product_id=1301976` · **未 Schedule · Launch しない**
 
 ---
 
@@ -17,7 +19,9 @@
 | GA4（同意後 · `collect` · リアルタイム） | **Ready**（2026-08-26 確認） |
 | Broadcast 交代 / PK 帯 / ライブ Undo | **Ready**（本番） |
 | 公開 Updates（[`/updates/`](https://zoneboard.app/updates/)） | **Ready** |
-| PH 文案（tagline · description · first comment） | **Draft §3** — **次: T1 採用で下書き保存** |
+| X 公式 [@usezoneboard](https://x.com/usezoneboard) | **Ready**（bio · ピン解除 · Launch 当日に1投稿） |
+| PH Draft（Name · T1 · Free · Shoutouts · Maker） | **Ready**（Promo 欄の例文はプレースホルダ · 無視） |
+| 本番スモーク | **進行中** — LP/Materials/Updates/B OK。**`/board` 直URL が 308→`/`（修正デプロイ待ち）** |
 | PH ギャラリー | **後回し**（仕様は §4 · Launch 直前で可） |
 | 初日のつて / hunter | **なし**（必須にしない） |
 | FAQ 大幅拡充 | **後**（実問が来てから） |
@@ -37,6 +41,7 @@
 ### 認知 / SEO / Deep links
 - B/C · OGP PNG · Guide `#place` `#draw` `#show` · FAQ 明示 id  
 - Updates: [`CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md) · `src/site/changelog.ts`
+- X: [@usezoneboard](https://x.com/usezoneboard)
 
 ### GA4
 - Consent 後のみ · Broadcast では送らない  
@@ -48,30 +53,50 @@
 
 1. [x] GA4 リアルタイム  
 2. [x] Broadcast 最低限（交代記号 · PK 帯 · Undo）  
-3. [ ] **§3 文案の最終選定**（推奨 **T1** で確定してよいか）  
-4. [ ] **PH 下書きを保存**（ギャラリーなしでも Draft / Scheduled 可 · **Launch はしない**）  
-5. [ ] 本番スモーク: LP → Allow analytics → Open board → B → `/materials/` · `/updates/`  
-6. [ ] 日程決定（火〜木 PT · 起床〜半日空いている日）  
-7. [ ] **ギャラリー撮影**（§4）— Launch 直前で可 · 下書き後でも差し替え可  
-8. [ ] Launch 当日: first comment · X 1投稿 · Guide `#show` 控え  
+3. [x] **§3 文案確定**（**T1**）  
+4. [x] **PH 下書き**（`ZoneBoard for OBS` · Free · Cursor/Vite/Cloudflare · Promo プレースホルダ無視 · **Launch しない**）  
+5. [x] **X プロフィール**（§3.5 · bio 更新 · 旧 waitlist ピン解除）  
+6. [ ] 本番スモーク: LP → Allow analytics → Open board → B → `/materials/` · `/updates/` · **`/board` 直URL**  
+7. [ ] 日程決定（火〜木 PT · 起床〜半日空いている日）  
+8. [ ] **ギャラリー撮影**（§4）— Launch 直前で可 · 下書き後でも差し替え可  
+9. [ ] Launch 当日: first comment · **@usezoneboard で X 1投稿**（§3.5） · Guide `#show` 控え  
+
+**スモークメモ（2026-08-26）:** LP H1 / Materials / Updates / footer Updates リンク OK。LP から SPA で Open board → Broadcast（`B`）OK。**ハードナビ `GET /board` が 308 Location:/ **（OBS URL・PH・ブックマークが壊れる）。`board/index.html` をビルドで出す修正をデプロイして再確認。
 
 やらない（本文に書かない）: 有料予告 · 競合表 · upvote お願い連投
 
 ---
 
-## 3. 文案キット（英語 · Draft）
+## 3. 文案キット（英語 · 確定）
 
-PH の Name は **ZoneBoard**。URL は `https://zoneboard.app`。
+URL は `https://zoneboard.app`。
 
-### Tagline（≈60字以内 · 1本選ぶ）
+### Name of the launch（≤40 · 確定推奨）
 
-| ID | 文 | 字数 |
+`ZoneBoard` 単体（9字）だと何の製品か伝わらない。**OBS を名前に載せる。**
+
+```
+ZoneBoard for OBS
+```
+
+（17/40）— 「これ」は OBS 用戦術ボード、と言い切る。Tagline と役割分担（Name=何 / Tagline=今夜のショーに足す）。
+
+| 候補 | 字数 | メモ |
 |---|---|---|
-| **T1（推奨）** | Add a tactics board to tonight's OBS show | 42 |
-| T2 | Football tactics board for OBS — press B, tools hide | 52 |
-| T3 | Watchalong tactics board. Press B. No account. | 47 |
+| **ZoneBoard for OBS**（推奨） | 17 | 最短で楔。PH でも探しやすい |
+| ZoneBoard — OBS tactics board | 29 | 「tactics board」まで名前に入れる派 |
+| ZoneBoard: tactics for OBS | 26 | やや説明的 |
+| ZoneBoard for OBS streams | 25 | streams は冗長気味 |
 
-**推奨 T1:** LP H1 と同型。OBS / tonight が先。
+避ける: `ZoneBoard` だけ · press B を Name に入れる（Tagline / First comment の仕事）
+
+### Tagline（確定）
+
+```
+Add a tactics board to tonight's OBS show
+```
+
+（旧候補 T2 / T3 は不採用。LP H1 と同型。）
 
 ### Short description（一覧・カード用 · ≈260字）
 
@@ -81,24 +106,26 @@ Browser football tactics board for OBS. Place the XI, draw the move, press B —
 
 （約 198 字）
 
-### Long description（PH 本文 · 貼る用）
+### Description of the launch（PH · **≤500** · 貼る用）
+
+PH UI の「Description of the launch」は **500 字制限**。旧 Long（〜847）は入れない。詳細は First comment / Guide へ。
 
 ```
-ZoneBoard is a football tactics board built for the show you already run.
+ZoneBoard is a football tactics board for the show you already run.
 
-Place the lineup. Draw passes, runs, and dribbles. Press B — the tools hide and the pitch fills the window. Add that window in OBS. Your cam and chat stay where they are.
+Place the lineup. Draw the move. Press B — tools hide and the pitch fills the window. Add that window in OBS. Cam and chat stay where they are.
 
-• No account. Saves on your machine (up to three boards).
-• Your club badge as a watermark — no ZoneBoard logo on the grass.
-• Scenes for a corner, a press, a rest-defence shape.
-• PNG export for Instagram, Stories, or X (drag the frame).
+• No account · local save (up to 3 boards)
+• Your badge on the grass — not ours
+• Scenes + PNG export for posts
 
-Not a second studio. Not a webcam inside the board. Just the pitch, ready for window capture.
+Not a second studio. Just the pitch, ready for window capture.
 
-Try it: https://zoneboard.app
-30-second path: open board → place a few pieces → press B.
-Longer guide: https://zoneboard.app/guide/#show
+https://zoneboard.app
+Guide: https://zoneboard.app/guide/#show
 ```
+
+（約 453 字 · 改行込み）
 
 ### First comment（maker · Launch 直後に貼る）
 
@@ -114,21 +141,92 @@ How to try in under a minute:
 
 If the pitch is blank in the encoder, you usually captured the wrong window — https://zoneboard.app/faq/#blank-encoder
 
+Updates: https://zoneboard.app/updates/
+X: https://x.com/usezoneboard
+
 I’d love notes from anyone who already runs a match show: what’s missing before you’d trust it on a real kick-off?
 ```
 
-### Topics（候補 · PH UI に合わせて 3 つ前後）
+### Launch tags（最大 3 · 推奨）
 
-- Football  
-- Streaming  
-- Productivity（または Design Tools / Open Source が無ければ Streaming + Football を優先）
+| 優先 | Tag | 理由 |
+|---|---|---|
+| 1 | **Football** | 楔そのもの（類似: Telestrator も Football） |
+| 2 | **Streaming** | OBS / watchalong。無ければ **Sports** |
+| 3 | **Design Tools** | ボード / 作図。無ければ **Video** |
 
-※ UI の一覧に合わせて差し替え。**Sports** があれば Football より Sports を検討。
+避ける: Artificial Intelligence · Marketing · Productivity（刺さらない）  
+Soccer と Football が両方あるなら **Football のみ**（二重にしない）。
+
+### Shoutouts（「products that helped」· 推奨 3）
+
+**嘘のないものだけ。** 使っていない人気枠は足さない。典型は 3 本。
+
+| # | 製品（PH で検索） | 理由 | レビュー文（貼る用 · 短く） |
+|---|---|---|---|
+| 1 | **Cursor** | 実装・ドキュメント・反復の主戦場 | Built ZoneBoard end-to-end in Cursor — canvas, broadcast UI, and the English launch kit. Shipping speed without losing the OBS-first product line. |
+| 2 | **Vite** | `vite` で build / HMR | Vite keeps a canvas-heavy React board snappy in local and small enough for Cloudflare Pages. |
+| 3 | **Cloudflare Pages**（「Cloudflare」でも可） | 本番ホスト · Functions · 自動デプロイ | zoneboard.app runs on Cloudflare Pages — git push to main, global CDN, and a tiny feedback Function. Boring infra is the point. |
+
+**4本目が要るときだけ:**
+
+| 製品 | 使う条件 |
+|---|---|
+| **React** | Vite と二重に感じるならスキップ。UI ライブラリとして明示したいとき |
+| **OBS Studio** | PH に製品ページがある場合のみ。製品の前提ソフトなので誠実 |
+| **GitHub** | Issues 経由フィードバックを強調したいとき |
+
+やらない: Canva / Figma（UX の「慣れ」参照のみ · ビルド依存ではない）· 未使用の AI SaaS · upvote 目当ての相互フォロー枠
+
+**Draft 修正済（2026-08-26）:** Name=`ZoneBoard for OBS` · Pricing=Free · Shoutouts=Cursor/Vite/Cloudflare · Promo なし。Preview で Built with が一致していることだけ再確認。
+
+### Embed / Follow badge
+
+PH Embed タブの HTML（`product_id=1301976`）は **メモのみ。LP には今載せない**（Draft · フォロワー0 · ヒーローを汚す）。
+
+- Launch 後（または Schedule 後）に LP フッターへ小さな Follow を足すか検討  
+- サイトへ入れるなら **small + dark**（86×32）のみ。Hero / How には置かない  
+
+```html
+<a href="https://www.producthunt.com/products/zoneboard-for-obs?utm_source=badge-follow&utm_medium=badge&utm_source=badge-zoneboard-for-obs" target="_blank" rel="noopener noreferrer"><img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1301976&theme=dark&size=small" alt="ZoneBoard for OBS on Product Hunt" width="86" height="32" /></a>
+```
 
 ### サムネ / アイコン
 
 - 既定: [`public/brand/lockup-og.png`](../public/brand/lockup-og.png)（1200×630）  
 - 正方形が要る場合: [`lockup-stack-og.svg`](../public/brand/lockup-stack-og.svg) を PNG 化（`npm run brand:og` と同様の手順で 1080²）
+
+---
+
+## 3.5 X — [@usezoneboard](https://x.com/usezoneboard)
+
+**使う。** Launch 当日の告知はここから 1 本。個人垢との二重投稿はしない（スパム感を避ける）。
+
+### 済（2026-08-26）
+
+- [x] Bio を OBS-first に更新  
+- [x] 旧 waitlist ピンを解除（タイムライン上の旧 β 投稿は残ってよい · ピンだけ外す）  
+- Website リンクは bio 内 `zoneboard.app` で可（プロフィール URL 欄があれば `https://zoneboard.app`）
+
+### Launch 当日投稿（1本 · 貼る用）
+
+```
+ZoneBoard is live on Product Hunt.
+
+Add a tactics board to tonight’s OBS show. Press B — tools hide, the pitch fills the window. Cam and chat stay in OBS. No account.
+
+→ https://zoneboard.app
+PH: [paste Product Hunt link]
+Guide: https://zoneboard.app/guide/#show
+```
+
+（PH URL は Launch 後に差し替え。ギャラリー GIF ができたら画像添付可 · 無くても本文だけで出す。）
+
+### やらない
+
+- upvote お願い連投  
+- 「β受付中」系の旧コピーの再利用  
+- waitlist Form の再リンク  
 
 ---
 
@@ -165,7 +263,7 @@ OBS がある日: 同じ手順のあと、OBS プレビューに Window Capture 
 |---|---|
 | Launch 直後 | First comment（§3）を投稿 |
 | +10 分 | 自分で製品を開き直す · リンク切れ確認 |
-| 午前中 | X に1投稿（LP H1 短縮 + リンク）。Discord / 知り合いへのスパムはしない |
+| 午前中 | **@usezoneboard** で X 1投稿（§3.5）。Discord / 知り合いへのスパムはしない |
 | 日中 | コメントに Guide `#show` / FAQ `#blank-encoder` で返す |
 | 夕方 | GA4 リアルタイムと `open_board` を一度見る（数値を公開しない） |
 
@@ -178,4 +276,5 @@ OBS がある日: 同じ手順のあと、OBS プレビューに Window Capture 
 - LP: [`LP_STRUCTURE.md`](LP_STRUCTURE.md) · [`COMPETITIVE_LP.md`](COMPETITIVE_LP.md)  
 - OBS: [`OBS.md`](OBS.md) · Guide: https://zoneboard.app/guide/#show  
 - Updates: https://zoneboard.app/updates/ · [`CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md)  
+- X: https://x.com/usezoneboard  
 - GA4: [`AGENT_PROMPT_GA4.md`](AGENT_PROMPT_GA4.md)  
