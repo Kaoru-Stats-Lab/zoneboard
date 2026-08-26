@@ -9,7 +9,6 @@ import {
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
-import { APP_LOCALE } from "../i18n/locale";
 import type { SportId } from "../models/types";
 
 function sceneLabelPhKey(sport: SportId | undefined): MessageKey {
@@ -45,7 +44,7 @@ type Props = {
 };
 
 export function Editor({ state }: Props) {
-  const t = (k: MessageKey) => messages[APP_LOCALE][k];
+  const t = (k: MessageKey) => messages[state.locale][k];
   const { openFeedback } = useFeedback();
   const [wmImage, setWmImage] = useState<HTMLImageElement | null>(null);
   const [exportPreset, setExportPreset] = useState<ExportPresetId>("ig45");
@@ -365,6 +364,7 @@ export function Editor({ state }: Props) {
       }
       if (e.key === "z" || e.key === "Z") state.setTool("zone");
       if (e.key === "p" || e.key === "P") state.setTool("pen");
+      if (e.key === "l" || e.key === "L") state.setTool("link");
       if (e.key === "t" || e.key === "T") state.setTool("text");
     };
     window.addEventListener("keydown", onKey);
@@ -383,6 +383,7 @@ export function Editor({ state }: Props) {
       screen: "screen",
       zone: "zone",
       pen: "pen",
+      link: "link",
       text: "text",
     };
     return t(map[state.tool] ?? "select");
@@ -556,6 +557,7 @@ export function Editor({ state }: Props) {
       <HowToModal
         open={howToOpen && !state.broadcast}
         onClose={() => setHowToOpen(false)}
+        locale={state.locale}
         t={t}
       />
       <SettingsModal

@@ -65,7 +65,9 @@ export function toolColorForBoard(
     return LINE_COLORS_GRASS[tool];
   }
   if (tool === "zone") return ZONE_COLORS_GRASS.stroke;
-  if (tool === "pen" || tool === "text") return PEN_INK_GRASS;
+  if (tool === "pen" || tool === "link" || tool === "text") {
+    return PEN_INK_GRASS;
+  }
   return TOOL_COLORS[tool];
 }
 

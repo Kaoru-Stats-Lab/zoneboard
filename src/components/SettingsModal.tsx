@@ -187,6 +187,23 @@ export function SettingsModal({
         </header>
 
         <section>
+          <h3>{t("language")}</h3>
+          <label className="field">
+            <span className="field-label">{t("language")}</span>
+            <select
+              value={state.locale}
+              onChange={(e) =>
+                state.setLocale(e.target.value === "ja" ? "ja" : "en")
+              }
+            >
+              <option value="en">English</option>
+              <option value="ja">日本語</option>
+            </select>
+          </label>
+          <p className="hint-muted">{t("languageHint")}</p>
+        </section>
+
+        <section>
           <h3>{t("watermark")}</h3>
           <label className="check">
             <input

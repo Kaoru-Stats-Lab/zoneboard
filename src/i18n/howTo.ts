@@ -66,13 +66,14 @@ const ja: HowToDoc = {
     {
       heading: "準備で描く",
       paragraphs: [
-        "配信前にパス・ラン・ペンを引くなら、ツールレールを使います。Pass はボールの軌道（パス・クロス・シュート）。Run は走り。Dribble は運ぶ人です。",
-        "ペンはパスでもランでもない一本です。ブロックの線、守備チェーン、チャネルの境界。Shift を押したままドラッグすると直線になります（Figma と同じ）。丸や囲みは Shift なしの自由描きです。",
+        "配信前にパス・ラン・ペン・構成線を引くなら、ツールレールを使います。Pass はボールの軌道（パス・クロス・シュート）。Run は走り。Dribble は運ぶ人です。",
+        "ペンはパスでもランでもない一本です。ブロックの線、チャネルの境界。Shift を押したままドラッグすると直線になります（Figma と同じ）。丸や囲みは Shift なしの自由描きです。構成線は駒をクリックしてつなぎ、動かしても追従します（ライン構成向き）。",
       ],
       keys: [
         { combo: "Pass", meaning: "ボールの軌道（破線）。駒は動かない" },
         { combo: "Run / Dribble", meaning: "走り／ドリブル（駒からドラッグ可）" },
         { combo: "Pen", meaning: "自由記述のインク" },
+        { combo: "Link", meaning: "駒どうしの構成線（追従）" },
         { combo: "Shift+Pen drag", meaning: "始点–終点の直線" },
         { combo: "Zone + Shift", meaning: "正円に近いゾーン" },
       ],
@@ -145,13 +146,14 @@ const en: HowToDoc = {
     {
       heading: "Draw in prep",
       paragraphs: [
-        "Before broadcast, use the tool rail for passes, runs, and pen marks. Pass is the ball path — pass, cross, or shot. Run is off-ball movement. Dribble is a carrier.",
-        "Pen is the mark that is not a pass or a run: a block line, a defensive chain, a channel edge. Hold Shift while dragging Pen for a straight segment (same as Figma). Circles and loops stay freehand without Shift.",
+        "Before broadcast, use the tool rail for passes, runs, pen marks, and structure links. Pass is the ball path — pass, cross, or shot. Run is off-ball movement. Dribble is a carrier.",
+        "Pen is the mark that is not a pass or a run: a block line, a channel edge. Hold Shift while dragging Pen for a straight segment (same as Figma). Circles and loops stay freehand without Shift. Link joins pieces with a straight polyline that follows when you move them — for line shape.",
       ],
       keys: [
         { combo: "Pass", meaning: "Ball path (dashed). Players stay put" },
         { combo: "Run / Dribble", meaning: "Run or dribble (drag from a piece)" },
         { combo: "Pen", meaning: "Freehand ink" },
+        { combo: "Link", meaning: "Piece-to-piece structure line (follows)" },
         { combo: "Shift+Pen drag", meaning: "Straight line from start to end" },
         { combo: "Zone + Shift", meaning: "Near-circular zone" },
       ],

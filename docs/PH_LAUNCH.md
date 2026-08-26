@@ -1,10 +1,11 @@
 # Product Hunt — 準備ログ
 
-**更新:** 2026-08-26（本番スモーク完了 · `/board` 直リンク修正済）  
-**判定:** **Draft Ready + スモーク Ready。次は日程（火〜木 PT）。ギャラリー後回し。Launch / Schedule はまだ。**  
+**更新:** 2026-08-26（**PH Scheduled** · ギャラリー後回し）  
+**判定:** **Scheduled。Launch 当日までギャラリー任意。当日は §5 ランブック。**  
 **本番:** https://zoneboard.app（Cloudflare Pages · `main` 自動デプロイ）  
 **X:** [@usezoneboard](https://x.com/usezoneboard)（公式 · bio 更新済 · 旧 waitlist ピン解除）  
-**PH Draft:** https://www.producthunt.com/products/zoneboard-for-obs · `product_id=1301976` · **未 Schedule · Launch しない**
+**PH:** https://www.producthunt.com/products/zoneboard-for-obs · `product_id=1301976`  
+**Launch（Scheduled）:** **2026-09-01 12:01 AM PDT = 16:01 JST** · ホームページ掲載 24h
 
 ---
 
@@ -20,12 +21,12 @@
 | Broadcast 交代 / PK 帯 / ライブ Undo | **Ready**（本番） |
 | 公開 Updates（[`/updates/`](https://zoneboard.app/updates/)） | **Ready** |
 | X 公式 [@usezoneboard](https://x.com/usezoneboard) | **Ready**（bio · ピン解除 · Launch 当日に1投稿） |
-| PH Draft（Name · T1 · Free · Shoutouts · Maker） | **Ready**（Promo 欄の例文はプレースホルダ · 無視） |
+| PH Draft（Name · T1 · Free · Shoutouts · Maker） | **Ready** |
 | 本番スモーク | **Ready**（2026-08-26 · `/board` は `/board/` へ正規化して 200） |
-| PH ギャラリー | **後回し**（仕様は §4 · Launch 直前で可） |
+| PH ギャラリー | **後回し**（仕様は §4 · 9/1 前でも可） |
 | 初日のつて / hunter | **なし**（必須にしない） |
 | FAQ 大幅拡充 | **後**（実問が来てから） |
-| Launch 日程 | **未定** — 火〜木 PT · 本人が最初の数時間貼れる日 |
+| Launch 日程 | **Scheduled · 2026-09-01 12:01 AM PDT（16:01 JST）** |
 
 ---
 
@@ -55,12 +56,13 @@
 1. [x] GA4 リアルタイム  
 2. [x] Broadcast 最低限（交代記号 · PK 帯 · Undo）  
 3. [x] **§3 文案確定**（**T1**）  
-4. [x] **PH 下書き**（`ZoneBoard for OBS` · Free · Cursor/Vite/Cloudflare · Promo プレースホルダ無視 · **Launch しない**）  
+4. [x] **PH 下書き**（`ZoneBoard for OBS` · Free · Cursor/Vite/Cloudflare · Promo プレースホルダ無視）  
 5. [x] **X プロフィール**（§3.5 · bio 更新 · 旧 waitlist ピン解除）  
 6. [x] 本番スモーク: LP → Open board → B → `/materials/` · `/updates/` · `/board`（→ `/board/`）· `/board/?broadcast=1`  
-7. [ ] 日程決定（火〜木 PT · 起床〜半日空いている日）  
-8. [ ] **ギャラリー撮影**（§4）— Launch 直前で可 · 下書き後でも差し替え可  
-9. [ ] Launch 当日: first comment · **@usezoneboard で X 1投稿**（§3.5） · Guide `#show` 控え  
+7. [x] **日程:** **2026-09-01 12:01 AM PDT / 16:01 JST**  
+8. [x] **PH Schedule 済**（homepage 24h · 確認文面どおり）  
+9. [ ] **ギャラリー撮影**（§4）— 任意 · 9/1 前でも Launch 直前差し替えでも可  
+10. [ ] Launch 当日: first comment · **@usezoneboard で X 1投稿**（§3.5） · Guide `#show` 控え  
 
 やらない（本文に書かない）: 有料予告 · 競合表 · upvote お願い連投
 
@@ -256,15 +258,15 @@ OBS がある日: 同じ手順のあと、OBS プレビューに Window Capture 
 
 ## 5. 当日ランブック（Launch 日）
 
-**TZ:** Product Hunt は太平洋時間。火〜木の 00:01 PT 前後が定石。
+**確定:** **2026-09-01（火）00:01 PT = 16:01 JST**（PDT · UTC−7）
 
-| 時刻感 | やること |
+| JST | やること |
 |---|---|
-| Launch 直後 | First comment（§3）を投稿 |
-| +10 分 | 自分で製品を開き直す · リンク切れ確認 |
-| 午前中 | **@usezoneboard** で X 1投稿（§3.5）。Discord / 知り合いへのスパムはしない |
-| 日中 | コメントに Guide `#show` / FAQ `#blank-encoder` で返す |
-| 夕方 | GA4 リアルタイムと `open_board` を一度見る（数値を公開しない） |
+| **16:01** | Launch 直後 · First comment（§3）を投稿 |
+| **16:10** | 自分で製品を開き直す · リンク切れ確認（`/board` · Guide `#show`） |
+| **17:00 前後** | **@usezoneboard** で X 1投稿（§3.5）。Discord / 知り合いへのスパムはしない |
+| **夕方〜夜** | コメントに Guide `#show` / FAQ `#blank-encoder` で返す |
+| **翌日朝** | GA4 リアルタイムと `open_board` を一度見る（数値を公開しない） |
 
 つての有無: **初日の順位より、説明が刺さるかを見る。** hunter 探しは任意・後回し。
 
@@ -276,4 +278,5 @@ OBS がある日: 同じ手順のあと、OBS プレビューに Window Capture 
 - OBS: [`OBS.md`](OBS.md) · Guide: https://zoneboard.app/guide/#show  
 - Updates: https://zoneboard.app/updates/ · [`CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md)  
 - X: https://x.com/usezoneboard  
+- 欧州 / Streamer 紹介（PH 以外）: [`OUTREACH_EU_STREAM.md`](OUTREACH_EU_STREAM.md)  
 - GA4: [`AGENT_PROMPT_GA4.md`](AGENT_PROMPT_GA4.md)  

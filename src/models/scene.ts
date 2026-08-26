@@ -45,6 +45,10 @@ function mirrorObject(obj: DrawObject): DrawObject {
       points: obj.points.map((pt) => ({ ...pt, x: mirrorX(pt.x) })),
     };
   }
+  if (obj.type === "link") {
+    // Anchored to piece ids; piece positions are mirrored separately.
+    return obj;
+  }
   if (obj.type === "zone") {
     return { ...obj, x: mirrorX(obj.x + obj.w) };
   }

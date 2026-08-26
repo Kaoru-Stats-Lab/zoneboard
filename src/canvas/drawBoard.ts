@@ -1,4 +1,5 @@
 import { isPieceDrawn } from "../models/scene";
+import { resolveLinkPoints } from "../models/pieceLink";
 import type {
   BoardDocument,
   DrawObject,
@@ -259,6 +260,8 @@ export function drawBoard(
     } | null;
     /** ペンドラッグ中のプレビュー */
     previewPen?: { x: number; y: number }[] | null;
+    /** 構成線クリック連鎖中のプレビュー（世界座標） */
+    previewLink?: { x: number; y: number }[] | null;
     /** インライン編集中のテキスト（二重表示防止） */
     editingTextId?: string | null;
     /** 競技ボール画像。未ロード時は幾何フォールバック */
@@ -340,6 +343,9 @@ export function drawBoard(
 
   if (opts.previewPen && opts.previewPen.length >= 1) {
     drawPenPreview(ctx, pitch, board, opts.previewPen);
+  }
+  if (opts.previewLink && opts.previewLink.length >= 1) {
+    drawLinkPreview(ctx, pitch, board, opts.previewLink);
   }
 
   const selectedIds = new Set(opts.selectedPieceIds ?? []);
@@ -998,6 +1004,26 @@ function drawObject(
     return;
   }
 
+  if (obj.type === "link") {
+    const pts = resolveLinkPoints(scene.pieces, obj.pieceIds);
+    if (pts.length < 2) return;
+    const lw = penStrokeWidth(pitch, board, obj.strokeWidth);
+    const ink = penColorForBoard(board);
+    if (selected && !usesGrassInk(board)) {
+      strokeStraightWorldPath(
+        ctx,
+        board,
+        pitch,
+        pts,
+        lw + 4,
+        selectionColor,
+        0.35,
+      );
+    }
+    strokeStraightWorldPath(ctx, board, pitch, pts, lw, ink, 1);
+    return;
+  }
+
   if (obj.type === "text") {
     const m = worldToPitch(obj.x, obj.y, board);
     if (!m) return;
@@ -1333,6 +1359,53 @@ function strokePenPath(
   apply(color, lw);
 }
 
+/** True straight segments in world space (structure links — no pen bezier). */
+function strokeStraightWorldPath(
+  ctx: CanvasRenderingContext2D,
+  board: BoardDocument,
+  pitch: PitchRect,
+  points: { x: number; y: number }[],
+  lw: number,
+  color: string,
+  alpha = 1,
+) {
+  const pts: { x: number; y: number }[] = [];
+  for (const pt of points) {
+    const m = worldToPitch(pt.x, pt.y, board);
+    if (!m) continue;
+    pts.push(fromNorm(m.x, m.y, pitch));
+  }
+  if (pts.length < 2) return;
+  ctx.beginPath();
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) {
+    ctx.lineTo(pts[i].x, pts[i].y);
+  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.globalAlpha = alpha;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+/** 構成線クリック連鎖: 確定点＋ラバーバンド */
+function drawLinkPreview(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  board: BoardDocument,
+  points: { x: number; y: number }[],
+) {
+  const lw = penStrokeWidth(pitch, board, 2);
+  const ink = penColorForBoard(board);
+  if (points.length === 1) {
+    drawPenPreview(ctx, pitch, board, points);
+    return;
+  }
+  strokeStraightWorldPath(ctx, board, pitch, points, lw, ink, 0.85);
+}
+
 function distToSegment(
   px: number,
   py: number,
@@ -1380,6 +1453,18 @@ export function hitTestObject(
         const a = obj.points[j - 1];
         const b = obj.points[j];
         if (distToSegment(normX, normY, a.x, a.y, b.x, b.y) <= penThreshold) {
+          return obj;
+        }
+      }
+    } else if (obj.type === "link") {
+      const pts = resolveLinkPoints(scene.pieces, obj.pieceIds);
+      const linkThreshold = threshold * 1.2;
+      for (let j = 1; j < pts.length; j++) {
+        const a = pts[j - 1];
+        const b = pts[j];
+        if (
+          distToSegment(normX, normY, a.x, a.y, b.x, b.y) <= linkThreshold
+        ) {
           return obj;
         }
       }

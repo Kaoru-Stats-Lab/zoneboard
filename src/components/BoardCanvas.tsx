@@ -24,6 +24,7 @@ import {
 } from "../canvas/layout";
 import { drawMatchBanner, matchBannerHeight } from "../canvas/matchBanner";
 import { activeViewport, boardWithActiveViewport } from "../models/scene";
+import { resolveLinkPoints } from "../models/pieceLink";
 import { smoothLinePath } from "../canvas/smoothPath";
 import { textOverlayRect } from "../canvas/textOverlayLayout";
 import type { AppState } from "../hooks/useAppState";
@@ -223,6 +224,11 @@ export function BoardCanvas({
   const textEditRef = useRef<TextEditSession | null>(null);
   const [ballImage, setBallImage] = useState<HTMLImageElement | null>(null);
   const [fontsEpoch, setFontsEpoch] = useState(0);
+  const [linkDraftIds, setLinkDraftIds] = useState<string[]>([]);
+  const [linkHoverWorld, setLinkHoverWorld] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const raf = useRef<number | null>(null);
 
   textEditRef.current = textEdit;
@@ -233,6 +239,43 @@ export function BoardCanvas({
     ? (viewOverride ?? activeViewport(board))
     : null;
   const viewLocked = viewOverride != null;
+
+  useEffect(() => {
+    if (state.tool !== "link") {
+      setLinkDraftIds([]);
+      setLinkHoverWorld(null);
+    }
+  }, [state.tool]);
+
+  useEffect(() => {
+    if (state.tool !== "link" || state.broadcast) return;
+    const onKey = (e: KeyboardEvent) => {
+      const ae = document.activeElement as HTMLElement | null;
+      if (
+        ae &&
+        (ae.tagName === "INPUT" ||
+          ae.tagName === "TEXTAREA" ||
+          ae.tagName === "SELECT" ||
+          ae.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setLinkDraftIds([]);
+        setLinkHoverWorld(null);
+        return;
+      }
+      if (e.key === "Enter" && linkDraftIds.length >= 2) {
+        e.preventDefault();
+        state.addLink(linkDraftIds);
+        setLinkDraftIds([]);
+        setLinkHoverWorld(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [state.tool, state.broadcast, state.addLink, linkDraftIds]);
 
   useEffect(() => {
     if (!board) return;
@@ -422,6 +465,14 @@ export function BoardCanvas({
         d?.mode === "pen" && d.points && d.points.length >= 1
           ? d.points
           : null,
+      previewLink: (() => {
+        if (state.tool !== "link" || !scene || linkDraftIds.length === 0) {
+          return null;
+        }
+        const pts = resolveLinkPoints(scene.pieces, linkDraftIds);
+        if (linkHoverWorld) pts.push(linkHoverWorld);
+        return pts.length >= 1 ? pts : null;
+      })(),
       ballImage,
       editingTextId: textEdit?.objectId ?? null,
     });
@@ -462,6 +513,9 @@ export function BoardCanvas({
     view,
     textEdit,
     fontsEpoch,
+    linkDraftIds,
+    linkHoverWorld,
+    state.tool,
   ]);
 
   if (!board || !scene || !view) return null;
@@ -874,6 +928,39 @@ export function BoardCanvas({
       return;
     }
 
+    if (state.tool === "link") {
+      e.preventDefault();
+      const piece = hitTestPiece(board, scene, pitch, norm.x, norm.y);
+      if (piece) {
+        const last = linkDraftIds[linkDraftIds.length - 1];
+        if (last === piece.id) {
+          if (linkDraftIds.length >= 2) state.addLink(linkDraftIds);
+          setLinkDraftIds([]);
+          setLinkHoverWorld(null);
+          paint();
+          return;
+        }
+        if (linkDraftIds.includes(piece.id)) {
+          paint();
+          return;
+        }
+        setLinkDraftIds([...linkDraftIds, piece.id]);
+        setLinkHoverWorld(null);
+        state.setSelectedPieceId(piece.id);
+        state.setSelectedObjectId(null);
+        state.setSelectedBall(false);
+        paint();
+        return;
+      }
+      if (linkDraftIds.length >= 2) {
+        state.addLink(linkDraftIds);
+      }
+      setLinkDraftIds([]);
+      setLinkHoverWorld(null);
+      paint();
+      return;
+    }
+
     if (state.tool === "pen") {
       drag.current = {
         mode: "pen",
@@ -899,6 +986,20 @@ export function BoardCanvas({
   };
 
   const onPointerMove = (e: ReactPointerEvent) => {
+    if (
+      state.tool === "link" &&
+      linkDraftIds.length > 0 &&
+      !drag.current
+    ) {
+      const hit = getNorm(e);
+      if (hit?.norm && board) {
+        const world = pitchToWorld(hit.norm.x, hit.norm.y, board);
+        setLinkHoverWorld(world);
+        bumpDragVisual();
+      }
+      return;
+    }
+
     const d = drag.current;
     if (!d) return;
 

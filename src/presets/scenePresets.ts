@@ -8,7 +8,7 @@ import type {
   Viewport,
 } from "../models/types";
 import { APP_LOCALE } from "../i18n/locale";
-import { messages, type MessageKey } from "../i18n/messages";
+import { messages, type Locale, type MessageKey } from "../i18n/messages";
 import {
   benchPieces,
   piecesFromSpots,
@@ -131,12 +131,13 @@ export function buildScenePreset(
   sport: SportId,
   benchCount: number,
   kits: KitPalette = defaultKitPalette(),
+  locale: Locale = APP_LOCALE,
 ): BuiltScenePreset | null {
   const def = SCENE_PRESET_DEFS[id];
   if (!def || !def.sports.includes(sport)) return null;
   const built = def.build(benchCount, kits);
   return {
-    label: messages[APP_LOCALE][def.labelKey],
+    label: messages[locale][def.labelKey],
     ...built,
   };
 }

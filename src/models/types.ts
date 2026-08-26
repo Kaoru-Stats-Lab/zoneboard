@@ -37,6 +37,7 @@ export type ToolId =
   | "screen"
   | "zone"
   | "pen"
+  | "link"
   | "text";
 
 export interface BallState {
@@ -233,6 +234,18 @@ export interface PenObject {
   strokeWidth: number;
 }
 
+/**
+ * Piece-anchored structure polyline (line shape / back four, etc.).
+ * Drawn through current piece centres; follows any linked piece on move.
+ */
+export interface LinkObject {
+  id: string;
+  type: "link";
+  pieceIds: string[];
+  color: string;
+  strokeWidth: number;
+}
+
 export type TextFontId = "system" | "display" | "serif" | "mono";
 
 export interface TextObject {
@@ -246,7 +259,12 @@ export interface TextObject {
   fontFamily?: TextFontId;
 }
 
-export type DrawObject = LineObject | ZoneObject | PenObject | TextObject;
+export type DrawObject =
+  | LineObject
+  | ZoneObject
+  | PenObject
+  | LinkObject
+  | TextObject;
 
 export interface Scene {
   id: string;
@@ -449,6 +467,7 @@ export const TOOL_COLORS: Record<ToolId, string> = {
   screen: LINE_COLORS.screen,
   zone: ZONE_COLORS.stroke,
   pen: "#404040",
+  link: "#404040",
   text: "#404040",
 };
 

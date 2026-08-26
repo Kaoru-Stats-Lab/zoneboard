@@ -12,12 +12,25 @@ import { FeedbackProvider } from "./components/FeedbackProvider";
 import { Landing } from "./components/Landing";
 import { NotFoundPage } from "./components/StudioStatus";
 import { useAppState } from "./hooks/useAppState";
+import { localeFromSearchParam } from "./i18n/locale";
 
 function BoardRoute() {
   const state = useAppState();
   const [searchParams, setSearchParams] = useSearchParams();
   const bootBroadcast = useRef(false);
-  const { enterBroadcast } = state;
+  const bootLang = useRef(false);
+  const { enterBroadcast, setLocale } = state;
+
+  useEffect(() => {
+    if (bootLang.current) return;
+    const fromQuery = localeFromSearchParam(searchParams.get("lang"));
+    if (!fromQuery) return;
+    bootLang.current = true;
+    setLocale(fromQuery);
+    const next = new URLSearchParams(searchParams);
+    next.delete("lang");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setLocale, setSearchParams]);
 
   useEffect(() => {
     const wantsBroadcast =
@@ -42,7 +55,7 @@ function BoardRoute() {
   }, [searchParams, setSearchParams, enterBroadcast]);
 
   return (
-    <FeedbackProvider>
+    <FeedbackProvider locale={state.locale}>
       <Editor state={state} />
     </FeedbackProvider>
   );
@@ -66,7 +79,10 @@ export default function App() {
         <Route path="/en" element={<Navigate to="/" replace />} />
         <Route path="/en/board" element={<Navigate to="/board" replace />} />
         <Route path="/ja" element={<Navigate to="/" replace />} />
-        <Route path="/ja/board" element={<Navigate to="/board" replace />} />
+        <Route
+          path="/ja/board"
+          element={<Navigate to="/board?lang=ja" replace />}
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AppErrorBoundary>

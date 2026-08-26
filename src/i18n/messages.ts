@@ -324,6 +324,9 @@ export const messages = {
     zone: "ゾーン",
     pen: "ペン",
     penHint: "自由記述。Shift+ドラッグで直線",
+    link: "構成線",
+    linkHint:
+      "駒をクリックして直線でつなぐ。もう一度同じ駒・空き地・Enterで確定。Escで取消",
     text: "テキスト",
     textPlaceholder: "ラベルを入力…",
     textEditHint: "ダブルクリックで再編集",
@@ -394,6 +397,8 @@ export const messages = {
     deleteHint:
       "Pass=破線（ボールの軌道）、Run=実線、Dribble=波線。ドラッグで描く。選択→Delete",
     language: "言語",
+    languageHint:
+      "ボードのメニューだけ切り替わります。LP と読み物ページは英語のままです。駒の名前はそのまま残ります。",
     version: "v0.1.0",
     confirmSport: "競技を切り替えると配置がリセットされます。続行しますか？",
     confirmClear: "駒と描画をすべて消しますか？",
@@ -774,6 +779,9 @@ export const messages = {
     zone: "Zone",
     pen: "Pen",
     penHint: "Freehand ink. Shift+drag for a straight line",
+    link: "Link",
+    linkHint:
+      "Click pieces to join with a straight line. Click the last piece again, empty grass, or Enter to finish. Esc cancels",
     text: "Text",
     textPlaceholder: "High press",
     textEditHint: "Double-click to edit",
@@ -844,6 +852,8 @@ export const messages = {
     deleteHint:
       "Pass=dashed (ball path), Run=solid, Dribble=wavy. Drag to draw. Select → Delete",
     language: "Language",
+    languageHint:
+      "Switches board menus only. The landing page and reading pages stay English. Piece names on the pitch stay as you typed them.",
     version: "v0.1.0",
     confirmSport: "Switching sport resets pieces. Continue?",
     confirmClear: "Clear all pieces and drawings?",

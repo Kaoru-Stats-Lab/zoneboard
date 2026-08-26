@@ -1,16 +1,16 @@
-import { APP_LOCALE } from "../i18n/locale";
+import type { Locale, MessageKey } from "../i18n/messages";
 import { HOW_TO } from "../i18n/howTo";
-import type { MessageKey } from "../i18n/messages";
 
 type Props = {
   open: boolean;
   onClose: () => void;
+  locale: Locale;
   t: (k: MessageKey) => string;
 };
 
-export function HowToModal({ open, onClose, t }: Props) {
+export function HowToModal({ open, onClose, locale, t }: Props) {
   if (!open) return null;
-  const doc = HOW_TO[APP_LOCALE];
+  const doc = HOW_TO[locale];
 
   return (
     <div

@@ -56,6 +56,7 @@ import {
   textColorForBoard,
   zoneColorsForBoard,
 } from "../canvas/drawingInk";
+import { pruneLinkObjects } from "../models/pieceLink";
 import { smoothLinePath, softenPenPoints } from "../canvas/smoothPath";
 import {
   normalizePieceColor,
@@ -105,8 +106,9 @@ import {
   defaultBoardTitle,
   defaultSceneLabel,
   defaultSceneName,
-  detectLocaleForDefaults,
 } from "../i18n/localeDefaults";
+import type { Locale } from "../i18n/messages";
+import { normalizeLocale } from "../i18n/locale";
 import { clampViewport } from "../presets/viewport";
 import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
 import {
@@ -158,6 +160,9 @@ export function useAppState() {
   const [selectedBall, setSelectedBall] = useState(false);
   const [selectionColor, setSelectionColorState] = useState(
     () => loadPrefs().selectionColor ?? DEFAULT_SELECTION_COLOR,
+  );
+  const [locale, setLocaleState] = useState<Locale>(
+    () => normalizeLocale(loadPrefs().locale),
   );
   const [broadcast, setBroadcast] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(true);
@@ -279,11 +284,10 @@ export function useAppState() {
 
   const addBoard = useCallback(() => {
     if (store.boards.length >= MAX_BOARDS) return false;
-    const loc = detectLocaleForDefaults();
     const b = createBoard(
       board?.sport ?? "soccer",
-      defaultBoardTitle(store.boards.length + 1, loc),
-      loc,
+      defaultBoardTitle(store.boards.length + 1, locale),
+      locale,
     );
     history.current = [];
     future.current = [];
@@ -292,13 +296,13 @@ export function useAppState() {
       activeBoardId: b.id,
     });
     return true;
-  }, [board?.sport, persist, store.boards]);
+  }, [board?.sport, locale, persist, store.boards]);
 
   const deleteBoard = useCallback(
     (id: string) => {
       let boards = store.boards.filter((b) => b.id !== id);
       if (boards.length === 0) {
-        const b = createBoard("soccer", defaultBoardTitle(1), detectLocaleForDefaults());
+        const b = createBoard("soccer", defaultBoardTitle(1, locale), locale);
         boards = [b];
         persist({ boards, activeBoardId: b.id });
         return;
@@ -307,7 +311,7 @@ export function useAppState() {
         store.activeBoardId === id ? boards[0].id : store.activeBoardId;
       persist({ boards, activeBoardId: active });
     },
-    [persist, store],
+    [locale, persist, store],
   );
 
   const setActiveScene = useCallback(
@@ -326,7 +330,7 @@ export function useAppState() {
       if (!board || !scene) return false;
       if (board.scenes.length >= MAX_SCENES) return false;
       const next = createScene(
-        label ?? defaultSceneName(board.scenes.length + 1, board.sport),
+        label ?? defaultSceneName(board.scenes.length + 1, board.sport, locale),
         phase,
         {
           pieces: scene.pieces,
@@ -343,7 +347,7 @@ export function useAppState() {
       setSelectedPieceId(null);
       return true;
     },
-    [board, scene, updateBoard],
+    [board, locale, scene, updateBoard],
   );
 
   const addSceneFromPreset = useCallback(
@@ -355,6 +359,7 @@ export function useAppState() {
         board.sport,
         board.benchCount,
         kitsFromBoard(board),
+        locale,
       );
       if (!preset) return false;
       const next = createScene(preset.label, preset.phase, {
@@ -372,7 +377,7 @@ export function useAppState() {
       setSelectedBall(false);
       return true;
     },
-    [board, updateBoard],
+    [board, locale, updateBoard],
   );
 
   const deleteScene = useCallback(
@@ -405,7 +410,6 @@ export function useAppState() {
     (sport: SportId) => {
       const fiveAside = sport === "futsal" || sport === "beach_soccer";
       updateBoard((b) => {
-        const loc = detectLocaleForDefaults();
         const wasFive =
           b.sport === "futsal" || b.sport === "beach_soccer";
         const benchCount = fiveAside
@@ -441,7 +445,7 @@ export function useAppState() {
           },
           (s) => ({
             ...s,
-            label: defaultSceneLabel(sport, loc),
+            label: defaultSceneLabel(sport, locale),
             hideHalf: "none",
             teamFocus: "both",
             pieces: withRosterIdentity(
@@ -457,7 +461,7 @@ export function useAppState() {
       setSelectedPieceId(null);
       setTool((t) => (t === "screen" && sport !== "basketball" ? "select" : t));
     },
-    [updateBoard],
+    [locale, updateBoard],
   );
 
   const applyFormation = useCallback(() => {
@@ -752,6 +756,12 @@ export function useAppState() {
   const setSelectionColor = useCallback((color: string) => {
     setSelectionColorState(color);
     savePrefs({ ...loadPrefs(), selectionColor: color });
+  }, []);
+
+  const setLocale = useCallback((next: Locale) => {
+    const localeNext = normalizeLocale(next);
+    setLocaleState(localeNext);
+    savePrefs({ ...loadPrefs(), locale: localeNext });
   }, []);
 
   const moveBall = useCallback(
@@ -1339,6 +1349,27 @@ export function useAppState() {
     [board, updateScene],
   );
 
+  const addLink = useCallback(
+    (pieceIds: string[]) => {
+      const ids = pieceIds.filter(Boolean);
+      if (ids.length < 2) return;
+      updateScene((s) => ({
+        ...s,
+        objects: [
+          ...s.objects,
+          {
+            id: uid(),
+            type: "link",
+            pieceIds: ids,
+            color: penColorForBoard(board),
+            strokeWidth: 2,
+          },
+        ],
+      }));
+    },
+    [board, updateScene],
+  );
+
   const addText = useCallback(
     (x: number, y: number, text: string) => {
       updateScene((s) => ({
@@ -1422,6 +1453,7 @@ export function useAppState() {
       updateScene((s) => ({
         ...s,
         pieces: s.pieces.filter((p) => !drop.has(p.id)),
+        objects: pruneLinkObjects(s.objects, drop),
         ball:
           s.ball.attachedTo && drop.has(s.ball.attachedTo)
             ? { ...s.ball, attachedTo: null }
@@ -1790,6 +1822,8 @@ export function useAppState() {
     setSelectedBall,
     selectionColor,
     setSelectionColor,
+    locale,
+    setLocale,
     moveBall,
     dropBall,
     broadcast,
@@ -1840,6 +1874,7 @@ export function useAppState() {
     addLine,
     addZone,
     addPen,
+    addLink,
     addText,
     updateText,
     moveText,
