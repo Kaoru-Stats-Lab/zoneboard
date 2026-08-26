@@ -1,7 +1,7 @@
 # Product Hunt — 準備ログ
 
-**更新:** 2026-08-26（スモーク中 · `/board` 直リンク 308 を修正中）  
-**判定:** **Draft Ready。`/board` ハードナビが本番で `/` に 308 されていた → 修正デプロイが先。その後スモーク完了 → 日程。**  
+**更新:** 2026-08-26（本番スモーク完了 · `/board` 直リンク修正済）  
+**判定:** **Draft Ready + スモーク Ready。次は日程（火〜木 PT）。ギャラリー後回し。Launch / Schedule はまだ。**  
 **本番:** https://zoneboard.app（Cloudflare Pages · `main` 自動デプロイ）  
 **X:** [@usezoneboard](https://x.com/usezoneboard)（公式 · bio 更新済 · 旧 waitlist ピン解除）  
 **PH Draft:** https://www.producthunt.com/products/zoneboard-for-obs · `product_id=1301976` · **未 Schedule · Launch しない**
@@ -21,7 +21,7 @@
 | 公開 Updates（[`/updates/`](https://zoneboard.app/updates/)） | **Ready** |
 | X 公式 [@usezoneboard](https://x.com/usezoneboard) | **Ready**（bio · ピン解除 · Launch 当日に1投稿） |
 | PH Draft（Name · T1 · Free · Shoutouts · Maker） | **Ready**（Promo 欄の例文はプレースホルダ · 無視） |
-| 本番スモーク | **進行中** — LP/Materials/Updates/B OK。**`/board` 直URL が 308→`/`（修正デプロイ待ち）** |
+| 本番スモーク | **Ready**（2026-08-26 · `/board` は `/board/` へ正規化して 200） |
 | PH ギャラリー | **後回し**（仕様は §4 · Launch 直前で可） |
 | 初日のつて / hunter | **なし**（必須にしない） |
 | FAQ 大幅拡充 | **後**（実問が来てから） |
@@ -42,6 +42,7 @@
 - B/C · OGP PNG · Guide `#place` `#draw` `#show` · FAQ 明示 id  
 - Updates: [`CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md) · `src/site/changelog.ts`
 - X: [@usezoneboard](https://x.com/usezoneboard)
+- `/board` ハードリンク: `board/index.html` をビルド出力（`4c7e70d`）
 
 ### GA4
 - Consent 後のみ · Broadcast では送らない  
@@ -56,12 +57,10 @@
 3. [x] **§3 文案確定**（**T1**）  
 4. [x] **PH 下書き**（`ZoneBoard for OBS` · Free · Cursor/Vite/Cloudflare · Promo プレースホルダ無視 · **Launch しない**）  
 5. [x] **X プロフィール**（§3.5 · bio 更新 · 旧 waitlist ピン解除）  
-6. [ ] 本番スモーク: LP → Allow analytics → Open board → B → `/materials/` · `/updates/` · **`/board` 直URL**  
+6. [x] 本番スモーク: LP → Open board → B → `/materials/` · `/updates/` · `/board`（→ `/board/`）· `/board/?broadcast=1`  
 7. [ ] 日程決定（火〜木 PT · 起床〜半日空いている日）  
 8. [ ] **ギャラリー撮影**（§4）— Launch 直前で可 · 下書き後でも差し替え可  
 9. [ ] Launch 当日: first comment · **@usezoneboard で X 1投稿**（§3.5） · Guide `#show` 控え  
-
-**スモークメモ（2026-08-26）:** LP H1 / Materials / Updates / footer Updates リンク OK。LP から SPA で Open board → Broadcast（`B`）OK。**ハードナビ `GET /board` が 308 Location:/ **（OBS URL・PH・ブックマークが壊れる）。`board/index.html` をビルドで出す修正をデプロイして再確認。
 
 やらない（本文に書かない）: 有料予告 · 競合表 · upvote お願い連投
 

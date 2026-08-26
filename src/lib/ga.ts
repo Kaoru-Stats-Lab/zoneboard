@@ -34,7 +34,7 @@ export function isBroadcastMode(search = window.location.search): boolean {
 
 export function isSpaTrackedPath(pathname: string): boolean {
   const path = pathname.replace(/\/+$/, "") || "/";
-  return path === "/" || path === "/board";
+  return path === "/" || path === "/board" || path === "/board/";
 }
 
 function ensureStub(): boolean {
