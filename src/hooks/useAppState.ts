@@ -34,6 +34,7 @@ import type {
   LineKind,
   Piece,
   CardKind,
+  GoalKind,
   ScenePhase,
   SportId,
   TextFontId,
@@ -121,6 +122,9 @@ function touch(board: BoardDocument): BoardDocument {
   return { ...board, updatedAt: new Date().toISOString() };
 }
 
+export type LiveEventKind = "goal" | "card" | "sub";
+export type LiveEventRef = { kind: LiveEventKind; id: string };
+
 export function useAppState() {
   const [store, setStore] = useState<BoardStore>(() => loadStore());
   const [watermark, setWatermark] = useState<WatermarkSettings>(() =>
@@ -158,6 +162,8 @@ export function useAppState() {
   const [broadcast, setBroadcast] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [settingsOpen, setSettingsOpenState] = useState(false);
+  /** 配信中の誤入力取り消し用（永続しない。追加順スタック） */
+  const [liveEventStack, setLiveEventStack] = useState<LiveEventRef[]>([]);
   const setSettingsOpen = useCallback((open: boolean) => {
     if (open && broadcast) return;
     setSettingsOpenState(open);
@@ -265,6 +271,7 @@ export function useAppState() {
       setSelectedPieceId(null);
       setSelectedObjectId(null);
       setSelectedBall(false);
+      setLiveEventStack([]);
       persist({ ...store, activeBoardId: id });
     },
     [persist, store],
@@ -1474,24 +1481,40 @@ export function useAppState() {
     setSelectedObjectId(null);
   }, [setSelectedPieceId, updateScene]);
 
+  const pushLiveEvent = useCallback((kind: LiveEventKind, id: string) => {
+    setLiveEventStack((prev) => [...prev, { kind, id }].slice(-24));
+  }, []);
+
+  const pruneLiveEvent = useCallback((id: string) => {
+    setLiveEventStack((prev) => prev.filter((e) => e.id !== id));
+  }, []);
+
   const addGoal = useCallback(
-    (team: "home" | "away", scorer: string, minute?: string) => {
+    (
+      team: "home" | "away",
+      scorer: string,
+      minute?: string,
+      kind: GoalKind = "normal",
+    ) => {
       const name = scorer.trim();
       if (!name) return;
+      const id = uid();
       updateBoard((b) => ({
         ...b,
         goals: [
           ...b.goals,
           {
-            id: uid(),
+            id,
             team,
             scorer: name,
+            kind,
             minute: minute?.trim() || undefined,
           },
         ],
       }));
+      pushLiveEvent("goal", id);
     },
-    [updateBoard],
+    [pushLiveEvent, updateBoard],
   );
 
   const removeGoal = useCallback(
@@ -1500,8 +1523,9 @@ export function useAppState() {
         ...b,
         goals: b.goals.filter((g) => g.id !== goalId),
       }));
+      pruneLiveEvent(goalId);
     },
-    [updateBoard],
+    [pruneLiveEvent, updateBoard],
   );
 
   const addCard = useCallback(
@@ -1513,12 +1537,13 @@ export function useAppState() {
     ) => {
       const name = player.trim();
       if (!name) return;
+      const id = uid();
       updateBoard((b) => ({
         ...b,
         cards: [
           ...(b.cards ?? []),
           {
-            id: uid(),
+            id,
             team,
             player: name,
             kind,
@@ -1526,8 +1551,9 @@ export function useAppState() {
           },
         ],
       }));
+      pushLiveEvent("card", id);
     },
-    [updateBoard],
+    [pushLiveEvent, updateBoard],
   );
 
   const removeCard = useCallback(
@@ -1536,8 +1562,9 @@ export function useAppState() {
         ...b,
         cards: (b.cards ?? []).filter((c) => c.id !== cardId),
       }));
+      pruneLiveEvent(cardId);
     },
-    [updateBoard],
+    [pruneLiveEvent, updateBoard],
   );
 
   /** Broadcast / Match: 交代を記録し、番号一致の駒に out/in（injured）を付与。座標は動かさない。 */
@@ -1552,6 +1579,7 @@ export function useAppState() {
       const outN = normalizePieceNumber(outNumber);
       const inN = normalizePieceNumber(inNumber);
       if (!outN || !inN || outN === inN) return;
+      const id = uid();
       updateBoard((b) => {
         const scene = getActiveScene(b);
         const pieces = statusesAfterSub(
@@ -1567,7 +1595,7 @@ export function useAppState() {
           subs: [
             ...(b.subs ?? []),
             {
-              id: uid(),
+              id,
               team,
               outNumber: outN,
               inNumber: inN,
@@ -1580,8 +1608,9 @@ export function useAppState() {
           ),
         };
       });
+      pushLiveEvent("sub", id);
     },
-    [updateBoard],
+    [pushLiveEvent, updateBoard],
   );
 
   const removeSub = useCallback(
@@ -1590,9 +1619,38 @@ export function useAppState() {
         ...b,
         subs: (b.subs ?? []).filter((s) => s.id !== subId),
       }));
+      pruneLiveEvent(subId);
     },
-    [updateBoard],
+    [pruneLiveEvent, updateBoard],
   );
+
+  /** 直前の Goal / Card / Sub を1件取り消す */
+  const undoLastLiveEvent = useCallback(() => {
+    let last: LiveEventRef | undefined;
+    setLiveEventStack((prev) => {
+      if (prev.length === 0) return prev;
+      last = prev[prev.length - 1];
+      return prev.slice(0, -1);
+    });
+    if (!last) return;
+    const { kind, id } = last;
+    if (kind === "goal") {
+      updateBoard((b) => ({
+        ...b,
+        goals: b.goals.filter((g) => g.id !== id),
+      }));
+    } else if (kind === "card") {
+      updateBoard((b) => ({
+        ...b,
+        cards: (b.cards ?? []).filter((c) => c.id !== id),
+      }));
+    } else {
+      updateBoard((b) => ({
+        ...b,
+        subs: (b.subs ?? []).filter((s) => s.id !== id),
+      }));
+    }
+  }, [updateBoard]);
 
   /** PK ストリップ ON/OFF。ON 時スロットが空なら 5 本で初期化 */
   const setPkActive = useCallback(
@@ -1796,6 +1854,8 @@ export function useAppState() {
     removeCard,
     addSub,
     removeSub,
+    undoLastLiveEvent,
+    liveEventStack,
     setPkActive,
     cyclePkSlot,
     setPkSlotResult,

@@ -66,8 +66,10 @@ export function timelineMinute(minute?: string): string {
   return min ? `${min}'` : "";
 }
 
-export function goalTimelineName(g: GoalEntry): string {
-  return g.scorer.trim();
+export function goalTimelineName(g: GoalEntry, pkLabel = "PK"): string {
+  const name = g.scorer.trim();
+  if (g.kind === "penalty") return `${pkLabel} ${name}`.trim();
+  return name;
 }
 
 export function cardTimelineName(c: CardEntry, y2cLabel: string): string {

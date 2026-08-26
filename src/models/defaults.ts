@@ -239,7 +239,10 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     awayColor,
     homeGkColor,
     awayGkColor,
-    goals: (raw as { goals?: GoalEntry[] }).goals ?? [],
+    goals: ((raw as { goals?: GoalEntry[] }).goals ?? []).map((g) => ({
+      ...g,
+      kind: g.kind === "penalty" ? "penalty" : "normal",
+    })),
     cards: (raw as { cards?: CardEntry[] }).cards ?? [],
     subs: (raw as { subs?: BoardDocument["subs"] }).subs ?? [],
     maxSubs:

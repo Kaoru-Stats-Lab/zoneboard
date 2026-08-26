@@ -3,7 +3,7 @@ import { scoreForTeam } from "../canvas/matchBanner";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { createPkShootout, pkHasResults } from "../models/pkShootout";
-import type { CardKind, PkKickSlot } from "../models/types";
+import type { CardKind, GoalKind, PkKickSlot } from "../models/types";
 
 type TeamSide = "home" | "away";
 type EventPanel = "none" | "card" | "sub";
@@ -29,6 +29,7 @@ export function LiveMatchControls({ state, t, variant }: Props) {
   if (!board || board.sport !== "soccer") return null;
 
   const [goalTeam, setGoalTeam] = useState<TeamSide>("home");
+  const [goalKind, setGoalKind] = useState<GoalKind>("normal");
   const [goalScorer, setGoalScorer] = useState("");
   const [goalMinute, setGoalMinute] = useState("");
   const [cardTeam, setCardTeam] = useState<TeamSide>("home");
@@ -78,6 +79,58 @@ export function LiveMatchControls({ state, t, variant }: Props) {
     }
   };
 
+  const recentLive = [...state.liveEventStack]
+    .reverse()
+    .slice(0, 5)
+    .flatMap((ref) => {
+      if (ref.kind === "goal") {
+        const g = board.goals.find((x) => x.id === ref.id);
+        if (!g) return [];
+        const side = g.team === "home" ? "H" : "A";
+        const min = g.minute?.trim() ? `${g.minute}'` : "";
+        const tag = g.kind === "penalty" ? `${t("goalTagPk")} ` : "";
+        return [
+          {
+            ...ref,
+            label: [side, min, `${tag}${g.scorer}`.trim()]
+              .filter(Boolean)
+              .join(" "),
+          },
+        ];
+      }
+      if (ref.kind === "card") {
+        const c = (board.cards ?? []).find((x) => x.id === ref.id);
+        if (!c) return [];
+        const side = c.team === "home" ? "H" : "A";
+        const min = c.minute?.trim() ? `${c.minute}'` : "";
+        const kind =
+          c.kind === "YC"
+            ? t("cardYC")
+            : c.kind === "RC"
+              ? t("cardRC")
+              : t("cardY2C");
+        return [
+          {
+            ...ref,
+            label: [side, min, kind, c.player].filter(Boolean).join(" "),
+          },
+        ];
+      }
+      const s = (board.subs ?? []).find((x) => x.id === ref.id);
+      if (!s) return [];
+      const side = s.team === "home" ? "H" : "A";
+      const min = s.minute?.trim() ? `${s.minute}'` : "";
+      const inj = s.injured ? ` ${t("subInjured")}` : "";
+      return [
+        {
+          ...ref,
+          label: [side, min, `${s.outNumber}↓${s.inNumber}↑${inj}`]
+            .filter(Boolean)
+            .join(" "),
+        },
+      ];
+    });
+
   return (
     <div
       className={`live-match-controls live-match-controls--${variant}${
@@ -99,6 +152,14 @@ export function LiveMatchControls({ state, t, variant }: Props) {
               <option value="home">{t("teamHome")}</option>
               <option value="away">{t("teamAway")}</option>
             </select>
+            <select
+              value={goalKind}
+              onChange={(e) => setGoalKind(e.target.value as GoalKind)}
+              aria-label={t("goalType")}
+            >
+              <option value="normal">{t("goalTypeNormal")}</option>
+              <option value="penalty">{t("goalTypePk")}</option>
+            </select>
             <input
               value={goalScorer}
               onChange={(e) => setGoalScorer(e.target.value)}
@@ -115,9 +176,10 @@ export function LiveMatchControls({ state, t, variant }: Props) {
             <button
               type="button"
               onClick={() => {
-                state.addGoal(goalTeam, goalScorer, goalMinute);
+                state.addGoal(goalTeam, goalScorer, goalMinute, goalKind);
                 setGoalScorer("");
                 setGoalMinute("");
+                setGoalKind("normal");
               }}
             >
               {t("addGoal")}
@@ -146,7 +208,37 @@ export function LiveMatchControls({ state, t, variant }: Props) {
             >
               {t("livePkShow")}
             </button>
+            {state.liveEventStack.length > 0 && (
+              <button
+                type="button"
+                className="live-match-card-toggle"
+                onClick={() => state.undoLastLiveEvent()}
+              >
+                {t("liveUndoLast")}
+              </button>
+            )}
           </div>
+          {recentLive.length > 0 && (
+            <ul className="live-match-recent" aria-label={t("liveRecent")}>
+              {recentLive.map((ev) => (
+                <li key={`${ev.kind}-${ev.id}`} className="live-match-recent-item">
+                  <span className="live-match-recent-label">{ev.label}</span>
+                  <button
+                    type="button"
+                    className="live-match-recent-remove"
+                    onClick={() => {
+                      if (ev.kind === "goal") state.removeGoal(ev.id);
+                      else if (ev.kind === "card") state.removeCard(ev.id);
+                      else state.removeSub(ev.id);
+                    }}
+                    aria-label={t("liveRemoveEvent")}
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </>
       )}
 

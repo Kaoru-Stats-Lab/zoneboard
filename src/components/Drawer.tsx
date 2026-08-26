@@ -7,7 +7,14 @@ import {
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { BENCH_COUNT_OPTIONS } from "../presets/bench";
-import type { CardKind, HideHalf, RosterPlayer, SportId, TeamFocus } from "../models/types";
+import type {
+  CardKind,
+  GoalKind,
+  HideHalf,
+  RosterPlayer,
+  SportId,
+  TeamFocus,
+} from "../models/types";
 import {
   MAX_BOARDS,
   MAX_SCENES,
@@ -77,6 +84,7 @@ export function Drawer({ state, t }: Props) {
   const [goalTeam, setGoalTeam] = useState<TeamSide>("home");
   const [goalScorer, setGoalScorer] = useState("");
   const [goalMinute, setGoalMinute] = useState("");
+  const [goalKind, setGoalKind] = useState<GoalKind>("normal");
   const [cardTeam, setCardTeam] = useState<TeamSide>("home");
   const [cardPlayer, setCardPlayer] = useState("");
   const [cardMinute, setCardMinute] = useState("");
@@ -761,6 +769,7 @@ export function Drawer({ state, t }: Props) {
                           }
                         >
                           {g.minute ? `${g.minute}' ` : ""}
+                          {g.kind === "penalty" ? `${t("goalTagPk")} ` : ""}
                           {g.scorer}
                         </span>
                         <button
@@ -785,6 +794,14 @@ export function Drawer({ state, t }: Props) {
                     <option value="home">{t("homeTeam")}</option>
                     <option value="away">{t("awayTeam")}</option>
                   </select>
+                  <select
+                    value={goalKind}
+                    onChange={(e) => setGoalKind(e.target.value as GoalKind)}
+                    aria-label={t("goalType")}
+                  >
+                    <option value="normal">{t("goalTypeNormal")}</option>
+                    <option value="penalty">{t("goalTypePk")}</option>
+                  </select>
                   <input
                     value={goalScorer}
                     onChange={(e) => setGoalScorer(e.target.value)}
@@ -801,9 +818,10 @@ export function Drawer({ state, t }: Props) {
                   <button
                     type="button"
                     onClick={() => {
-                      state.addGoal(goalTeam, goalScorer, goalMinute);
+                      state.addGoal(goalTeam, goalScorer, goalMinute, goalKind);
                       setGoalScorer("");
                       setGoalMinute("");
+                      setGoalKind("normal");
                     }}
                   >
                     {t("addGoal")}

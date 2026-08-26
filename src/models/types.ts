@@ -74,11 +74,15 @@ export interface MatchRoster {
 }
 
 /** 得点記録（スコアは goals から自動集計） */
+export type GoalKind = "normal" | "penalty";
+
 export interface GoalEntry {
   id: string;
   team: "home" | "away";
   /** 得点者（背番号 or 名前） */
   scorer: string;
+  /** 通常得点 or PK 得点 */
+  kind: GoalKind;
   /** 例: "23" / "45+2" */
   minute?: string;
   /** Later: アシスト（UI 非表示） */
