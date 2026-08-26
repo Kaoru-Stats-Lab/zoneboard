@@ -4,6 +4,7 @@ import type {
   DrawObject,
   LineKind,
   LineObject,
+  MatchStatus,
   Piece,
   Scene,
   WatermarkSettings,
@@ -401,6 +402,78 @@ function drawPieceNumberLabel(
   ctx.fillText(text, x, y);
 }
 
+/** OUT / INJ / IN — 帯内記号。座標は自由（docs/BROADCAST_SUBS.md） */
+function drawMatchStatusMark(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  status: MatchStatus | undefined,
+) {
+  if (!status || status === "on") return;
+  const badgeR = Math.max(5, r * 0.38);
+  const bx = x + r * 0.72;
+  const by = y - r * 0.72;
+
+  if (status === "out") {
+    ctx.beginPath();
+    ctx.arc(bx, by, badgeR, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(20,20,22,0.88)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(243,243,241,0.85)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(bx - badgeR * 0.45, by - badgeR * 0.45);
+    ctx.lineTo(bx + badgeR * 0.45, by + badgeR * 0.45);
+    ctx.moveTo(bx + badgeR * 0.45, by - badgeR * 0.45);
+    ctx.lineTo(bx - badgeR * 0.45, by + badgeR * 0.45);
+    ctx.strokeStyle = "rgba(243,243,241,0.95)";
+    ctx.lineWidth = Math.max(1.2, badgeR * 0.28);
+    ctx.lineCap = "round";
+    ctx.stroke();
+    ctx.lineCap = "butt";
+    return;
+  }
+
+  if (status === "injured") {
+    ctx.beginPath();
+    ctx.arc(bx, by, badgeR, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(20,20,22,0.88)";
+    ctx.fill();
+    ctx.strokeStyle = "#c4a24a";
+    ctx.lineWidth = 1.25;
+    ctx.stroke();
+    ctx.fillStyle = "#c4a24a";
+    ctx.font = `700 ${Math.max(7, badgeR * 1.15)}px ${UI_FONT_STACK}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("+", bx, by + 0.5);
+    return;
+  }
+
+  if (status === "in") {
+    ctx.beginPath();
+    ctx.arc(bx, by, badgeR * 0.9, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(20,20,22,0.75)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(120,190,140,0.95)";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(bx - badgeR * 0.35, by);
+    ctx.lineTo(bx - badgeR * 0.05, by + badgeR * 0.35);
+    ctx.lineTo(bx + badgeR * 0.4, by - badgeR * 0.35);
+    ctx.strokeStyle = "rgba(120,190,140,0.95)";
+    ctx.lineWidth = Math.max(1.2, badgeR * 0.28);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.stroke();
+    ctx.lineCap = "butt";
+    ctx.lineJoin = "miter";
+  }
+}
+
 function drawPiece(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,
@@ -478,6 +551,8 @@ function drawPiece(
     ctx.stroke();
     ctx.setLineDash([]);
   }
+
+  drawMatchStatusMark(ctx, x, y, r, piece.matchStatus);
 
   const rad = (piece.facing * Math.PI) / 180;
   const fx = x + Math.cos(rad) * r;

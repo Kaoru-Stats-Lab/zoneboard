@@ -33,6 +33,8 @@ import {
   tagKeepers,
 } from "./kits";
 import { roleFromPosition } from "./pieceRole";
+import { DEFAULT_MAX_SUBS } from "./matchStatus";
+import { createPkShootout, normalizePkShootout } from "./pkShootout";
 import { createScene } from "./scene";
 
 /** 旧直線 (x1,y1,x2,y2) → points[] */
@@ -93,6 +95,9 @@ export function createBoard(
     awayGkColor: AWAY_GK_COLOR,
     goals: [],
     cards: [],
+    subs: [],
+    maxSubs: DEFAULT_MAX_SUBS,
+    pk: createPkShootout(false),
     showMatchBanner: sport === "soccer",
     pitchView: sport === "basketball" ? "half" : "full",
     pitchFlipped: false,
@@ -236,6 +241,13 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     awayGkColor,
     goals: (raw as { goals?: GoalEntry[] }).goals ?? [],
     cards: (raw as { cards?: CardEntry[] }).cards ?? [],
+    subs: (raw as { subs?: BoardDocument["subs"] }).subs ?? [],
+    maxSubs:
+      (raw as { maxSubs?: number }).maxSubs &&
+      (raw as { maxSubs?: number }).maxSubs! > 0
+        ? (raw as { maxSubs: number }).maxSubs
+        : DEFAULT_MAX_SUBS,
+    pk: normalizePkShootout((raw as { pk?: unknown }).pk),
     showMatchBanner:
       (raw as { showMatchBanner?: boolean }).showMatchBanner ??
       raw.sport === "soccer",

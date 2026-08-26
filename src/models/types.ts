@@ -87,6 +87,39 @@ export interface GoalEntry {
 
 export type CardKind = "YC" | "RC" | "Y2C";
 
+/** 出場状態（Broadcast 交代 / 負傷）。docs/BROADCAST_SUBS.md */
+export type MatchStatus = "on" | "in" | "out" | "injured";
+
+/** 交代記録（履歴・駒状態用。駒の matchStatus と併用） */
+export interface SubEntry {
+  id: string;
+  team: "home" | "away";
+  /** 降りた背番号 */
+  outNumber: string;
+  /** 入った背番号 */
+  inNumber: string;
+  minute?: string;
+  /** 負傷交代 */
+  injured?: boolean;
+}
+
+/** PK 1本（docs/BROADCAST_PK.md）。result 未設定 = 未キック */
+export type PkKickResult = "scored" | "missed";
+
+export interface PkKickSlot {
+  id: string;
+  /** キック直前の背番号（任意） */
+  number?: string;
+  result?: PkKickResult;
+}
+
+/** ペナルティシュートアウト。行ラベルは homeTeam/awayTeam を使う */
+export interface PkShootout {
+  active: boolean;
+  home: PkKickSlot[];
+  away: PkKickSlot[];
+}
+
 /** 警告・退場（チーム累計は cards から自動集計） */
 export interface CardEntry {
   id: string;
@@ -140,6 +173,11 @@ export interface Piece {
    * bench = ベンチ帯のみ小サイズ（y がピッチから十分離れた帯）
    */
   role: "starter" | "bench";
+  /**
+   * 試合上の出場状態（座標・role とは独立。OUT でも芝に置いて解説してよい）。
+   * 未指定はマークなし（starter≈出場、bench≈未使用として扱う）。
+   */
+  matchStatus?: MatchStatus;
   /**
    * キット枠。サカ系だけ意味がある。
    * outfield = フィールドユニ、gk = GKユニ（IFAB: 他と区別できる色）。
@@ -271,6 +309,15 @@ export interface BoardDocument {
   goals: GoalEntry[];
   /** イエロー / レッド（累計は cards から自動集計） */
   cards: CardEntry[];
+  /** 交代一覧（履歴・駒状態用。残数メーターは作らない — 枠は大会差） */
+  subs: SubEntry[];
+  /**
+   * @deprecated 残数 UI は出さない。互換のため残すだけ。
+   * 枠規制を製品に埋め込まない（Streamer は知らなくてよい）。
+   */
+  maxSubs: number;
+  /** PK戦ストリップ（○✕）。先行判定エンジンは持たない */
+  pk: PkShootout;
   /** 画面上部の試合帯（配信・編集プレビュー） */
   showMatchBanner: boolean;
   pitchView: PitchView;

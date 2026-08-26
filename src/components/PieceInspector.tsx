@@ -2,6 +2,7 @@ import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { normalizePieceNumber } from "../canvas/pieceInk";
 import { sportHasGk } from "../models/kits";
+import type { MatchStatus } from "../models/types";
 import {
   usesHeight,
   usesPreferredFoot,
@@ -105,6 +106,26 @@ export function PieceInspector({ state, t }: Props) {
           {t("pieceIsGk")}
         </label>
       )}
+      <label>
+        {t("matchStatus")}
+        <select
+          value={selected.matchStatus ?? ""}
+          onChange={(e) => {
+            const v = e.target.value;
+            const status: MatchStatus | undefined =
+              v === "on" || v === "in" || v === "out" || v === "injured"
+                ? v
+                : undefined;
+            state.patchPiece(selected.id, { matchStatus: status });
+          }}
+        >
+          <option value="">{t("matchStatusClear")}</option>
+          <option value="on">{t("matchStatusOn")}</option>
+          <option value="in">{t("matchStatusIn")}</option>
+          <option value="out">{t("matchStatusOut")}</option>
+          <option value="injured">{t("matchStatusInjured")}</option>
+        </select>
+      </label>
       {showFoot && (
         <label>
           {t("preferredFoot")}

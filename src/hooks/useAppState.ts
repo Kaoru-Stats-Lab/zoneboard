@@ -7,6 +7,16 @@ import {
 } from "../models/ballAttach";
 import { roleFromPosition } from "../models/pieceRole";
 import {
+  DEFAULT_MAX_SUBS,
+  statusesAfterSub,
+} from "../models/matchStatus";
+import {
+  createPkShootout,
+  cyclePkResult,
+  emptyPkSlot,
+} from "../models/pkShootout";
+import type { PkKickResult } from "../models/types";
+import {
   activeViewport,
   createScene,
   getActiveScene,
@@ -416,6 +426,9 @@ export function useAppState() {
             awayTeam: "",
             goals: [],
             cards: [],
+            subs: [],
+            maxSubs: DEFAULT_MAX_SUBS,
+            pk: createPkShootout(false),
             showMatchBanner: sport === "soccer",
             benchCount,
           },
@@ -982,7 +995,8 @@ export function useAppState() {
 
   /**
    * 駒同士のドロップ入れ替え（交代・位置交換）。
-   * a を b の位置へ、b を a のドラッグ開始位置へ。role は位置から再計算。
+   * starter↔bench のとき matchStatus を out/in にし、subs に1件足す。
+   * 座標ロックはしない（OUT でもあとから芝へ戻してよい）。
    */
   const swapPieces = useCallback(
     (
@@ -990,22 +1004,63 @@ export function useAppState() {
       idB: string,
       startA: { x: number; y: number },
     ) => {
-      updateScene((s) => {
-        const a = s.pieces.find((p) => p.id === idA);
-        const b = s.pieces.find((p) => p.id === idB);
-        if (!a || !b) return s;
+      updateBoard((b) => {
+        const scene = getActiveScene(b);
+        const a = scene.pieces.find((p) => p.id === idA);
+        const bPiece = scene.pieces.find((p) => p.id === idB);
+        if (!a || !bPiece) return b;
         const ax = startA.x;
         const ay = startA.y;
-        const bx = b.x;
-        const by = b.y;
+        const bx = bPiece.x;
+        const by = bPiece.y;
         const roleA = roleFromPosition(bx, by);
         const roleB = roleFromPosition(ax, ay);
-        const pieces = s.pieces.map((p) => {
-          if (p.id === idA) return { ...p, x: bx, y: by, role: roleA };
-          if (p.id === idB) return { ...p, x: ax, y: ay, role: roleB };
+        const aWasOn = a.role === "starter";
+        const bWasOn = bPiece.role === "starter";
+        let statusA = a.matchStatus;
+        let statusB = bPiece.matchStatus;
+        let nextSubs = b.subs ?? [];
+        if (aWasOn && !bWasOn && a.team === bPiece.team) {
+          statusA = "out";
+          statusB = "in";
+          const outN = normalizePieceNumber(a.number);
+          const inN = normalizePieceNumber(bPiece.number);
+          if (outN && inN) {
+            nextSubs = [
+              ...nextSubs,
+              {
+                id: uid(),
+                team: a.team,
+                outNumber: outN,
+                inNumber: inN,
+              },
+            ];
+          }
+        } else if (!aWasOn && bWasOn && a.team === bPiece.team) {
+          statusA = "in";
+          statusB = "out";
+          const outN = normalizePieceNumber(bPiece.number);
+          const inN = normalizePieceNumber(a.number);
+          if (outN && inN) {
+            nextSubs = [
+              ...nextSubs,
+              {
+                id: uid(),
+                team: a.team,
+                outNumber: outN,
+                inNumber: inN,
+              },
+            ];
+          }
+        }
+        const pieces = scene.pieces.map((p) => {
+          if (p.id === idA)
+            return { ...p, x: bx, y: by, role: roleA, matchStatus: statusA };
+          if (p.id === idB)
+            return { ...p, x: ax, y: ay, role: roleB, matchStatus: statusB };
           return p;
         });
-        let ball = s.ball;
+        let ball = scene.ball;
         const movedA = pieces.find((p) => p.id === idA);
         const movedB = pieces.find((p) => p.id === idB);
         if (movedA && ball.attachedTo === idA) {
@@ -1013,10 +1068,17 @@ export function useAppState() {
         } else if (movedB && ball.attachedTo === idB) {
           ball = { ...ball, x: movedB.x, y: movedB.y };
         }
-        return { ...s, pieces, ball };
+        return {
+          ...b,
+          subs: nextSubs,
+          maxSubs: b.maxSubs > 0 ? b.maxSubs : DEFAULT_MAX_SUBS,
+          scenes: b.scenes.map((s) =>
+            s.id === scene.id ? { ...s, pieces, ball } : s,
+          ),
+        };
       });
     },
-    [updateScene],
+    [updateBoard],
   );
 
   const patchPiece = useCallback(
@@ -1478,6 +1540,149 @@ export function useAppState() {
     [updateBoard],
   );
 
+  /** Broadcast / Match: 交代を記録し、番号一致の駒に out/in（injured）を付与。座標は動かさない。 */
+  const addSub = useCallback(
+    (
+      team: "home" | "away",
+      outNumber: string,
+      inNumber: string,
+      minute?: string,
+      injured = false,
+    ) => {
+      const outN = normalizePieceNumber(outNumber);
+      const inN = normalizePieceNumber(inNumber);
+      if (!outN || !inN || outN === inN) return;
+      updateBoard((b) => {
+        const scene = getActiveScene(b);
+        const pieces = statusesAfterSub(
+          scene.pieces,
+          team,
+          outN,
+          inN,
+          injured,
+        );
+        return {
+          ...b,
+          maxSubs: b.maxSubs > 0 ? b.maxSubs : DEFAULT_MAX_SUBS,
+          subs: [
+            ...(b.subs ?? []),
+            {
+              id: uid(),
+              team,
+              outNumber: outN,
+              inNumber: inN,
+              minute: minute?.trim() || undefined,
+              injured: injured || undefined,
+            },
+          ],
+          scenes: b.scenes.map((s) =>
+            s.id === scene.id ? { ...s, pieces } : s,
+          ),
+        };
+      });
+    },
+    [updateBoard],
+  );
+
+  const removeSub = useCallback(
+    (subId: string) => {
+      updateBoard((b) => ({
+        ...b,
+        subs: (b.subs ?? []).filter((s) => s.id !== subId),
+      }));
+    },
+    [updateBoard],
+  );
+
+  /** PK ストリップ ON/OFF。ON 時スロットが空なら 5 本で初期化 */
+  const setPkActive = useCallback(
+    (active: boolean) => {
+      updateBoard((b) => {
+        const pk = b.pk ?? createPkShootout(false);
+        if (active && pk.home.length === 0) {
+          return { ...b, pk: createPkShootout(true) };
+        }
+        return {
+          ...b,
+          pk: { ...pk, active },
+        };
+      });
+    },
+    [updateBoard],
+  );
+
+  /** スロットクリック: 未 → ○ → ✕ → 未 */
+  const cyclePkSlot = useCallback(
+    (team: "home" | "away", slotId: string) => {
+      updateBoard((b) => {
+        const pk = b.pk ?? createPkShootout(false);
+        const row = pk[team].map((s) =>
+          s.id === slotId
+            ? { ...s, result: cyclePkResult(s.result) }
+            : s,
+        );
+        return { ...b, pk: { ...pk, [team]: row } };
+      });
+    },
+    [updateBoard],
+  );
+
+  const setPkSlotResult = useCallback(
+    (
+      team: "home" | "away",
+      slotId: string,
+      result: PkKickResult | undefined,
+    ) => {
+      updateBoard((b) => {
+        const pk = b.pk ?? createPkShootout(false);
+        const row = pk[team].map((s) =>
+          s.id === slotId ? { ...s, result } : s,
+        );
+        return { ...b, pk: { ...pk, [team]: row } };
+      });
+    },
+    [updateBoard],
+  );
+
+  const setPkSlotNumber = useCallback(
+    (team: "home" | "away", slotId: string, number: string) => {
+      const n = number.trim();
+      updateBoard((b) => {
+        const pk = b.pk ?? createPkShootout(false);
+        const row = pk[team].map((s) =>
+          s.id === slotId
+            ? { ...s, number: n || undefined }
+            : s,
+        );
+        return { ...b, pk: { ...pk, [team]: row } };
+      });
+    },
+    [updateBoard],
+  );
+
+  /** サドンデス: 両チームに空スロットを1本足す */
+  const addPkRound = useCallback(() => {
+    updateBoard((b) => {
+      const pk = b.pk ?? createPkShootout(true);
+      return {
+        ...b,
+        pk: {
+          ...pk,
+          active: true,
+          home: [...pk.home, emptyPkSlot()],
+          away: [...pk.away, emptyPkSlot()],
+        },
+      };
+    });
+  }, [updateBoard]);
+
+  const resetPk = useCallback(() => {
+    updateBoard((b) => ({
+      ...b,
+      pk: createPkShootout(b.pk?.active ?? false),
+    }));
+  }, [updateBoard]);
+
   const openPieceInspector = useCallback((id: string) => {
     setSelectedPieceIds([id]);
     setSelectedBall(false);
@@ -1589,6 +1794,14 @@ export function useAppState() {
     removeGoal,
     addCard,
     removeCard,
+    addSub,
+    removeSub,
+    setPkActive,
+    cyclePkSlot,
+    setPkSlotResult,
+    setPkSlotNumber,
+    addPkRound,
+    resetPk,
     flushSave,
   };
 }
