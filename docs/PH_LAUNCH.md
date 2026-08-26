@@ -18,7 +18,7 @@
 | PH 文案（tagline · description · first comment） | **未固定** |
 | 初日のつて / hunter | **なし**（必須条件にはしない） |
 | FAQ の大幅拡充 | **後**（実問が来てから） |
-| GA4「ボードを開いた」確認 | **要確認**（別タスク） |
+| GA4「ボードを開いた」確認 | **バグ修正中** — `gtag/js` は載るが `collect` が出ない（`dataLayer.push(args)` 誤用） |
 
 ---
 

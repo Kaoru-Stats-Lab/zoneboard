@@ -43,8 +43,10 @@ function ensureStub(): boolean {
   if (typeof window.gtag === "function") return true;
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag(...args: unknown[]) {
-    window.dataLayer!.push(args);
+  // Must push `arguments` (not a rest Array). gtag.js only replays Arguments-like queue entries.
+  window.gtag = function gtag() {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer!.push(arguments);
   };
   window.gtag("consent", "default", {
     ad_storage: DENIED,
@@ -106,6 +108,8 @@ function loadTag(choice: ConsentChoice): void {
   script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
   script.onload = () => {
     if (typeof window.gtag !== "function") return;
+    // Re-assert after the real gtag.js replaces the stub (queue may have been ignored).
+    consentUpdate(choice);
     window.gtag("js", new Date());
     window.gtag("config", id, { send_page_view: false });
     configured = true;
