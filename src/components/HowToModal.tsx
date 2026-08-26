@@ -60,7 +60,7 @@ export function HowToModal({ open, onClose, t }: Props) {
           ))}
         </div>
         <footer>
-          <a href="/guide/" target="_blank" rel="noreferrer">
+          <a href="/guide/#place" target="_blank" rel="noreferrer">
             {t("howToGuideLink")}
           </a>
         </footer>

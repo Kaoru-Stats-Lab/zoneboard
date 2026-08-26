@@ -11,7 +11,10 @@ import {
 import { drawBoard } from "./drawBoard";
 import { outerFillForBoard } from "./drawPitch";
 import { fitField } from "./layout";
+import { PNG_CREDIT_TEXT } from "../site/shareCopy";
 import { drawMatchBanner, matchBannerHeight } from "./matchBanner";
+
+const CREDIT_H = 28;
 
 /** SNS 逆算プリセット（docs/SOCIAL_OUTPUT.md） */
 export type ExportPresetId =
@@ -35,6 +38,11 @@ export interface ExportOptions {
   bakeWatermark: boolean;
   /** 試合名・局面名を下部に焼く（単体投稿用） */
   bakeCaption: boolean;
+  /**
+   * Optional PNG footer credit (`zoneboard.app`). Default off in UI.
+   * Outer strip only — never baked into the pitch or live capture.
+   */
+  bakeCredit?: boolean;
   /** 投稿用の画角フォーカス */
   focus: ExportFocusId;
   selectionColor?: string;
@@ -162,6 +170,8 @@ export async function exportBoardPng(
         .join(" · ")
     : "";
   const captionH = caption ? 56 : 0;
+  const creditH = options.bakeCredit ? CREDIT_H : 0;
+  const footerH = captionH + creditH;
 
   let canvasW: number;
   let canvasH: number;
@@ -170,9 +180,9 @@ export async function exportBoardPng(
     const aspect = probe.outer.w / probe.outer.h;
     if (aspect >= 1) {
       canvasW = 1920;
-      canvasH = Math.round(1920 / aspect) + captionH;
+      canvasH = Math.round(1920 / aspect) + footerH;
     } else {
-      canvasH = 1920 + captionH;
+      canvasH = 1920 + footerH;
       canvasW = Math.round(1920 * aspect);
     }
   } else {
@@ -188,7 +198,7 @@ export async function exportBoardPng(
   if (!ctx) throw new Error("canvas");
 
   const ground = outerFillForBoard(boardView);
-  const boardH = canvasH - captionH;
+  const boardH = canvasH - footerH;
   const paintOpts = {
     ground,
     bakeWatermark: options.bakeWatermark,
@@ -256,9 +266,12 @@ export async function exportBoardPng(
     paintBoardSurface(ctx, canvasW, boardH, boardView, viewport, paintOpts);
   }
 
-  if (caption) {
+  if (footerH > 0) {
     ctx.fillStyle = "#111111";
-    ctx.fillRect(0, boardH, canvasW, captionH);
+    ctx.fillRect(0, boardH, canvasW, footerH);
+  }
+
+  if (caption) {
     ctx.fillStyle = "#ffffff";
     ctx.font = `600 22px ${UI_FONT_STACK}`;
     ctx.textAlign = "center";
@@ -269,6 +282,18 @@ export async function exportBoardPng(
       text = `${text.slice(0, -2)}…`;
     }
     ctx.fillText(text, canvasW / 2, boardH + captionH / 2);
+  }
+
+  if (creditH > 0) {
+    ctx.fillStyle = "#9a9a9a";
+    ctx.font = `500 14px ${UI_FONT_STACK}`;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+      PNG_CREDIT_TEXT,
+      canvasW - 20,
+      boardH + captionH + creditH / 2,
+    );
   }
 
   return new Promise((resolve, reject) => {

@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test:ink": "npx --yes tsx scripts/pieceInk-check.ts",
     "brand:marks": "npx --yes tsx scripts/write-brand-marks.ts",
+    "brand:og": "node scripts/raster-og.mjs",
     "brand:motion": "python scripts/export-brand-motion.py"
   },
   "dependencies": {

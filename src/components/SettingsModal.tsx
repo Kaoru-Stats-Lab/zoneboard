@@ -15,6 +15,7 @@ import {
 } from "../canvas/exportPng";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
+import { STREAM_SHARE_BLURB } from "../site/shareCopy";
 import { useFeedback } from "./FeedbackProvider";
 
 type Props = {
@@ -53,7 +54,9 @@ export function SettingsModal({
   const { openFeedback } = useFeedback();
   const fileRef = useRef<HTMLInputElement>(null);
   const [bakeCaption, setBakeCaption] = useState(true);
+  const [bakeCredit, setBakeCredit] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const broadcastUrl = `${window.location.origin}/board?broadcast=1`;
   const dragRef = useRef<{
@@ -117,6 +120,16 @@ export function SettingsModal({
     }
   };
 
+  const copyShareBlurb = async () => {
+    try {
+      await navigator.clipboard.writeText(STREAM_SHARE_BLURB);
+      setShareCopied(true);
+      window.setTimeout(() => setShareCopied(false), 1600);
+    } catch {
+      window.prompt(t("obsShareCopy"), STREAM_SHARE_BLURB);
+    }
+  };
+
   const onExport = async () => {
     if (!state.board) return;
     const ballImg = await loadBallImage(state.board.sport);
@@ -128,6 +141,7 @@ export function SettingsModal({
         preset: exportPreset,
         bakeWatermark: state.bakeWm,
         bakeCaption,
+        bakeCredit,
         focus: exportFocus,
         selectionColor: state.selectionColor,
         y2cLabel: t("cardY2CLabel"),
@@ -302,6 +316,15 @@ export function SettingsModal({
             />
             {t("bakeCaption")}
           </label>
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={bakeCredit}
+              onChange={(e) => setBakeCredit(e.target.checked)}
+            />
+            {t("bakeCredit")}
+          </label>
+          <p className="hint-muted">{t("bakeCreditHint")}</p>
           <label>
             {t("exportFocus")}
             <select
@@ -351,6 +374,20 @@ export function SettingsModal({
             </button>
           </div>
           <p className="hint-muted">{t("obsBroadcastUrlHint")}</p>
+          <span className="field-label">{t("obsShareLabel")}</span>
+          <div className="obs-url-row">
+            <input
+              type="text"
+              readOnly
+              value={STREAM_SHARE_BLURB}
+              aria-label={t("obsShareLabel")}
+              onFocus={(e) => e.currentTarget.select()}
+            />
+            <button type="button" onClick={copyShareBlurb}>
+              {shareCopied ? t("obsUrlCopied") : t("obsShareCopy")}
+            </button>
+          </div>
+          <p className="hint-muted">{t("obsShareHint")}</p>
           <p className="hint-muted obs-warn">{t("obsSettingsWarn")}</p>
         </section>
 

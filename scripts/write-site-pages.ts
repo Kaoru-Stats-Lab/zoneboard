@@ -3,6 +3,13 @@ import path from "node:path";
 import { PUBLISHER, SITE_NAV } from "../src/site/publisher.ts";
 import { SITE_PAGES, type SitePage } from "../src/site/pages.ts";
 import { CONSENT_BANNER } from "../src/site/consentCopy.ts";
+import { STREAM_SHARE_BLURB } from "../src/site/shareCopy.ts";
+import {
+  SITE_META,
+  absoluteUrl,
+  documentTitle,
+} from "../src/site/siteMeta.ts";
+import { uniqueSectionIds } from "../src/site/siteAnchors.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
 const publicDir = path.join(root, "public");
@@ -37,14 +44,15 @@ function nav(current: string): string {
 
 /** Public pages ship English only. Japanese copy on SitePage is not written to HTML. */
 function article(page: SitePage): string {
+  const ids = uniqueSectionIds(page.sections);
   const sections = page.sections
     .map(
-      (section) =>
-        `<h2>${esc(section.headingEn)}</h2>\n${paragraphs(section.en)}`,
+      (section, i) =>
+        `<h2 id="${esc(ids[i]!)}">${esc(section.headingEn)}</h2>\n${paragraphs(section.en)}`,
     )
     .join("\n");
   const form = page.showContactForm ? contactForm() : "";
-  const extras = page.slug === "materials" ? materialsMedia() : "";
+  const extras = page.slug === "materials" ? materialsExtras() : "";
   return `<article>
 <h1>${esc(page.titleEn)}</h1>
 <p class="lede">${linkify(page.ledeEn)}</p>
@@ -54,11 +62,47 @@ ${sections}
 </article>`;
 }
 
+function materialsExtras(): string {
+  return `${materialsMedia()}
+${materialsShareCopy()}`;
+}
+
 function materialsMedia(): string {
   return `<figure class="site-media">
 <video controls playsinline preload="metadata" poster="/brand/motion/exports/A/final-lockup-plate-16x9.png" src="/brand/motion/exports/A/sting-lockup-plate-16x9.mp4"></video>
 <figcaption>Default lockup end card (16:9) — drop after the board capture, not on the live pitch.</figcaption>
 </figure>`;
+}
+
+function materialsShareCopy(): string {
+  return `<aside class="site-share" aria-labelledby="stream-share-heading">
+<h2 id="stream-share-heading">Copy for your description</h2>
+<p>Paste into YouTube, Discord, or a Twitch panel. Not a pitch watermark.</p>
+<div class="site-share__row">
+<textarea id="stream-share-text" readonly rows="3">${esc(STREAM_SHARE_BLURB)}</textarea>
+<button type="button" id="stream-share-copy">Copy</button>
+</div>
+<p class="site-share__status" id="stream-share-status" role="status"></p>
+</aside>
+<script>
+(function () {
+  var btn = document.getElementById("stream-share-copy");
+  var text = document.getElementById("stream-share-text");
+  var status = document.getElementById("stream-share-status");
+  if (!btn || !text) return;
+  btn.addEventListener("click", async function () {
+    try {
+      await navigator.clipboard.writeText(text.value);
+      status.textContent = "Copied.";
+      window.setTimeout(function () { status.textContent = ""; }, 1600);
+    } catch (err) {
+      text.focus();
+      text.select();
+      status.textContent = "Select and copy manually.";
+    }
+  });
+})();
+</script>`;
 }
 
 function contactForm(): string {
@@ -152,6 +196,7 @@ type ShellOpts = {
 };
 
 function documentShell(opts: ShellOpts): string {
+  const title = documentTitle(opts.title, PUBLISHER.product);
   const canonical = opts.canonical
     ? `    <link rel="canonical" href="${esc(opts.canonical)}" />\n`
     : "";
@@ -161,19 +206,29 @@ function documentShell(opts: ShellOpts): string {
   const ogUrl = opts.canonical
     ? `    <meta property="og:url" content="${esc(opts.canonical)}" />\n`
     : "";
+  const ogImage = absoluteUrl(PUBLISHER.siteUrl, SITE_META.ogImagePath);
   return `<!doctype html>
 <html lang="en-GB">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${esc(opts.title)} — ${esc(PUBLISHER.product)}</title>
+    <title>${esc(title)}</title>
     <meta name="description" content="${esc(opts.description)}" />
-${canonical}${robots}    <meta property="og:title" content="${esc(opts.title)} — ${esc(PUBLISHER.product)}" />
+${canonical}${robots}    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="${esc(PUBLISHER.product)}" />
+    <meta property="og:title" content="${esc(title)}" />
     <meta property="og:description" content="${esc(opts.description)}" />
-${ogUrl}    <meta property="og:locale" content="en_GB" />
-    <meta property="og:image" content="${PUBLISHER.siteUrl}/brand/lockup-og.svg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+${ogUrl}    <meta property="og:locale" content="${SITE_META.locale}" />
+    <meta property="og:image" content="${esc(ogImage)}" />
+    <meta property="og:image:type" content="${SITE_META.ogImageType}" />
+    <meta property="og:image:width" content="${SITE_META.ogImageWidth}" />
+    <meta property="og:image:height" content="${SITE_META.ogImageHeight}" />
+    <meta property="og:image:alt" content="${esc(SITE_META.ogImageAlt)}" />
+    <meta name="twitter:card" content="${SITE_META.twitterCard}" />
+    <meta name="twitter:title" content="${esc(title)}" />
+    <meta name="twitter:description" content="${esc(opts.description)}" />
+    <meta name="twitter:image" content="${esc(ogImage)}" />
+    <meta name="twitter:image:alt" content="${esc(SITE_META.ogImageAlt)}" />
     <meta name="theme-color" content="#0c0d0e" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

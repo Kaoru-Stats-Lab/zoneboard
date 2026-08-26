@@ -3,6 +3,8 @@ import { PUBLISHER, type SiteSlug } from "./publisher.ts";
 /** Japanese fields stay for a later /ja/ surface. The public HTML is English only. */
 
 export type SiteSection = {
+  /** Stable deep-link fragment. Defaults from headingEn via slugify. */
+  id?: string;
   headingEn: string;
   headingJa: string;
   en: string[];
@@ -27,9 +29,9 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "About ZoneBoard",
     titleJa: "ZoneBoard について",
     descriptionEn:
-      "ZoneBoard is a canvas-first football tactics board for live streams. Place an XI, draw the move, and show the pitch without shrinking it behind a toolbar.",
+      "Football tactics board for OBS streams. Place an XI, draw the move, press B — tools hide, the pitch fills the window. Cam and chat stay in OBS.",
     descriptionJa:
-      "ZoneBoard は配信向けのキャンバス優先サッカー戦術ボードです。スタメンを置き、動きを描き、ツールバーにピッチを削られずに画面へ出します。",
+      "OBS 配信向けのサッカー戦術ボード。スタメンを置き、動きを描き、B でツールを消す。ピッチが窓を埋め、顔とチャットは OBS のまま。",
     ledeEn:
       "ZoneBoard is a browser tactics board built for people who explain football on a stream. The pitch is the product. Tools stay out of the way. Nothing is stored on our servers unless you send optional feedback.",
     ledeJa:
@@ -96,15 +98,16 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "How to show a move on stream",
     titleJa: "配信で動きを見せる",
     descriptionEn:
-      "A practical guide to ZoneBoard: place an XI, draw the pattern, hide the tools, and capture the window beside the camera you already use.",
+      "How to use ZoneBoard on stream: place the XI, draw the pattern, press B to hide tools, and window-capture beside the camera you already use.",
     descriptionJa:
-      "ZoneBoard の実務ガイド。スタメンを置き、型を描き、ツールを消し、いつものカメラの横にウィンドウを足します。",
+      "配信での使い方。スタメンを置き、パターンを描き、B でツールを消し、いつものカメラの横でウィンドウキャプチャする。",
     ledeEn:
       "The board is not a second show. It is the pitch you add to a show you already run. This page is the long version of place, draw, and show.",
     ledeJa:
       "ボードは第二の番組ではありません。いま走っている番組に足すピッチです。このページは、置く・描く・出すの長い版です。",
     sections: [
       {
+        id: "place",
         headingEn: "Before kick-off: place",
         headingJa: "キックオフ前: 置く",
         en: [
@@ -119,6 +122,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "draw",
         headingEn: "During the pattern: draw",
         headingJa: "型を見せるとき: 描く",
         en: [
@@ -133,6 +137,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "show",
         headingEn: "On air: show",
         headingJa: "オンエア: 出す",
         en: [
@@ -147,6 +152,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "after",
         headingEn: "After the match",
         headingJa: "試合のあと",
         en: [
@@ -159,6 +165,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "rehearse",
         headingEn: "Rehearse the pieces before you go live",
         headingJa: "本番の前に、駒を動かす練習をする",
         en: [
@@ -175,6 +182,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "limits",
         headingEn: "What this guide will not promise",
         headingJa: "このガイドが約束しないこと",
         en: [
@@ -193,15 +201,16 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Frequently asked questions",
     titleJa: "よくある質問",
     descriptionEn:
-      "Answers about accounts, saving, broadcast capture, sports, advertising on ZoneBoard, and how to reach the operator.",
+      "FAQ: no account, local save, OBS window capture, sports, ads on info pages only, and how to contact the ZoneBoard operator.",
     descriptionJa:
-      "アカウント、保存、配信キャプチャ、競技、ZoneBoard の広告、運営への連絡についての回答です。",
+      "FAQ。アカウントなし、端末内保存、OBS ウィンドウキャプチャ、競技、読み物ページのみの広告、運営への連絡方法。",
     ledeEn:
       "Short answers. If yours is missing, the contact page reaches the operator. Do not paste a full board into the form.",
     ledeJa:
       "短い回答です。ここに無いことは連絡先ページから運営へ。フォームにボード全体を貼らないでください。",
     sections: [
       {
+        id: "account",
         headingEn: "Do I need an account?",
         headingJa: "アカウントは必要か",
         en: [
@@ -212,6 +221,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "free",
         headingEn: "Is it free?",
         headingJa: "無料か",
         en: [
@@ -222,6 +232,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "blank-encoder",
         headingEn: "Why is the pitch blank in my encoder?",
         headingJa: "エンコーダでピッチが空白になる",
         en: [
@@ -232,6 +243,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "other-sports",
         headingEn: "Can I use this for futsal, basketball, or volleyball?",
         headingJa: "フットサル、バスケ、バレーでも使えるか",
         en: [
@@ -242,6 +254,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "ads-on-pitch",
         headingEn: "Will ads appear on the pitch?",
         headingJa: "ピッチに広告は出るか",
         en: [
@@ -252,6 +265,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "sell-data",
         headingEn: "Do you sell my roster or diagrams?",
         headingJa: "名簿や図は売られるか",
         en: [
@@ -262,6 +276,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "contact",
         headingEn: "How do I contact you?",
         headingJa: "連絡方法",
         en: [
@@ -272,6 +287,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "share-link",
         headingEn: "Can I share a link to the board I just built?",
         headingJa: "いま組んだボードを URL で共有できるか",
         en: [
@@ -282,6 +298,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "tablet",
         headingEn: "Does it work on a tablet?",
         headingJa: "タブレットで使えるか",
         en: [
@@ -292,6 +309,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "word-tools",
         headingEn: "Why are the tools words instead of icons?",
         headingJa: "ツールがアイコンではなく言葉なのはなぜか",
         en: [
@@ -302,6 +320,7 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "player-db",
         headingEn: "Will you add a player database or predicted XIs?",
         headingJa: "選手 DB や予想スタメンは入るか",
         en: [
@@ -318,9 +337,9 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Pricing",
     titleJa: "料金",
     descriptionEn:
-      "ZoneBoard is free today. A paid plan, if it comes, will be for named squads — not for the pitch, broadcast, or your logo.",
+      "ZoneBoard is free today. A future paid plan would be for named squads — not for the pitch, broadcast mode, or your logo.",
     descriptionJa:
-      "ZoneBoard はいま無料です。有料が出るなら名前付きセット用であり、ピッチ・配信・ロゴではありません。",
+      "いまは無料。将来の有料があれば名簿付きスクワッド向けで、ピッチ・配信モード・ロゴは対象外の方針です。",
     ledeEn: `Last updated ${PUBLISHER.updatedEn}. There is no checkout on this site today.`,
     ledeJa: `最終更新 ${PUBLISHER.updatedJa}。いまこのサイトに決済はありません。`,
     sections: [
@@ -369,9 +388,9 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Brand materials",
     titleJa: "ブランド素材",
     descriptionEn:
-      "End-card stings and brand files for Clipchamp and YouTube — after the capture, not on the live pitch.",
+      "End-card stings, brand files, and a stream-description blurb for Clipchamp and YouTube — after the capture, not on the live pitch.",
     descriptionJa:
-      "Clipchamp / YouTube 用のエンドカードとブランドファイル。ライブのピッチ上ではなく、キャプチャのあとに置くもの。",
+      "Clipchamp / YouTube 用のエンドカード、ブランドファイル、配信説明用コピー。ライブのピッチ上ではなく、キャプチャのあとに使うもの。",
     ledeEn:
       "These files are for the end of a recording or VOD. They are not broadcast chrome. On stream, press B and capture the pitch. Use the stings when the board segment is over.",
     ledeJa:
@@ -422,6 +441,16 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        headingEn: "PNG posts (optional credit)",
+        headingJa: "PNG 投稿（任意クレジット）",
+        en: [
+          "When you export a still for social, Settings can add a small zoneboard.app line under the image frame. Off by default. It never appears on broadcast capture or the live pitch.",
+        ],
+        ja: [
+          "SNS 用の PNG 書き出しでは、設定から画像枠の下に小さい zoneboard.app 行を足せます。既定オフ。配信用キャプチャやライブのピッチには入りません。",
+        ],
+      },
+      {
         headingEn: "What this page is not",
         headingJa: "このページではないもの",
         en: [
@@ -440,9 +469,9 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Privacy policy",
     titleJa: "プライバシーポリシー",
     descriptionEn:
-      "How ZoneBoard handles local board data, optional feedback, cookies, Google Analytics 4, Google Fonts, Cloudflare, and Google AdSense on informational pages.",
+      "Privacy on ZoneBoard: local board data, optional feedback, cookies, Google Analytics 4, Google Fonts, Cloudflare, and AdSense on informational pages only.",
     descriptionJa:
-      "ZoneBoard がボードのローカルデータ、任意のフィードバック、Cookie、Google Analytics 4、Google Fonts、Cloudflare、読み物ページの Google AdSense をどう扱うか。",
+      "プライバシー。ローカルのボード、任意フィードバック、Cookie、GA4、Google Fonts、Cloudflare、読み物ページのみの AdSense。",
     ledeEn: `Operator: ${PUBLISHER.legalName} (${PUBLISHER.countryEn}). Site: ${PUBLISHER.siteUrl}. Last updated ${PUBLISHER.updatedEn}.`,
     ledeJa: `運営者: ${PUBLISHER.legalNameJa}（${PUBLISHER.countryJa}）。サイト: ${PUBLISHER.siteUrl}。最終更新 ${PUBLISHER.updatedJa}。`,
     sections: [
@@ -609,9 +638,9 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Terms of use",
     titleJa: "利用規約",
     descriptionEn:
-      "Terms for using ZoneBoard, a free browser tactics board. No account. Local save. Ads only on informational pages, never on the pitch or in broadcast mode.",
+      "Terms for ZoneBoard: free browser tactics board, no account, local save. Ads on informational pages only — never on the pitch or in broadcast mode.",
     descriptionJa:
-      "無料のブラウザ戦術ボード ZoneBoard の利用規約。アカウントなし。ローカル保存。広告は読み物ページのみ。ピッチと配信モードには出しません。",
+      "利用規約。無料のブラウザ戦術ボード、アカウントなし、端末内保存。広告は読み物ページのみ。ピッチ上・配信モードには出しません。",
     ledeEn: `Operated by ${PUBLISHER.legalName}. Last updated ${PUBLISHER.updatedEn}.`,
     ledeJa: `運営: ${PUBLISHER.legalNameJa}。最終更新 ${PUBLISHER.updatedJa}。`,
     sections: [
@@ -686,9 +715,9 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Cookie policy",
     titleJa: "Cookie ポリシー",
     descriptionEn:
-      "Cookies and local storage on ZoneBoard: board save on your device, Google Analytics 4, Google Fonts, and Google AdSense on informational pages only.",
+      "Cookies and storage on ZoneBoard: local board save, Google Analytics 4 (with consent), Google Fonts, and AdSense on informational pages only.",
     descriptionJa:
-      "ZoneBoard の Cookie とローカル保存。ボードは端末内。Google Analytics 4。Google Fonts。Google AdSense は読み物ページのみ。",
+      "Cookie と保存。ボードの端末内保存、同意後の GA4、Google Fonts、読み物ページのみの AdSense。",
     ledeEn: `Last updated ${PUBLISHER.updatedEn}. Read with the privacy policy.`,
     ledeJa: `最終更新 ${PUBLISHER.updatedJa}。プライバシーポリシーとあわせて読んでください。`,
     sections: [
@@ -761,9 +790,9 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Contact",
     titleJa: "連絡先",
     descriptionEn:
-      "Contact the ZoneBoard operator for privacy requests, legal notices, and product feedback. No live chat. Do not paste a full tactics board.",
+      "Contact ZoneBoard for privacy requests, legal notices, and product feedback. No live chat. Do not paste a full tactics board.",
     descriptionJa:
-      "プライバシー請求、法的通知、製品フィードバックは ZoneBoard 運営へ。ライブチャットはありません。戦術ボード一式は貼らないでください。",
+      "プライバシー請求、法務、製品フィードバックはここへ。ライブチャットはありません。戦術ボード一式は貼らないでください。",
     ledeEn: `${PUBLISHER.legalName} · ${PUBLISHER.countryEn} · ${PUBLISHER.email}`,
     ledeJa: `${PUBLISHER.legalNameJa} · ${PUBLISHER.countryJa} · ${PUBLISHER.email}`,
     showContactForm: true,

@@ -54,7 +54,8 @@ ZoneBoard は配信者向けのキャンバス優先サッカー戦術ボード�
    - `public/brand/lockup-color-dark.svg`（横の正。`/lockup.svg`）
    - `public/brand/lockup-color-light.svg`
    - `public/brand/lockup-stack-color-dark.svg`（縦。正方形・狭い枠。LP/トップバーには使わない）
-   - `public/brand/lockup-og.svg`（1200×630）
+   - `public/brand/lockup-og.svg`（1200×630・ベクトル）
+   - `public/brand/lockup-og.png`（1200×630・OGP / Twitter 正。`npm run brand:og`）
    - `public/brand/lockup-stack-og.svg`（1080×1080）
    - `public/brand/mark-color-dark.svg`、`icon-color.svg`
    - `public/brand/index.html`（展開マトリクス）

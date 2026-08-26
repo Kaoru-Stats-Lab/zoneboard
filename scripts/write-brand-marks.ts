@@ -254,4 +254,5 @@ console.log(
   `wrote ${BRAND_ASSETS.length} marks, ${LOCKUP_ASSETS.length + 1} row lockups, ${STACK_ASSETS.length + 1} stacked lockups to public/brand/`,
 );
 console.log(`wrote ${EXPORT_FILES.length} flat exports to public/brand/exports/`);
+console.log("OGP PNG: run npm run brand:og after changing lockup-og.svg");
 

@@ -3,7 +3,7 @@ export type Locale = "ja" | "en";
 export const messages = {
   ja: {
     brand: "ZoneBoard",
-    tagline: "キャンバス最大化の戦術ボード。配信モードでツールが消える。",
+    tagline: "OBS 向け戦術ボード。配信モードでツールが消える。",
     openBoard: "ボードを開く",
     lpHeadline1: "今夜の OBS に、サッカーの戦術ボードを足す。",
     lpHeadline2: "ツールを消す。ピッチだけをキャプチャする。",
@@ -349,6 +349,9 @@ export const messages = {
     presetNative: "ピッチ比（資料・配信スクショ用ではない）",
     bakeWm: "透かしを焼き込む",
     bakeCaption: "試合名・局面名を入れる",
+    bakeCredit: "zoneboard.app クレジット（任意）",
+    bakeCreditHint:
+      "既定オフ。PNG の下枠だけ。ライブのピッチや配信用キャプチャには入りません。",
     exportFocus: "投稿の画角",
     focusCurrent: "いまのズーム",
     focusFull: "全体",
@@ -383,6 +386,10 @@ export const messages = {
       "ブックマークや OBS から開くと、同じウィンドウ・同じ保存のまま配信モードで始まります。",
     obsUrlCopy: "コピー",
     obsUrlCopied: "コピー済み",
+    obsShareLabel: "配信説明用コピー",
+    obsShareCopy: "コピー",
+    obsShareHint:
+      "YouTube / Discord / Twitch パネル向け。ピッチ上の透かしではありません。",
     obsSettingsWarn:
       "配信中は設定を開かないでください。モーダルがウィンドウキャプチャに全面で写ります。",
     obsFocusCapture:
@@ -414,7 +421,7 @@ export const messages = {
   },
   en: {
     brand: "ZoneBoard",
-    tagline: "Canvas-first football tactics board. Broadcast mode hides the tools.",
+    tagline: "Football tactics board for OBS. Broadcast mode hides the tools.",
     openBoard: "Open board",
     lpHeadline1: "Add a football tactics board to tonight's OBS show.",
     lpHeadline2: "Hide the tools. Capture only the pitch.",
@@ -760,6 +767,9 @@ export const messages = {
     presetNative: "Pitch ratio (docs — not for mobile feed)",
     bakeWm: "Bake watermark",
     bakeCaption: "Burn match & scene title",
+    bakeCredit: "Optional zoneboard.app credit",
+    bakeCreditHint:
+      "Off by default. PNG footer only — never on the live pitch or broadcast capture.",
     exportFocus: "Post framing",
     focusCurrent: "Current zoom",
     focusFull: "Full pitch",
@@ -795,6 +805,10 @@ export const messages = {
       "Open from a bookmark or OBS to start in Broadcast mode in this same window and storage.",
     obsUrlCopy: "Copy",
     obsUrlCopied: "Copied",
+    obsShareLabel: "Stream description blurb",
+    obsShareCopy: "Copy",
+    obsShareHint:
+      "For YouTube, Discord, or a Twitch panel — not a pitch watermark.",
     obsSettingsWarn:
       "Do not open Settings while live—the modal fills the window capture.",
     obsFocusCapture:

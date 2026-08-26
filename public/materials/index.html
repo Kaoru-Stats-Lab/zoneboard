@@ -4,15 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Brand materials — ZoneBoard</title>
-    <meta name="description" content="End-card stings and brand files for Clipchamp and YouTube — after the capture, not on the live pitch." />
+    <meta name="description" content="End-card stings, brand files, and a stream-description blurb for Clipchamp and YouTube — after the capture, not on the live pitch." />
     <link rel="canonical" href="https://zoneboard.app/materials/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ZoneBoard" />
     <meta property="og:title" content="Brand materials — ZoneBoard" />
-    <meta property="og:description" content="End-card stings and brand files for Clipchamp and YouTube — after the capture, not on the live pitch." />
+    <meta property="og:description" content="End-card stings, brand files, and a stream-description blurb for Clipchamp and YouTube — after the capture, not on the live pitch." />
     <meta property="og:url" content="https://zoneboard.app/materials/" />
     <meta property="og:locale" content="en_GB" />
-    <meta property="og:image" content="https://zoneboard.app/brand/lockup-og.svg" />
+    <meta property="og:image" content="https://zoneboard.app/brand/lockup-og.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ZoneBoard — football tactics board" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Brand materials — ZoneBoard" />
+    <meta name="twitter:description" content="End-card stings, brand files, and a stream-description blurb for Clipchamp and YouTube — after the capture, not on the live pitch." />
+    <meta name="twitter:image" content="https://zoneboard.app/brand/lockup-og.png" />
+    <meta name="twitter:image:alt" content="ZoneBoard — football tactics board" />
     <meta name="theme-color" content="#0c0d0e" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -48,21 +57,51 @@
 <video controls playsinline preload="metadata" poster="/brand/motion/exports/A/final-lockup-plate-16x9.png" src="/brand/motion/exports/A/sting-lockup-plate-16x9.mp4"></video>
 <figcaption>Default lockup end card (16:9) — drop after the board capture, not on the live pitch.</figcaption>
 </figure>
+<aside class="site-share" aria-labelledby="stream-share-heading">
+<h2 id="stream-share-heading">Copy for your description</h2>
+<p>Paste into YouTube, Discord, or a Twitch panel. Not a pitch watermark.</p>
+<div class="site-share__row">
+<textarea id="stream-share-text" readonly rows="3">Board: https://zoneboard.app — no account. Press B to hide tools. Window capture in OBS.</textarea>
+<button type="button" id="stream-share-copy">Copy</button>
+</div>
+<p class="site-share__status" id="stream-share-status" role="status"></p>
+</aside>
+<script>
+(function () {
+  var btn = document.getElementById("stream-share-copy");
+  var text = document.getElementById("stream-share-text");
+  var status = document.getElementById("stream-share-status");
+  if (!btn || !text) return;
+  btn.addEventListener("click", async function () {
+    try {
+      await navigator.clipboard.writeText(text.value);
+      status.textContent = "Copied.";
+      window.setTimeout(function () { status.textContent = ""; }, 1600);
+    } catch (err) {
+      text.focus();
+      text.select();
+      status.textContent = "Select and copy manually.";
+    }
+  });
+})();
+</script>
 
-<h2>Default end card</h2>
+<h2 id="default-end-card">Default end card</h2>
 <p>Lockup sting (16:9) — the default for landscape timelines: <a href="https://zoneboard.app/brand/motion/exports/A/sting-lockup-plate-16x9.mp4" rel="noopener noreferrer">https://zoneboard.app/brand/motion/exports/A/sting-lockup-plate-16x9.mp4</a></p>
 <p>Lockup sting (1:1) — square cuts: <a href="https://zoneboard.app/brand/motion/exports/A/sting-lockup-plate-1x1.mp4" rel="noopener noreferrer">https://zoneboard.app/brand/motion/exports/A/sting-lockup-plate-1x1.mp4</a></p>
 <p>Still posters if you only need a freeze frame: <a href="https://zoneboard.app/brand/motion/exports/A/final-lockup-plate-16x9.png" rel="noopener noreferrer">https://zoneboard.app/brand/motion/exports/A/final-lockup-plate-16x9.png</a> and <a href="https://zoneboard.app/brand/motion/exports/A/final-lockup-plate-1x1.png" rel="noopener noreferrer">https://zoneboard.app/brand/motion/exports/A/final-lockup-plate-1x1.png</a></p>
-<h2>Mark-only (secondary)</h2>
+<h2 id="mark-only-secondary">Mark-only (secondary)</h2>
 <p>Shorter stings when the audience already knows the mark: <a href="https://zoneboard.app/brand/motion/exports/A/sting-plate-16x9.mp4" rel="noopener noreferrer">https://zoneboard.app/brand/motion/exports/A/sting-plate-16x9.mp4</a> and <a href="https://zoneboard.app/brand/motion/exports/A/sting-plate-1x1.mp4" rel="noopener noreferrer">https://zoneboard.app/brand/motion/exports/A/sting-plate-1x1.mp4</a></p>
 <p>Transparent overlay for compositing on footage (not a full-screen end card): <a href="https://zoneboard.app/brand/motion/exports/B/sting-clear-1x1.gif" rel="noopener noreferrer">https://zoneboard.app/brand/motion/exports/B/sting-clear-1x1.gif</a></p>
-<h2>Clipchamp recipe</h2>
+<h2 id="clipchamp-recipe">Clipchamp recipe</h2>
 <p>1. Capture the ZoneBoard window in broadcast mode (tools hidden).</p>
 <p>2. When that segment ends, drop the lockup 16:9 MP4 for about three seconds.</p>
 <p>3. Do not loop the sting on the live show. Do not put it on the pitch during play.</p>
 <p>Interactive choreography preview (mark only): <a href="https://zoneboard.app/brand/motion/logo_motion.html" rel="noopener noreferrer">https://zoneboard.app/brand/motion/logo_motion.html</a></p>
 <p>Flat SVGs for other animation tools: <a href="https://zoneboard.app/brand/exports/" rel="noopener noreferrer">https://zoneboard.app/brand/exports/</a></p>
-<h2>What this page is not</h2>
+<h2 id="png-posts-optional-credit">PNG posts (optional credit)</h2>
+<p>When you export a still for social, Settings can add a small zoneboard.app line under the image frame. Off by default. It never appears on broadcast capture or the live pitch.</p>
+<h2 id="what-this-page-is-not">What this page is not</h2>
 <p>It is not the landing pitch demo. The home page shows one board — broadcast capture — and stops there.</p>
 <p>It is not a license to put ZoneBoard chrome over someone else’s match feed. The sting brands your own board segment after you stop drawing.</p>
 </article>
