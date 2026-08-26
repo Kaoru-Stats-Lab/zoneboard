@@ -41,7 +41,7 @@ import {
 } from "./wavyPath";
 import { textFontStack } from "../presets/textStyle";
 import { tracePenBezierPath } from "./smoothPath";
-import { pieceDiscipline, CARD_YELLOW, CARD_RED } from "./matchCards";
+import { pieceDiscipline, drawPieceCardMark } from "./matchCards";
 import { BASKET_HALF_START } from "../presets/sports";
 import {
   drawPitchLanes,
@@ -540,24 +540,6 @@ function drawPiece(
     ctx.stroke();
   }
 
-  if (discipline.yellow) {
-    ctx.beginPath();
-    ctx.arc(x, y, r * 1.18, 0, Math.PI * 2);
-    ctx.strokeStyle = CARD_YELLOW;
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
-  }
-
-  if (discipline.sentOff) {
-    ctx.beginPath();
-    ctx.arc(x, y, r * 1.22, 0, Math.PI * 2);
-    ctx.strokeStyle = CARD_RED;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([3, 3]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
   if (piece.role === "bench") {
     ctx.beginPath();
     ctx.arc(x, y, r * 0.92, 0, Math.PI * 2);
@@ -595,6 +577,11 @@ function drawPiece(
 
   if (discipline.sentOff) ctx.restore();
   if (dragging) ctx.restore();
+
+  // カード形は番号と同様フル不透明（「提示された」が一見で読める）
+  if (discipline.cardMark) {
+    drawPieceCardMark(ctx, x, y, r, discipline.cardMark);
+  }
 
   // 押した瞬間からリング。ドラッグ中に消すと「1テンポ遅れてアクティブ」に見える
   if (selected) {

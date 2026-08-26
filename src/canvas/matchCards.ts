@@ -240,6 +240,8 @@ function playerMatchesCard(piece: Piece, card: CardEntry): boolean {
 export interface PieceDiscipline {
   yellow: boolean;
   sentOff: boolean;
+  /** 駒左上に描くカード形（退場優先） */
+  cardMark: CardKind | null;
 }
 
 export function pieceDiscipline(
@@ -247,16 +249,45 @@ export function pieceDiscipline(
   piece: Piece,
 ): PieceDiscipline {
   const team = pieceTeam(piece);
-  if (!team) return { yellow: false, sentOff: false };
+  if (!team) return { yellow: false, sentOff: false, cardMark: null };
   const cards = board.cards ?? [];
   let yellow = false;
   let sentOff = false;
+  let cardMark: CardKind | null = null;
   for (const c of cards) {
     if (c.team !== team || !playerMatchesCard(piece, c)) continue;
-    if (c.kind === "YC") yellow = true;
-    if (c.kind === "RC" || c.kind === "Y2C") sentOff = true;
+    if (c.kind === "YC") {
+      yellow = true;
+      if (!cardMark) cardMark = "YC";
+    }
+    if (c.kind === "RC") {
+      sentOff = true;
+      cardMark = "RC";
+    }
+    if (c.kind === "Y2C") {
+      sentOff = true;
+      cardMark = "Y2C";
+    }
   }
-  return { yellow: yellow && !sentOff, sentOff };
+  return {
+    yellow: yellow && !sentOff,
+    sentOff,
+    cardMark: sentOff ? (cardMark === "Y2C" ? "Y2C" : "RC") : yellow ? "YC" : null,
+  };
+}
+
+/** 駒左上 — 提示されたカード形（右上の IN/OUT と分離） */
+export function drawPieceCardMark(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  kind: CardKind,
+) {
+  const h = Math.max(8, r * 0.58);
+  const cx = x - r * 0.78;
+  const cy = y - r * 0.78;
+  drawTimelineCardMark(ctx, cx, cy, h, kind);
 }
 
 export function cardKindLabel(

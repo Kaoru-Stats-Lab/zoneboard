@@ -325,7 +325,8 @@ export const messages = {
     screenShort: "Scr",
     zone: "ゾーン",
     pen: "ペン",
-    penHint: "自由記述。Shift+ドラッグで直線",
+    penHint:
+      "自由記述。芝に固定（駒に追従しない）。Shift+ドラッグで直線。追従は構成線",
     link: "構成線",
     linkHint:
       "駒をクリックして直線でつなぐ。もう一度同じ駒・空き地・Enterで確定。Escで取消",
@@ -782,7 +783,8 @@ export const messages = {
     screenShort: "Scr",
     zone: "Zone",
     pen: "Pen",
-    penHint: "Freehand ink. Shift+drag for a straight line",
+    penHint:
+      "Freehand ink fixed on the grass (does not follow pieces). Shift+drag for a straight line. Use Link to follow",
     link: "Link",
     linkHint:
       "Click pieces to join with a straight line. Click the last piece again, empty grass, or Enter to finish. Esc cancels",
