@@ -118,7 +118,7 @@ LP に並べるカタログではない。比較の軸。
 | 2 | Put your club badge on the board. The show stays yours. | No ZoneBoard logo on the grass. |
 | 3 | Set both XIs. Draw passes, runs, dribbles, and zones. | Show the shape to viewers or to players — not only with words. |
 | 4 | Save moments as scenes. Jump back without drawing again. | A corner, a press, a kick-off shape — for coaches and pundits too. |
-| 5 | Save a PNG for Instagram, Stories, or X. | Drag the frame so the right players stay in shot. Phone frames, not the live 16:9. |
+| 5 | Save a PNG for Instagram, Stories, or X. Drag the frame. | Portrait posts crop the pitch. For the whole field, use 16:9 or Pitch ratio. |
 | 6 | No account. Open in the browser. Up to three boards on your machine. | Ready to add to the stream when you need it. |
 
 ja は `messages.ts` に並行。公開 UI は EN。

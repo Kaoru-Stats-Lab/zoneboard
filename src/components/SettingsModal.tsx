@@ -339,6 +339,7 @@ export function SettingsModal({
               <option value="final-third-left">{t("focusFtL")}</option>
             </select>
           </label>
+          <p className="hint-muted">{t("exportFocusHint")}</p>
           <button type="button" className="active" onClick={onExport}>
             {t("exportPng")}
           </button>

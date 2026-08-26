@@ -221,6 +221,60 @@ a:hover {
   font-size: 0.85rem;
 }
 
+.site-changelog {
+  margin: 1.25rem 0 2rem;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--zb-border, #2a2b2c);
+}
+
+.site-changelog__policy,
+.site-changelog__updated {
+  margin: 0 0 0.55rem;
+  color: var(--zb-muted, #9a9a96);
+  font-size: 0.88rem;
+}
+
+.site-changelog__list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.site-changelog__item {
+  margin: 0;
+  padding: 0.85rem 0 0;
+  border-top: 1px solid rgba(243, 243, 241, 0.08);
+}
+
+.site-changelog__meta {
+  margin: 0 0 0.35rem;
+  color: var(--zb-muted, #9a9a96);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.site-changelog__type {
+  font-weight: 600;
+  color: #c8c4b8;
+}
+
+.site-changelog__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.02rem;
+  font-weight: 650;
+  color: #f3f3f1;
+}
+
+.site-changelog__body {
+  margin: 0;
+  color: #d8d8d4;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
 .site-main h2 {
   margin: 2rem 0 0.6rem;
   scroll-margin-top: 4.5rem;

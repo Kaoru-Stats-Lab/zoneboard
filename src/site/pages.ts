@@ -465,6 +465,33 @@ export const SITE_PAGES: SitePage[] = [
     ],
   },
   {
+    slug: "updates",
+    titleEn: "Updates",
+    titleJa: "更新履歴",
+    descriptionEn:
+      "Shipped ZoneBoard changes in past tense. Broadcast, match banner, PNG export, and site pages — what already landed in production.",
+    descriptionJa:
+      "本番に入った ZoneBoard の変更を過去形で。配信、試合帯、PNG、公開ページ。",
+    ledeEn:
+      "This page lists changes that are already live. It is not a roadmap. Upcoming work stays elsewhere. Feedback still goes through Contact or the in-app form.",
+    ledeJa:
+      "すでに本番に入った変更だけを載せます。ロードマップではありません。予定はここには書きません。フィードバックは Contact かアプリ内フォームから。",
+    sections: [
+      {
+        headingEn: "How we write this",
+        headingJa: "書き方",
+        en: [
+          "Past tense only. If a change would not change how you use the board or the site, it does not belong here.",
+          "The source of truth is the changelog module in the repo. Editors run the site page build after updating it.",
+        ],
+        ja: [
+          "過去形のみ。ボードやサイトの使い方が変わらない変更は載せません。",
+          "正本はリポジトリの changelog モジュールです。更新後にサイトページ生成を回します。",
+        ],
+      },
+    ],
+  },
+  {
     slug: "privacy",
     titleEn: "Privacy policy",
     titleJa: "プライバシーポリシー",

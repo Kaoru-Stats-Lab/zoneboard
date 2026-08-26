@@ -2,6 +2,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { PUBLISHER, SITE_NAV } from "../src/site/publisher.ts";
 import { SITE_PAGES, type SitePage } from "../src/site/pages.ts";
+import {
+  CHANGELOG,
+  publicChangelogEntries,
+  type ChangelogType,
+} from "../src/site/changelog.ts";
 import { CONSENT_BANNER } from "../src/site/consentCopy.ts";
 import { STREAM_SHARE_BLURB } from "../src/site/shareCopy.ts";
 import {
@@ -52,7 +57,12 @@ function article(page: SitePage): string {
     )
     .join("\n");
   const form = page.showContactForm ? contactForm() : "";
-  const extras = page.slug === "materials" ? materialsExtras() : "";
+  const extras =
+    page.slug === "materials"
+      ? materialsExtras()
+      : page.slug === "updates"
+        ? updatesExtras()
+        : "";
   return `<article>
 <h1>${esc(page.titleEn)}</h1>
 <p class="lede">${linkify(page.ledeEn)}</p>
@@ -65,6 +75,32 @@ ${sections}
 function materialsExtras(): string {
   return `${materialsMedia()}
 ${materialsShareCopy()}`;
+}
+
+function typeLabel(type: ChangelogType): string {
+  if (type === "feature") return "Feature";
+  if (type === "fix") return "Fix";
+  return "Improve";
+}
+
+function updatesExtras(): string {
+  const items = publicChangelogEntries()
+    .map(
+      (e) => `<li class="site-changelog__item" data-type="${esc(e.type)}">
+<p class="site-changelog__meta"><time datetime="${esc(e.date)}">${esc(e.date)}</time> · <span class="site-changelog__type">${esc(typeLabel(e.type))}</span></p>
+<h3 class="site-changelog__title">${esc(e.title)}</h3>
+<p class="site-changelog__body">${linkify(e.body)}</p>
+</li>`,
+    )
+    .join("\n");
+  return `<aside class="site-changelog" aria-labelledby="changelog-heading">
+<p class="site-changelog__policy">${esc(CHANGELOG.policyEn)}</p>
+<p class="site-changelog__updated">Updated <time datetime="${esc(CHANGELOG.updatedAt)}">${esc(CHANGELOG.updatedAt)}</time></p>
+<h2 id="changelog-heading">Shipped timeline</h2>
+<ol class="site-changelog__list">
+${items}
+</ol>
+</aside>`;
 }
 
 function materialsMedia(): string {
