@@ -408,7 +408,7 @@ function drawPieceNumberLabel(
   ctx.fillText(text, x, y);
 }
 
-/** OUT / INJ / IN — 帯内記号。座標は自由（docs/BROADCAST_SUBS.md） */
+/** OUT / INJ / IN — 帯内記号。色は第4審判ボード（赤=出・緑=入）。docs/BROADCAST_SUBS.md §5b */
 function drawMatchStatusMark(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -424,54 +424,64 @@ function drawMatchStatusMark(
   if (status === "out") {
     ctx.beginPath();
     ctx.arc(bx, by, badgeR, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(20,20,22,0.88)";
+    ctx.fillStyle = "rgba(40,12,14,0.92)";
     ctx.fill();
-    ctx.strokeStyle = "rgba(243,243,241,0.85)";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(229,57,53,0.95)";
+    ctx.lineWidth = 1.15;
     ctx.stroke();
+    // ↓ — leaving the pitch (fourth-official red)
+    const s = badgeR * 0.42;
     ctx.beginPath();
-    ctx.moveTo(bx - badgeR * 0.45, by - badgeR * 0.45);
-    ctx.lineTo(bx + badgeR * 0.45, by + badgeR * 0.45);
-    ctx.moveTo(bx + badgeR * 0.45, by - badgeR * 0.45);
-    ctx.lineTo(bx - badgeR * 0.45, by + badgeR * 0.45);
-    ctx.strokeStyle = "rgba(243,243,241,0.95)";
-    ctx.lineWidth = Math.max(1.2, badgeR * 0.28);
+    ctx.moveTo(bx, by - s * 0.85);
+    ctx.lineTo(bx, by + s * 0.35);
+    ctx.moveTo(bx - s * 0.55, by - s * 0.05);
+    ctx.lineTo(bx, by + s * 0.55);
+    ctx.lineTo(bx + s * 0.55, by - s * 0.05);
+    ctx.strokeStyle = "rgba(255,235,235,0.98)";
+    ctx.lineWidth = Math.max(1.25, badgeR * 0.28);
     ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.stroke();
     ctx.lineCap = "butt";
+    ctx.lineJoin = "miter";
     return;
   }
 
   if (status === "injured") {
     ctx.beginPath();
     ctx.arc(bx, by, badgeR, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(20,20,22,0.88)";
+    ctx.fillStyle = "rgba(40,12,14,0.92)";
     ctx.fill();
-    ctx.strokeStyle = "#c4a24a";
-    ctx.lineWidth = 1.25;
+    ctx.strokeStyle = "rgba(229,57,53,0.95)";
+    ctx.lineWidth = 1.2;
     ctx.stroke();
-    ctx.fillStyle = "#c4a24a";
-    ctx.font = `700 ${Math.max(7, badgeR * 1.15)}px ${UI_FONT_STACK}`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("+", bx, by + 0.5);
+    // Medical cross (not UI “add”)
+    const arm = badgeR * 0.48;
+    const thick = Math.max(1.4, badgeR * 0.32);
+    ctx.fillStyle = "rgba(255,240,240,0.98)";
+    ctx.fillRect(bx - thick / 2, by - arm, thick, arm * 2);
+    ctx.fillRect(bx - arm, by - thick / 2, arm * 2, thick);
     return;
   }
 
   if (status === "in") {
     ctx.beginPath();
-    ctx.arc(bx, by, badgeR * 0.9, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(20,20,22,0.75)";
+    ctx.arc(bx, by, badgeR * 0.92, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(12,28,18,0.88)";
     ctx.fill();
-    ctx.strokeStyle = "rgba(120,190,140,0.95)";
+    ctx.strokeStyle = "rgba(76,175,120,0.98)";
     ctx.lineWidth = 1.2;
     ctx.stroke();
+    // ↑ — entering (fourth-official green)
+    const s = badgeR * 0.42;
     ctx.beginPath();
-    ctx.moveTo(bx - badgeR * 0.35, by);
-    ctx.lineTo(bx - badgeR * 0.05, by + badgeR * 0.35);
-    ctx.lineTo(bx + badgeR * 0.4, by - badgeR * 0.35);
-    ctx.strokeStyle = "rgba(120,190,140,0.95)";
-    ctx.lineWidth = Math.max(1.2, badgeR * 0.28);
+    ctx.moveTo(bx, by + s * 0.85);
+    ctx.lineTo(bx, by - s * 0.35);
+    ctx.moveTo(bx - s * 0.55, by + s * 0.05);
+    ctx.lineTo(bx, by - s * 0.55);
+    ctx.lineTo(bx + s * 0.55, by + s * 0.05);
+    ctx.strokeStyle = "rgba(220,255,230,0.98)";
+    ctx.lineWidth = Math.max(1.25, badgeR * 0.28);
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.stroke();
