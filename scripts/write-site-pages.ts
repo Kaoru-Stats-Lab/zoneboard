@@ -44,12 +44,21 @@ function article(page: SitePage): string {
     )
     .join("\n");
   const form = page.showContactForm ? contactForm() : "";
+  const extras = page.slug === "materials" ? materialsMedia() : "";
   return `<article>
 <h1>${esc(page.titleEn)}</h1>
 <p class="lede">${linkify(page.ledeEn)}</p>
+${extras}
 ${form}
 ${sections}
 </article>`;
+}
+
+function materialsMedia(): string {
+  return `<figure class="site-media">
+<video controls playsinline preload="metadata" poster="/brand/motion/exports/A/final-lockup-plate-16x9.png" src="/brand/motion/exports/A/sting-lockup-plate-16x9.mp4"></video>
+<figcaption>Default lockup end card (16:9) — drop after the board capture, not on the live pitch.</figcaption>
+</figure>`;
 }
 
 function contactForm(): string {

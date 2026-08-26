@@ -8,9 +8,16 @@ import { CONSENT_BANNER } from "../site/consentCopy";
 import { useFeedback } from "./FeedbackProvider";
 import { BrandLockup } from "./BrandMark";
 import { ConsentBanner, useConsentBanner } from "./ConsentBanner";
-import { LpAfterBoard } from "./LpAfterBoard";
-import { LpEndCardDemo } from "./LpEndCardDemo";
 import { LpHeroBoard } from "./LpHeroBoard";
+
+/** note は空文字なら出さない（細文は例外だけ） */
+const CAN_ITEMS: { line: MessageKey; note: MessageKey }[] = [
+  { line: "lpCan1", note: "lpCan1Note" },
+  { line: "lpCan2", note: "lpCan2Note" },
+  { line: "lpCan3", note: "lpCan3Note" },
+  { line: "lpCan4", note: "lpCan4Note" },
+  { line: "lpCan5", note: "lpCan5Note" },
+];
 
 export function Landing() {
   const t = (k: MessageKey) => messages[APP_LOCALE][k];
@@ -62,19 +69,46 @@ export function Landing() {
           </li>
         </ol>
 
-        <main className="lp-close">
-          <section className="lp-after" aria-labelledby="lp-after-title">
-            <h2 id="lp-after-title" className="lp-kicker">
-              {t("lpAfterTitle")}
+        <section className="lp-can" aria-labelledby="lp-can-title">
+          <h2 id="lp-can-title" className="lp-can-heading">
+            {t("lpCanTitle")}
+          </h2>
+          <p className="lp-can-lead">{t("lpCanLead")}</p>
+          <ul className="lp-can-list">
+            {CAN_ITEMS.map(({ line, note }) => {
+              const noteText = t(note);
+              return (
+                <li key={line}>
+                  <p className="lp-can-line">{t(line)}</p>
+                  {noteText ? <p className="lp-can-note">{noteText}</p> : null}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        <main className="lp-close lp-close--solo">
+          <section aria-labelledby="lp-close-title">
+            <h2 id="lp-close-title" className="lp-close-heading">
+              {t("lpCloseTitle")}
             </h2>
-            <p className="lp-close-copy">{t("lpAfterBody")}</p>
+            <p className="lp-close-copy">{t("lpCloseBody")}</p>
             <p className="lp-price">
+              <a href="/materials/">{t("lpMaterialsLink")}</a>
+              <span className="lp-price-sep" aria-hidden="true">
+                ·
+              </span>
               {t("lpPriceBody")}{" "}
               <a href="/pricing/">{t("lpPriceLink")}</a>
             </p>
+            <Link
+              className="lp-cta lp-cta--close"
+              to="/board"
+              onClick={() => trackEvent("open_board")}
+            >
+              {t("lpCloseCta")}
+            </Link>
           </section>
-          <LpAfterBoard />
-          <LpEndCardDemo />
         </main>
 
         <footer className="lp-footer">

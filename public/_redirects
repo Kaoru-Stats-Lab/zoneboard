@@ -6,6 +6,7 @@
 /guide    /guide/    301
 /faq      /faq/      301
 /pricing  /pricing/  301
+/materials  /materials/  301
 /privacy  /privacy/  301
 /terms    /terms/    301
 /cookies  /cookies/  301
@@ -14,6 +15,7 @@
 /guide/   /guide/index.html    200
 /faq/     /faq/index.html      200
 /pricing/ /pricing/index.html  200
+/materials/ /materials/index.html  200
 /privacy/ /privacy/index.html  200
 /terms/   /terms/index.html    200
 /cookies/ /cookies/index.html  200

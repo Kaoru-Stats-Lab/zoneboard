@@ -24,6 +24,7 @@ import {
   LP_T_PASS_START,
   lpHeroDribbleLine,
   lpHeroPassLine,
+  obsVisible,
   passProgress,
   railCollapsed,
 } from "../presets/lpHeroScene";
@@ -86,6 +87,7 @@ export function LpHeroBoard() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
+  const obsRef = useRef<HTMLDivElement>(null);
   const captionRef = useRef<HTMLElement>(null);
   const { board, scene } = useMemo(() => createLpHeroData(), []);
   const ballImageRef = useRef<HTMLImageElement | null>(null);
@@ -134,6 +136,7 @@ export function LpHeroBoard() {
       });
 
       frameRef.current?.classList.toggle("is-broadcast", railCollapsed(t));
+      obsRef.current?.classList.toggle("is-visible", obsVisible(t));
       captionRef.current?.classList.toggle("is-visible", railCollapsed(t));
     };
 
@@ -204,6 +207,10 @@ export function LpHeroBoard() {
           <div className="lp-board-canvas-wrap" ref={wrapRef}>
             <canvas ref={canvasRef} aria-hidden="true" />
           </div>
+        </div>
+        <div className="lp-obs" ref={obsRef} aria-hidden="true">
+          <div className="lp-obs-cam" />
+          <div className="lp-obs-chat" />
         </div>
       </div>
       <figcaption ref={captionRef}>{lpCaption()}</figcaption>

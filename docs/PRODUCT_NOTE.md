@@ -286,6 +286,14 @@ CK 角の旧値はコーナー弧だけ入りゴールが外れ、サッカー�
 | TacticalPad 等 | 配信モードでキャンバス最大化 |
 | TacticsLista 等 | ピッチ大 + **自分のロゴ透かし**（運営ロゴではない） |
 
+横並びの機能表・LP 用の短い言い方・Export 比率ズーム判定: [`COMPETITIVE_LP.md`](COMPETITIVE_LP.md)（2026-08-26）。LP 本体に比較表は載せない（[`LP_STRUCTURE.md`](LP_STRUCTURE.md)）。
+
+### 決定ログ — Export 画角に比率連動ズームは付けない（2026-08-26）
+
+**4:5 / Story / Square は媒体キャンバスの形。切り替えても viewport ズームは変えない。**
+
+媒体（IG Feed・Stories/Reels・X/Threads）が欲しいのは画面占有の比率であり、カメラ距離ではない。寄る／引くはホイール・投稿フォーカス・局面画角。パンは PNG 枠ドラッグ。四役とも No。詳細は [`COMPETITIVE_LP.md`](COMPETITIVE_LP.md) §0 · [`SOCIAL_OUTPUT.md`](SOCIAL_OUTPUT.md)。
+
 ---
 
 ## 6. 収益メモ

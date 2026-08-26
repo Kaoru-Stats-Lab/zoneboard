@@ -9,6 +9,7 @@ import {
   downloadBlob,
   exportBoardPng,
   exportFilename,
+  type ExportCropAnchor,
   type ExportFocusId,
   type ExportPresetId,
 } from "../canvas/exportPng";
@@ -25,6 +26,8 @@ type Props = {
   setExportPreset: (p: ExportPresetId) => void;
   exportFocus: ExportFocusId;
   setExportFocus: (f: ExportFocusId) => void;
+  exportCropAnchor: ExportCropAnchor;
+  exportStageAspect: number;
 };
 
 const WM_POSITIONS: { id: string; x: number; y: number; key: MessageKey }[] = [
@@ -44,6 +47,8 @@ export function SettingsModal({
   setExportPreset,
   exportFocus,
   setExportFocus,
+  exportCropAnchor,
+  exportStageAspect,
 }: Props) {
   const { openFeedback } = useFeedback();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -126,6 +131,8 @@ export function SettingsModal({
         focus: exportFocus,
         selectionColor: state.selectionColor,
         y2cLabel: t("cardY2CLabel"),
+        stageAspect: exportStageAspect,
+        cropAnchor: exportCropAnchor,
       },
       ballImg,
     );

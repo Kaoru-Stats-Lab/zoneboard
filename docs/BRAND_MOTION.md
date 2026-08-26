@@ -25,9 +25,10 @@ ZoneBoard ロゴスティング（マーク / ロックアップ）の**使い�
 ### Sports signal との関係
 
 [`STUDIO.md`](STUDIO.md) §1 Sports signal: ブランド MP4 は **Sports感の主力にしない**。  
-LP では After 帯の **HTML/CSS ロックアップ 1-shot**（スクロールイン／Replay）。ヒーロー・Parallax は使わない。  
+LP のピッチはヒーローに **1枚だけ**（Broadcast キャプチャ＋OBS シルエット）。エンドカードは載せない。  
+エンドカード／スティングの置き場は [`/materials/`](https://zoneboard.app/materials/)。Parallax なし。  
 MP4 は Clipchamp 等の書き出しマスター。  
-LP 全体の「サッカーの気配」は **ピッチデモの動き・局面切替・試合後の時間軸** で担う。
+LP の「サッカーの気配」は **ヒーローのピッチデモ（置く→描く→配信）** で担う。
 
 ### 制作パイプライン
 
@@ -102,7 +103,7 @@ LP 全体の「サッカーの気配」は **ピッチデモの動き・局面�
 | **B** | Composite overlay | 映像の**上**に透明マーク | `exports/B/sting-clear-1x1.gif` 等 |
 | **C** | Product / QA | ライブ HTML・タイミング確認 | `logo_motion.html`, `motion.css` |
 | **D** | Reference | QA ストリップ（出荷しない） | `outputs/motion_strip.png` |
-| **LP After** | ワークフロー例 | Sports signal — HTML/CSS 1-shot | `LpEndCardDemo` |
+| **Materials** | 公開素材ページ | ダウンロード・Clipchamp 手順・プレビュー | `/materials/` |
 
 ### Surface A — どれを使うか
 

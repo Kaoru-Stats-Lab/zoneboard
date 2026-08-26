@@ -46,6 +46,7 @@ Regenerate: `npm run brand:motion`
 
 ## LP（Sports signal）
 
-- ヒーローに載せない。Parallax なし。
-- After 帯: **HTML/CSS 1-shot**（`LpEndCardDemo` — スクロールインで1回、Replay 可）。`prefers-reduced-motion` は静止ロックアップ。
-- MP4（`exports/A/sting-lockup-plate-16x9.mp4`）は Clipchamp 用マスター。LP の正は CSS。
+- ヒーローにエンドカードを載せない。ピッチは **1枚だけ**。Parallax なし。
+- Broadcast: レール消失 → OBS cam / チャットのシルエット。
+- エンドカードと Clipchamp 手順は **`/materials/`**（`exports/A/sting-lockup-plate-16x9.mp4` が既定）。
+- インタラクティブ確認は `logo_motion.html`（Surface C）。

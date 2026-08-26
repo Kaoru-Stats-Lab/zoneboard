@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   exportAspectRatio,
+  type ExportCropAnchor,
   type ExportFocusId,
   type ExportPresetId,
   viewportForFocus,
@@ -49,8 +50,23 @@ export function Editor({ state }: Props) {
   const [wmImage, setWmImage] = useState<HTMLImageElement | null>(null);
   const [exportPreset, setExportPreset] = useState<ExportPresetId>("ig45");
   const [exportFocus, setExportFocus] = useState<ExportFocusId>("current");
+  const [exportCropAnchor, setExportCropAnchor] = useState<ExportCropAnchor>({
+    x: 0.5,
+    y: 0.5,
+  });
+  const [exportStageAspect, setExportStageAspect] = useState(16 / 9);
   const [windowFocused, setWindowFocused] = useState(true);
   const [howToOpen, setHowToOpen] = useState(false);
+
+  useEffect(() => {
+    setExportCropAnchor({ x: 0.5, y: 0.5 });
+  }, [exportPreset, exportFocus]);
+
+  useEffect(() => {
+    if (!state.settingsOpen) {
+      setExportCropAnchor({ x: 0.5, y: 0.5 });
+    }
+  }, [state.settingsOpen]);
 
   useEffect(() => {
     if (!state.broadcast) {
@@ -471,7 +487,13 @@ export function Editor({ state }: Props) {
             t={t}
           />
           {exportAspect != null && (
-            <ExportPreviewFrame aspect={exportAspect} t={t} />
+            <ExportPreviewFrame
+              aspect={exportAspect}
+              anchor={exportCropAnchor}
+              onAnchorChange={setExportCropAnchor}
+              onStageAspect={setExportStageAspect}
+              t={t}
+            />
           )}
           <ToolRail state={state} t={t} />
           <PieceInspector state={state} t={t} />
@@ -545,6 +567,8 @@ export function Editor({ state }: Props) {
         setExportPreset={setExportPreset}
         exportFocus={exportFocus}
         setExportFocus={setExportFocus}
+        exportCropAnchor={exportCropAnchor}
+        exportStageAspect={exportStageAspect}
       />
     </div>
   );

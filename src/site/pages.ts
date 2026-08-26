@@ -365,6 +365,77 @@ export const SITE_PAGES: SitePage[] = [
     ],
   },
   {
+    slug: "materials",
+    titleEn: "Brand materials",
+    titleJa: "ブランド素材",
+    descriptionEn:
+      "End-card stings and brand files for Clipchamp and YouTube — after the capture, not on the live pitch.",
+    descriptionJa:
+      "Clipchamp / YouTube 用のエンドカードとブランドファイル。ライブのピッチ上ではなく、キャプチャのあとに置くもの。",
+    ledeEn:
+      "These files are for the end of a recording or VOD. They are not broadcast chrome. On stream, press B and capture the pitch. Use the stings when the board segment is over.",
+    ledeJa:
+      "これらのファイルは収録や VOD の末尾用です。配信中の chrome ではありません。配信中は B を押してピッチをキャプチャします。ボード区間が終わったあとにスティングを使います。",
+    sections: [
+      {
+        headingEn: "Default end card",
+        headingJa: "既定のエンドカード",
+        en: [
+          "Lockup sting (16:9) — the default for landscape timelines: https://zoneboard.app/brand/motion/exports/A/sting-lockup-plate-16x9.mp4",
+          "Lockup sting (1:1) — square cuts: https://zoneboard.app/brand/motion/exports/A/sting-lockup-plate-1x1.mp4",
+          "Still posters if you only need a freeze frame: https://zoneboard.app/brand/motion/exports/A/final-lockup-plate-16x9.png and https://zoneboard.app/brand/motion/exports/A/final-lockup-plate-1x1.png",
+        ],
+        ja: [
+          "ロックアップスティング（16:9）— 横長タイムラインの既定: https://zoneboard.app/brand/motion/exports/A/sting-lockup-plate-16x9.mp4",
+          "ロックアップスティング（1:1）— 正方形: https://zoneboard.app/brand/motion/exports/A/sting-lockup-plate-1x1.mp4",
+          "静止ポスター: https://zoneboard.app/brand/motion/exports/A/final-lockup-plate-16x9.png と https://zoneboard.app/brand/motion/exports/A/final-lockup-plate-1x1.png",
+        ],
+      },
+      {
+        headingEn: "Mark-only (secondary)",
+        headingJa: "マークのみ（副）",
+        en: [
+          "Shorter stings when the audience already knows the mark: https://zoneboard.app/brand/motion/exports/A/sting-plate-16x9.mp4 and https://zoneboard.app/brand/motion/exports/A/sting-plate-1x1.mp4",
+          "Transparent overlay for compositing on footage (not a full-screen end card): https://zoneboard.app/brand/motion/exports/B/sting-clear-1x1.gif",
+        ],
+        ja: [
+          "マークを知っている視聴者向けの短尺: https://zoneboard.app/brand/motion/exports/A/sting-plate-16x9.mp4 と https://zoneboard.app/brand/motion/exports/A/sting-plate-1x1.mp4",
+          "映像に重ねる透明版（全画面エンドカードではない）: https://zoneboard.app/brand/motion/exports/B/sting-clear-1x1.gif",
+        ],
+      },
+      {
+        headingEn: "Clipchamp recipe",
+        headingJa: "Clipchamp での使い方",
+        en: [
+          "1. Capture the ZoneBoard window in broadcast mode (tools hidden).",
+          "2. When that segment ends, drop the lockup 16:9 MP4 for about three seconds.",
+          "3. Do not loop the sting on the live show. Do not put it on the pitch during play.",
+          "Interactive choreography preview (mark only): https://zoneboard.app/brand/motion/logo_motion.html",
+          "Flat SVGs for other animation tools: https://zoneboard.app/brand/exports/",
+        ],
+        ja: [
+          "1. 配信モード（ツール非表示）の ZoneBoard 窓をキャプチャする。",
+          "2. その区間のあとに、ロックアップ 16:9 の MP4 を約3秒置く。",
+          "3. 生放送でスティングをループしない。プレー中のピッチにも載せない。",
+          "振り付けのインタラクティブ確認（マークのみ）: https://zoneboard.app/brand/motion/logo_motion.html",
+          "他ツール向けフラット SVG: https://zoneboard.app/brand/exports/",
+        ],
+      },
+      {
+        headingEn: "What this page is not",
+        headingJa: "このページではないもの",
+        en: [
+          "It is not the landing pitch demo. The home page shows one board — broadcast capture — and stops there.",
+          "It is not a license to put ZoneBoard chrome over someone else’s match feed. The sting brands your own board segment after you stop drawing.",
+        ],
+        ja: [
+          "ランディングのピッチデモではありません。ホームはボードを一つだけ見せます。配信キャプチャです。",
+          "他人の試合映像の上に ZoneBoard の枠を載せる許可でもありません。スティングは、あなたが描き終えたボード区間のあとにブランドを置くためのものです。",
+        ],
+      },
+    ],
+  },
+  {
     slug: "privacy",
     titleEn: "Privacy policy",
     titleJa: "プライバシーポリシー",

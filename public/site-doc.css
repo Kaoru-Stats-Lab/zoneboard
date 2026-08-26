@@ -140,6 +140,27 @@ a:hover {
   color: var(--zb-muted);
 }
 
+.site-media {
+  margin: 0 0 2rem;
+  max-width: 36rem;
+}
+
+.site-media video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #141516;
+  border: 1px solid var(--zb-line);
+  border-radius: 2px;
+}
+
+.site-media figcaption {
+  margin: 0.55rem 0 0;
+  color: var(--zb-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 .site-main h2 {
   margin: 2rem 0 0.6rem;
   font-size: 1.15rem;

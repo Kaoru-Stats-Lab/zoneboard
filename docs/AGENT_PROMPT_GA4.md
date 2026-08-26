@@ -32,7 +32,6 @@ PH と欧州公開のために **GA4 で「誰が来て、ボードを開いた�
 | `page_view`: `/` `/pricing/` 読み物 `/board`（配信モード以外） | 局面名、名簿、駒の名前・番号、キット色、描画パス |
 | イベント `open_board`（LP の Open board） | 配信モード（`?broadcast=1`）中のヒット |
 | 任意で `feedback_open`（ボタン押下だけ） | スクロール深度の過剰、ヒートマップ、Google シグナル |
-| 任意で `preview_end_card`（After 帯のエンドカード再生） | |
 | | `/board` 上の同意バナー（出さない） |
 
 GTM は使わない。`gtag.js` 直。タグマネの面を増やさない。
