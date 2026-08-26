@@ -1,7 +1,7 @@
 # Product Hunt — 準備ログ
 
-**更新:** 2026-08-26（GA4 リアルタイム確認済 · キット文案ドラフト）  
-**判定:** **キット準備中。Launch ボタンはまだ押さない。**  
+**更新:** 2026-08-26（Broadcast 出荷済 · `/updates` · ギャラリーは後回し）  
+**判定:** **キット準備中。Launch ボタンはまだ押さない。ギャラリー撮影は後回しで文案・下書きを先に進める。**  
 **本番:** https://zoneboard.app（Cloudflare Pages · `main` 自動デプロイ）
 
 ---
@@ -15,12 +15,13 @@
 | 貼れる Guide / FAQ アンカー | **Ready** |
 | 認知 B/C（PNG クレジット任意 · 説明文コピー） | **Ready**（既定 OFF） |
 | GA4（同意後 · `collect` · リアルタイム） | **Ready**（2026-08-26 確認） |
-| PH 文案（tagline · description · first comment） | **Draft 下記 §3** — カオルが最終選定 |
-| PH ギャラリー | **未撮影** — 仕様は §4 |
+| Broadcast 交代 / PK 帯 / ライブ Undo | **Ready**（本番） |
+| 公開 Updates（[`/updates/`](https://zoneboard.app/updates/)） | **Ready** |
+| PH 文案（tagline · description · first comment） | **Draft §3** — **次: T1 採用で下書き保存** |
+| PH ギャラリー | **後回し**（仕様は §4 · Launch 直前で可） |
 | 初日のつて / hunter | **なし**（必須にしない） |
 | FAQ 大幅拡充 | **後**（実問が来てから） |
 | Launch 日程 | **未定** — 火〜木 PT · 本人が最初の数時間貼れる日 |
-| **Broadcast 交代 / 負傷表示** | **研究済 · 実装最優先**（[`BROADCAST_SUBS.md`](BROADCAST_SUBS.md)）· PH より先 |
 
 ---
 
@@ -31,10 +32,11 @@
 - エンドカードは LP に載せない · `/materials/`
 - Press B · no account · cam/chat は OBS
 - PNG 枠ドラッグ · 比率連動ズームは作らない（決定済）
+- Post framing ラベルを正直化（全体ズーム ≠ 縦枠に芝全部）
 
 ### 認知 / SEO / Deep links
 - B/C · OGP PNG · Guide `#place` `#draw` `#show` · FAQ 明示 id  
-- 詳細は前回ログのまま（[`shareCopy.ts`](../src/site/shareCopy.ts) · [`siteMeta.ts`](../src/site/siteMeta.ts)）
+- Updates: [`CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md) · `src/site/changelog.ts`
 
 ### GA4
 - Consent 後のみ · Broadcast では送らない  
@@ -42,15 +44,16 @@
 
 ---
 
-## 2. Launch 前チェック（残り）
+## 2. Launch 前チェック（残り · ギャラリー後回し）
 
 1. [x] GA4 リアルタイム  
-2. [ ] **ギャラリー撮影**（§4）を PH 下書きにアップロード  
-3. [ ] **§3 文案の最終選定**（A/B から1本）  
-4. [ ] PH 下書きを保存（Scheduled でも Draft でも可 · **Launch はしない**）  
-5. [ ] 本番スモーク最終: LP → Allow analytics → Open board → B → `/materials/` コピー  
+2. [x] Broadcast 最低限（交代記号 · PK 帯 · Undo）  
+3. [ ] **§3 文案の最終選定**（推奨 **T1** で確定してよいか）  
+4. [ ] **PH 下書きを保存**（ギャラリーなしでも Draft / Scheduled 可 · **Launch はしない**）  
+5. [ ] 本番スモーク: LP → Allow analytics → Open board → B → `/materials/` · `/updates/`  
 6. [ ] 日程決定（火〜木 PT · 起床〜半日空いている日）  
-7. [ ] Launch 当日: first comment 投稿 · X に1投稿 · Guide `#show` を返信用に控える  
+7. [ ] **ギャラリー撮影**（§4）— Launch 直前で可 · 下書き後でも差し替え可  
+8. [ ] Launch 当日: first comment · X 1投稿 · Guide `#show` 控え  
 
 やらない（本文に書かない）: 有料予告 · 競合表 · upvote お願い連投
 
@@ -129,7 +132,7 @@ I’d love notes from anyone who already runs a match show: what’s missing bef
 
 ---
 
-## 4. ギャラリー仕様（未撮影）
+## 4. ギャラリー仕様（後回し · Launch 直前）
 
 **目的:** 3 秒で「OBS に足すボード / B でツールが消える」が分かること。  
 **禁止:** エンドカードをメインにする · 競合比較 · 長い設定ツアー。
@@ -174,4 +177,5 @@ OBS がある日: 同じ手順のあと、OBS プレビューに Window Capture 
 
 - LP: [`LP_STRUCTURE.md`](LP_STRUCTURE.md) · [`COMPETITIVE_LP.md`](COMPETITIVE_LP.md)  
 - OBS: [`OBS.md`](OBS.md) · Guide: https://zoneboard.app/guide/#show  
+- Updates: https://zoneboard.app/updates/ · [`CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md)  
 - GA4: [`AGENT_PROMPT_GA4.md`](AGENT_PROMPT_GA4.md)  
