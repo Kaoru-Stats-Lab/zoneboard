@@ -148,7 +148,7 @@ function paintBoardSurface(
     ballImage: options.ballImage,
   });
   if (bannerH > 0) {
-    drawMatchBanner(ctx, canvasW, bannerH, boardView, options.y2cLabel);
+    drawMatchBanner(ctx, canvasW, canvasH, boardView, options.y2cLabel);
   }
 }
 

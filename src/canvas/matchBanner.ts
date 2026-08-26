@@ -1,6 +1,12 @@
-import type { BoardDocument, GoalEntry } from "../models/types";
+import type { BoardDocument, GoalEntry, PkKickSlot } from "../models/types";
 import { BANNER_FONT_STACK } from "../models/types";
 import { kitsFromBoard } from "../models/kits";
+import {
+  createPkShootout,
+  pkScoredCount,
+  pkStripVisible,
+  teamLabelForPk,
+} from "../models/pkShootout";
 import {
   buildMatchTimeline,
   cardTimelineName,
@@ -28,18 +34,47 @@ export function bannerHasContent(board: BoardDocument): boolean {
   return board.showMatchBanner;
 }
 
-/** 得点・カードタイムライン2行目 */
+export type BannerBands = {
+  scoreBand: number;
+  timelineBand: number;
+  pkBand: number;
+  total: number;
+};
+
+/**
+ * 視聴面の縦割り（スコア / タイムライン / PK）。
+ * 操作パネル（LiveMatchControls）とは独立 — 配信キャプチャの正本。
+ */
+export function matchBannerBands(
+  canvasH: number,
+  board: BoardDocument,
+): BannerBands {
+  if (!bannerHasContent(board)) {
+    return { scoreBand: 0, timelineBand: 0, pkBand: 0, total: 0 };
+  }
+  const scoreBand = Math.max(34, canvasH * 0.042);
+  const hasTimeline =
+    board.goals.length > 0 || (board.cards?.length ?? 0) > 0;
+  const timelineBand = hasTimeline
+    ? Math.max(20, scoreBand * 0.72)
+    : 0;
+  const pkBand = pkStripVisible(board.pk)
+    ? Math.max(52, canvasH * 0.062)
+    : 0;
+  return {
+    scoreBand,
+    timelineBand,
+    pkBand,
+    total: scoreBand + timelineBand + pkBand,
+  };
+}
+
 export function matchBannerHeight(
   _canvasW: number,
   canvasH: number,
   board: BoardDocument,
 ): number {
-  if (!bannerHasContent(board)) return 0;
-  const oneLine = Math.max(34, canvasH * 0.042);
-  const hasTimeline =
-    board.goals.length > 0 || (board.cards?.length ?? 0) > 0;
-  if (!hasTimeline) return oneLine;
-  return Math.max(52, oneLine * 1.65);
+  return matchBannerBands(canvasH, board).total;
 }
 
 /** 描画幅で省略（書記素単位。サロゲートを割らない） */
@@ -91,7 +126,6 @@ function drawKitBar(
   ctx.fill();
 }
 
-/** 行クラスタの光学的高さ（スコア桁とチーム名の大きい方） */
 function lineClusterHeight(
   ctx: CanvasRenderingContext2D,
   nameFont: string,
@@ -110,13 +144,139 @@ function lineClusterHeight(
   return Math.max(nameH, scoreH, 1);
 }
 
+function slotGlyph(slot: PkKickSlot): string {
+  if (slot.result === "scored") return "○";
+  if (slot.result === "missed") return "✕";
+  // 未キック: ブランク（◯枠は得点と同族）。列幅はグリッドで確保
+  return "";
+}
+
+/**
+ * 視聴用 PK — CL 型の列グリッド。
+ * kit | 名前列（両行同幅） | 本数列 | スロット列（H/A で X 一致）
+ * 未キックは空だがセルは潰さない。
+ */
+function drawPkStrip(
+  ctx: CanvasRenderingContext2D,
+  canvasW: number,
+  y0: number,
+  bandH: number,
+  board: BoardDocument,
+) {
+  const pk = board.pk ?? createPkShootout(false);
+  if (!pkStripVisible(pk) || bandH <= 0) return;
+
+  const kits = kitsFromBoard(board);
+  const padX = Math.max(12, canvasW * 0.018);
+  const rowH = bandH / 2;
+  const markSize = Math.max(12, Math.min(17, rowH * 0.52));
+  const nameSize = Math.max(11, Math.min(14, rowH * 0.4));
+  const countSize = Math.max(13, Math.min(17, rowH * 0.5));
+  const barW = Math.max(3, Math.min(5, canvasW * 0.004));
+  const gapKitName = Math.max(6, nameSize * 0.4);
+  const gapNameCount = Math.max(10, nameSize * 0.65);
+  const gapCountSlots = Math.max(14, markSize * 0.9);
+
+  const slotCount = Math.max(pk.home.length, pk.away.length, 1);
+  const nameFont = `600 ${nameSize}px ${BANNER_FONT_STACK}`;
+  const countFont = `700 ${countSize}px ${BANNER_FONT_STACK}`;
+  const markFont = `700 ${markSize}px ${BANNER_FONT_STACK}`;
+
+  ctx.font = nameFont;
+  const nameColMax = Math.min(canvasW * 0.22, Math.max(88, canvasW * 0.16));
+  const homeNameStr = truncateByWidth(
+    ctx,
+    teamLabelForPk(board, "home"),
+    nameColMax,
+  );
+  const awayNameStr = truncateByWidth(
+    ctx,
+    teamLabelForPk(board, "away"),
+    nameColMax,
+  );
+  const nameColW = Math.max(
+    ctx.measureText(homeNameStr).width,
+    ctx.measureText(awayNameStr).width,
+    nameSize * 3.2,
+  );
+
+  ctx.font = countFont;
+  const countColW = Math.max(
+    ctx.measureText("00").width,
+    countSize * 1.15,
+  );
+
+  const kitBlock = barW + gapKitName;
+  const slotsOrigin =
+    padX + kitBlock + nameColW + gapNameCount + countColW + gapCountSlots;
+  // 残幅いっぱいに伸ばさない（疎な帯は CL ではない）。等間隔の密な列。
+  const slotPitch = Math.max(markSize * 1.45, Math.min(markSize * 1.85, 26));
+  const slotsBlockW = slotPitch * slotCount;
+  const maxSlotsW = Math.max(0, canvasW - padX - slotsOrigin);
+  const pitch =
+    slotsBlockW > maxSlotsW && slotCount > 0
+      ? maxSlotsW / slotCount
+      : slotPitch;
+
+  ctx.textBaseline = "middle";
+
+  (["home", "away"] as const).forEach((team, row) => {
+    const cy = y0 + rowH * (row + 0.5);
+    const kit = team === "home" ? kits.home : kits.away;
+    const nameStr = team === "home" ? homeNameStr : awayNameStr;
+    const slots = pk[team];
+    const scored = pkScoredCount(slots);
+
+    let x = padX;
+    drawKitBar(ctx, x, cy, rowH * 0.55, barW, kit);
+    x += kitBlock;
+
+    ctx.font = nameFont;
+    ctx.fillStyle = BANNER_IVORY;
+    ctx.textAlign = "left";
+    ctx.fillText(nameStr, x, cy);
+
+    const countX = padX + kitBlock + nameColW + gapNameCount + countColW;
+    ctx.font = countFont;
+    ctx.fillStyle = SCORE_WHITE;
+    ctx.textAlign = "right";
+    ctx.fillText(String(scored), countX, cy);
+
+    for (let i = 0; i < slotCount; i++) {
+      const slot = slots[i];
+      const cx = slotsOrigin + pitch * (i + 0.5);
+      if (!slot) continue;
+
+      const glyph = slotGlyph(slot);
+      if (glyph) {
+        ctx.font = markFont;
+        ctx.fillStyle = BANNER_IVORY;
+        ctx.textAlign = "center";
+        ctx.fillText(glyph, cx, cy + 0.5);
+      }
+
+      if (slot.number) {
+        ctx.font = `600 ${Math.max(8, markSize * 0.52)}px ${BANNER_FONT_STACK}`;
+        ctx.fillStyle = BANNER_MUTED;
+        ctx.textAlign = "center";
+        ctx.fillText(slot.number, cx, cy - markSize * 0.7);
+      }
+    }
+  });
+}
+
+/**
+ * @param canvasH レイアウト基準高さ（matchBannerHeight に渡す値と同じ）
+ */
 export function drawMatchBanner(
   ctx: CanvasRenderingContext2D,
   canvasW: number,
-  bannerH: number,
+  canvasH: number,
   board: BoardDocument,
   y2cLabel = "2nd YC",
 ) {
+  const { scoreBand, timelineBand, pkBand, total: bannerH } =
+    matchBannerBands(canvasH, board);
   if (bannerH <= 0) return;
 
   ctx.fillStyle = BANNER_BG;
@@ -129,13 +289,16 @@ export function drawMatchBanner(
   const homeScore = scoreForTeam(board.goals, "home");
   const awayScore = scoreForTeam(board.goals, "away");
   const timeline = buildMatchTimeline(board);
-  const hasTimeline = timeline.length > 0;
-  const line1Y = hasTimeline ? bannerH * 0.36 : bannerH * 0.5;
-  const line2Y = bannerH * 0.78;
+  const hasTimeline = timeline.length > 0 && timelineBand > 0;
+  const line1Y = scoreBand * 0.5;
+  const line2Y = scoreBand + timelineBand * 0.5;
 
-  const titleSize = Math.max(13, Math.min(18, bannerH * 0.28));
-  const scoreSize = Math.max(16, Math.min(24, bannerH * 0.38));
-  const eventSize = Math.max(11, Math.min(15, bannerH * 0.22));
+  const titleSize = Math.max(13, Math.min(18, scoreBand * 0.42));
+  const scoreSize = Math.max(16, Math.min(24, scoreBand * 0.58));
+  const eventSize = Math.max(
+    11,
+    Math.min(15, (timelineBand || scoreBand) * 0.55),
+  );
   const nameFont = `600 ${titleSize}px ${BANNER_FONT_STACK}`;
   const scoreFont = `700 ${scoreSize}px ${BANNER_FONT_STACK}`;
   const rowH = lineClusterHeight(ctx, nameFont, scoreFont);
@@ -298,6 +461,17 @@ export function drawMatchBanner(
         if (nameText.endsWith("…")) break;
       }
     }
+  }
+
+  if (pkBand > 0) {
+    const yPk = scoreBand + timelineBand;
+    ctx.strokeStyle = "rgba(243,243,241,0.12)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padX, yPk);
+    ctx.lineTo(canvasW - padX, yPk);
+    ctx.stroke();
+    drawPkStrip(ctx, canvasW, yPk, pkBand, board);
   }
 }
 

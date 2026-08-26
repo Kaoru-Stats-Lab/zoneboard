@@ -1818,6 +1818,52 @@ button:disabled {
   max-width: min(calc(100% - 120px), 640px);
 }
 
+.live-match-controls--broadcast.live-match-controls--pk-op {
+  max-width: min(calc(100% - 120px), 420px);
+  background: rgba(20, 20, 20, 0.72);
+  border-color: rgba(243, 243, 241, 0.18);
+  box-shadow: none;
+}
+
+.live-match-pk-op {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.live-match-pk-op-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.live-match-pk-op-label {
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+.live-match-pk-op-hint {
+  flex: 1 1 auto;
+  font-size: 0.68rem;
+  color: var(--zb-ink-muted);
+}
+
+.live-match-pk-op-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.live-match-pk-op-team {
+  flex: 0 0 1.1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--zb-ink-muted);
+}
+
 .live-match-pk {
   display: flex;
   flex-direction: column;
@@ -1864,21 +1910,51 @@ button:disabled {
   flex-wrap: wrap;
   gap: 0.2rem;
   flex: 1 1 auto;
+  align-items: center;
 }
 
 .live-match-pk-slot {
-  min-width: 1.55rem;
-  height: 1.55rem;
-  padding: 0 0.2rem;
-  border-radius: 999px;
+  box-sizing: border-box;
+  flex: 0 0 1.6rem;
+  width: 1.6rem;
+  min-width: 1.6rem;
+  max-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border-radius: 4px;
   border: 1px solid var(--zb-border-strong);
   background: transparent;
   color: var(--zb-ink-muted);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.live-match-pk-slot-mark {
+  display: block;
+  width: 1em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.live-match-controls--pk-op .live-match-pk-slot {
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  min-width: 1.5rem;
+  max-width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.72rem;
+  opacity: 0.92;
+}
+
+.live-match-pk-slot--pending {
+  color: var(--zb-ink-muted);
+  border-style: dashed;
+  opacity: 0.75;
 }
 
 .live-match-pk-slot--scored {

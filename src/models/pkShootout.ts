@@ -52,6 +52,19 @@ export function pkScoredCount(slots: PkKickSlot[]): number {
   return slots.filter((s) => s.result === "scored").length;
 }
 
+/** 1本でも結果があれば視聴帯に残す（End PK で消さない） */
+export function pkHasResults(pk: PkShootout): boolean {
+  return [...pk.home, ...pk.away].some(
+    (s) => s.result === "scored" || s.result === "missed",
+  );
+}
+
+/** 帯に PK 列を出すか（進行中 or 結果あり） */
+export function pkStripVisible(pk: PkShootout | undefined): boolean {
+  if (!pk) return false;
+  return pk.active || pkHasResults(pk);
+}
+
 export function cyclePkResult(
   current: PkKickSlot["result"],
 ): PkKickSlot["result"] {
