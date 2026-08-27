@@ -22,7 +22,7 @@ import {
   resolveBenchCount,
   type BenchLevel,
 } from "../presets/bench";
-import { formationPieces } from "../presets/formations";
+import { defaultTacticalSeed } from "../presets/defaultTacticalSeed";
 import { emptyRoster } from "../presets/roster";
 import { DEFAULT_VIEWPORT } from "../presets/viewport";
 import { defaultBoardTitle, defaultSceneLabel, defaultSceneName } from "../i18n/localeDefaults";
@@ -75,11 +75,12 @@ export function createBoard(
 ): BoardDocument {
   const benchCount = DEFAULT_BENCH_COUNT;
   const kits = defaultKitPalette();
+  const seed = defaultTacticalSeed(sport, kits);
   const scene = createScene(defaultSceneLabel(sport, locale), "pre", {
-    pieces: formationPieces(sport, true, benchCount, kits),
-    ball: { x: 0.5, y: 0.5 },
-    objects: [],
-    viewport: { ...DEFAULT_VIEWPORT },
+    pieces: seed.pieces,
+    ball: seed.ball,
+    objects: seed.objects,
+    viewport: seed.viewport ?? { ...DEFAULT_VIEWPORT },
   });
   return {
     schemaVersion: 2,
@@ -116,7 +117,7 @@ export function createBoard(
     benchCount,
     scenes: [scene],
     activeSceneId: scene.id,
-    viewport: { ...DEFAULT_VIEWPORT },
+    viewport: { ...(seed.viewport ?? DEFAULT_VIEWPORT) },
     roster: { home: emptyRoster(), away: emptyRoster() },
     updatedAt: new Date().toISOString(),
   };
