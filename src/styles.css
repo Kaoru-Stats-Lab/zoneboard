@@ -1258,11 +1258,16 @@ button:disabled {
   gap: 6px;
   align-items: center;
   margin-top: 4px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .view-template-row button:first-child {
   flex: 1;
+  min-width: 0;
   text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .view-template-row .danger-text {
@@ -1602,7 +1607,8 @@ button:disabled {
 .drawer-body {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 0.75rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(243, 243, 241, 0.22) transparent;
@@ -1629,6 +1635,42 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.drawer-stack-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.drawer-stack-actions > button,
+.drawer-field {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Language-proof chrome: same footprint in every locale; long copy truncates */
+.drawer-chrome-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.drawer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.drawer-field select {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .drawer h3 {
@@ -1663,6 +1705,8 @@ button:disabled {
   resize: vertical;
   background: var(--zb-ground);
   color: var(--zb-ink);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .drawer input::placeholder,
@@ -1681,6 +1725,9 @@ button:disabled {
   text-align: left;
   border-radius: var(--zb-radius);
   padding: 0.45rem 0.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .scene-chips button.active {
@@ -1803,40 +1850,102 @@ button:disabled {
 .row {
   display: flex;
   gap: 0.35rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.drawer .row {
+  flex-wrap: wrap;
+}
+
+.drawer .row > * {
+  min-width: 0;
 }
 
 .kit-colors {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.55rem;
   margin: 0.35rem 0 0.15rem;
+  min-width: 0;
 }
 
-.kit-colors-row {
+.kit-colors-block {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
 }
 
 .kit-colors-team {
-  width: 4.5rem;
-  flex: 0 0 4.5rem;
   font-size: 0.78rem;
   color: var(--zb-ink-muted);
 }
 
-.kit-swatch {
+.kit-colors-swatches {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.85rem;
+  min-width: 0;
+}
+
+.kit-swatch {
+  position: relative;
+  display: inline-flex;
   flex-direction: row !important;
   align-items: center;
   gap: 0.3rem !important;
   font-size: 0.75rem;
   color: var(--zb-ink-muted);
+  min-width: 0;
 }
 
-.kit-swatch input[type="color"] {
+.kit-swatch__label {
+  flex-shrink: 0;
+}
+
+.kit-swatch__btn {
   width: 1.7rem;
   height: 1.7rem;
+  padding: 0;
+  border: 1px solid var(--zb-border);
+  border-radius: var(--zb-radius);
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.kit-swatch__btn:hover,
+.kit-swatch__btn:focus-visible {
+  outline: 2px solid rgba(243, 243, 241, 0.35);
+  outline-offset: 1px;
+}
+
+.kit-color-pop {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 11.5rem;
+  padding: 0.65rem 0.7rem;
+  background: var(--zb-panel);
+  border: 1px solid var(--zb-border);
+  border-radius: var(--zb-radius);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+.kit-color-pop__picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.kit-color-pop__picker input[type="color"] {
+  width: 100%;
+  height: 2.4rem;
   padding: 0;
   border: 1px solid var(--zb-border);
   border-radius: var(--zb-radius);
@@ -1844,16 +1953,26 @@ button:disabled {
   cursor: pointer;
 }
 
-.kit-hex {
-  width: 5.75rem;
-  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+.kit-color-pop__hex {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
   font-size: 0.72rem;
+  color: var(--zb-ink-muted);
+}
+
+.kit-hex {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: 0.78rem;
   letter-spacing: 0.02em;
   text-transform: lowercase;
-  padding: 0.2rem 0.35rem;
+  padding: 0.35rem 0.45rem;
   border: 1px solid var(--zb-border);
   border-radius: var(--zb-radius);
-  background: var(--zb-surface);
+  background: var(--zb-ground);
   color: var(--zb-ink);
 }
 
@@ -1957,20 +2076,49 @@ button:disabled {
 }
 
 .goal-add {
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
 }
 
-.goal-add select,
-.goal-add input {
+.goal-add__meta,
+.goal-add__who {
+  display: flex;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.goal-add__meta select,
+.goal-add__who input:not(.goal-minute) {
   flex: 1;
-  min-width: 4rem;
+  min-width: 0;
+}
+
+.goal-add__submit {
+  width: 100%;
 }
 
 .goal-minute {
-  max-width: 3.5rem;
-  flex: 0 0 3.5rem !important;
+  width: 3.25rem;
+  flex: 0 0 3.25rem;
+  max-width: 3.25rem;
+}
+
+.piece-scale-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.piece-scale-presets button {
+  min-width: 0;
+  padding: 0.35rem 0.25rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .row .grow {
@@ -2310,7 +2458,7 @@ button:disabled {
 .live-match-controls select,
 .live-match-controls input {
   flex: 1;
-  min-width: 4.5rem;
+  min-width: 0;
   padding: 0.22rem 0.35rem;
   border: 1px solid var(--zb-border);
   border-radius: var(--zb-radius);
@@ -2319,8 +2467,26 @@ button:disabled {
   color: var(--zb-ink);
 }
 
+.live-match-controls--drawer .live-match-goal-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.3rem;
+}
+
+.live-match-controls--drawer .live-match-goal-row > * {
+  min-width: 0;
+}
+
+.live-match-controls--drawer .live-match-minute {
+  max-width: none;
+}
+
+.live-match-controls--drawer .live-match-goal-row > button {
+  grid-column: 1 / -1;
+}
+
 .live-match-controls input:not(.live-match-minute) {
-  min-width: 8rem;
+  min-width: 0;
 }
 
 .live-match-controls--broadcast select,

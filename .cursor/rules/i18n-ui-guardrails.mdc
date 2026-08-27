@@ -1,0 +1,36 @@
+---
+description: Language-independent drawer/chrome UI — short labels, no width-by-locale layout
+alwaysApply: true
+---
+
+# i18n UI guardrails (ZoneBoard)
+
+Layout and interaction must look **the same** in every locale. Users must not relearn the UI when the language changes. String length must never invent a new layout.
+
+## Rules
+
+1. **Structure first, copy second.** Drawer / topbar / live chrome use fixed structures (stack, 2-col grid, 3-segment control). Do not put 3+ prose controls in one horizontal row inside the 300px drawer.
+2. **Chrome vs body copy.** Constrained controls use `*Short` message keys. Full sentence stays in `title` / `aria-label` / hint text (`*Hint`). Never put a paragraph on a button.
+3. **Adding a locale** means translating every key in `src/i18n/messages.ts` for both `ja` and the new locale object — same keys, same roles. Prefer adapting Short keys to ~12 Latin characters or ~6 CJK; if a language needs more, keep the **same component** and truncate with CSS, do not widen the chrome.
+4. **No locale-specific CSS or markup branches** (`if (locale === "ja")` layout). One DOM tree for all languages.
+5. **Overflow is a bug.** Drawer body is `overflow-x: hidden`. New drawer rows must use `.drawer-stack-actions`, `.goal-add`, `.piece-scale-presets`, or `.kit-colors-block` — not an ad-hoc `.row` of long labels.
+6. **HEX / dense inputs** belong in a popover or full-width field, never inline next to multiple swatches in one row.
+7. Before shipping i18n or drawer UI changes, run `npm run test:i18n-chrome`.
+
+## Examples
+
+```tsx
+// ❌ Bad — EN/DE will scroll horizontally
+<div className="row">
+  <button>{t("newScene")}</button>
+  <label>{t("fromPreset")}<select /></label>
+  <button>{t("deleteScene")}</button>
+</div>
+
+// ✅ Good — same stack in every language; Short on segments, full in title
+<div className="drawer-stack-actions">
+  <button title={t("newScene")}>{t("newSceneShort")}</button>
+  …
+</div>
+<button title={t("sizeTactics")}>{t("sizeTacticsShort")}</button>
+```

@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:ink": "npx --yes tsx scripts/pieceInk-check.ts",
+    "test:i18n-chrome": "npx --yes tsx scripts/i18n-chrome-check.ts",
     "brand:marks": "npx --yes tsx scripts/write-brand-marks.ts",
     "brand:og": "node scripts/raster-og.mjs",
     "brand:motion": "python scripts/export-brand-motion.py"

@@ -1,3 +1,11 @@
+/**
+ * UI strings by locale.
+ *
+ * Chrome vs body (see `.cursor/rules/i18n-ui-guardrails.mdc`):
+ * - `*Short` = drawer / topbar / segmented controls (keep brief; layout is shared)
+ * - Full key = title, aria-label, hints, reading pages
+ * - Same keys in every locale object. No layout forks by language.
+ */
 export type Locale = "ja" | "en";
 
 export const messages = {
@@ -153,6 +161,7 @@ export const messages = {
     boardLimitCurrent: "いま表示中",
     boardLimitCancel: "キャンセル",
     deleteBoard: "削除",
+    deleteBoardShort: "削除",
     boardLimit: "上限に達しています（最大3枚）",
     matchLabel: "試合",
     matchLabelPh: "Premier League 第1節",
@@ -180,12 +189,14 @@ export const messages = {
     goalMinute: "分",
     goalMinutePh: "分",
     addGoal: "得点追加",
+    addGoalShort: "追加",
     removeGoal: "得点を削除",
     cardYC: "イエロー",
     cardRC: "レッド",
     cardY2C: "2枚目イエロー",
     cardY2CLabel: "2枚目YC",
     addCard: "カード追加",
+    addCardShort: "追加",
     removeCard: "カードを削除",
     cardPlayer: "選手",
     cardPlayerPh: "選手名",
@@ -197,9 +208,12 @@ export const messages = {
     scenes: "局面",
     scenesHint: "配信中は [ ] で切替",
     newScene: "局面を複製",
+    newSceneShort: "複製",
     deleteScene: "局面削除",
+    deleteSceneShort: "削除",
     sceneLabel: "局面名",
     sceneMirrorEnds: "左右入れ替え",
+    sceneMirrorEndsShort: "左右入替",
     sceneMirrorEndsHint:
       "前後半のエンドチェンジ。この局面の駒・線・ボールを左右に入れ替えます",
     sceneDefaultSoccer: "キックオフ",
@@ -214,6 +228,7 @@ export const messages = {
     sceneLabelPhVolley: "レセプション",
     sceneLimit: "局面は最大8つです",
     fromPreset: "プリセットから",
+    fromPresetShort: "プリセット",
     scenePresetCkRightZonal: "CK右（ゾーン）",
     scenePresetCkLeftZonal: "CK左（ゾーン）",
     hideHalf: "ハーフ非表示",
@@ -370,6 +385,9 @@ export const messages = {
     sizeTactics: "戦術（大）",
     sizeBalanced: "標準",
     sizePosition: "精密（小）",
+    sizeTacticsShort: "戦術",
+    sizeBalancedShort: "標準",
+    sizePositionShort: "精密",
     benchLevel: "サブ人数（大会）",
     benchCount: "サブ人数",
     benchCountUnit: "人",
@@ -621,6 +639,7 @@ export const messages = {
     boardLimitCurrent: "Current",
     boardLimitCancel: "Cancel",
     deleteBoard: "Delete",
+    deleteBoardShort: "Delete",
     boardLimit: "Limit reached (max 3)",
     matchLabel: "Match",
     matchLabelPh: "Premier League MD1",
@@ -648,12 +667,14 @@ export const messages = {
     goalMinute: "Min",
     goalMinutePh: "min",
     addGoal: "Add goal",
+    addGoalShort: "Add",
     removeGoal: "Remove goal",
     cardYC: "Yellow",
     cardRC: "Red",
     cardY2C: "2nd yellow",
     cardY2CLabel: "2nd YC",
     addCard: "Add card",
+    addCardShort: "Add",
     removeCard: "Remove card",
     cardPlayer: "Player",
     cardPlayerPh: "Player name",
@@ -665,9 +686,12 @@ export const messages = {
     scenes: "Scenes",
     scenesHint: "Switch live with [ ]",
     newScene: "Duplicate scene",
+    newSceneShort: "Duplicate",
     deleteScene: "Delete scene",
+    deleteSceneShort: "Delete",
     sceneLabel: "Scene name",
     sceneMirrorEnds: "Swap ends",
+    sceneMirrorEndsShort: "Swap ends",
     sceneMirrorEndsHint:
       "Half-time end change. Mirrors this scene's pieces, lines, and ball left-right",
     sceneDefaultSoccer: "Kick-off",
@@ -682,6 +706,7 @@ export const messages = {
     sceneLabelPhVolley: "Serve receive",
     sceneLimit: "Max 8 scenes",
     fromPreset: "From preset",
+    fromPresetShort: "Preset",
     scenePresetCkRightZonal: "CK right (zonal)",
     scenePresetCkLeftZonal: "CK left (zonal)",
     hideHalf: "Hide half",
@@ -838,6 +863,9 @@ export const messages = {
     sizeTactics: "Tactics (large)",
     sizeBalanced: "Balanced",
     sizePosition: "Position (small)",
+    sizeTacticsShort: "Tactics",
+    sizeBalancedShort: "Balanced",
+    sizePositionShort: "Position",
     benchLevel: "Bench size (level)",
     benchCount: "Bench size",
     benchCountUnit: "",

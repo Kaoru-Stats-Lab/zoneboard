@@ -226,22 +226,26 @@ export function Drawer({ state, t }: Props) {
                 </button>
               ))}
             </div>
-            <div className="row">
+            <div className="drawer-stack-actions">
               <button
                 type="button"
+                className="drawer-chrome-label"
                 disabled={sceneLimit}
+                title={t("newScene")}
                 onClick={() => {
                   if (!state.addScene()) window.alert(t("sceneLimit"));
                 }}
               >
-                {t("newScene")}
+                {t("newSceneShort")}
               </button>
               {scenePresetsForSport(board.sport).length > 0 && (
-                <label>
-                  {t("fromPreset")}
+                <label className="drawer-field">
+                  {t("fromPresetShort")}
                   <select
                     value=""
                     disabled={sceneLimit}
+                    title={t("fromPreset")}
+                    aria-label={t("fromPreset")}
                     onChange={(e) => {
                       const id = e.target.value;
                       if (!id) return;
@@ -262,10 +266,12 @@ export function Drawer({ state, t }: Props) {
               )}
               <button
                 type="button"
+                className="drawer-chrome-label"
                 disabled={board.scenes.length <= 1}
+                title={t("deleteScene")}
                 onClick={() => state.deleteScene(scene.id)}
               >
-                {t("deleteScene")}
+                {t("deleteSceneShort")}
               </button>
             </div>
             <label>
@@ -281,8 +287,13 @@ export function Drawer({ state, t }: Props) {
                 placeholder={t(sceneLabelPhKey(board.sport))}
               />
             </label>
-            <button type="button" onClick={state.mirrorSceneEnds}>
-              {t("sceneMirrorEnds")}
+            <button
+              type="button"
+              className="drawer-chrome-label"
+              title={t("sceneMirrorEnds")}
+              onClick={state.mirrorSceneEnds}
+            >
+              {t("sceneMirrorEndsShort")}
             </button>
             <p className="hint-muted">{t("sceneMirrorEndsHint")}</p>
             <label>
@@ -435,47 +446,51 @@ export function Drawer({ state, t }: Props) {
               </button>
             </div>
             <div className="kit-colors">
-              <div className="kit-colors-row">
+              <div className="kit-colors-block">
                 <span className="kit-colors-team">{t("homeTeam")}</span>
-                <KitColorField
-                  label={
-                    sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")
-                  }
-                  hexLabel={t("kitHexLabel")}
-                  value={kits.home}
-                  onChange={(c) =>
-                    state.setKitColor("home", "outfield", c)
-                  }
-                />
-                {sportHasGk(board.sport) && (
+                <div className="kit-colors-swatches">
                   <KitColorField
-                    label={t("kitGk")}
+                    label={
+                      sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")
+                    }
                     hexLabel={t("kitHexLabel")}
-                    value={kits.homeGk}
-                    onChange={(c) => state.setKitColor("home", "gk", c)}
+                    value={kits.home}
+                    onChange={(c) =>
+                      state.setKitColor("home", "outfield", c)
+                    }
                   />
-                )}
+                  {sportHasGk(board.sport) && (
+                    <KitColorField
+                      label={t("kitGk")}
+                      hexLabel={t("kitHexLabel")}
+                      value={kits.homeGk}
+                      onChange={(c) => state.setKitColor("home", "gk", c)}
+                    />
+                  )}
+                </div>
               </div>
-              <div className="kit-colors-row">
+              <div className="kit-colors-block">
                 <span className="kit-colors-team">{t("awayTeam")}</span>
-                <KitColorField
-                  label={
-                    sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")
-                  }
-                  hexLabel={t("kitHexLabel")}
-                  value={kits.away}
-                  onChange={(c) =>
-                    state.setKitColor("away", "outfield", c)
-                  }
-                />
-                {sportHasGk(board.sport) && (
+                <div className="kit-colors-swatches">
                   <KitColorField
-                    label={t("kitGk")}
+                    label={
+                      sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")
+                    }
                     hexLabel={t("kitHexLabel")}
-                    value={kits.awayGk}
-                    onChange={(c) => state.setKitColor("away", "gk", c)}
+                    value={kits.away}
+                    onChange={(c) =>
+                      state.setKitColor("away", "outfield", c)
+                    }
                   />
-                )}
+                  {sportHasGk(board.sport) && (
+                    <KitColorField
+                      label={t("kitGk")}
+                      hexLabel={t("kitHexLabel")}
+                      value={kits.awayGk}
+                      onChange={(c) => state.setKitColor("away", "gk", c)}
+                    />
+                  )}
+                </div>
               </div>
               {!teamPairOk(kits.home, kits.away) && (
                 <p className="hint-muted kit-pair-warn">{t("kitPairWarn")}</p>
@@ -667,8 +682,9 @@ export function Drawer({ state, t }: Props) {
             <div className="row">
               <button
                 type="button"
+                className="drawer-chrome-label"
                 disabled={atLimit}
-                title={atLimit ? t("boardLimit") : undefined}
+                title={atLimit ? t("boardLimit") : t("newBoard")}
                 onClick={() => {
                   newBoardFlow.requestNew();
                 }}
@@ -677,9 +693,11 @@ export function Drawer({ state, t }: Props) {
               </button>
               <button
                 type="button"
+                className="drawer-chrome-label"
+                title={t("deleteBoard")}
                 onClick={() => state.deleteBoard(board.id)}
               >
-                {t("deleteBoard")}
+                {t("deleteBoardShort")}
               </button>
             </div>
             {atLimit && <p className="hint">{t("boardLimit")}</p>}
@@ -786,39 +804,45 @@ export function Drawer({ state, t }: Props) {
                     ))}
                   </ul>
                 )}
-                <div className="goal-add row">
-                  <select
-                    value={goalTeam}
-                    onChange={(e) =>
-                      setGoalTeam(e.target.value as TeamSide)
-                    }
-                  >
-                    <option value="home">{t("homeTeam")}</option>
-                    <option value="away">{t("awayTeam")}</option>
-                  </select>
-                  <select
-                    value={goalKind}
-                    onChange={(e) => setGoalKind(e.target.value as GoalKind)}
-                    aria-label={t("goalType")}
-                  >
-                    <option value="normal">{t("goalTypeNormal")}</option>
-                    <option value="penalty">{t("goalTypePk")}</option>
-                  </select>
-                  <input
-                    value={goalScorer}
-                    onChange={(e) => setGoalScorer(e.target.value)}
-                    placeholder={t("goalScorerPh")}
-                    aria-label={t("goalScorer")}
-                  />
-                  <input
-                    className="goal-minute"
-                    value={goalMinute}
-                    onChange={(e) => setGoalMinute(e.target.value)}
-                    placeholder={t("goalMinutePh")}
-                    aria-label={t("goalMinute")}
-                  />
+                <div className="goal-add">
+                  <div className="goal-add__meta">
+                    <select
+                      value={goalTeam}
+                      onChange={(e) =>
+                        setGoalTeam(e.target.value as TeamSide)
+                      }
+                    >
+                      <option value="home">{t("homeTeam")}</option>
+                      <option value="away">{t("awayTeam")}</option>
+                    </select>
+                    <select
+                      value={goalKind}
+                      onChange={(e) => setGoalKind(e.target.value as GoalKind)}
+                      aria-label={t("goalType")}
+                    >
+                      <option value="normal">{t("goalTypeNormal")}</option>
+                      <option value="penalty">{t("goalTypePk")}</option>
+                    </select>
+                  </div>
+                  <div className="goal-add__who">
+                    <input
+                      value={goalScorer}
+                      onChange={(e) => setGoalScorer(e.target.value)}
+                      placeholder={t("goalScorerPh")}
+                      aria-label={t("goalScorer")}
+                    />
+                    <input
+                      className="goal-minute"
+                      value={goalMinute}
+                      onChange={(e) => setGoalMinute(e.target.value)}
+                      placeholder={t("goalMinutePh")}
+                      aria-label={t("goalMinute")}
+                    />
+                  </div>
                   <button
                     type="button"
+                    className="goal-add__submit drawer-chrome-label"
+                    title={t("addGoal")}
                     onClick={() => {
                       state.addGoal(goalTeam, goalScorer, goalMinute, goalKind);
                       setGoalScorer("");
@@ -826,7 +850,7 @@ export function Drawer({ state, t }: Props) {
                       setGoalKind("normal");
                     }}
                   >
-                    {t("addGoal")}
+                    {t("addGoalShort")}
                   </button>
                 </div>
                 {(board.cards?.length ?? 0) > 0 && (
@@ -855,49 +879,55 @@ export function Drawer({ state, t }: Props) {
                     ))}
                   </ul>
                 )}
-                <div className="goal-add row">
-                  <select
-                    value={cardTeam}
-                    onChange={(e) =>
-                      setCardTeam(e.target.value as TeamSide)
-                    }
-                  >
-                    <option value="home">{t("homeTeam")}</option>
-                    <option value="away">{t("awayTeam")}</option>
-                  </select>
-                  <select
-                    value={cardKind}
-                    onChange={(e) =>
-                      setCardKind(e.target.value as CardKind)
-                    }
-                    aria-label={t("cardsLabel")}
-                  >
-                    <option value="YC">{t("cardYC")}</option>
-                    <option value="RC">{t("cardRC")}</option>
-                    <option value="Y2C">{t("cardY2C")}</option>
-                  </select>
-                  <input
-                    value={cardPlayer}
-                    onChange={(e) => setCardPlayer(e.target.value)}
-                    placeholder={t("cardPlayerPh")}
-                    aria-label={t("cardPlayer")}
-                  />
-                  <input
-                    className="goal-minute"
-                    value={cardMinute}
-                    onChange={(e) => setCardMinute(e.target.value)}
-                    placeholder={t("cardMinutePh")}
-                    aria-label={t("goalMinute")}
-                  />
+                <div className="goal-add">
+                  <div className="goal-add__meta">
+                    <select
+                      value={cardTeam}
+                      onChange={(e) =>
+                        setCardTeam(e.target.value as TeamSide)
+                      }
+                    >
+                      <option value="home">{t("homeTeam")}</option>
+                      <option value="away">{t("awayTeam")}</option>
+                    </select>
+                    <select
+                      value={cardKind}
+                      onChange={(e) =>
+                        setCardKind(e.target.value as CardKind)
+                      }
+                      aria-label={t("cardsLabel")}
+                    >
+                      <option value="YC">{t("cardYC")}</option>
+                      <option value="RC">{t("cardRC")}</option>
+                      <option value="Y2C">{t("cardY2C")}</option>
+                    </select>
+                  </div>
+                  <div className="goal-add__who">
+                    <input
+                      value={cardPlayer}
+                      onChange={(e) => setCardPlayer(e.target.value)}
+                      placeholder={t("cardPlayerPh")}
+                      aria-label={t("cardPlayer")}
+                    />
+                    <input
+                      className="goal-minute"
+                      value={cardMinute}
+                      onChange={(e) => setCardMinute(e.target.value)}
+                      placeholder={t("cardMinutePh")}
+                      aria-label={t("goalMinute")}
+                    />
+                  </div>
                   <button
                     type="button"
+                    className="goal-add__submit drawer-chrome-label"
+                    title={t("addCard")}
                     onClick={() => {
                       state.addCard(cardTeam, cardPlayer, cardKind, cardMinute);
                       setCardPlayer("");
                       setCardMinute("");
                     }}
                   >
-                    {t("addCard")}
+                    {t("addCardShort")}
                   </button>
                 </div>
               </div>
@@ -1216,9 +1246,11 @@ export function Drawer({ state, t }: Props) {
                 }
               />
             </label>
-            <div className="row">
+            <div className="piece-scale-presets" role="group" aria-label={t("pieceSize")}>
               <button
                 type="button"
+                className="drawer-chrome-label"
+                title={t("sizeTactics")}
                 onClick={() =>
                   state.updateBoard(
                     (b) => ({ ...b, pieceScale: PIECE_SCALE.tactics }),
@@ -1226,10 +1258,12 @@ export function Drawer({ state, t }: Props) {
                   )
                 }
               >
-                {t("sizeTactics")}
+                {t("sizeTacticsShort")}
               </button>
               <button
                 type="button"
+                className="drawer-chrome-label"
+                title={t("sizeBalanced")}
                 onClick={() =>
                   state.updateBoard(
                     (b) => ({ ...b, pieceScale: PIECE_SCALE.balanced }),
@@ -1237,10 +1271,12 @@ export function Drawer({ state, t }: Props) {
                   )
                 }
               >
-                {t("sizeBalanced")}
+                {t("sizeBalancedShort")}
               </button>
               <button
                 type="button"
+                className="drawer-chrome-label"
+                title={t("sizePosition")}
                 onClick={() =>
                   state.updateBoard(
                     (b) => ({ ...b, pieceScale: PIECE_SCALE.position }),
@@ -1248,7 +1284,7 @@ export function Drawer({ state, t }: Props) {
                   )
                 }
               >
-                {t("sizePosition")}
+                {t("sizePositionShort")}
               </button>
             </div>
             {/* 運営フォーメ再適用は出さない — PRODUCT_NOTE 決定ログ 2026-08-25 */}
