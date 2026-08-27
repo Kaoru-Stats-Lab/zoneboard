@@ -1177,13 +1177,28 @@ export function useAppState() {
           weightKg: nextPiece.weightKg,
         };
         const prevNum = normalizePieceNumber(existing.number);
+        const nextNum = normalizePieceNumber(identity.number);
+        const numberChanged =
+          patch.number !== undefined && nextNum !== prevNum;
+        /** 他駒が旧番号のまま残るなら名簿の旧行は消さず、新番号を足す */
+        const siblingsKeepPrev =
+          numberChanged &&
+          prevNum.length > 0 &&
+          b.scenes.some((s) =>
+            s.pieces.some(
+              (p) =>
+                p.id !== id &&
+                p.team === existing.team &&
+                normalizePieceNumber(p.number) === prevNum,
+            ),
+          );
         let roster = b.roster;
         if (touchesIdentity && identity.number.trim()) {
           roster = {
             ...b.roster,
             [existing.team]: upsertRosterPlayer(
               b.roster[existing.team],
-              existing.number,
+              siblingsKeepPrev ? identity.number : existing.number,
               {
                 number: identity.number,
                 label: identity.label,
@@ -1207,12 +1222,19 @@ export function useAppState() {
                 }
                 return merged;
               }
+              // 同番号の他駒へは名前等だけ共有。番号変更は選択中だけ（重複を解けないバグ防止）
               if (
                 touchesIdentity &&
                 p.team === existing.team &&
                 normalizePieceNumber(p.number) === prevNum
               ) {
-                return { ...p, ...identity };
+                return {
+                  ...p,
+                  label: identity.label,
+                  preferredFoot: identity.preferredFoot,
+                  heightCm: identity.heightCm,
+                  weightKg: identity.weightKg,
+                };
               }
               return p;
             });
