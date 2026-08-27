@@ -17,6 +17,7 @@ import {
 } from "../canvas/drawBoard";
 import { outerFillForBoard } from "../canvas/drawPitch";
 import {
+  BROADCAST_MATTE,
   broadcastFrameRect,
   fitSurfaceLayout,
   toNorm,
@@ -117,6 +118,7 @@ function resolveSurfaceLayout(
   view: Viewport,
   broadcast: boolean,
 ) {
+  // 配信: 帯高は 16:9 フレーム基準（帯はフレーム内上端）
   const frame = broadcast ? broadcastFrameRect(canvasW, canvasH) : null;
   const bannerH = matchBannerHeight(
     frame?.w ?? canvasW,
@@ -430,8 +432,12 @@ export function BoardCanvas({
       d?.mode === "piece" || d?.mode === "piece-line" || d?.mode === "piece-rotate"
         ? d.id
         : null;
+    // 配信の面積比は 16:9 フレーム基準（マット外は分母に入れない）
     const frameArea = frame ? frame.w * frame.h : w * h;
     const pitchArea = (pitch.w * pitch.h) / frameArea;
+    const ground = state.broadcast
+      ? BROADCAST_MATTE
+      : outerFillForBoard(board);
     drawBoard(ctx, pitch, boardWithActiveViewport(board), scene, {
       selectedPieceId: draggingPieceId ?? state.selectedPieceId,
       selectedPieceIds: selectedIdsRef.current,
@@ -441,7 +447,7 @@ export function BoardCanvas({
       watermark: state.watermark,
       watermarkImage,
       outer,
-      background: outerFillForBoard(board),
+      background: ground,
       dragVisual:
         d?.mode === "piece" || d?.mode === "piece-line"
           ? { pieceId: d.id, boost: d.boost }
@@ -480,7 +486,14 @@ export function BoardCanvas({
       if (frame) {
         ctx.save();
         ctx.translate(frame.x, frame.y);
-        drawMatchBanner(ctx, frame.w, frame.h, board, t("cardY2CLabel"), t("subInjured"));
+        drawMatchBanner(
+          ctx,
+          frame.w,
+          frame.h,
+          board,
+          t("cardY2CLabel"),
+          t("subInjured"),
+        );
         ctx.restore();
       } else {
         drawMatchBanner(ctx, w, h, board, t("cardY2CLabel"), t("subInjured"));
@@ -1287,7 +1300,11 @@ export function BoardCanvas({
       ref={boardSurfaceRef}
       data-board-surface="true"
       data-tool={state.tool}
-      style={{ background: outerFillForBoard(board) }}
+      style={{
+        background: state.broadcast
+          ? BROADCAST_MATTE
+          : outerFillForBoard(board),
+      }}
     >
       <canvas
         ref={canvasRef}

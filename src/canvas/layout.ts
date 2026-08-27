@@ -31,7 +31,17 @@ export const FIELD_BUFFER = 0.14;
 /** OBS 配信キャンバス想定（16:9）。ピッチは歪めず contain。 */
 export const BROADCAST_FRAME_ASPECT = 16 / 9;
 
-/** キャンバス内に収まる最大の 16:9 矩形（中央配置） */
+/**
+ * 配信フレーム外（ピラー／レターボックス）。
+ * 芝ランオフ緑と分け、横リサイズしても「ピッチが広がった」ように見せない。
+ * クロマキー用マットではない（ピッチ面の緑はキーらない）。
+ */
+export const BROADCAST_MATTE = "#0a0a0a";
+
+/**
+ * キャンバス内に収まる最大の 16:9（中央）。
+ * 配信の正本フレーム。黒帯もこの内側の上端に置く。
+ */
 export function broadcastFrameRect(canvasW: number, canvasH: number): PitchRect {
   let w = canvasW;
   let h = w / BROADCAST_FRAME_ASPECT;
@@ -54,8 +64,9 @@ function offsetRect(r: PitchRect, dx: number, dy: number): PitchRect {
 export type SurfaceLayout = FieldLayout & { frame: PitchRect | null };
 
 /**
- * 編集: 従来どおりキャンバス全体にフィット。
- * 配信: 16:9 フレーム内に contain（ピッチ crop なし）。bannerH はフレーム基準。
+ * 編集: キャンバス全体。帯は上端予約。
+ * 配信: 窓内に 16:9 を contain。帯はその内側上端。ピッチは帯の下。
+ * フレーム外は呼び出し側で BROADCAST_MATTE（芝緑にしない）。
  */
 export function fitSurfaceLayout(
   canvasW: number,
@@ -74,11 +85,9 @@ export function fitSurfaceLayout(
   const frame = broadcastFrameRect(canvasW, canvasH);
   const contentH = Math.max(1, frame.h - bannerH);
   const layout = fitField(frame.w, contentH, board, pad, viewport, 0);
-  const dx = frame.x;
-  const dy = frame.y + bannerH;
   return {
-    outer: offsetRect(layout.outer, dx, dy),
-    pitch: offsetRect(layout.pitch, dx, dy),
+    outer: offsetRect(layout.outer, frame.x, frame.y + bannerH),
+    pitch: offsetRect(layout.pitch, frame.x, frame.y + bannerH),
     viewport: layout.viewport,
     frame,
   };
