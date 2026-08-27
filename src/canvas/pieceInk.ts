@@ -63,18 +63,40 @@ function parseHexRgb(hex: string): { r: number; g: number; b: number } | null {
   return null;
 }
 
+function clampByte(n: number): number {
+  return Math.min(255, Math.max(0, Math.round(n)));
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  return `#${clampByte(r).toString(16).padStart(2, "0")}${clampByte(g).toString(16).padStart(2, "0")}${clampByte(b).toString(16).padStart(2, "0")}`;
+}
+
 /** Parse and normalize to opaque #rrggbb; invalid input → fallback. */
 export function normalizePieceColor(input: string, fallback: string): string {
   const raw = input.trim().toLowerCase();
   if (!raw) return normalizePieceColor(fallback, HOME_COLOR);
 
-  if (raw.startsWith("#")) {
-    const rgb = parseHexRgb(raw);
+  if (raw.startsWith("#") || /^[0-9a-f]{3}$/.test(raw) || /^[0-9a-f]{6}$/.test(raw)) {
+    const hex = raw.startsWith("#") ? raw : `#${raw}`;
+    const rgb = parseHexRgb(hex);
     if (rgb && [rgb.r, rgb.g, rgb.b].every((c) => Number.isFinite(c))) {
-      const { r, g, b } = rgb;
-      return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+      return rgbToHex(rgb.r, rgb.g, rgb.b);
     }
     return normalizePieceColor(fallback, HOME_COLOR);
+  }
+
+  const rgbFn = raw.match(
+    /^rgba?\(\s*([\d.]+%?)\s*,\s*([\d.]+%?)\s*,\s*([\d.]+%?)/,
+  );
+  if (rgbFn) {
+    const parseCh = (s: string) =>
+      s.endsWith("%") ? (parseFloat(s) / 100) * 255 : parseFloat(s);
+    const r = parseCh(rgbFn[1]!);
+    const g = parseCh(rgbFn[2]!);
+    const b = parseCh(rgbFn[3]!);
+    if ([r, g, b].every((c) => Number.isFinite(c))) {
+      return rgbToHex(r, g, b);
+    }
   }
 
   const named = NAMED_COLORS[raw];
@@ -149,6 +171,14 @@ export function pieceInkSelfTest(): void {
     "invalid → fallback",
   );
   assert(normalizePieceColor("#fff", HOME_COLOR) === "#ffffff", "short hex");
+  assert(
+    normalizePieceColor("c8102e", HOME_COLOR) === "#c8102e",
+    "bare hex",
+  );
+  assert(
+    normalizePieceColor("rgb(200, 16, 46)", HOME_COLOR) === "#c8102e",
+    "rgb()",
+  );
   assert(normalizePieceNumber("１０") === "10", "fullwidth digits");
   assert(normalizePieceNumber("  7  ") === "7", "trim");
   assert(normalizePieceNumber("10001").length === 4, "max len 4");

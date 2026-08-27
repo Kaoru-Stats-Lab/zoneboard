@@ -17,6 +17,12 @@ function safeParse<T>(raw: string | null): T | null {
   }
 }
 
+/** LP の「続ける / 新規」分岐用。キーが無ければ初回訪問扱い。 */
+export function hasPersistedStore(): boolean {
+  if (typeof localStorage === "undefined") return false;
+  return localStorage.getItem(STORE_KEY) != null;
+}
+
 export function loadStore(): BoardStore {
   const data = safeParse<BoardStore>(localStorage.getItem(STORE_KEY));
   if (!data?.boards?.length) return emptyStore();

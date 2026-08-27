@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { APP_LOCALE } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
 import { trackEvent } from "../lib/ga";
+import { hasPersistedStore } from "../storage/persist";
 import { SITE_NAV } from "../site/publisher";
 import { CONSENT_BANNER } from "../site/consentCopy";
 import { useFeedback } from "./FeedbackProvider";
@@ -23,6 +25,11 @@ export function Landing() {
   const t = (k: MessageKey) => messages[APP_LOCALE][k];
   const { openFeedback } = useFeedback();
   const consent = useConsentBanner();
+  const [savedBoard, setSavedBoard] = useState(false);
+
+  useEffect(() => {
+    setSavedBoard(hasPersistedStore());
+  }, []);
 
   return (
     <div className="lp">
@@ -44,13 +51,35 @@ export function Landing() {
             <span className="lp-payoff">{t("lpPayoff")}</span>
           </h1>
           <p className="lp-lede">{t("lpLede")}</p>
-          <Link
-            className="lp-cta"
-            to="/board"
-            onClick={() => trackEvent("open_board")}
-          >
-            {t("openBoard")}
-          </Link>
+          {savedBoard ? (
+            <div className="lp-cta-row">
+              <p className="lp-saved-hint">{t("lpSavedHint")}</p>
+              <div className="lp-cta-pair">
+                <Link
+                  className="lp-cta"
+                  to="/board"
+                  onClick={() => trackEvent("open_board")}
+                >
+                  {t("openBoardContinue")}
+                </Link>
+                <Link
+                  className="lp-cta lp-cta--secondary"
+                  to="/board?new=1"
+                  onClick={() => trackEvent("open_board")}
+                >
+                  {t("openBoardNew")}
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <Link
+              className="lp-cta"
+              to="/board"
+              onClick={() => trackEvent("open_board")}
+            >
+              {t("openBoard")}
+            </Link>
+          )}
           <LpHeroBoard />
         </header>
 
@@ -106,8 +135,17 @@ export function Landing() {
               to="/board"
               onClick={() => trackEvent("open_board")}
             >
-              {t("lpCloseCta")}
+              {savedBoard ? t("openBoardContinue") : t("lpCloseCta")}
             </Link>
+            {savedBoard && (
+              <Link
+                className="lp-cta lp-cta--secondary lp-cta--close-secondary"
+                to="/board?new=1"
+                onClick={() => trackEvent("open_board")}
+              >
+                {t("openBoardNew")}
+              </Link>
+            )}
           </section>
         </main>
 

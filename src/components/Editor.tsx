@@ -28,6 +28,7 @@ function sceneLabelPhKey(sport: SportId | undefined): MessageKey {
 import { Link } from "react-router-dom";
 import { BoardCanvas } from "./BoardCanvas";
 import { BrandLockup } from "./BrandMark";
+import { BoardSwitcher } from "./BoardSwitcher";
 import { BroadcastToolMenu } from "./BroadcastToolMenu";
 import { Drawer } from "./Drawer";
 import { LiveMatchControls } from "./LiveMatchControls";
@@ -423,6 +424,7 @@ export function Editor({ state }: Props) {
             >
               {t("drawer")}
             </button>
+            <BoardSwitcher state={state} t={t} />
           </div>
           {!state.drawerOpen ? (
             <input

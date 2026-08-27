@@ -19,7 +19,8 @@ function BoardRoute() {
   const [searchParams, setSearchParams] = useSearchParams();
   const bootBroadcast = useRef(false);
   const bootLang = useRef(false);
-  const { enterBroadcast, setLocale } = state;
+  const bootNew = useRef(false);
+  const { enterBroadcast, setLocale, requestNewBoard } = state;
 
   useEffect(() => {
     if (bootLang.current) return;
@@ -31,6 +32,16 @@ function BoardRoute() {
     next.delete("lang");
     setSearchParams(next, { replace: true });
   }, [searchParams, setLocale, setSearchParams]);
+
+  useEffect(() => {
+    if (bootNew.current) return;
+    if (searchParams.get("new") !== "1") return;
+    bootNew.current = true;
+    requestNewBoard({ replaceOldestIfFull: true });
+    const next = new URLSearchParams(searchParams);
+    next.delete("new");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams, requestNewBoard]);
 
   useEffect(() => {
     const wantsBroadcast =

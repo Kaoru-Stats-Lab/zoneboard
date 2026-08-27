@@ -16,18 +16,20 @@ import type {
   TeamFocus,
 } from "../models/types";
 import {
-  MAX_BOARDS,
   MAX_SCENES,
   PIECE_SCALE,
   usesPreferredFoot,
 } from "../models/types";
 import { kitsFromBoard, sportHasGk } from "../models/kits";
-import { normalizePieceNumber, numberFill } from "../canvas/pieceInk";
+import { normalizePieceNumber, numberFill, teamPairOk } from "../canvas/pieceInk";
+import { KitColorField } from "./KitColorField";
 import { STARTER_COUNT, formatRosterText } from "../presets/roster";
 import { viewPresetsForSport } from "../presets/viewport";
 import { scenePresetsForSport, type ScenePresetId } from "../presets/scenePresets";
 import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
 import { LiveMatchControls } from "./LiveMatchControls";
+import { BoardLimitDialog } from "./BoardLimitDialog";
+import { useNewBoardFlow } from "./BoardSwitcher";
 
 function startersPlaceholder(sport: SportId): string {
   const n = STARTER_COUNT[sport];
@@ -90,6 +92,8 @@ export function Drawer({ state, t }: Props) {
   const [cardMinute, setCardMinute] = useState("");
   const [cardKind, setCardKind] = useState<CardKind>("YC");
 
+  const newBoardFlow = useNewBoardFlow(state);
+
   const boardRoster = state.board?.roster;
   const homeXiKey = boardRoster?.home.starterNumbers.join(",") ?? "";
   const awayXiKey = boardRoster?.away.starterNumbers.join(",") ?? "";
@@ -113,7 +117,7 @@ export function Drawer({ state, t }: Props) {
     return null;
   const board = state.board;
   const scene = state.scene;
-  const atLimit = state.store.boards.length >= MAX_BOARDS;
+  const atLimit = newBoardFlow.atLimit;
   const sceneLimit = board.scenes.length >= MAX_SCENES;
   const roster = board.roster[teamSide];
   const kits = kitsFromBoard(board);
@@ -149,6 +153,13 @@ export function Drawer({ state, t }: Props) {
 
   return (
     <aside className="drawer">
+      <BoardLimitDialog
+        open={newBoardFlow.limitOpen}
+        state={state}
+        t={t}
+        onClose={() => newBoardFlow.setLimitOpen(false)}
+        onReplace={newBoardFlow.confirmReplace}
+      />
       <div className="drawer-phase-bar">
         {prepOpen ? (
           <button
@@ -426,58 +437,49 @@ export function Drawer({ state, t }: Props) {
             <div className="kit-colors">
               <div className="kit-colors-row">
                 <span className="kit-colors-team">{t("homeTeam")}</span>
-                <label className="kit-swatch">
-                  <span>
-                    {sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")}
-                  </span>
-                  <input
-                    type="color"
-                    value={kitsFromBoard(board).home}
-                    onChange={(e) =>
-                      state.setKitColor("home", "outfield", e.target.value)
-                    }
-                  />
-                </label>
+                <KitColorField
+                  label={
+                    sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")
+                  }
+                  hexLabel={t("kitHexLabel")}
+                  value={kits.home}
+                  onChange={(c) =>
+                    state.setKitColor("home", "outfield", c)
+                  }
+                />
                 {sportHasGk(board.sport) && (
-                  <label className="kit-swatch">
-                    <span>{t("kitGk")}</span>
-                    <input
-                      type="color"
-                      value={kitsFromBoard(board).homeGk}
-                      onChange={(e) =>
-                        state.setKitColor("home", "gk", e.target.value)
-                      }
-                    />
-                  </label>
+                  <KitColorField
+                    label={t("kitGk")}
+                    hexLabel={t("kitHexLabel")}
+                    value={kits.homeGk}
+                    onChange={(c) => state.setKitColor("home", "gk", c)}
+                  />
                 )}
               </div>
               <div className="kit-colors-row">
                 <span className="kit-colors-team">{t("awayTeam")}</span>
-                <label className="kit-swatch">
-                  <span>
-                    {sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")}
-                  </span>
-                  <input
-                    type="color"
-                    value={kitsFromBoard(board).away}
-                    onChange={(e) =>
-                      state.setKitColor("away", "outfield", e.target.value)
-                    }
-                  />
-                </label>
+                <KitColorField
+                  label={
+                    sportHasGk(board.sport) ? t("kitOutfield") : t("kitColor")
+                  }
+                  hexLabel={t("kitHexLabel")}
+                  value={kits.away}
+                  onChange={(c) =>
+                    state.setKitColor("away", "outfield", c)
+                  }
+                />
                 {sportHasGk(board.sport) && (
-                  <label className="kit-swatch">
-                    <span>{t("kitGk")}</span>
-                    <input
-                      type="color"
-                      value={kitsFromBoard(board).awayGk}
-                      onChange={(e) =>
-                        state.setKitColor("away", "gk", e.target.value)
-                      }
-                    />
-                  </label>
+                  <KitColorField
+                    label={t("kitGk")}
+                    hexLabel={t("kitHexLabel")}
+                    value={kits.awayGk}
+                    onChange={(c) => state.setKitColor("away", "gk", c)}
+                  />
                 )}
               </div>
+              {!teamPairOk(kits.home, kits.away) && (
+                <p className="hint-muted kit-pair-warn">{t("kitPairWarn")}</p>
+              )}
               {sportHasGk(board.sport) && (
                 <p className="hint-muted">{t("kitHint")}</p>
               )}
@@ -668,7 +670,7 @@ export function Drawer({ state, t }: Props) {
                 disabled={atLimit}
                 title={atLimit ? t("boardLimit") : undefined}
                 onClick={() => {
-                  if (!state.addBoard()) window.alert(t("boardLimit"));
+                  newBoardFlow.requestNew();
                 }}
               >
                 {t("newBoard")}

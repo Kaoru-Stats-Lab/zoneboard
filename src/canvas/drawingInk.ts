@@ -28,6 +28,9 @@ export const ZONE_COLORS_GRASS = {
 } as const;
 
 export const PEN_INK_GRASS = "#ffffff";
+/** 構成線（Link）— ピッチ白と Pen と差をつける象牙。STUDIO 字色と同系。 */
+export const LINK_INK_GRASS = "#f3f3f1";
+export const LINK_SHADOW_GRASS = "rgba(0, 0, 0, 0.48)";
 export const HALO_INK_GRASS = "rgba(255, 255, 255, 0.9)";
 
 export function lineColorForBoard(
@@ -43,6 +46,10 @@ export function zoneColorsForBoard(board: BoardDocument | null | undefined) {
 
 export function penColorForBoard(board: BoardDocument | null | undefined): string {
   return usesGrassInk(board) ? PEN_INK_GRASS : "#111111";
+}
+
+export function linkColorForBoard(board: BoardDocument | null | undefined): string {
+  return usesGrassInk(board) ? LINK_INK_GRASS : "#111111";
 }
 
 export function textColorForBoard(board: BoardDocument | null | undefined): string {
@@ -65,9 +72,8 @@ export function toolColorForBoard(
     return LINE_COLORS_GRASS[tool];
   }
   if (tool === "zone") return ZONE_COLORS_GRASS.stroke;
-  if (tool === "pen" || tool === "link" || tool === "text") {
-    return PEN_INK_GRASS;
-  }
+  if (tool === "link") return LINK_INK_GRASS;
+  if (tool === "pen" || tool === "text") return PEN_INK_GRASS;
   return TOOL_COLORS[tool];
 }
 

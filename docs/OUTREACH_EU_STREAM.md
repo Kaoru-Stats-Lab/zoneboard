@@ -1,10 +1,11 @@
 # 欧州サッカー · Streamer 向け紹介（PH 以外）
 
-**更新:** 2026-08-26（r/footballtactics §2B · X フィード型 · **天皇杯同時視聴 §2F**）  
+**更新:** 2026-08-27（**§2-D-prep** EN watchalong メモ · DM 準備）  
 **前提:** 公開面は英語一本。楔は **OBS に戦術窓を足す / B でツール消す / 芝に運営ロゴなし**（※戦術 Reddit では図が主・OBS は出さない）。  
 **PH の位置:** メーカー・テック寄り 1 日の露出。**欧州サッカー議論の本線は X + r/footballtactics（図）+ 配信者DM。**  
 **X:** FM / ハイプ型フィードは採用しない（§2-A）。図と press B 短尺のみ。  
-**現場:** 日本・天皇杯 同時視聴は磁石板 / PS / 自作図が主流（§2F）。ZB のジョブ証拠。宣伝転載はしない。
+**現場:** 日本・天皇杯 同時視聴は磁石板 / PS / 自作図が主流（§2F）。ZB のジョブ証拠。宣伝転載はしない。  
+**r/obs:** Help 投稿済（2026-08-26）。インサイトは米寄り — 欧州客はここではなく §2-A / §2-D。
 
 ---
 
@@ -268,8 +269,8 @@ https://zoneboard.app
 
 | 優先 | 内容 |
 |---|---|
-| 1 | 英圏 watchalong で「顔 + 戦術板」アカウントを数個メモ（X / Twitch / YT） |
-| 2 | DM / 紹介は §2-D テンプレ（英語）。日本勢へは上の JA 一文 + zoneboard.app |
+| 1 | **§2-D-prep** の候補表を 5 行埋める（Twitch Football / YT watchalong）→ 見た 2–3 に DM |
+| 2 | 同週に §2-A 通常 X 1本（21:00–23:00 UK/CET 可） |
 | 3 | PH ギャラリー用は **自前のボード録画**のみ（§4 · 他人の配信画面は使わない） |
 | 4 | 内部競合メモ: TACTICALista が同時視聴に出ている事実を [`COMPETITIVE_LP.md`](COMPETITIVE_LP.md) 参照時に使う（LP 比較表には出さない） |
 
@@ -285,7 +286,7 @@ https://zoneboard.app
 
 - 週に **2–3 通まで**。見た配信に具体的な一文（「cam の横にボードが欲しく見える」）
 - 無料 · 登録なし · OBS を壊さない、を先に
-- テンプレ:
+- テンプレ（汎用）:
 
 ```
 Hi — I built a browser football tactics board meant to sit beside cam/chat in OBS (not another overlay suite). Press B and the tools hide so you can window-capture only the pitch. No account, your badge not ours. If useful for watchalongs: https://zoneboard.app — happy to take notes from anyone who already runs a match show.
@@ -296,6 +297,132 @@ Hi — I built a browser football tactics board meant to sit beside cam/chat in 
 ```
 Hallo — ich habe ein Fußball-Taktikboard im Browser gebaut, das neben Cam/Chat in OBS sitzen soll (keine weitere Overlay-Suite). Mit B verschwinden die Tools, sodass du nur das Spielfeld per Window Capture nehmen kannst. Kein Account, dein Badge auf dem Rasen — nicht unseres. Die Oberfläche ist vorerst auf Englisch; wenn’s für Watchalongs passt: https://zoneboard.app — Feedback aus echten Match-Shows freue ich mich.
 ```
+
+---
+
+### 2-D-prep — EN watchalong メモ & DM 準備（2026-08-27）
+
+**目的:** r/obs（米技術）ではなく、**顔 + cam/chat + 試合解説**の英圏配信者に §2-A（公開）と §2-D（DM）を当てる。  
+**規模:** まず **5 候補をメモ → 見た 2–3 本だけ DM**。大手（Overlap / 公式クラブ / TNT）は冷たい DM しない。
+
+#### 理想像（ICP）
+
+| 見る | 避ける |
+|---|---|
+| 顔出し · cam / chat が別ソース | 試合映像のフル再放送だけ（権利リスク・ZB の席がない） |
+| レイアウトに「空いている窓」か、PS / スライド / 紙板で戦術を出している | スコア／ラインナップ overlay だけで満足している巨大チャンネル |
+| 英語（UK / IE / AU / 欧の英語配信） | ギャンブル専業 · ハイプのみ |
+| フォロワーは **小さめ〜中くらい**（返信が返る規模） | ネヴィル級・Buzz16 級（紹介経由以外） |
+
+**楔の一文（頭の中）:** Cam/chat はそのまま。戦術窓だけブラウザで足す。B でツール消える。運営ロゴなし。
+
+#### 探し方（今夜 20–30 分）
+
+1. **Twitch** → Directory → **Football** → Live。タイトルに `watchalong` / `watch along` / 試合名  
+2. **YouTube** → `PL watchalong` / `UCL watchalong` / `tactical watchalong` · 同時視聴中 or 直近 VOD  
+3. **X** → `watchalong` + クラブ名 · または戦術アカウントが RT している配信告知  
+4. 各候補で **レイアウトを 1 スクショ**（社内メモ用。無断で LP に載せない）
+
+参考（競合・大きすぎる例 · **DM 対象外の目印**）:
+- **The Overlap** 等の大型 watchalong — グラフィック会社入り。冷たい DM は届かない  
+- **Stream Builder / SportOverlay** 系 — スコア・スタッツは強い。**芝の戦術窓は別ジョブ**（ZB の隙間）
+
+#### 候補メモ表（2026-08-27 · YouTube 実地 · 埋めた）
+
+**レーン:** EN = §2-D DM 候補。JP = §2F 壁打ち（英語 DM しない · JA 一文）。  
+**LP/PH に他人スクショは載せない。**
+
+| # | Handle / チャンネル | 場所 | 規模感 | レイアウト観察 | 戦術どう出してる | DM 可？ | 送った日 | メモ |
+|---|---|---|---|---|---|---|---|---|
+| 1 | **Harry Lowe** | YT | **~385 登録** | 顔 PiP + 暗ピッチ全画面 | 番号丸 + 名前下 + 矢印 | **◎ 最優先** | | 本命 ICP |
+| 2 | **Statman Dave** | YT | **~38k** | 顔 PiP + 緑ピッチ | 番号丸 + 名前ラベル · ゾーン | **◎ 優先** | | 顔+板。規模も DM 向き |
+| 3 | **Charles Watts** | YT | ~133k | 顔左 + ピッチ右 | **buildlineup.com** · ↑交代列 | ○ 型 C | | 既に Web 板 · 感想求め |
+| 4 | **Coach Rafaz** | YT | 中 | 顔 PiP + 緑ピッチ | **tactical-board.com** · **ツールバー残存** | ○ 型 C | | B 対比が刺さりやすい |
+| 5 | **Doctor Gotti** | YT | **~900** | ピッチ全画面 | **tactical-board.com** 透かし | ○ 枠余り時 | | 極小 · 型 C |
+| 6 | **James Lawrence Allcott** | YT | ~445k | 顔 + 自前板 | **jlatacticsboard.com** | △ | | 冷たい DM 弱い |
+| 7 | **La Vida Fútbol** | YT | ~22k | ピッチ全画面 | **tacticalpad.com** 透かし | △ | | 教材寄り |
+| 8 | Made Simple · Meta · Goalapse · nowayfootball · Football Signal · FourFourTwo · Inside Tactics · Become Elite · GEDFOOTBALL | YT | 大 | 編集 / 実映像テロスト / クイズ | 完成映像 | ✕ | | OBS 窓ではない |
+| 9 | The Breakdown（Overlap）· Athletic · Sky · Coaches' Voice · クラブ公式 | YT | 極大 | 物理板 / スタジオ | FORZA·molten·タブレット | ✕ | | 送らない |
+| 10 | **GOAT** / goatft · サッカーキング · 戸田/小澤 · PIVOT · Leo · ミム · U-NEXT · セリチャン | YT JP | 様々 | §2F | Tacticalista / 磁石 / チップ | JP | | 英語 DM しない |
+
+**競合 URL（焼き込み観察）:** buildlineup.com · jlatacticsboard.com · tactical-board.com · tacticalpad.com · goatft.com · Tacticalista · GED Tactical Board
+
+**今夜の EN DM 順:** 1 Harry Lowe → 2 Statman Dave → 3 Watts または Rafaz（型 C）。  
+**スクショ収集はここで打ち切り。** 型は揃った。
+
+#### 実地から見える板の型（製品示唆 · 内部）
+
+| 型 | 例 | ZB との関係 |
+|---|---|---|
+| **番号丸 + 名前** | Harry · Statman · Watts · 戸田 · Rafaz | 本線。配信窓に載る |
+| **役割ラベル丸** | nowayfootball | 解説用。実XIではない |
+| **角ステータス** | PIVOT「新」· Watts ↑ | YC/RC 左上と同言語（実装済） |
+| **URL / ロゴ焼き込み** | tactical-board · tacticalpad · JLA · buildlineup · goatft · Athletic | ZB = あなたのバッジ |
+| **ツールバー残存** | Rafaz · goatft · Tacticalista · JLA | **B で消える**が対比 |
+| **編集 / テロスト / クイズ / 物理板（Sky級）** | Made Simple · Inside Tactics · Become Elite · Breakdown | DM しない |
+
+**DM 可の条件（全部○）:** ① 直近 2 週間に配信した ② 顔 or 声がある ③ 戦術を一度でも出しているか「出したい余白」がある ④ 連絡先がある（X DM / フォーム / Discord / business メール）
+
+#### DM 前チェック
+
+- [ ] その人の配信を **最低 10 分**見た（または VOD の戦術パート）  
+- [ ] 一文に **具体**を入れる（例: 「half-time にスライドで XI を出してた」）  
+- [ ] 週の通数枠に余裕がある（**週 2–3**）  
+- [ ] 同じ人に 7 日以内に再送しない  
+- [ ] 製品スクショを無断で「あなたの配信に載せた」と言わない  
+
+#### パーソナライズ差分（貼る用）
+
+**A. 戦術板なし・口頭だけ**
+
+```
+Hi — watched a bit of your [MATCH] watchalong. You explain shapes clearly; the layout is cam/chat-first, which is exactly where a small tactics window helps.
+
+I built a browser board for that seat in OBS (not another overlay suite). Press B and tools hide so you window-capture only the pitch. No account; your badge on the grass, not ours.
+
+If useful: https://zoneboard.app — guide: https://zoneboard.app/guide/#show
+Happy to take notes from someone who already runs match shows.
+```
+
+**B. PS / スライド / Canva で図を出している**
+
+```
+Hi — caught your [MATCH] stream; the slide/XI graphic at [half-time / after the goal] was clear. If you ever want that to move with the pieces live (without rebuilding a slide), I built a browser tactics board meant to sit beside cam/chat in OBS.
+
+Press B → tools hide → window-capture the pitch. No account, your badge not ours: https://zoneboard.app
+Would love any “this would break on stream” notes.
+```
+
+**C. すでに Web / 他ボードがある**
+
+```
+Hi — saw you already use a board beside the cam on [MATCH]. I built another browser option aimed at OBS window capture (B hides the editor chrome; no vendor logo on the grass). Not asking you to switch — if you’re curious or have sharp notes from live use: https://zoneboard.app
+```
+
+#### 週次リズム
+
+| 曜日目安 | やること |
+|---|---|
+| **試合日前夜〜当日** | 候補表に 1–2 行追加（Live を見る） |
+| **試合翌日** | 見た人だけ DM（A/B/C）。**2–3 通まで** |
+| **週 1** | §2-A の通常 X 投稿 1（図 or B 短尺）。PH 週以外は PH リンク不要 |
+| **やらない** | 未視聴への一斉 DM · 大手メンション連打 |
+
+#### §2-A とセット（公開面）
+
+DM 週と同じ週に、§2-A の通常投稿を 1 本出せるとよい（予約可 · **21:00–23:00 UK/CET**）:
+
+```
+Add a tactics board to tonight’s OBS show.
+
+Place the XI → draw the move → press B — tools hide, pitch fills the window.
+Cam and chat stay in OBS. Your badge on the grass, not ours. No account.
+
+https://zoneboard.app
+Guide: https://zoneboard.app/guide/#show
+```
+
+**次の手（カオル）:** 上の表を **5 行埋める** → 条件○の 2–3 に A/B/C で送る。表が空のまま DM しない。
 
 ### E. 後回しでよい
 

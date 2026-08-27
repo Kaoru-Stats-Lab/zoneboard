@@ -28,6 +28,8 @@ import {
   grassHaloWidth,
   HALO_INK_GRASS,
   lineColorForBoard,
+  linkColorForBoard,
+  LINK_SHADOW_GRASS,
   penColorForBoard,
   textColorForBoard,
   usesGrassInk,
@@ -49,6 +51,7 @@ import {
   drawPitchSurface,
   drawShotCorridor,
   outerFillForBoard,
+  pitchLineWidth,
 } from "./drawPitch";
 import { fromNorm, pointerHitSlop, type PitchRect } from "./layout";
 import { ZOOM_MAX, ZOOM_MIN } from "../presets/viewport";
@@ -217,6 +220,17 @@ function penStrokeWidth(
     1.25,
     (Math.min(pitch.w, pitch.h) * 0.002 * strokeWidth) / densityZoom(board),
   );
+}
+
+/** 構成線はピッチ白線より一段太い注釈レイヤー。 */
+function linkStrokeWidth(
+  pitch: PitchRect,
+  board: BoardDocument,
+  strokeWidth: number,
+): number {
+  const pen = penStrokeWidth(pitch, board, strokeWidth);
+  const pitchLw = pitchLineWidth(pitch);
+  return Math.max(pen, pitchLw * 1.18);
 }
 
 export type DragVisual = {
@@ -1004,8 +1018,8 @@ function drawObject(
   if (obj.type === "link") {
     const pts = resolveLinkPoints(scene.pieces, obj.pieceIds);
     if (pts.length < 2) return;
-    const lw = penStrokeWidth(pitch, board, obj.strokeWidth);
-    const ink = penColorForBoard(board);
+    const lw = linkStrokeWidth(pitch, board, obj.strokeWidth);
+    const ink = linkColorForBoard(board);
     if (selected && !usesGrassInk(board)) {
       strokeStraightWorldPath(
         ctx,
@@ -1017,7 +1031,7 @@ function drawObject(
         0.35,
       );
     }
-    strokeStraightWorldPath(ctx, board, pitch, pts, lw, ink, 1);
+    strokeLinkWorldPath(ctx, board, pitch, pts, lw, ink, 1);
     return;
   }
 
@@ -1366,13 +1380,8 @@ function strokeStraightWorldPath(
   color: string,
   alpha = 1,
 ) {
-  const pts: { x: number; y: number }[] = [];
-  for (const pt of points) {
-    const m = worldToPitch(pt.x, pt.y, board);
-    if (!m) continue;
-    pts.push(fromNorm(m.x, m.y, pitch));
-  }
-  if (pts.length < 2) return;
+  const pts = linkPathPoints(board, pitch, points);
+  if (!pts || pts.length < 2) return;
   ctx.beginPath();
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
@@ -1387,6 +1396,46 @@ function strokeStraightWorldPath(
   ctx.globalAlpha = 1;
 }
 
+function linkPathPoints(
+  board: BoardDocument,
+  pitch: PitchRect,
+  points: { x: number; y: number }[],
+): { x: number; y: number }[] | null {
+  const pts: { x: number; y: number }[] = [];
+  for (const pt of points) {
+    const m = worldToPitch(pt.x, pt.y, board);
+    if (!m) continue;
+    pts.push(fromNorm(m.x, m.y, pitch));
+  }
+  return pts.length >= 2 ? pts : null;
+}
+
+/** 芝生: 黒下描き + 象牙。白地: 単色実線。 */
+function strokeLinkWorldPath(
+  ctx: CanvasRenderingContext2D,
+  board: BoardDocument,
+  pitch: PitchRect,
+  points: { x: number; y: number }[],
+  lw: number,
+  color: string,
+  alpha = 1,
+) {
+  if (!usesGrassInk(board)) {
+    strokeStraightWorldPath(ctx, board, pitch, points, lw, color, alpha);
+    return;
+  }
+  strokeStraightWorldPath(
+    ctx,
+    board,
+    pitch,
+    points,
+    lw * 1.25,
+    LINK_SHADOW_GRASS,
+    alpha,
+  );
+  strokeStraightWorldPath(ctx, board, pitch, points, lw, color, alpha);
+}
+
 /** 構成線クリック連鎖: 確定点＋ラバーバンド */
 function drawLinkPreview(
   ctx: CanvasRenderingContext2D,
@@ -1394,13 +1443,13 @@ function drawLinkPreview(
   board: BoardDocument,
   points: { x: number; y: number }[],
 ) {
-  const lw = penStrokeWidth(pitch, board, 2);
-  const ink = penColorForBoard(board);
+  const lw = linkStrokeWidth(pitch, board, 2);
+  const ink = linkColorForBoard(board);
   if (points.length === 1) {
     drawPenPreview(ctx, pitch, board, points);
     return;
   }
-  strokeStraightWorldPath(ctx, board, pitch, points, lw, ink, 0.85);
+  strokeLinkWorldPath(ctx, board, pitch, points, lw, ink, 1);
 }
 
 function distToSegment(

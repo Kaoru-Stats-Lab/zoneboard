@@ -52,6 +52,7 @@ import {
 } from "../models/types";
 import {
   lineColorForBoard,
+  linkColorForBoard,
   penColorForBoard,
   textColorForBoard,
   zoneColorsForBoard,
@@ -297,6 +298,41 @@ export function useAppState() {
     });
     return true;
   }, [board?.sport, locale, persist, store.boards]);
+
+  const addBoardReplacing = useCallback(
+    (replaceId: string) => {
+      const remaining = store.boards.filter((b) => b.id !== replaceId);
+      if (remaining.length !== store.boards.length - 1) return false;
+      const b = createBoard(
+        board?.sport ?? "soccer",
+        defaultBoardTitle(remaining.length + 1, locale),
+        locale,
+      );
+      history.current = [];
+      future.current = [];
+      persist({
+        boards: [...remaining, b],
+        activeBoardId: b.id,
+      });
+      return true;
+    },
+    [board?.sport, locale, persist, store.boards],
+  );
+
+  /** 空きがなければ replaceOldestIfFull で最古ボードを差し替え（?new=1 用）。 */
+  const requestNewBoard = useCallback(
+    (opts?: { replaceOldestIfFull?: boolean }) => {
+      if (store.boards.length < MAX_BOARDS) return addBoard();
+      if (!opts?.replaceOldestIfFull) return false;
+      const oldest = [...store.boards].sort(
+        (a, b) =>
+          new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
+      )[0];
+      if (!oldest) return false;
+      return addBoardReplacing(oldest.id);
+    },
+    [addBoard, addBoardReplacing, store.boards],
+  );
 
   const deleteBoard = useCallback(
     (id: string) => {
@@ -1361,7 +1397,7 @@ export function useAppState() {
             id: uid(),
             type: "link",
             pieceIds: ids,
-            color: penColorForBoard(board),
+            color: linkColorForBoard(board),
             strokeWidth: 2,
           },
         ],
@@ -1839,6 +1875,8 @@ export function useAppState() {
     redo,
     setActiveBoard,
     addBoard,
+    addBoardReplacing,
+    requestNewBoard,
     deleteBoard,
     setActiveScene,
     addScene,
