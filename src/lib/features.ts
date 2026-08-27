@@ -4,5 +4,5 @@
  */
 import { hasEntitlement } from "./plan";
 
-/** Pro: 名前付き画角テンプレ UI。課金まで activePlan() が free のため非表示。 */
+/** Pro: 名前付き画角テンプレ UI。`hasEntitlement("viewportTemplates")` まで非表示。 */
 export const FEATURE_PRO_VIEWPORT_TEMPLATES = hasEntitlement("viewportTemplates");

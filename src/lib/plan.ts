@@ -1,6 +1,11 @@
 /**
  * Free / Pro plan foundation (no checkout yet).
- * Product contract: docs/PRODUCT_NOTE.md §6 — wedge stays free; Pro = libraries.
+ *
+ * Product contract: docs/PRODUCT_NOTE.md §6 (2026-08-27).
+ * Pro = Local Library Entitlement — NOT ZoneBoard-hosted Online Storage.
+ * Multi-device = BYO file (user's Drive etc.), not our vault.
+ * No ZB user-id login for Pro. Optional zero-knowledge self-hosted sync = Later / non-core.
+ * Wedge stays free (draw, Broadcast, logo). Price unset until streamer interviews.
  *
  * Do not add paywall UI or Stripe here. Flip entitlements only via activePlan().
  */
@@ -9,9 +14,9 @@ export type PlanId = "free" | "pro";
 
 /** Named capabilities gated by plan. Free has none of these. */
 export type EntitlementId =
-  /** 試合をまたぐ名前付き画角テンプレ */
+  /** 試合をまたぐ名前付き画角テンプレ（ローカル） */
   | "viewportTemplates"
-  /** 名前付き選手セット（複数保有）— CRUD は Later */
+  /** 名前付き選手セットの複数保有（ローカル）— CRUD は Later */
   | "namedSquadSets";
 
 export const PLAN_LIMITS = {
@@ -19,7 +24,7 @@ export const PLAN_LIMITS = {
     maxBoards: 3,
     maxScenes: 8,
   },
-  /** Provisional until checkout; PRODUCT_NOTE: 緩和 or 無制限 */
+  /** Provisional until checkout; PRODUCT_NOTE: 緩和（無制限ではない） */
   pro: {
     maxBoards: 12,
     maxScenes: 32,

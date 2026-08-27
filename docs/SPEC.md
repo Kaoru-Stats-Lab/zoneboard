@@ -63,7 +63,7 @@ PRODUCT_NOTE と矛盾する場合は本ファイルで「変更提案」と明�
 | 動画解析・Webcam・運営ロゴ | Avoid | Avoid | Avoid | **Avoid** |
 | es UI | — | — | Should | **Later（v1.1）** v1 は ja/en |
 
-収益メモ（調査相場・**v1 では未実装**）: 個人ボード系 **$1.99–$7.99/月**。無料でコア体験。Pro の核は **選手セットの複数保有**。
+収益メモ（**v1 では未実装**）: Pro = **Local Library Entitlement**（選手セット・画角テンプレ・上限緩和・JSON）。マルチデバイスは **BYO**（ユーザの Online Storage を指す）。ZB 預かりクラウド／ユーザ ID ログインは本線にしない。価格未公開。詳細は [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) §6。無料でコア体験（描画・Broadcast・ロゴ）。
 
 - **カラムは先に固定:** `number`（必須）· `label` · `preferredFoot` · セットの `defaultColor`
 - **中身の作成はユーザ任せ**（貼り付け・手入力・ボードから保存）
