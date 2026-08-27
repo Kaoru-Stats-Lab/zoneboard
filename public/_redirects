@@ -1,7 +1,11 @@
 /en       /        301
-/en/board /board   301
+/en/      /        301
+/en/board /board/  301
+/en/board/ /board/ 301
 /ja       /        301
-/ja/board /board   301
+/ja/      /        301
+/ja/board /board/?lang=ja   301
+/ja/board/ /board/?lang=ja  301
 /about    /about/    301
 /guide    /guide/    301
 /faq      /faq/      301

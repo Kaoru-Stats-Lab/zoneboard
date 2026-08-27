@@ -87,11 +87,19 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingRoute />} />
         <Route path="/board" element={<BoardRoute />} />
+        <Route path="/board/" element={<BoardRoute />} />
         <Route path="/en" element={<Navigate to="/" replace />} />
+        <Route path="/en/" element={<Navigate to="/" replace />} />
         <Route path="/en/board" element={<Navigate to="/board" replace />} />
+        <Route path="/en/board/" element={<Navigate to="/board" replace />} />
         <Route path="/ja" element={<Navigate to="/" replace />} />
+        <Route path="/ja/" element={<Navigate to="/" replace />} />
         <Route
           path="/ja/board"
+          element={<Navigate to="/board?lang=ja" replace />}
+        />
+        <Route
+          path="/ja/board/"
           element={<Navigate to="/board?lang=ja" replace />}
         />
         <Route path="*" element={<NotFoundPage />} />

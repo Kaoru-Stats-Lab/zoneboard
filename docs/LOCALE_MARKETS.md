@@ -33,8 +33,8 @@
 |------|------|
 | `/board` | prefs の locale（未設定なら EN） |
 | `/board?lang=ja` | 一度 JA を prefs に保存し、クエリから `lang` を消す（URL は `/board` に戻る） |
-| `/ja/board` | `/board?lang=ja` へリダイレクト（同上） |
-| `/` および `/ja` | LP は英語。`/ja` は `/` へ |
+| `/ja/board` · `/ja/board/` | `/board/?lang=ja` へ 301（CF `_redirects`）。SPA でも同趣旨 |
+| `/` · `/ja` · `/ja/` | LP は英語。`/ja` `/ja/` は `/` へ 301（**日本語 LP 面はまだ無い**） |
 
 OBS の Browser Source は **`/board?broadcast=1`** のまま。言語は配信者マシンの prefs。配信キャプチャ面にメニューは出ない。
 
