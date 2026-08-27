@@ -3,7 +3,7 @@ import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { boardDisplayName } from "../lib/boardLabel";
 import { defaultBoardTitle } from "../i18n/localeDefaults";
-import { MAX_BOARDS } from "../models/types";
+import { maxBoards } from "../lib/plan";
 import { BoardLimitDialog } from "./BoardLimitDialog";
 
 type Props = {
@@ -16,7 +16,7 @@ export function BoardSwitcher({ state, t }: Props) {
   const [limitOpen, setLimitOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const board = state.board;
-  const atLimit = state.store.boards.length >= MAX_BOARDS;
+  const atLimit = state.store.boards.length >= maxBoards();
 
   const currentIndex = board
     ? state.store.boards.findIndex((b) => b.id === board.id)
@@ -128,7 +128,7 @@ export function BoardSwitcher({ state, t }: Props) {
 /** Drawer 等から共有: 新規ボード（上限時はダイアログ）。 */
 export function useNewBoardFlow(state: AppState) {
   const [limitOpen, setLimitOpen] = useState(false);
-  const atLimit = state.store.boards.length >= MAX_BOARDS;
+  const atLimit = state.store.boards.length >= maxBoards();
 
   const requestNew = useCallback(() => {
     if (!atLimit) {

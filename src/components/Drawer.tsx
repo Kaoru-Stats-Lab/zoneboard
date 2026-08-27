@@ -15,11 +15,7 @@ import type {
   SportId,
   TeamFocus,
 } from "../models/types";
-import {
-  MAX_SCENES,
-  PIECE_SCALE,
-  usesPreferredFoot,
-} from "../models/types";
+import { PIECE_SCALE, usesPreferredFoot } from "../models/types";
 import { kitsFromBoard, sportHasGk } from "../models/kits";
 import { normalizePieceNumber, numberFill, teamPairOk } from "../canvas/pieceInk";
 import { KitColorField } from "./KitColorField";
@@ -27,6 +23,7 @@ import { STARTER_COUNT, formatRosterText } from "../presets/roster";
 import { viewPresetsForSport } from "../presets/viewport";
 import { scenePresetsForSport, type ScenePresetId } from "../presets/scenePresets";
 import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
+import { maxScenes } from "../lib/plan";
 import { LiveMatchControls } from "./LiveMatchControls";
 import { BoardLimitDialog } from "./BoardLimitDialog";
 import { useNewBoardFlow } from "./BoardSwitcher";
@@ -118,7 +115,7 @@ export function Drawer({ state, t }: Props) {
   const board = state.board;
   const scene = state.scene;
   const atLimit = newBoardFlow.atLimit;
-  const sceneLimit = board.scenes.length >= MAX_SCENES;
+  const sceneLimit = board.scenes.length >= maxScenes();
   const roster = board.roster[teamSide];
   const kits = kitsFromBoard(board);
   const xiMax = STARTER_COUNT[board.sport];

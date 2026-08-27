@@ -5,8 +5,8 @@ import {
   migrateWatermark,
 } from "../models/defaults";
 import type { BoardStore, Prefs, WatermarkSettings } from "../models/types";
-import { MAX_BOARDS } from "../models/types";
 import { PREFS_KEY, STORE_KEY, WATERMARK_KEY } from "./keys";
+import { storageBoardCeiling } from "../lib/plan";
 
 function safeParse<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -26,7 +26,7 @@ export function hasPersistedStore(): boolean {
 export function loadStore(): BoardStore {
   const data = safeParse<BoardStore>(localStorage.getItem(STORE_KEY));
   if (!data?.boards?.length) return emptyStore();
-  const boards = data.boards.slice(0, MAX_BOARDS).map(migrateBoard);
+  const boards = data.boards.slice(0, storageBoardCeiling()).map(migrateBoard);
   const active =
     boards.find((b) => b.id === data.activeBoardId)?.id ?? boards[0].id;
   return { boards, activeBoardId: active };

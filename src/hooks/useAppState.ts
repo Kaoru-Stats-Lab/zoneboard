@@ -46,8 +46,6 @@ import {
   AWAY_COLOR,
   DEFAULT_SELECTION_COLOR,
   HOME_COLOR,
-  MAX_BOARDS,
-  MAX_SCENES,
   MAX_VIEWPORT_TEMPLATES,
 } from "../models/types";
 import {
@@ -112,6 +110,7 @@ import type { Locale } from "../i18n/messages";
 import { normalizeLocale } from "../i18n/locale";
 import { clampViewport } from "../presets/viewport";
 import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
+import { maxBoards, maxScenes } from "../lib/plan";
 import {
   loadPrefs,
   loadStore,
@@ -284,7 +283,7 @@ export function useAppState() {
   );
 
   const addBoard = useCallback(() => {
-    if (store.boards.length >= MAX_BOARDS) return false;
+    if (store.boards.length >= maxBoards()) return false;
     const b = createBoard(
       board?.sport ?? "soccer",
       defaultBoardTitle(store.boards.length + 1, locale),
@@ -322,7 +321,7 @@ export function useAppState() {
   /** 空きがなければ replaceOldestIfFull で最古ボードを差し替え（?new=1 用）。 */
   const requestNewBoard = useCallback(
     (opts?: { replaceOldestIfFull?: boolean }) => {
-      if (store.boards.length < MAX_BOARDS) return addBoard();
+      if (store.boards.length < maxBoards()) return addBoard();
       if (!opts?.replaceOldestIfFull) return false;
       const oldest = [...store.boards].sort(
         (a, b) =>
@@ -364,7 +363,7 @@ export function useAppState() {
   const addScene = useCallback(
     (label?: string, phase: ScenePhase = "custom") => {
       if (!board || !scene) return false;
-      if (board.scenes.length >= MAX_SCENES) return false;
+      if (board.scenes.length >= maxScenes()) return false;
       const next = createScene(
         label ?? defaultSceneName(board.scenes.length + 1, board.sport, locale),
         phase,
@@ -389,7 +388,7 @@ export function useAppState() {
   const addSceneFromPreset = useCallback(
     (presetId: ScenePresetId) => {
       if (!board) return false;
-      if (board.scenes.length >= MAX_SCENES) return false;
+      if (board.scenes.length >= maxScenes()) return false;
       const preset = buildScenePreset(
         presetId,
         board.sport,

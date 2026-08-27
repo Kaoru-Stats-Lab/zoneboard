@@ -412,8 +412,11 @@ export interface Prefs {
 
 export const DEFAULT_SELECTION_COLOR = "#111111";
 
-export const MAX_BOARDS = 3;
-export const MAX_SCENES = 8;
+/** Free-tier caps (numbers live in `src/lib/plan.ts` → PLAN_LIMITS). */
+import { PLAN_LIMITS } from "../lib/plan";
+export { PLAN_LIMITS };
+export const MAX_BOARDS = PLAN_LIMITS.free.maxBoards;
+export const MAX_SCENES = PLAN_LIMITS.free.maxScenes;
 export const HOME_COLOR = "#e74c3c";
 export const AWAY_COLOR = "#3498db";
 /** 放送図の定番: ホームGKは緑、アウェイGKは黄（フィールドと被らない） */

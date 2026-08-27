@@ -1,2 +1,8 @@
-/** Pro: 名前付き画角テンプレ UI。課金ゲート実装まで非表示。 */
-export const FEATURE_PRO_VIEWPORT_TEMPLATES = false;
+/**
+ * Feature flags derived from plan entitlements (`src/lib/plan.ts`).
+ * Do not hardcode Pro UI on/off here — change activePlan() / entitlements instead.
+ */
+import { hasEntitlement } from "./plan";
+
+/** Pro: 名前付き画角テンプレ UI。課金まで activePlan() が free のため非表示。 */
+export const FEATURE_PRO_VIEWPORT_TEMPLATES = hasEntitlement("viewportTemplates");
