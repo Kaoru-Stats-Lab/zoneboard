@@ -1,6 +1,6 @@
 # ZoneBoard — Backlog
 
-**更新:** 2026-08-24  
+**更新:** 2026-08-27  
 **リポジトリ:** 本リポ専用（SUGUDASU / 他 GitHub プロジェクトとは分離）  
 **正本の方針:** [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) · [`UI_UX.md`](UI_UX.md) · [`SPEC.md`](SPEC.md)
 
@@ -173,6 +173,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-044 | es UI | 公開は en。ja は `/ja/` 用にソース残置。[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) |
 | B-045 | 向き（facing）の完全削除 | 現状は任意加速として残置 |
 | B-046 | ゾーンに横長の角丸帯（ブロックの塗り） | いまは Pen。専用「ブロック」ツールは作らない |
+| B-061 | **製品 PV（短尺）** | 2026-08-27 ログ。つくった埋め込みは諦めた。本命は **置く→描く→B（〜8秒）**。lockup sting（`/materials/`）はエンドカード用で PV ではない。置き場: X / PH / LP。YouTube は限定公開でも可。公式 YT チャンネルは必須にしない |
 
 ---
 

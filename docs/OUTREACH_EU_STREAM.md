@@ -1,11 +1,13 @@
 # 欧州サッカー · Streamer 向け紹介（PH 以外）
 
-**更新:** 2026-08-27（**§2-D-prep** EN watchalong メモ · DM 準備）  
+**更新:** 2026-08-28（**§2C** r/obs 完了ログ · r/streaming 保留 · modmail 文案）  
 **前提:** 公開面は英語一本。楔は **OBS に戦術窓を足す / B でツール消す / 芝に運営ロゴなし**（※戦術 Reddit では図が主・OBS は出さない）。  
 **PH の位置:** メーカー・テック寄り 1 日の露出。**欧州サッカー議論の本線は X + r/footballtactics（図）+ 配信者DM。**  
 **X:** FM / ハイプ型フィードは採用しない（§2-A）。図と press B 短尺のみ。  
 **現場:** 日本・天皇杯 同時視聴は磁石板 / PS / 自作図が主流（§2F）。ZB のジョブ証拠。宣伝転載はしない。  
-**r/obs:** Help 投稿済（2026-08-26）。インサイトは米寄り — 欧州客はここではなく §2-A / §2-D。
+**r/obs:** Help 完了（§2C）。インサイトは米寄り — 欧州客はここではなく §2-A / §2-D / §2B。  
+**r/streaming:** modmail 送付 · **投稿保留**（§2C）。Rule 3（tools 無許可 = 永久BAN リスク）。  
+**次の Reddit:** **r/footballtactics**（§2B · 図1枚 + 問い）。
 
 ---
 
@@ -77,14 +79,122 @@ Guide: https://zoneboard.app/guide/#show
 
 | Sub（候補） | 向き | 注意 |
 |---|---|---|
-| r/OBS | キャプチャ経路 | **Rule 2: No self-promo**（ヘルプに必要なときだけ可）。売り込みタイトル禁止 · 手順＋質問型 · **投稿済 2026-08-26（Help フレア）** |
-| r/Twitch / r/streaming | レイアウト | 売り込み臭いタイトル禁止 |
-| r/FootballTactics | 戦術図・分析 | **本命（戦術側）。OBS 楔は出さない。** 詳細は §2B |
+| r/OBS | キャプチャ経路 | **Rule 2: No self-promo**（ヘルプに必要なときだけ可）。**完了 2026-08-26** · ログ §2C |
+| r/Twitch / r/streaming | レイアウト | 売り込み臭いタイトル禁止 · **r/streaming は modmail 済・投稿保留**（§2C） |
+| r/FootballTactics | 戦術図・分析 | **次の本命**。OBS 楔は出さない。詳細は §2B |
 | r/soccer | 巨大 | Self-promo に厳しい。基本はコメントで案内のみ |
 | r/SideProject | PH 週の補助 | SV 寄り · 副次 |
 | Twitch 系多数 | — | **今は投稿しない**（follow4follow / 売り込み嫌文化） |
 
-**r/OBS:** Help フレアで投稿済（2026-08-26）。返信はキャプチャ話を先に。
+**r/OBS:** Help 完了 — §2C。  
+**r/streaming:** modmail 送付 · 投稿保留 — §2C。
+
+---
+
+### 2C. Reddit 活動ログ（2026-08-28）
+
+アカウント: **u/GlassSource4858**
+
+#### r/obs — 完了
+
+| 項目 | 内容 |
+|---|---|
+| 投稿日 | 2026-08-26 |
+| フレア | Help |
+| URL | https://www.reddit.com/r/obs/comments/1vyucf8/window_capture_of_a_browser_tactics_board_ui_hide/ |
+| タイトル | Window Capture of a browser tactics board — UI hide key, blank in encoder? |
+| 初日インサイト | ~196 views · US 41% · 3 comments · 1 upvote |
+| 方針 | 追加投稿不要。`still blank` 等が来たら FAQ のみ |
+
+**コメントログ:**
+
+`foolish_vindication`（2日前）:
+```
+Client area capture is the move here, whole window will just show you the tabs and address bar when you least want it.
+```
+
+OP 返信（23時間前 · 投稿済）:
+```
+Same here — we steer people to Window Capture → client area ON, cursor OFF, then **B** so it's pitch-only.
+
+Browser Source is the usual trap: OBS's browser won't see the board you built in Chrome (local storage stays in that window).
+
+https://zoneboard.app/guide/#show if useful.
+```
+
+**判定:** 役割完了。OBS キャプチャ検証ログとして十分。
+
+---
+
+#### r/streaming — 保留（modmail 送付）
+
+**判定（2026-08-28）:** 質問の中身は妥当だが、**そのまま Post すると self-promo 判定されやすい**。
+
+| リスク | 理由 |
+|---|---|
+| 本文の `zoneboard.app` | Rule 3: tools 無許可宣伝 → 削除 + **永久BAN** の文言 |
+| 画像の ZoneBoard 透かし | 製品スクショに見える |
+| Maker disclosure + リンク | 正直だが免罪符にならない |
+
+**modmail（送付 · 貼る用）**
+
+タイトル:
+```
+Permission to post a layout question (watchalong + tactics board)?
+```
+
+本文:
+```
+Hi mods —
+
+I'd like to post a genuine discussion question in r/streaming (not a product launch).
+
+Context: I run a match watchalong-style stream (cam + chat + sometimes a tactics board for lineups / one move). I'm trying to figure out how others size and scene-switch a pitch overlay beside cam/chat in OBS — window capture of a browser window, not Browser Source.
+
+I built the browser board myself for my own show. I'm not asking people to try it or upvote anything.
+
+Planned post:
+• Title: "How do you fit a tactics board beside cam + chat without eating the whole scene?"
+• Body: layout/workflow question only — no link in the post
+• Image: either OBS scene layout, or an unbranded pitch screenshot (no watermark)
+• I would only mention a URL if someone asks in comments
+
+Is this OK under your self-promo / third-party tool rules, or would you prefer I skip the image / skip posting?
+
+Thanks for your time.
+```
+
+**投稿ドラフト（mod 許可後 · リンクなし版）**
+
+タイトル:
+```
+How do you fit a tactics board beside cam + chat without eating the whole scene?
+```
+
+本文:
+```
+I run a match watchalong-style show: face cam, chat, and sometimes a tactics board for lineups / one move on the pitch.
+
+I'm trying to keep the board in its own browser window and window-capture that into OBS (not Browser Source — the board lives in Chrome's local storage, so OBS's built-in browser never sees the XI I just placed).
+
+Layout-wise I'm aiming for something like:
+• cam + chat on one side
+• pitch fills a clean rectangle on the other
+• hotkey hides editor chrome so it's mostly grass on stream
+
+For people who already do this: how do you size the board source in the scene? Separate scene for "tactics moment" vs always-on small panel? Anything you'd avoid on a live show?
+
+Not looking for a second studio app — just curious how others balance cam/chat vs a readable pitch.
+
+(Maker note: I'm building my own browser tactics board for this setup — mainly want layout ideas from people who already stream with something similar.)
+```
+
+**コメント返信（聞かれたとき）:**
+```
+Thanks — I window-capture the Chrome window where I built the board, client area on, cursor off. Press B in the app so it's mostly pitch. Happy to share a screenshot of my scene layout if useful.
+```
+
+**状態:** mod 返信待ち。**返信なし／NG なら投稿しない。** 次の Reddit は §2B へ。
 
 ---
 
@@ -118,6 +228,7 @@ OBS 話は **コメントで聞かれたときだけ**（「配信でも使っ�
 | 日 | やること |
 |---|---|
 | **今〜2日** | Hot / Top(Month) を読む · ルール・フレア・self-promo 文言をスクショメモ · **投稿しない** |
+| **次（2026-08-28 決定）** | r/streaming は保留。ここから **図1枚 + 問い** で週1投稿へ |
 | **週1** | 実在の試合から **図1枚 + 問い2–3行**（英語）。ツール名は本文末尾かコメント1 |
 | **反応があったら** | 戦術の議論に付き合う。リンク再掲はしない |
 | **9/1 前後** | PH 告知をこの sub に投げない。戦術図投稿は PH と **最低3日空ける** |

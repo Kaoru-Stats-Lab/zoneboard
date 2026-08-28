@@ -12,67 +12,94 @@ import type {
 import { uid } from "./id";
 import { clampViewport, DEFAULT_VIEWPORT } from "../presets/viewport";
 
-function mirrorX(x: number): number {
-  return 1 - x;
+function rotateNorm180(n: number): number {
+  return 1 - n;
 }
 
-function mirrorFacingHorizontal(facing: number): number {
-  return (360 - facing) % 360;
+function rotateFacing180(facing: number): number {
+  return (facing + 180) % 360;
 }
 
-function mirrorHideHalf(h: HideHalf): HideHalf {
+function swapHideHalf(h: HideHalf): HideHalf {
   if (h === "left") return "right";
   if (h === "right") return "left";
   return "none";
 }
 
-function mirrorBall(ball: BallState): BallState {
-  return { ...ball, x: mirrorX(ball.x) };
-}
-
-function mirrorPiece(p: Piece): Piece {
+function rotateBall180(ball: BallState): BallState {
   return {
-    ...p,
-    x: mirrorX(p.x),
-    facing: mirrorFacingHorizontal(p.facing),
+    ...ball,
+    x: rotateNorm180(ball.x),
+    y: rotateNorm180(ball.y),
   };
 }
 
-function mirrorObject(obj: DrawObject): DrawObject {
+function rotatePiece180(p: Piece): Piece {
+  return {
+    ...p,
+    x: rotateNorm180(p.x),
+    y: rotateNorm180(p.y),
+    facing: rotateFacing180(p.facing),
+  };
+}
+
+function rotateObject180(obj: DrawObject): DrawObject {
   if (obj.type === "line" || obj.type === "pen") {
     return {
       ...obj,
-      points: obj.points.map((pt) => ({ ...pt, x: mirrorX(pt.x) })),
+      points: obj.points.map((pt) => ({
+        ...pt,
+        x: rotateNorm180(pt.x),
+        y: rotateNorm180(pt.y),
+      })),
     };
   }
   if (obj.type === "link") {
-    // Anchored to piece ids; piece positions are mirrored separately.
+    // Anchored to piece ids; piece positions are rotated separately.
     return obj;
   }
   if (obj.type === "zone") {
-    return { ...obj, x: mirrorX(obj.x + obj.w) };
+    return {
+      ...obj,
+      x: rotateNorm180(obj.x + obj.w),
+      y: rotateNorm180(obj.y + obj.h),
+    };
   }
-  return { ...obj, x: mirrorX(obj.x) };
-}
-
-/**
- * 前後半のエンドチェンジ用。ピッチ中心で左右ミラー。
- * 駒・向き・ボール・描画・ハーフ非表示を対象。チーム色は変えない。
- */
-export function mirrorSceneHorizontal(scene: Scene): Scene {
   return {
-    ...scene,
-    pieces: scene.pieces.map(mirrorPiece),
-    ball: mirrorBall(scene.ball),
-    objects: scene.objects.map(mirrorObject),
-    hideHalf: mirrorHideHalf(scene.hideHalf),
+    ...obj,
+    x: rotateNorm180(obj.x),
+    y: rotateNorm180(obj.y),
   };
 }
 
-/** 画角の注視点も左右入れ替え（ズームはそのまま） */
-export function mirrorViewportHorizontal(vp: Viewport): Viewport {
-  return { ...vp, cx: mirrorX(vp.cx) };
+/**
+ * 前後半のエンドチェンジ用。ピッチ中心で 180° 回転（鏡反転ではない）。
+ * 駒・向き・ボール・描画・ハーフ非表示を対象。チーム色は変えない。
+ */
+export function swapSceneEnds(scene: Scene): Scene {
+  return {
+    ...scene,
+    pieces: scene.pieces.map(rotatePiece180),
+    ball: rotateBall180(scene.ball),
+    objects: scene.objects.map(rotateObject180),
+    hideHalf: swapHideHalf(scene.hideHalf),
+  };
 }
+
+/** @deprecated Use swapSceneEnds */
+export const mirrorSceneHorizontal = swapSceneEnds;
+
+/** 画角の注視点もエンドチェンジに合わせて 180° 回転（ズームはそのまま） */
+export function swapViewportEnds(vp: Viewport): Viewport {
+  return {
+    ...vp,
+    cx: rotateNorm180(vp.cx),
+    cy: rotateNorm180(vp.cy),
+  };
+}
+
+/** @deprecated Use swapViewportEnds */
+export const mirrorViewportHorizontal = swapViewportEnds;
 
 /** 局面の画角。未指定は board 移行値 → DEFAULT */
 export function sceneViewport(

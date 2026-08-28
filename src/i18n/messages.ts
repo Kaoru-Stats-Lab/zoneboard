@@ -215,7 +215,7 @@ export const messages = {
     sceneMirrorEnds: "左右入れ替え",
     sceneMirrorEndsShort: "左右入替",
     sceneMirrorEndsHint:
-      "前後半のエンドチェンジ。この局面の駒・線・ボールを左右に入れ替えます",
+      "前後半のエンドチェンジ。この局面の駒・線・ボールをピッチ中心で180度回転します",
     sceneDefaultSoccer: "キックオフ",
     sceneDefaultBasket: "オープニング",
     sceneDefaultFutsal: "キックオフ",
@@ -693,7 +693,7 @@ export const messages = {
     sceneMirrorEnds: "Swap ends",
     sceneMirrorEndsShort: "Swap ends",
     sceneMirrorEndsHint:
-      "Half-time end change. Mirrors this scene's pieces, lines, and ball left-right",
+      "Half-time end change. Rotates this scene's pieces, lines, and ball 180° around the pitch centre",
     sceneDefaultSoccer: "Kick-off",
     sceneDefaultBasket: "Opening tip",
     sceneDefaultFutsal: "Kick-off",

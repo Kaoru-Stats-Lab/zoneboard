@@ -22,8 +22,8 @@ import {
   getActiveScene,
   isPieceDrawn,
   mapActiveScene,
-  mirrorSceneHorizontal,
-  mirrorViewportHorizontal,
+  swapSceneEnds,
+  swapViewportEnds,
   sceneViewport,
 } from "../models/scene";
 import type {
@@ -567,9 +567,9 @@ export function useAppState() {
   const mirrorSceneEnds = useCallback(() => {
     updateBoard((b) =>
       mapActiveScene(b, (s) => ({
-        ...mirrorSceneHorizontal(s),
+        ...swapSceneEnds(s),
         viewport: clampViewport(
-          mirrorViewportHorizontal(sceneViewport(s, b.viewport)),
+          swapViewportEnds(sceneViewport(s, b.viewport)),
         ),
       })),
     );
