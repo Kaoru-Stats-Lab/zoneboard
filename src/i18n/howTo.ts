@@ -88,7 +88,7 @@ const ja: HowToDoc = {
       keys: [
         { combo: "B", meaning: "配信モードの入切" },
         { combo: "[ ] or PageUp/PageDown", meaning: "局面を切り替え" },
-        { combo: "Duplicate (Scenes or broadcast chrome)", meaning: "局面を複製して試す" },
+        { combo: "Duplicate (Scenes or bottom-right)", meaning: "局面を複製して試す" },
         { combo: "? or F1", meaning: "使い方（配信中は出さない）" },
       ],
     },
@@ -170,7 +170,7 @@ const en: HowToDoc = {
       keys: [
         { combo: "B", meaning: "Toggle broadcast mode" },
         { combo: "[ ] or PageUp/PageDown", meaning: "Switch scenes" },
-        { combo: "Duplicate (Scenes or broadcast chrome)", meaning: "Copy scene, try a move" },
+        { combo: "Duplicate (Scenes or bottom-right)", meaning: "Copy scene, try a move" },
         { combo: "? or F1", meaning: "How-to (not live)" },
       ],
     },
