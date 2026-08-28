@@ -12,7 +12,6 @@ import { drawBoard } from "./drawBoard";
 import { outerFillForBoard } from "./drawPitch";
 import { fitField } from "./layout";
 import { PNG_CREDIT_TEXT } from "../site/shareCopy";
-import { drawMatchBanner, matchBannerHeight } from "./matchBanner";
 
 const CREDIT_H = 28;
 
@@ -132,7 +131,8 @@ function paintBoardSurface(
   ctx.fillStyle = options.ground;
   ctx.fillRect(0, 0, canvasW, canvasH);
 
-  const bannerH = matchBannerHeight(canvasW, canvasH, boardView);
+  // Match banner is for live stream / editor scorebug — not SNS PNG (use bakeCaption footer).
+  const bannerH = 0;
   const { outer, pitch } = fitField(
     canvasW,
     canvasH,
@@ -150,16 +150,6 @@ function paintBoardSurface(
     watermarkImage: options.bakeWatermark ? options.watermarkImage : null,
     ballImage: options.ballImage,
   });
-  if (bannerH > 0) {
-    drawMatchBanner(
-      ctx,
-      canvasW,
-      canvasH,
-      boardView,
-      options.y2cLabel,
-      options.injLabel,
-    );
-  }
 }
 
 export async function exportBoardPng(

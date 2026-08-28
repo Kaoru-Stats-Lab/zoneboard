@@ -418,7 +418,9 @@ export const messages = {
     presetStory: "縦 9:16（Story / Reels）",
     presetNative: "ピッチ比（資料・配信スクショ用ではない）",
     bakeWm: "透かしを焼き込む",
-    bakeCaption: "試合名・局面名を入れる",
+    bakeCaption: "試合名・局面名をPNG下に焼く",
+    bakeCaptionHint:
+      "既定オフ。投稿文に自分で書く人がほとんど。PNG の下枠だけ。",
     bakeCredit: "zoneboard.app クレジット（任意）",
     bakeCreditHint:
       "既定オフ。PNG の下枠だけ。ライブのピッチや配信用キャプチャには入りません。",
@@ -442,7 +444,7 @@ export const messages = {
     confirmClear: "駒と描画をすべて消しますか？",
     confirmBench: "サブ人数を変えると配置をやり直します。続行しますか？",
     exportPreviewLabel: "PNG に入る範囲",
-    exportPreviewHint: "暗い外側は書き出しに入りません。ウィンドウをドラッグして確認",
+    exportPreviewHint: "暗い外側は書き出しに入りません。試合帯は配信用で PNG には入りません。ウィンドウをドラッグして確認",
     obsSection: "OBSで使う",
     obsIntro: "推奨: ウィンドウキャプチャ + 配信モード + 1920×1080",
     obsStep1:
@@ -904,6 +906,8 @@ export const messages = {
     presetNative: "Pitch ratio (docs — not for mobile feed)",
     bakeWm: "Bake watermark",
     bakeCaption: "Burn match & scene title",
+    bakeCaptionHint:
+      "Off by default. Most people caption in the post. PNG footer bar only.",
     bakeCredit: "Optional zoneboard.app credit",
     bakeCreditHint:
       "Off by default. PNG footer only — never on the live pitch or broadcast capture.",
@@ -928,7 +932,7 @@ export const messages = {
     confirmBench: "Changing bench size resets lineup. Continue?",
     toolIndicator: "Tool",
     exportPreviewLabel: "PNG frame",
-    exportPreviewHint: "Dimmed area is cropped out. Drag the window to check",
+    exportPreviewHint: "Dimmed area is cropped out. The match banner is for the stream, not the PNG. Drag the frame to check",
     obsSection: "Use with OBS",
     obsIntro: "Recommended: Window Capture + Broadcast mode + 1920×1080",
     obsStep1:

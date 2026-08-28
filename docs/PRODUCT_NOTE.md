@@ -405,6 +405,7 @@ Gross margin は静的配信 + MoR 前提で高く語れる。転換率・価格
 | CK 等の組み込みプリセット | ○ | 同じ |
 | 局面切替で画角が復元（`scene.viewport`） | ○ | 同じ |
 | Export「いまのズーム」＝画面と一致 | ○ | 同じ |
+| Export **Post framing**（Full / FT左 / FT右） | ○（手動ズームで代替可） | **ショートカット＋将来は保存テンプレから Export** |
 | 「うちの番組用」名前付き画角 | — | **複数保存・横断呼び出し（ローカル）** |
 
 組み込みフレームと局面記憶は **キャプチャ再現の楔**。カスタムテンプレは名簿セットと同じ **横断ライブラリ** が Pro 核。実装: `viewportTemplates` + `FEATURE_PRO_VIEWPORT_TEMPLATES`（`hasEntitlement("viewportTemplates")`）。
@@ -543,6 +544,35 @@ FanCommunity はプロダクト機能ではなく、**フォーマットが揃�
 | **中身** | セクション見出し＋キー表のみ（`howTo.ts` と同期） |
 
 - 実装: `src/site/shortcutSheet.ts` · `npm run site:pages` · B-066
+
+### 決定ログ — PNG Export 契約（2026-08-28）
+
+**投稿用 PNG はピッチ本体がデフォルト。試合帯・局面タイトルは配信／投稿文側の仕事。**
+
+| レイヤ | 配信（OBS） | PNG Export（既定） |
+|--------|-------------|-------------------|
+| **上部試合帯** | `showMatchBanner` ON で表示 | **焼かない**（ピッチ面積を確保） |
+| **下部タイトル帯** | — | **`bakeCaption` 既定 OFF**（X/IG の投稿文で足す） |
+| **透かし・クレジット** | ユーザ設定 | 既定 OFF（従来どおり） |
+
+- Settings 開閉中のプレビューも帯なし（WYSIWYG）。帯は Settings を閉じれば編集・配信で再表示
+- 必要な人だけ `bakeCaption` / `bakeCredit` / 透かしを ON
+- 実装: `exportPng.ts` · `BoardCanvas` `suppressMatchBanner` · `SettingsModal` · B-067
+
+### 決定ログ — Pro と Export Post framing（2026-08-28）
+
+**Post framing 全体を Pro 化しない。Current zoom と比率プリセット（4:5 / 16:9 等）は無料固定。**
+
+| 判断 | 内容 |
+|------|------|
+| **無料（楔）** | Export **Current zoom** · 投稿比率プリセット · 枠ドラッグ（`exportFrameRect`） |
+| **Pro（時短）** | Settings の **Full / FT左 / FT右**（`exportFocus !== "current"`）— 毎回ホイールで寄せ直さない |
+| **Pro（本線・既存）** | **`viewportTemplates`** から Export（「保存した画角: CK右」）。FT ドロップダウンと二重 UI にしない方向 |
+| **やらない** | Post framing 全体の Pro 化 · 比率プリセットの Pro 化 · 無料で Current が使えない状態 |
+
+- 無料ユーザは Ctrl+ホイール → Current Export で FT 相当は再現可能。Pro は **準備時間削減**（名簿セット・画角ライブラリと同じ ARPU 文脈）
+- ゲート: `hasEntitlement("viewportTemplates")` または dedicated `exportFraming` — **Pro 課金実装時**（B-023 以降）。いまは全員 Full / FT 可
+- 参照: [`SOCIAL_OUTPUT.md`](SOCIAL_OUTPUT.md) · 上表「画角の無料 / Pro 切り分け」
 
 ---
 

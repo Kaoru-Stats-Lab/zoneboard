@@ -53,7 +53,7 @@ export function SettingsModal({
 }: Props) {
   const { openFeedback } = useFeedback();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [bakeCaption, setBakeCaption] = useState(true);
+  const [bakeCaption, setBakeCaption] = useState(false);
   const [bakeCredit, setBakeCredit] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
@@ -334,6 +334,7 @@ export function SettingsModal({
             />
             {t("bakeCaption")}
           </label>
+          <p className="hint-muted">{t("bakeCaptionHint")}</p>
           <label className="check">
             <input
               type="checkbox"

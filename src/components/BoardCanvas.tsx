@@ -109,6 +109,8 @@ type Props = {
   watermarkImage: HTMLImageElement | null;
   /** PNG プレビュー時の画角（設定中・current 以外） */
   viewOverride?: Viewport | null;
+  /** Settings 中: 試合帯を隠し PNG 書き出しと同じ画角にする */
+  suppressMatchBanner?: boolean;
   t: (k: MessageKey) => string;
 };
 
@@ -118,14 +120,18 @@ function resolveSurfaceLayout(
   board: BoardDocument,
   view: Viewport,
   broadcast: boolean,
+  suppressMatchBanner = false,
 ) {
   // 配信: 帯高は 16:9 フレーム基準（帯はフレーム内上端）
   const frame = broadcast ? broadcastFrameRect(canvasW, canvasH) : null;
-  const bannerH = matchBannerHeight(
-    frame?.w ?? canvasW,
-    frame?.h ?? canvasH,
-    board,
-  );
+  const bannerH =
+    suppressMatchBanner
+      ? 0
+      : matchBannerHeight(
+          frame?.w ?? canvasW,
+          frame?.h ?? canvasH,
+          board,
+        );
   const layout = fitSurfaceLayout(
     canvasW,
     canvasH,
@@ -216,6 +222,7 @@ export function BoardCanvas({
   state,
   watermarkImage,
   viewOverride = null,
+  suppressMatchBanner = false,
   t,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -345,6 +352,7 @@ export function BoardCanvas({
         board,
         view,
         state.broadcast,
+        suppressMatchBanner,
       );
 
       if (lastDist > 0) {
@@ -391,6 +399,7 @@ export function BoardCanvas({
         board,
         view,
         state.broadcast,
+        suppressMatchBanner,
       );
       const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
       const focusX = norm?.x ?? view.cx;
@@ -427,6 +436,7 @@ export function BoardCanvas({
       board,
       view,
       state.broadcast,
+      suppressMatchBanner,
     );
     const d = drag.current;
     const draggingPieceId =
@@ -545,6 +555,7 @@ export function BoardCanvas({
       board,
       view,
       state.broadcast,
+      suppressMatchBanner,
     );
     return { norm, pitch };
   };
@@ -558,6 +569,7 @@ export function BoardCanvas({
       board,
       view,
       state.broadcast,
+      suppressMatchBanner,
     );
     return toNorm(clientX, clientY, canvas, pitch);
   };
@@ -579,6 +591,7 @@ export function BoardCanvas({
       board,
       view,
       state.broadcast,
+      suppressMatchBanner,
     );
     const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
     if (!norm) return null;
@@ -632,6 +645,7 @@ export function BoardCanvas({
       board,
       view,
       state.broadcast,
+      suppressMatchBanner,
     );
     const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
     if (!norm) return null;
@@ -1027,6 +1041,7 @@ export function BoardCanvas({
         board,
         view,
         state.broadcast,
+        suppressMatchBanner,
       );
       const dx = (e.clientX - d.lastClientX) / pitch.w;
       const dy = (e.clientY - d.lastClientY) / pitch.h;

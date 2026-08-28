@@ -491,6 +491,7 @@ export function Editor({ state }: Props) {
             state={state}
             watermarkImage={wmImage}
             viewOverride={exportViewOverride}
+            suppressMatchBanner={state.settingsOpen}
             t={t}
           />
           {exportAspect != null && (
