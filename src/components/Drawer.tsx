@@ -211,17 +211,26 @@ export function Drawer({ state, t }: Props) {
           <section className="drawer-panel">
             <p className="hint-muted">{t("scenesHint")}</p>
             <div className="scene-chips">
-              {board.scenes.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className={s.id === scene.id ? "active" : ""}
-                  onClick={() => state.setActiveScene(s.id)}
-                >
-                  {i + 1}
-                  {s.label ? ` · ${s.label}` : ""}
-                </button>
-              ))}
+              {board.scenes.map((s, i) => {
+                const hasNotes = Boolean(s.notes?.trim());
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className={[
+                      s.id === scene.id ? "active" : "",
+                      hasNotes ? "has-notes" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    title={hasNotes ? s.notes!.trim() : undefined}
+                    onClick={() => state.setActiveScene(s.id)}
+                  >
+                    {i + 1}
+                    {s.label ? ` · ${s.label}` : ""}
+                  </button>
+                );
+              })}
             </div>
             <div className="drawer-stack-actions">
               <button
@@ -284,6 +293,21 @@ export function Drawer({ state, t }: Props) {
                 placeholder={t(sceneLabelPhKey(board.sport))}
               />
             </label>
+            <label>
+              {t("sceneNotes")}
+              <textarea
+                rows={3}
+                value={scene.notes ?? ""}
+                onChange={(e) =>
+                  state.updateScene(
+                    (s) => ({ ...s, notes: e.target.value }),
+                    false,
+                  )
+                }
+                placeholder={t("sceneNotesPlaceholder")}
+              />
+            </label>
+            <p className="hint-muted">{t("sceneNotesHint")}</p>
             <button
               type="button"
               className="drawer-chrome-label"

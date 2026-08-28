@@ -212,6 +212,9 @@ export const messages = {
     deleteScene: "局面削除",
     deleteSceneShort: "削除",
     sceneLabel: "局面名",
+    sceneNotes: "局面メモ",
+    sceneNotesHint: "振り返り・保存用。配信（B）と PNG には出ません",
+    sceneNotesPlaceholder: "この局面で言いたかったこと、次回直すこと…",
     sceneMirrorEnds: "左右入れ替え",
     sceneMirrorEndsShort: "左右入替",
     sceneMirrorEndsHint:
@@ -690,6 +693,9 @@ export const messages = {
     deleteScene: "Delete scene",
     deleteSceneShort: "Delete",
     sceneLabel: "Scene name",
+    sceneNotes: "Scene notes",
+    sceneNotesHint: "For review and saved scenes. Not shown in Broadcast or PNG export",
+    sceneNotesPlaceholder: "What you wanted to say here, fix next time…",
     sceneMirrorEnds: "Swap ends",
     sceneMirrorEndsShort: "Swap ends",
     sceneMirrorEndsHint:

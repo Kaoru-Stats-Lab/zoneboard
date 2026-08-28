@@ -136,6 +136,7 @@ export function createScene(
     hideHalf: "none",
     teamFocus: "both",
     viewport: base?.viewport ? { ...base.viewport } : undefined,
+    notes: "",
   };
 }
 

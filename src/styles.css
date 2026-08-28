@@ -1735,6 +1735,14 @@ button:disabled {
   background: #2a2b2c;
 }
 
+.scene-chips button.has-notes:not(.active) {
+  border-color: color-mix(in srgb, var(--zb-border) 70%, var(--zb-ink-muted) 30%);
+}
+
+.scene-chips button.has-notes.active {
+  box-shadow: inset 2px 0 0 var(--zb-ink-muted);
+}
+
 .team-segment {
   display: grid;
   grid-template-columns: 1fr 1fr;

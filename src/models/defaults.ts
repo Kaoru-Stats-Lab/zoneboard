@@ -192,6 +192,7 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
       })),
       ball: s.ball ?? { x: 0.5, y: 0.5 },
       objects: normalizeObjects(s.objects ?? []),
+      notes: typeof s.notes === "string" ? s.notes : "",
     }));
     if (!activeSceneId || !scenes.some((s) => s.id === activeSceneId)) {
       activeSceneId = scenes[0].id;

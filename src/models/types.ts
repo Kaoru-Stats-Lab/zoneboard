@@ -286,6 +286,8 @@ export interface Scene {
   teamFocus?: TeamFocus;
   /** 局面ごとのカメラ。未指定は board.viewport（移行用）→ DEFAULT */
   viewport?: Viewport;
+  /** 振り返り用メモ。配信（B）・PNG Export には出さない */
+  notes?: string;
 }
 
 /** Pro: 試合をまたぐ名前付き画角テンプレ（UI は FEATURE_PRO まで非表示） */
