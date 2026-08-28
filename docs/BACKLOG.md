@@ -176,6 +176,9 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-061 | **製品 PV（短尺）** | 2026-08-27 ログ。つくった埋め込みは諦めた。本命は **置く→描く→B（〜8秒）**。lockup sting（`/materials/`）はエンドカード用で PV ではない。置き場: X / PH / LP。YouTube は限定公開でも可。公式 YT チャンネルは必須にしない |
 | B-062 | **局面メモ（振り返り）** | **v1 済 2026-08-28** — `scene.notes` · ドロワー textarea · 配信/Export 非表示。Later: ボード内検索（B-063）· 芝上レイヤー · Library タグ（Pro） |
 | B-063 | 局面メモのボード内検索 | B-062 の次。label + notes 部分一致フィルタ |
+| B-064 | パス／ランの弱い密度補正（任意） | **Later。** ズーム寄りで線が太すぎる場合のみ `/ sqrt(zoom)` 等。ピッチ白線は対象外。[`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 2026-08-28 |
+| B-065 | **局面複製の案内＋配信中複製** | **済 2026-08-28** — Scenes hint · How-to · 配信 chrome の複製ボタン（`addScene`）。[`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 決定ログ |
+| B-066 | **配信コマンド表（印刷・PDF）** | **済 2026-08-28** — `/materials/shortcut-sheet/` · HOW_TO 同期 · How-to リンク。[`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 2026-08-28 |
 
 ---
 

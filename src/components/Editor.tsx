@@ -38,6 +38,7 @@ import { TextInspector } from "./TextInspector";
 import { SettingsModal } from "./SettingsModal";
 import { HowToModal } from "./HowToModal";
 import { ToolRail } from "./ToolRail";
+import { maxScenes } from "../lib/plan";
 import { useFeedback } from "./FeedbackProvider";
 
 type Props = {
@@ -402,6 +403,9 @@ export function Editor({ state }: Props) {
         ? String(sceneIndex + 1)
         : "";
 
+  const sceneLimit =
+    (state.board?.scenes.length ?? 0) >= maxScenes();
+
   return (
     <div className={`editor${state.broadcast ? " is-broadcast" : ""}`}>
       {!state.broadcast && (
@@ -540,6 +544,18 @@ export function Editor({ state }: Props) {
                     ]
                   </button>
                 </div>
+                <button
+                  type="button"
+                  className="broadcast-icon-btn broadcast-scene-dup"
+                  disabled={sceneLimit}
+                  title={t("newScene")}
+                  aria-label={t("newScene")}
+                  onClick={() => {
+                    if (!state.addScene()) window.alert(t("sceneLimit"));
+                  }}
+                >
+                  {t("newSceneShort")}
+                </button>
                 <BroadcastToolMenu state={state} t={t} toolLabel={toolLabel} />
                 <button
                   type="button"

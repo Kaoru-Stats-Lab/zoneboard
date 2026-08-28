@@ -280,6 +280,7 @@ export function Drawer({ state, t }: Props) {
                 {t("deleteSceneShort")}
               </button>
             </div>
+            <p className="hint-muted">{t("newSceneHint")}</p>
             <label>
               {t("sceneLabel")}
               <input

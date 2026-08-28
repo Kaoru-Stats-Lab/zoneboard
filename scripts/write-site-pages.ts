@@ -15,6 +15,10 @@ import {
   documentTitle,
 } from "../src/site/siteMeta.ts";
 import { uniqueSectionIds } from "../src/site/siteAnchors.ts";
+import {
+  SHORTCUT_SHEET_COPY,
+  shortcutSheetArticle,
+} from "../src/site/shortcutSheet.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
 const publicDir = path.join(root, "public");
@@ -73,8 +77,20 @@ ${sections}
 }
 
 function materialsExtras(): string {
-  return `${materialsMedia()}
+  return `${shortcutSheetLinks()}
+${materialsMedia()}
 ${materialsShareCopy()}`;
+}
+
+function shortcutSheetLinks(): string {
+  return `<aside class="site-share shortcut-sheet-promo" aria-labelledby="shortcut-sheet-heading">
+<h2 id="shortcut-sheet-heading">Broadcast shortcut sheet</h2>
+<p>Printable command table for on-air piece work. Same shortcuts as the in-app how-to (? / F1).</p>
+<p class="site-share__row">
+<a class="primary" href="/materials/shortcut-sheet/">English · Print / PDF</a>
+<a class="ghost" href="/materials/shortcut-sheet/ja/">日本語</a>
+</p>
+</aside>`;
 }
 
 function typeLabel(type: ChangelogType): string {
@@ -229,10 +245,16 @@ type ShellOpts = {
   currentNav?: string;
   main: string;
   consent: boolean;
+  lang?: string;
+  extraStylesheet?: string;
 };
 
 function documentShell(opts: ShellOpts): string {
   const title = documentTitle(opts.title, PUBLISHER.product);
+  const lang = opts.lang ?? "en-GB";
+  const extraCss = opts.extraStylesheet
+    ? `    <link rel="stylesheet" href="${esc(opts.extraStylesheet)}" />\n`
+    : "";
   const canonical = opts.canonical
     ? `    <link rel="canonical" href="${esc(opts.canonical)}" />\n`
     : "";
@@ -244,7 +266,7 @@ function documentShell(opts: ShellOpts): string {
     : "";
   const ogImage = absoluteUrl(PUBLISHER.siteUrl, SITE_META.ogImagePath);
   return `<!doctype html>
-<html lang="en-GB">
+<html lang="${esc(lang)}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -274,7 +296,7 @@ ${ogUrl}    <meta property="og:locale" content="${SITE_META.locale}" />
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/site-doc.css" />
-  </head>
+${extraCss}  </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <header class="site-head">
@@ -350,6 +372,8 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
   <url><loc>${PUBLISHER.siteUrl}/</loc></url>
   <url><loc>${PUBLISHER.siteUrl}/board</loc></url>
 ${SITE_PAGES.map((p) => `  <url><loc>${PUBLISHER.siteUrl}/${p.slug}/</loc><lastmod>${PUBLISHER.updatedIso}</lastmod></url>`).join("\n")}
+  <url><loc>${PUBLISHER.siteUrl}/materials/shortcut-sheet/</loc><lastmod>${PUBLISHER.updatedIso}</lastmod></url>
+  <url><loc>${PUBLISHER.siteUrl}/materials/shortcut-sheet/ja/</loc><lastmod>${PUBLISHER.updatedIso}</lastmod></url>
 </urlset>
 `;
 await writeFile(path.join(publicDir, "sitemap.xml"), sitemap);
@@ -399,4 +423,28 @@ await writeFile(
 );
 
 console.log(`wrote ${SITE_PAGES.length} pages, ~${totalWords} words`);
+
+for (const locale of ["en", "ja"] as const) {
+  const copy = SHORTCUT_SHEET_COPY[locale];
+  const subdir =
+    locale === "ja" ? "materials/shortcut-sheet/ja" : "materials/shortcut-sheet";
+  const dir = path.join(publicDir, subdir);
+  await mkdir(dir, { recursive: true });
+  const canonical = `${PUBLISHER.siteUrl}/${subdir}/`;
+  await writeFile(
+    path.join(dir, "index.html"),
+    documentShell({
+      title: copy.title,
+      description: copy.description,
+      canonical,
+      currentNav: "materials",
+      main: shortcutSheetArticle(locale),
+      consent: true,
+      lang: locale === "ja" ? "ja" : "en-GB",
+      extraStylesheet: "/shortcut-sheet.css",
+    }),
+  );
+  console.log(`shortcut-sheet/${locale === "ja" ? "ja" : "en"}`);
+}
+
 console.log("wrote 404.html and maintenance.html");

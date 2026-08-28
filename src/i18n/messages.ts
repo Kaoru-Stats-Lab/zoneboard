@@ -59,6 +59,7 @@ export const messages = {
     settings: "設定",
     howTo: "使い方",
     howToGuideLink: "公開ガイドを開く",
+    howToSheetLink: "コマンド表を印刷",
     drawer: "パネル",
     tabMatch: "試合",
     tabScenes: "局面",
@@ -206,9 +207,12 @@ export const messages = {
     title: "メモ名",
     titlePh: "今夜の配信用メモ",
     scenes: "局面",
-    scenesHint: "配信中は [ ] で切替",
+    scenesHint:
+      "試す前に複製。元の局面は [ ] で戻せます。配信中も右下から複製できます。",
     newScene: "局面を複製",
     newSceneShort: "複製",
+    newSceneHint:
+      "配置・線・画角をコピー。元の局面は残り、[ ] で戻せます。",
     deleteScene: "局面削除",
     deleteSceneShort: "削除",
     sceneLabel: "局面名",
@@ -540,6 +544,7 @@ export const messages = {
     settings: "Settings",
     howTo: "How to",
     howToGuideLink: "Open the public guide",
+    howToSheetLink: "Print shortcut sheet",
     drawer: "Panel",
     tabMatch: "Match",
     tabScenes: "Scenes",
@@ -687,9 +692,12 @@ export const messages = {
     title: "Note name",
     titlePh: "UCL SF · Leg 1 notes",
     scenes: "Scenes",
-    scenesHint: "Switch live with [ ]",
+    scenesHint:
+      "Duplicate before you move. Return to the original with [ ]. Duplicate from broadcast chrome too.",
     newScene: "Duplicate scene",
     newSceneShort: "Duplicate",
+    newSceneHint:
+      "Copy layout, lines, and view. The original stays — switch back with [ ].",
     deleteScene: "Delete scene",
     deleteSceneShort: "Delete",
     sceneLabel: "Scene name",

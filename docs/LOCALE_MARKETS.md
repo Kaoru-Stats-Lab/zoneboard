@@ -36,7 +36,7 @@
 | `/ja/board` · `/ja/board/` | `/board/?lang=ja` へ 301（CF `_redirects`）。SPA でも同趣旨 |
 | `/` · `/ja` · `/ja/` | LP は英語。`/ja` `/ja/` は `/` へ 301（**日本語 LP 面はまだ無い**） |
 
-OBS の Browser Source は **`/board?broadcast=1`** のまま。言語は配信者マシンの prefs。配信キャプチャ面にメニューは出ない。
+OBS は **ウィンドウキャプチャ**（Browser Source ではない）。言語は配信者マシンの prefs。配信モードでも **最小 chrome**（局面・ツール・試合操作）はタッチ向けに残る（[`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 決定ログ 2026-08-28）。OBS で芝だけ取るのはキャプチャ領域の運用。
 
 PH と欧州戦術・OBS まわりの共通語は英語。同じ LP URL に第二言語を載せない。
 

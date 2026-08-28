@@ -8,6 +8,9 @@
   --zb-border: #1e1f20;
   --zb-border-strong: #343536;
   --zb-accent: #c4a24a;
+  /** Link on dark chrome — paper-nautilus (アオイガイ) cyan */
+  --zb-aogai: #7eb8c4;
+  --zb-aogai-hover: #a8d8e4;
   --zb-radius: 2px;
   --zb-sans:
     "Barlow", "Zen Kaku Gothic New", "Segoe UI", "Yu Gothic UI",
@@ -2598,7 +2601,8 @@ button:disabled {
 
 .broadcast-chrome .broadcast-icon-btn,
 .broadcast-chrome .broadcast-exit,
-.broadcast-chrome .broadcast-tool-toggle {
+.broadcast-chrome .broadcast-tool-toggle,
+.broadcast-chrome .broadcast-scene-dup {
   min-height: 24px;
   min-width: 24px;
   padding: 0.12rem 0.38rem;
@@ -2612,6 +2616,18 @@ button:disabled {
   cursor: pointer;
 }
 
+.broadcast-chrome .broadcast-scene-dup {
+  max-width: 3.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.broadcast-chrome .broadcast-scene-dup:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .broadcast-chrome .broadcast-icon-btn {
   padding: 0.12rem 0.3rem;
   font-weight: 600;
@@ -2623,7 +2639,8 @@ button:disabled {
 
 .broadcast-chrome .broadcast-icon-btn:hover,
 .broadcast-chrome .broadcast-exit:hover,
-.broadcast-chrome .broadcast-tool-toggle:hover {
+.broadcast-chrome .broadcast-tool-toggle:hover,
+.broadcast-chrome .broadcast-scene-dup:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.18);
   border-color: rgba(255, 255, 255, 0.24);
 }
@@ -2786,7 +2803,27 @@ button:disabled {
 }
 
 .how-to-modal footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
   font-size: 0.9rem;
+}
+
+.editor .modal a {
+  color: var(--zb-aogai);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--zb-aogai) 50%, transparent);
+  text-underline-offset: 0.18em;
+}
+
+.editor .modal a:hover {
+  color: var(--zb-aogai-hover);
+  text-decoration-color: var(--zb-aogai-hover);
+}
+
+.editor .modal a:focus-visible {
+  outline: 2px solid var(--zb-aogai);
+  outline-offset: 2px;
 }
 
 .editor .modal {

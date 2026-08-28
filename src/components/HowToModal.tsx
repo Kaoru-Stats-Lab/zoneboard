@@ -1,5 +1,6 @@
 import type { Locale, MessageKey } from "../i18n/messages";
 import { HOW_TO } from "../i18n/howTo";
+import { shortcutSheetPath } from "../site/shortcutSheet";
 
 type Props = {
   open: boolean;
@@ -60,6 +61,13 @@ export function HowToModal({ open, onClose, locale, t }: Props) {
           ))}
         </div>
         <footer>
+          <a
+            href={shortcutSheetPath(locale)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("howToSheetLink")}
+          </a>
           <a href="/guide/#place" target="_blank" rel="noreferrer">
             {t("howToGuideLink")}
           </a>
