@@ -11,6 +11,7 @@ import {
   hitTestBall,
   hitTestObject,
   hitTestPiece,
+  hitTestPieceForSwap,
   hitTestPiecePointer,
   hitTestWatermark,
   pitchToWorld,
@@ -1208,7 +1209,7 @@ export function BoardCanvas({
     if (d.mode === "piece") {
       if (d.ids.length > 1) return;
       // 別の駒の上にドロップ → 位置入れ替え（交代・解説用）
-      const target = hitTestPiece(
+      const target = hitTestPieceForSwap(
         board,
         scene,
         hit.pitch,

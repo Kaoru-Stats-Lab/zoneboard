@@ -1824,6 +1824,43 @@ export function hitTestPiece(
   return hitTestPieceFromTop(board, scene, pitch, normX, normY, excludeId, 1.45);
 }
 
+/** ドロップ入れ替え: 掴み(1.45)より厳格。接触プレーでは誤爆しない */
+const SWAP_DROP_PAD = 1.0;
+const SWAP_OVERLAP_FACTOR = 0.7;
+
+/**
+ * 別駒へのドロップ入れ替え用。hitTestPiece より厳格:
+ * - 第二パス(1.45)なし
+ * - 中心間距離が (rA+rB)×0.7 未満＝円がかなり重なったときだけ
+ */
+export function hitTestPieceForSwap(
+  board: BoardDocument,
+  scene: Scene,
+  pitch: PitchRect,
+  normX: number,
+  normY: number,
+  draggedId: string,
+): Piece | null {
+  const dragged = scene.pieces.find((p) => p.id === draggedId);
+  if (!dragged) return null;
+  const dm = pieceCenterNorm(board, dragged);
+  if (!dm) return null;
+  const dr = pieceHitRadiusNorm(board, pitch, dragged);
+
+  for (let i = scene.pieces.length - 1; i >= 0; i--) {
+    const p = scene.pieces[i];
+    if (p.id === draggedId) continue;
+    if (!isPieceDrawn(p, scene)) continue;
+    const m = pieceCenterNorm(board, p);
+    if (!m) continue;
+    const rn = pieceHitRadiusNorm(board, pitch, p);
+    if (Math.hypot(m.x - normX, m.y - normY) > rn * SWAP_DROP_PAD) continue;
+    const centerD = Math.hypot(dm.x - m.x, dm.y - m.y);
+    if (centerD < (dr + rn) * SWAP_OVERLAP_FACTOR) return p;
+  }
+  return null;
+}
+
 function hitTestPieceFromTop(
   board: BoardDocument,
   scene: Scene,
