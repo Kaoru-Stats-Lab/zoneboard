@@ -1,7 +1,8 @@
 # プロンプト — ボード UI 文案（波2: hint / title）
 
 **波1:** [`AGENT_PROMPT_HOWTO_COPY.md`](AGENT_PROMPT_HOWTO_COPY.md) · `howTo.ts`  
-**波2（本ファイル）:** `src/i18n/messages.ts` の `*Hint` とツール `*Hint` · OBS 系
+**波2（本ファイル）:** `src/i18n/messages.ts` の `*Hint` とツール `*Hint` · OBS 系  
+**波2b（読み物）:** `src/site/pages.ts` の `guide` · `faq` → `npm run site:pages`
 
 ---
 

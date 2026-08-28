@@ -54,12 +54,17 @@ function nav(current: string): string {
 /** Public pages ship English only. Japanese copy on SitePage is not written to HTML. */
 function article(page: SitePage): string {
   const ids = uniqueSectionIds(page.sections);
-  const sections = page.sections
-    .map(
-      (section, i) =>
-        `<h2 id="${esc(ids[i]!)}">${esc(section.headingEn)}</h2>\n${paragraphs(section.en)}`,
-    )
-    .join("\n");
+  const sectionBlocks = page.sections.map(
+    (section, i) =>
+      `<h2 id="${esc(ids[i]!)}">${esc(section.headingEn)}</h2>\n${paragraphs(section.en)}`,
+  );
+  if (page.slug === "guide") {
+    const rehearseIdx = page.sections.findIndex((s) => s.id === "rehearse");
+    if (rehearseIdx >= 0) {
+      sectionBlocks.splice(rehearseIdx + 1, 0, guideShortcutSheetAside());
+    }
+  }
+  const sections = sectionBlocks.join("\n");
   const form = page.showContactForm ? contactForm() : "";
   const extras =
     page.slug === "materials"
@@ -86,6 +91,18 @@ function shortcutSheetLinks(): string {
   return `<aside class="site-share shortcut-sheet-promo" aria-labelledby="shortcut-sheet-heading">
 <h2 id="shortcut-sheet-heading">Broadcast shortcut sheet</h2>
 <p>Printable command table for on-air piece work. Same shortcuts as the in-app how-to (? / F1).</p>
+<p class="site-share__row">
+<a class="primary" href="/materials/shortcut-sheet/">English · Print / PDF</a>
+<a class="ghost" href="/materials/shortcut-sheet/ja/">日本語</a>
+</p>
+</aside>`;
+}
+
+/** After Guide § rehearse — anchor #shortcut-sheet for PH / outreach links. */
+function guideShortcutSheetAside(): string {
+  return `<aside id="shortcut-sheet" class="site-share shortcut-sheet-promo" aria-labelledby="guide-shortcut-heading">
+<h2 id="guide-shortcut-heading">Print before you go live</h2>
+<p>Broadcast mode hides the tools. Keep this command table beside the keyboard — same shortcuts as ? / F1 in the editor.</p>
 <p class="site-share__row">
 <a class="primary" href="/materials/shortcut-sheet/">English · Print / PDF</a>
 <a class="ghost" href="/materials/shortcut-sheet/ja/">日本語</a>

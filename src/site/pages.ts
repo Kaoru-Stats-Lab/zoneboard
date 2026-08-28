@@ -113,12 +113,12 @@ export const SITE_PAGES: SitePage[] = [
         en: [
           "Open the board from the homepage. You do not create an account. Pick the football pitch if it is not already selected. Paste or type a roster if you have numbers ready. A line with a number is enough. A name and a preferred foot are optional. ZoneBoard will not invent a squad for you, and it will not scrape a league site.",
           "Put the starting eleven on the grass. The number on the piece is the number viewers can read from a distance. If you know a name, add it under the piece. If you do not, leave it. Plenty of regional matches are number-first. That is a product choice, not a missing feature.",
-          "Use scenes when the first picture is not the only picture. A corner from the right, a corner from the left, and a rest-defence shape can live as three scenes instead of one crowded drawing. Switch with the scene list. Do not stack every arrow on a single frame unless that is the point of the graphic.",
+          "Use scenes when the first picture is not the only picture. A corner from the right, a corner from the left, and a rest-defence shape can live as three scenes instead of one crowded drawing. Switch with `[` `]` or the scene list. Before you move pieces, duplicate the scene — the original stays and you can switch back. During the stream, Duplicate is in the bottom-right corner.",
         ],
         ja: [
           "ホームページからボードを開きます。アカウントは作りません。サッカーのピッチを選びます。番号が手元にあれば名簿を貼るか入力します。番号だけの行で足ります。名前と利き足は任意です。ZoneBoard がスタメンを代行作成することはなく、リーグサイトを取りに行くこともありません。",
           "芝の上にスタメンを置きます。駒の番号は、離れて見ても読める番号です。名前が分かるなら駒の下に足します。分からなければ空です。地方の試合は番号が先、ということがよくあります。欠けではなく、製品の選択です。",
-          "最初の絵が唯一の絵でないなら局面を使います。右CK、左CK、レストディフェンスは、一枚に全部重ねず三局面に分けられます。局面リストで切り替えます。一枚に全部の矢印を載せるのは、それがその図の意図であるときに限ります。",
+          "最初の絵が唯一の絵でないなら局面を使います。右CK、左CK、レストディフェンスは、一枚に全部重ねず三局面に分けられます。`[` `]` または局面リストで切り替えます。駒を動かす前に局面を複製してください。元は残り、戻せます。配信中は右下の複製ボタンからも同じ操作ができます。",
         ],
       },
       {
@@ -126,29 +126,29 @@ export const SITE_PAGES: SitePage[] = [
         headingEn: "During the pattern: draw",
         headingJa: "型を見せるとき: 描く",
         en: [
-          "Pass, run, and dribble are different lines because they mean different things on a football graphic. A pass is a ball. A run is a body without the ball. A dribble is a carrier moving with it. If you use one colour for all three, the viewer has to guess. Use the labelled tools. Do not turn the pitch into a highlighter pack.",
-          "Zones are for space, not for decoration. A pressing trap, a box to attack, or a rest-defence block should be large enough to read and transparent enough that the grass and the numbers still show. If a zone hides a player, the zone is wrong.",
-          "Pen is for the one mark that is not a pass or a run: a block line, a cover shadow, a defensive chain between players, or a channel edge. Hold Shift while dragging Pen for a straight segment—the same habit as Figma. Circles and freehand loops stay unmodified. Text is for a short title on the picture, not for a paragraph. If you need a paragraph, say it with your voice. The board is the diagram.",
+          "Pass, Run, and Dribble are different lines because they mean different things on a football graphic. Pass is the ball path — pass, cross, or shot. Run is off-ball movement. Dribble is a carrier moving with the ball. If you use one colour for all three, the viewer has to guess. Use the labelled tools. Do not turn the pitch into a highlighter pack.",
+          "Zone is for space, not for decoration. A pressing trap, a box to attack, or a rest-defence block should be large enough to read and transparent enough that the grass and the numbers still show. If a zone hides a piece, the zone is wrong.",
+          "Pen is for the one mark that is not Pass or Run: a block line, a cover shadow, a defensive chain between pieces, or a channel edge. Hold Shift while dragging Pen for a straight segment — the same habit as Figma. Circles and freehand loops stay unmodified. Link connects pieces; the line follows when you move them. Text is for a short title on the picture, not for a paragraph. If you need a paragraph, say it with your voice. The board is the diagram.",
         ],
         ja: [
-          "パス、ラン、ドリブルは線が違います。意味が違うからです。パスはボール。ランはボールを持たない体。ドリブルは運ぶ人です。三本を同じ色にすると、視聴者は推測します。名前のついたツールを使ってください。ピッチを蛍光ペンの束にしないでください。",
-          "ゾーンは空間用であり、飾りではありません。プレスの罠、攻める箱、レストディフェンスの塊は、読める大きさで、芝と番号が残る透明度にします。ゾーンが選手を隠すなら、そのゾーンは失敗です。",
-          "ペンは、パスでもランでもない一本です。ブロックの線、カバーシャドウ、選手どうしを結ぶ守備チェーン、チャネルの境界。Pen 使用中に Shift を押したままドラッグすると直線になります（Figma と同じ）。丸や囲みは Shift なしの自由描きです。文字は絵の短い題であり、段落ではありません。段落が必要なら声で言ってください。ボードは図です。",
+          "Pass、Run、Dribble は線が違います。意味が違うからです。Pass はボールの道（パス・クロス・シュート）。Run は走る動き。Dribble は運ぶ動きです。三本を同じ色にすると、視聴者は推測します。名前のついたツールを使ってください。ピッチを蛍光ペンの束にしないでください。",
+          "Zone は空間用であり、飾りではありません。プレスの罠、攻める箱、レストディフェンスのブロックは、読める大きさで、芝と番号が残る透明度にします。Zone が駒を隠すなら、その Zone は失敗です。",
+          "Pen は Pass でも Run でもない一本です。ブロックの線、カバーシャドウ、駒どうしを結ぶ守備チェーン、チャネルの境界。Pen 使用中に Shift を押したままドラッグすると直線になります（Figma と同じ）。丸や囲みは Shift なしの自由描きです。Link は駒をクリックしてつなぎ、駒を動かしても線が追従します。文字は絵の短い題であり、段落ではありません。段落が必要なら声で言ってください。ボードは図です。",
         ],
       },
       {
         id: "show",
-        headingEn: "On air: show",
-        headingJa: "オンエア: 出す",
+        headingEn: "During the stream: show",
+        headingJa: "配信中: 出す",
         en: [
           "Broadcast mode hides the tool rail and the side panel. That is the window you capture. Keep the board in its own window rather than replacing the whole scene. The usual layout — face, match, chat — stays. The pitch is an extra source.",
           "Window capture is the reliable path. A browser source that loads a different origin will not see the board you just built, because the board is local to this browser. If the grass goes blank in the encoder, you captured the wrong window.",
-          "Zoom when the story is a corner or a box, not when you want the picture to feel expensive. A full pitch with readable numbers is better than a cropped fragment that loses the far-side runner. If you zoom, pan so the relevant penalty area sits in the frame, and leave the runoff green instead of a white letterbox.",
+          "Zoom when the story is a corner or a box, not when you want the picture to feel expensive. A full pitch with readable numbers is better than a cropped fragment that loses the far-side runner. If you zoom, pan so the relevant penalty area sits in the frame, and leave the runoff green instead of a white letterbox. Scene switch is `[` `]`; Duplicate sits in the bottom-right corner during the stream.",
         ],
         ja: [
           "配信モードはツールレールとサイドパネルを消します。キャプチャするのはその窓です。シーン全体を置き換えず、ボードは別窓のままにします。いつもの顔・試合・チャットは残ります。ピッチは足すソースです。",
           "確実なのはウィンドウキャプチャです。別オリジンのブラウザソースは、いま組んだボードを見ません。ボードはこのブラウザのローカルだからです。エンコーダで芝が空白なら、窓を間違えています。",
-          "ズームは、コーナーやボックスが話の中心であるときに使います。高級に見せるためではありません。読める番号の全体図のほうが、遠いランナーを切ったトリミングより正しいことが多いです。ズームするなら、関係するペナルティエリアを枠に入れ、余白は白のレターボックスではなく緑のランオフにします。",
+          "ズームは、コーナーやボックスが話の中心であるときに使います。高級に見せるためではありません。読める番号の全体図のほうが、遠いランナーを切ったトリミングより正しいことが多いです。ズームするなら、関係するペナルティエリアを枠に入れ、余白は白のレターボックスではなく緑のランオフにします。局面切替は `[` `]`、配信中の複製は右下のボタンです。",
         ],
       },
       {
@@ -169,16 +169,16 @@ export const SITE_PAGES: SitePage[] = [
         headingEn: "Rehearse the pieces before you go live",
         headingJa: "本番の前に、駒を動かす練習をする",
         en: [
-          "Broadcast mode hides the rail and the drawer. That is the point: the capture should be the pitch. After the chrome is gone, the language for the pieces is the keyboard. If you have not pressed those keys in the editor, you will not have them on air. Practice is not a separate product. It is the same board, before B.",
-          "Select a group first, then move it. Click one piece. Ctrl or Cmd-click to add or remove. Shift-click only adds. Drag empty grass for a marquee. There is no “CB” label on a piece, so a back line is a box you draw. Alt+1 and Alt+2 grab home and away. Ctrl or Cmd+A takes everyone still on the picture. Esc clears.",
-          "Drag any selected piece and the group keeps its spacing. That is a line step, a press jump, or a slide with the mark still attached. Arrow keys nudge; Shift makes a larger step. R turns facing only. Q and E rotate the shape around its centre — two or more pieces. Minus packs toward that centre; equals spreads. Shift+H and Shift+V mirror. Ctrl or Cmd+D duplicates and leaves the copies selected. Ctrl or Cmd+Shift+arrows align. Alt+Shift+arrows even the gaps. A group drop does not swap shirts; swap is for one piece.",
-          "In the editor, ? or F1 opens the same how-to. It is chrome, not grass, and it stays closed in broadcast so it cannot eat the capture. The public guide you are reading is the long copy. The in-app page is the one you can open between scenes.",
+          "Broadcast mode hides the rail and the drawer. That is the point: the capture should be the pitch. After the tools hide, you move pieces with the keyboard. If you have not pressed those keys in the editor, they will not work during the stream. Practice is not a separate product. It is the same board, before B.",
+          "Make a selection first, then move it. Click one piece. Ctrl or Cmd-click to add or remove. Shift-click only adds. Drag on empty grass to box-select. There is no “CB” label on a piece, so a back line is a box you draw. Alt+1 and Alt+2 select all home or all away. Ctrl or Cmd+A selects everyone still on the picture. Esc clears the selection.",
+          "Drag any selected piece and the whole selection keeps its spacing. That is a line step, a press jump, or a slide with the mark still attached. Arrow keys nudge; Shift makes a larger step. R turns facing only. Q and E rotate the shape around the selection centre — two or more pieces. Minus moves pieces closer together; equals moves them apart. Shift+H and Shift+V mirror. Ctrl or Cmd+D duplicates pieces and leaves the copies selected. Ctrl or Cmd+Shift+arrows align. Alt+Shift+arrows even the gaps. A multi-piece drop does not swap shirts; swap is for one piece.",
+          "In the editor, ? or F1 opens the same how-to. It is a panel, not grass, and it stays closed in broadcast so it does not appear on stream. The public guide you are reading is the long copy. The in-app page is the one you can open between scenes. For a printout, use the shortcut sheet below (#shortcut-sheet) or the link in the how-to footer.",
         ],
         ja: [
-          "配信モードはレールと引き出しを消します。それが目的です。キャプチャに乗るのはピッチです。枠が消えたあと、駒の言葉はキーボードです。エディタで押していないキーは、オンエアでも出ません。練習は別プロダクトではありません。同じボードで、B の前にやることです。",
-          "塊を先に選び、それから動かします。クリックは一人。Ctrl または Cmd クリックは足す／外す。Shift クリックは足すだけ。芝の空き地をドラッグすると範囲選択です。駒に CB というラベルは無いので、バックラインは枠で囲みます。Alt+1 と Alt+2 はホームとアウェイ。Ctrl または Cmd+A は絵に残っている全員。Esc で解除。",
-          "選んだ駒のどれかをドラッグすると、間隔を保ったまま動きます。ラインの上げ下げ、プレスの一段、マークを貼ったままのスライドです。矢印はナッジ。Shift で歩幅が上がります。R は向きだけ。Q と E は重心まわりに形を回します。二人以上。マイナスは重心へ寄せ、イコールは開きます。Shift+H と Shift+V は反転。Ctrl または Cmd+D は複製し、コピーが選ばれます。Ctrl または Cmd+Shift+矢印は整列。Alt+Shift+矢印は間隔。複数のままドロップしても入れ替えません。入れ替えは一人のときです。",
-          "エディタでは ? または F1 で同じ使い方が開きます。芝ではなく枠の側です。配信中は出さないので、キャプチャを食いません。いま読んでいる公開ガイドが長い版。アプリ内の画面は、局面と局面のあいだで開く版です。",
+          "配信モードはレールと引き出しを消します。それが目的です。キャプチャに乗るのはピッチです。ツールが消えたあと、駒はキーボードで動かします。エディタで押していないキーは、配信中でも出ません。練習は別プロダクトではありません。同じボードで、B の前にやることです。",
+          "先に選択して、それから動かします。クリックは一人。Ctrl または Cmd クリックは足す／外す。Shift クリックは足すだけ。芝の空き地をドラッグすると枠で範囲選択です。駒に CB というラベルは無いので、バックラインは枠で囲みます。Alt+1 と Alt+2 はホームとアウェイ全員。Ctrl または Cmd+A は絵に残っている全員。Esc で選択解除。",
+          "選んだ駒のどれかをドラッグすると、間隔を保ったままとめて動きます。ラインの上げ下げ、プレスの一段、マークを貼ったままのスライドです。矢印はナッジ。Shift で歩幅が上がります。R は向きだけ。Q と E は選択の中心を軸に形を回します。二人以上。マイナスは寄せ、イコールは開きます。Shift+H と Shift+V は反転。Ctrl または Cmd+D は複製し、コピーが選ばれます。Ctrl または Cmd+Shift+矢印は整列。Alt+Shift+矢印は間隔。複数選択のまま置いても入れ替えません。入れ替えは一人のときです。",
+          "エディタでは ? または F1 で同じ使い方が開きます。芝ではなくパネルです。配信中は出さないので、画面に写りません。いま読んでいる公開ガイドが長い版。アプリ内の画面は、局面と局面のあいだで開く版です。印刷用コマンド表は下の #shortcut-sheet、または使い方画面のフッターから開けます。",
         ],
       },
       {
@@ -187,11 +187,11 @@ export const SITE_PAGES: SitePage[] = [
         headingJa: "このガイドが約束しないこと",
         en: [
           "We will not promise a thirty-second setup for every match. A clean XI still takes the time the numbers take. We will not promise that a slide habit disappears. Some hosts will keep slides for tables and use ZoneBoard only for the pitch. That is a valid split.",
-          "We will not put a tutorial overlay on the board the first time you open it. The tools are words. If a word is unclear, read this guide, the FAQ, or How to in the editor chrome (? / F1). That panel is not on the grass, and it does not open in broadcast.",
+          "We will not put a tutorial overlay on the board the first time you open it. The tools are words. If a word is unclear, read this guide, the FAQ, or How to in the editor (? / F1). That panel is not on the grass, and it does not open in broadcast.",
         ],
         ja: [
           "どの試合でも30秒で組める、とは言いません。きれいな XI は、番号の数だけ時間が要ります。スライド癖が消えるとも言いません。表はスライド、ピッチだけ ZoneBoard、という分け方は成立します。",
-          "初回にボードへチュートリアルを重ねません。ツールは言葉です。言葉が分からなければ、このガイドと FAQ、またはエディタ枠の使い方（? / F1）を読んでください。あの画面は芝の上ではなく、配信中には開きません。",
+          "初回にボードへチュートリアルを重ねません。ツールは言葉です。言葉が分からなければ、このガイドと FAQ、またはエディタの使い方（? / F1）を読んでください。あの画面は芝の上ではなく、配信中には開きません。",
         ],
       },
     ],
@@ -236,10 +236,10 @@ export const SITE_PAGES: SitePage[] = [
         headingEn: "Why is the pitch blank in my encoder?",
         headingJa: "エンコーダでピッチが空白になる",
         en: [
-          "Capture the ZoneBoard window after you open the board in this browser. A browser source pointed at the homepage will not include a board that exists only as local data. Display capture can work, but it may pick up other windows. Window capture of the board in broadcast mode is the intended path.",
+          "Capture the ZoneBoard window after you open the board in this browser. A browser source pointed at the homepage will not include a board that exists only as local data. Display capture can work, but it may pick up other windows. Window capture of the board in broadcast mode (B) is the intended path.",
         ],
         ja: [
-          "このブラウザでボードを開いたあと、その ZoneBoard の窓をキャプチャしてください。ホームページを向いたブラウザソースには、ローカルにしかないボードは含まれません。ディスプレイキャプチャでも写りますが、他の窓まで入ることがあります。配信モードのボード窓をウィンドウキャプチャするのが想定経路です。",
+          "このブラウザでボードを開いたあと、その ZoneBoard の窓をキャプチャしてください。ホームページを向いたブラウザソースには、ローカルにしかないボードは含まれません。ディスプレイキャプチャでも写りますが、他の窓まで入ることがあります。配信モード（B）のボード窓をウィンドウキャプチャするのが想定経路です。",
         ],
       },
       {
@@ -313,10 +313,10 @@ export const SITE_PAGES: SitePage[] = [
         headingEn: "Why are the tools words instead of icons?",
         headingJa: "ツールがアイコンではなく言葉なのはなぜか",
         en: [
-          "A streamer glancing at the rail needs to hit Pass, Run, or Dribble without decoding a pictogram. Those three lines mean different things on a football graphic. Words stay in the language of the show. Icons would save a few pixels and cost a second of hesitation. The rail is meant to disappear in broadcast mode anyway.",
+          "A streamer glancing at the rail needs to hit Pass, Run, or Dribble without decoding a pictogram. Those three lines mean different things on a football graphic. Words stay in the language of the show. Icons would save a few pixels and cost a second of hesitation. The rail hides in broadcast mode anyway.",
         ],
         ja: [
-          "レールを一目した配信者が、絵文字を解読せずにパス・ラン・ドリブルを押せることが必要です。三本の線はサッカーの図で意味が違います。言葉は番組の言語のままです。アイコンは数ピクセルを節約して、一秒の迷いを買います。配信モードではレールは消える前提です。",
+          "レールを一目した配信者が、絵文字を解読せずに Pass・Run・Dribble を押せることが必要です。三本の線はサッカーの図で意味が違います。言葉は番組の言語のままです。アイコンは数ピクセルを節約して、一秒の迷いを買います。配信モードではレールは消える前提です。",
         ],
       },
       {
