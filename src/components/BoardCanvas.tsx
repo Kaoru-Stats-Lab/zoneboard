@@ -53,6 +53,21 @@ function zoneDragCorner(
 
 const PEN_POINT_MIN_DIST = 0.0008;
 
+function keyboardBlocksSpacePan(): boolean {
+  const ae = document.activeElement as HTMLElement | null;
+  if (!ae) return false;
+  const tag = ae.tagName;
+  if (
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    tag === "SELECT" ||
+    ae.isContentEditable
+  ) {
+    return true;
+  }
+  return ae.closest('[role="dialog"]') != null;
+}
+
 function appendPenWorldPoint(
   points: { x: number; y: number }[],
   world: { x: number; y: number },
@@ -240,6 +255,9 @@ export function BoardCanvas({
     y: number;
   } | null>(null);
   const raf = useRef<number | null>(null);
+  const spaceHeldRef = useRef(false);
+  const [spacePanReady, setSpacePanReady] = useState(false);
+  const [spacePanning, setSpacePanning] = useState(false);
 
   textEditRef.current = textEdit;
   selectedIdsRef.current = state.selectedPieceIds;
@@ -309,6 +327,36 @@ export function BoardCanvas({
     return () => {
       alive = false;
       document.fonts.removeEventListener("loadingdone", bump);
+    };
+  }, []);
+
+  /** Space+ドラッグ = パン（入力中・モーダルでは Space を奪わない） */
+  useEffect(() => {
+    const clearSpace = () => {
+      spaceHeldRef.current = false;
+      setSpacePanReady(false);
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== "Space" || e.repeat) return;
+      if (keyboardBlocksSpacePan()) return;
+      e.preventDefault();
+      spaceHeldRef.current = true;
+      setSpacePanReady(true);
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code !== "Space") return;
+      clearSpace();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", clearSpace);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", clearSpace);
     };
   }, []);
 
@@ -711,14 +759,19 @@ export function BoardCanvas({
     const { norm, pitch } = hit;
     const world = pitchToWorld(norm.x, norm.y, board);
 
-    // 中ボタン or Alt+ドラッグ = パン
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    // 中ボタン or Alt+ドラッグ or Space+ドラッグ = パン
+    if (
+      !viewLocked &&
+      (e.button === 1 ||
+        (e.button === 0 && (e.altKey || spaceHeldRef.current)))
+    ) {
       e.preventDefault();
       drag.current = {
         mode: "pan",
         lastClientX: e.clientX,
         lastClientY: e.clientY,
       };
+      setSpacePanning(true);
       canvas.setPointerCapture(e.pointerId);
       return;
     }
@@ -1192,6 +1245,7 @@ export function BoardCanvas({
   const onPointerUp = (e: ReactPointerEvent) => {
     const d = drag.current;
     drag.current = null;
+    if (d?.mode === "pan") setSpacePanning(false);
     bumpDragVisual();
     if (!d) return;
     const hit = getNorm(e);
@@ -1316,6 +1370,8 @@ export function BoardCanvas({
       ref={boardSurfaceRef}
       data-board-surface="true"
       data-tool={state.tool}
+      data-space-pan={spacePanReady || spacePanning ? "true" : undefined}
+      data-space-panning={spacePanning ? "true" : undefined}
       style={{
         background: state.broadcast
           ? BROADCAST_MATTE

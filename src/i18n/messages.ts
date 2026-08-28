@@ -249,7 +249,8 @@ export const messages = {
     teamFocusAway: "アウェイのみ",
     teamFocusHint: "試合前・試合後の準備用。駒は残したまま、表示だけ切替",
     viewFocus: "画角（ズーム）",
-    viewFocusHint: "Ctrl+ホイールでズーム、Alt+ドラッグでパン。画角は局面ごとに保存",
+    viewFocusHint:
+      "Ctrl+ホイールでズーム、Space+ドラッグまたは Alt+ドラッグでパン。画角は局面ごとに保存",
     viewFull: "全体",
     viewFtL: "FT左（ファイナルサード）",
     viewFtR: "FT右（ファイナルサード）",
@@ -736,7 +737,8 @@ export const messages = {
     teamFocusAway: "Away only",
     teamFocusHint: "For pre/post-match prep. Pieces stay; only visibility changes",
     viewFocus: "Camera (zoom)",
-    viewFocusHint: "Ctrl+wheel zoom, Alt+drag pan. View is saved per scene",
+    viewFocusHint:
+      "Ctrl+wheel zoom; Space+drag or Alt+drag pan. View is saved per scene",
     viewFull: "Full",
     viewFtL: "FT left (final third)",
     viewFtR: "FT right (final third)",

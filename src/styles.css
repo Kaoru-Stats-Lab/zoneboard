@@ -1070,6 +1070,14 @@ button:disabled {
   cursor: crosshair;
 }
 
+.board-surface[data-space-pan] canvas {
+  cursor: grab;
+}
+
+.board-surface[data-space-panning] canvas {
+  cursor: grabbing;
+}
+
 .topbar-brand {
   display: inline-flex;
   align-items: center;

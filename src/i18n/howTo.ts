@@ -79,6 +79,17 @@ const ja: HowToDoc = {
       ],
     },
     {
+      heading: "画角を動かす",
+      paragraphs: [
+        "セットプレーに寄る、ハーフ全体を見る、など局面ごとの画角は Ctrl または Cmd + ホイールでズームします。Space を押したままドラッグでパンできます。Alt + ドラッグでも同じです。",
+      ],
+      keys: [
+        { combo: "Ctrl/Cmd+Wheel", meaning: "カーソル位置でズーム" },
+        { combo: "Space+Drag", meaning: "画角をパン" },
+        { combo: "Alt+Drag", meaning: "画角をパン（代替）" },
+      ],
+    },
+    {
       heading: "配信の前後",
       paragraphs: [
         "本番前に、ラインを上げて戻す、ホームだけ選んで狭める、まで一度やっておくと、配信中も手が止まりません。B で配信モードに入ります。使い方画面（? / F1）は配信中には開きません。画面に写ってしまうからです。",
@@ -158,6 +169,17 @@ const en: HowToDoc = {
         { combo: "Link", meaning: "Piece link (follows)" },
         { combo: "Shift+Pen drag", meaning: "Straight line A to B" },
         { combo: "Zone + Shift", meaning: "Near-circular zone" },
+      ],
+    },
+    {
+      heading: "Move the view",
+      paragraphs: [
+        "Zoom in on a set piece or see the whole half — Ctrl or Cmd + wheel zooms toward the cursor. Hold Space and drag to pan. Alt + drag works too.",
+      ],
+      keys: [
+        { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom at cursor" },
+        { combo: "Space+Drag", meaning: "Pan the view" },
+        { combo: "Alt+Drag", meaning: "Pan (alternate)" },
       ],
     },
     {
