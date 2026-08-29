@@ -1,13 +1,13 @@
 # 欧州サッカー · Streamer 向け紹介（PH 以外）
 
-**更新:** 2026-08-28（**§2C** r/obs 完了ログ · r/streaming 保留 · modmail 文案）  
+**更新:** 2026-08-28（**§0b** 個人 DM 方針改定 · **§2C** r/obs 完了ログ · r/streaming 保留）  
 **前提:** 公開面は英語一本。楔は **OBS に戦術窓を足す / B でツール消す / 芝に運営ロゴなし**（※戦術 Reddit では図が主・OBS は出さない）。  
-**PH の位置:** メーカー・テック寄り 1 日の露出。**欧州サッカー議論の本線は X + r/footballtactics（図）+ 配信者DM。**  
+**PH の位置:** メーカー・テック寄り 1 日の露出。**獲得の本線はバイラル**（§0b）— 個人 DM は補助のみ。  
 **X:** FM / ハイプ型フィードは採用しない（§2-A）。図と press B 短尺のみ。  
 **現場:** 日本・天皇杯 同時視聴は磁石板 / PS / 自作図が主流（§2F）。ZB のジョブ証拠。宣伝転載はしない。  
 **r/obs:** Help 完了（§2C）。インサイトは米寄り — 欧州客はここではなく §2-A / §2-D / §2B。  
 **r/streaming:** modmail 送付 · **投稿保留**（§2C）。Rule 3（tools 無許可 = 永久BAN リスク）。  
-**次の Reddit:** **r/footballtactics**（§2B · 図1枚 + 問い）。
+**次:** **r/footballtactics**（§2B · 図1枚 + 問い）· **@usezoneboard** 週次投稿
 
 ---
 
@@ -17,12 +17,35 @@
 |---|---|---|
 | **Product Hunt**（9/1） | メーカー・開発者・「面白いツール」層 | 初日の発見 · リンクの種 |
 | **[@usezoneboard](https://x.com/usezoneboard)** | 継続の表玄関 | 欧州戦術 X · 配信者への返信の軸 |
-| **Reddit / Discord / 配信者DM** | 実際にボードを使う人 | 試用 · フィードバック · 口コミ |
-| **やらない** | upvote 依頼連投 · 無関係サロンへのスパム · 競合叩き | — |
+| **Reddit / @usezoneboard / PH** | バイラル・公開面 | 発見 · 試用 · 口コミ |
+| **配信者 DM** | ~~主戦場~~ → **原則送らない**（§0b） | — |
+| **やらない** | upvote 依頼連投 · 無関係サロンへのスパム · 競合叩き · **既存ボード利用者への冷 DM** | — |
 
 PH 当日の X 1本は [`PH_LAUNCH.md`](PH_LAUNCH.md) §3.5。**その前後も欧州向けは別トーンでよい**（PH リンク必須にしない）。
 
 ---
+
+## 0b. 個人 DM 方針（決定 · 2026-08-28）
+
+**既に別プロダクトを明確に使っている人には送らない。** リプレイス期待は低く、セールスメール扱いされやすい。楔（透かし · B）があっても **送付対象外**。
+
+| 送らない例 | 理由 |
+|---|---|
+| tactical-board.com / buildlineup / tacticalpad 透かし | 乗換コスト > 得。**MP4 アニメ · 縦ピッチ等 ZB が埋められない**（[`COMPETITIVE_LP.md`](COMPETITIVE_LP.md) §0c） |
+| 自前ブランド板 + post-prod（Harry · Statman） | solved |
+| Shorts 縦ピッチ等、ZB が再現できないワークフロー | 正直に劣る |
+
+**本線はバイラル** — 需要側が自分で見つける経路の方が ROI が高い。
+
+| 優先 | チャネル | やること |
+|---|---|---|
+| **1** | **r/footballtactics** | 図1枚 + 問い（OBS 楔は出さない） |
+| **2** | **[@usezoneboard](https://x.com/usezoneboard)** | 週数本 · 戦術図 PNG · B 短尺 4–8s |
+| **3** | **Product Hunt**（9/1） | 1日露出 |
+| **4** | **Reddit** r/obs 等 | Help 形式のみ · 自己宣伝禁止遵守 |
+| **5** | **JP** | §2F · Tacticalista 透かしが見える同時視聴 — **公開観察・口コミ待ち**（冷 DM しない） |
+
+**個人 DM を残す例外（極小）:** 口頭のみ（型 A）· 明確な pain を本人が投稿 · 返信・引用 RT で会話が始まった後のみ。
 
 ## 1. 誰に言うか（優先）
 
@@ -440,47 +463,46 @@ Hallo — ich habe ein Fußball-Taktikboard im Browser gebaut, das neben Cam/Cha
 
 #### 候補メモ表（2026-08-27 · YouTube 実地 · 埋めた）
 
-**レーン:** EN = §2-D DM 候補。JP = §2F 壁打ち（英語 DM しない · JA 一文）。  
+**レーン:** EN = §2-D 観察ログ（**DM は §0b で原則停止**）。JP = §2F · [`OUTREACH_JP_CREATORS.md`](OUTREACH_JP_CREATORS.md)。  
 **LP/PH に他人スクショは載せない。**
 
-| # | Handle / チャンネル | 場所 | 規模感 | レイアウト観察 | 戦術どう出してる | DM 可？ | 送った日 | メモ |
+| # | Handle / チャンネル | 場所 | 規模感 | レイアウト観察 | 戦術どう出してる | DM | 送った日 | メモ |
 |---|---|---|---|---|---|---|---|---|
-| 1 | **Harry Lowe** | YT | **~385 登録** | 顔 PiP + 暗ピッチ全画面 | 番号丸 + 名前下 + 矢印 | **◎ 最優先** | | 本命 ICP |
-| 2 | **Statman Dave** | YT | **~38k** | 顔 PiP + 緑ピッチ | 番号丸 + 名前ラベル · ゾーン | **◎ 優先** | | 顔+板。規模も DM 向き |
-| 3 | **Charles Watts** | YT | ~133k | 顔左 + ピッチ右 | **buildlineup.com** · ↑交代列 | ○ 型 C | | 既に Web 板 · 感想求め |
-| 4 | **Coach Rafaz** | YT | 中 | 顔 PiP + 緑ピッチ | **tactical-board.com** · **ツールバー残存** | ○ 型 C | | B 対比が刺さりやすい |
-| 5 | **Doctor Gotti** | YT | **~900** | ピッチ全画面 | **tactical-board.com** 透かし | ○ 枠余り時 | | 極小 · 型 C |
-| 6 | **James Lawrence Allcott** | YT | ~445k | 顔 + 自前板 | **jlatacticsboard.com** | △ | | 冷たい DM 弱い |
-| 7 | **La Vida Fútbol** | YT | ~22k | ピッチ全画面 | **tacticalpad.com** 透かし | △ | | 教材寄り |
+| 1 | **Harry Lowe** | YT | **~389 登録** | 顔 PiP + 暗ピッチ | **自前板** | **✕** | | solved · §0b |
+| 2 | **Statman Dave** · [@StatmanDave](https://x.com/StatmanDave) | YT · X | **~370k YT** · **~452k X** | 顔 PiP + 緑ピッチ | **自前板** + KlipDraw · GRADIENT | **✕** | | solved · §0b |
+| 3 | **Charles Watts** · [@charleswatts](https://x.com/charleswatts) | YT | ~133k | 顔左 + ピッチ右 | **buildlineup.com** | **✕** | | vendor · §0b |
+| 4 | **Coach Rafaz** | YT | **~104k** · PT | 物理板 / tactical-board | **tactical-board.com** | **✕** | | §0b |
+| 5 | **Doctor Gotti** · [@DoctorGotti](https://youtube.com/@DoctorGotti) | YT | **~900** | ピッチ全画面 | **tactical-board.com** · Shorts 縦 | **✕** | | §0b |
+| 6 | **James Lawrence Allcott** | YT | ~445k | 顔 + 自前板 | **jlatacticsboard.com** | **✕** | | §0b |
+| 7 | **La Vida Fútbol** | YT | ~22k | ピッチ全画面 | **tacticalpad.com** 透かし | **✕** | | §0b |
 | 8 | Made Simple · Meta · Goalapse · nowayfootball · Football Signal · FourFourTwo · Inside Tactics · Become Elite · GEDFOOTBALL | YT | 大 | 編集 / 実映像テロスト / クイズ | 完成映像 | ✕ | | OBS 窓ではない |
 | 9 | The Breakdown（Overlap）· Athletic · Sky · Coaches' Voice · クラブ公式 | YT | 極大 | 物理板 / スタジオ | FORZA·molten·タブレット | ✕ | | 送らない |
 | 10 | **GOAT** / goatft · サッカーキング · 戸田/小澤 · PIVOT · Leo · ミム · U-NEXT · セリチャン | YT JP | 様々 | §2F | Tacticalista / 磁石 / チップ | JP | | 英語 DM しない |
 
 **競合 URL（焼き込み観察）:** buildlineup.com · jlatacticsboard.com · tactical-board.com · tacticalpad.com · goatft.com · Tacticalista · GED Tactical Board
 
-**今夜の EN DM 順:** 1 Harry Lowe → 2 Statman Dave → 3 Watts または Rafaz（型 C）。  
-**スクショ収集はここで打ち切り。** 型は揃った。
+**方針（2026-08-28 · §0b）:** 上表の vendor / 自前板ユーザーへ **冷 DM しない**。観察ログのみ。獲得は **§0b バイラル**。
+
+**教訓:** 「番号丸 + 名前 + PiP」= レイアウト型。**vendor / 自前板が見えた時点で DM 対象外**。楔（透かし · B）は **バイラル投稿のコピー**に使う。
 
 #### 実地から見える板の型（製品示唆 · 内部）
 
 | 型 | 例 | ZB との関係 |
 |---|---|---|
-| **番号丸 + 名前** | Harry · Statman · Watts · 戸田 · Rafaz | 本線。配信窓に載る |
+| **番号丸 + 名前** | Harry · Statman · Watts · 戸田 · Rafaz | レイアウト型。**板を持っているかは別判定** |
 | **役割ラベル丸** | nowayfootball | 解説用。実XIではない |
 | **角ステータス** | PIVOT「新」· Watts ↑ | YC/RC 左上と同言語（実装済） |
 | **URL / ロゴ焼き込み** | tactical-board · tacticalpad · JLA · buildlineup · goatft · Athletic | ZB = あなたのバッジ |
 | **ツールバー残存** | Rafaz · goatft · Tacticalista · JLA | **B で消える**が対比 |
 | **編集 / テロスト / クイズ / 物理板（Sky級）** | Made Simple · Inside Tactics · Become Elite · Breakdown | DM しない |
 
-**DM 可の条件（全部○）:** ① 直近 2 週間に配信した ② 顔 or 声がある ③ 戦術を一度でも出しているか「出したい余白」がある ④ 連絡先がある（X DM / フォーム / Discord / business メール）
+**DM 可の条件（§0b 改定 · 全部○）:** ① **別プロダクト未使用**（口頭のみ · スライド · 空白 OBS 窓）② 直近配信 or 公開投稿 ③ **本人との会話が既に始まっている**（引用 RT · 返信）④ 週 2–3 通枠
 
 #### DM 前チェック
 
-- [ ] その人の配信を **最低 10 分**見た（または VOD の戦術パート）  
-- [ ] 一文に **具体**を入れる（例: 「half-time にスライドで XI を出してた」）  
-- [ ] 週の通数枠に余裕がある（**週 2–3**）  
-- [ ] 同じ人に 7 日以内に再送しない  
-- [ ] 製品スクショを無断で「あなたの配信に載せた」と言わない  
+- [ ] **vendor / 自前板が画面に写っていない**（写っていたら **送らない** · §0b）  
+- [ ] その人の配信を **最低 10 分**見た  
+- [ ] 会話が **向こうから始まっている**（冷 DM 禁止が既定）
 
 #### パーソナライズ差分（貼る用）
 
@@ -510,14 +532,38 @@ Would love any “this would break on stream” notes.
 Hi — saw you already use a board beside the cam on [MATCH]. I built another browser option aimed at OBS window capture (B hides the editor chrome; no vendor logo on the grass). Not asking you to switch — if you’re curious or have sharp notes from live use: https://zoneboard.app
 ```
 
+**C+. すでに高品質な自前板がある（Statman Dave 等 · 2026-08-28）**
+
+観察: ブランドロゴ焼き込み · クラブクレスト · 番号+名前 · ゾーン — **メイン YouTube 制作の差し替え先ではない**。楔は **重い post-prod を回さない席**（podcast · live · 試合直後 clip）だけ。
+
+```
+Subject: Browser board for quick breakdowns (not a replacement)
+
+Hi Dave,
+
+I watched your Barcola / Liverpool breakdown — the branded pitch with numbered tokens and zone highlights is already broadcast-quality. Not pitching a swap for that workflow.
+
+I built a free browser board for the lighter seat: quick live or podcast setups where you want a clean pitch in OBS without opening heavier tools. Press B → tools hide → window-capture pitch only. No account, no vendor logo on the grass.
+
+https://zoneboard.app · guide: https://zoneboard.app/guide/#show
+
+No reply needed — if it ever saves time beside your main setup, sharp “this breaks on stream” notes would be gold.
+
+Kaoru
+```
+
+**Gemini 案との差:** 長文セールス · リプレイス示唆 — **§0b で送付自体を停止**。以下文案は **アーカイブ**（参考のみ）。
+
+~~**C · Doctor Gotti**~~ · ~~**C+ · Statman Dave**~~ — **不送**
+
 #### 週次リズム
 
 | 曜日目安 | やること |
 |---|---|
-| **試合日前夜〜当日** | 候補表に 1–2 行追加（Live を見る） |
-| **試合翌日** | 見た人だけ DM（A/B/C）。**2–3 通まで** |
-| **週 1** | §2-A の通常 X 投稿 1（図 or B 短尺）。PH 週以外は PH リンク不要 |
-| **やらない** | 未視聴への一斉 DM · 大手メンション連打 |
+| **試合日前夜〜当日** | 候補表に 1–2 行追加（**観察のみ** · §0b） |
+| **試合翌日** | ~~DM~~ → **§2-A X 1 本** or **§2B Reddit** |
+| **週 1** | §2-A の通常 X 投稿 1（図 or B 短尺） |
+| **やらない** | vendor / 自前板ユーザーへの冷 DM · 未視聴一斉 DM |
 
 #### §2-A とセット（公開面）
 

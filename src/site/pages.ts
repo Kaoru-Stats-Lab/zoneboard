@@ -80,6 +80,25 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "why-i-built-it",
+        headingEn: "Why I built it",
+        headingJa: "なぜ作ったか",
+        en: [
+          "I have never played football properly. Not in a real match. Not even as a child in any serious way. I have always watched instead — on television, in stadiums, on trips abroad when a player's name was enough to start a conversation with a stranger.",
+          "By 2026 I was also building web products. I looked at football and thought, coldly, that a sport this big must need better tools. Then the North and Central America World Cup cycle started. I watched a respected journalist analysing a match on a live stream. He knew the game. He cared about the game. His tactics board was Google Slides. He moved shapes one by one, slowly, fighting the interface while he talked. The interface slowed him down. Viewers could feel the friction. The software cut the energy he wanted to share with viewers.",
+          "I thought: this is not good enough.",
+          "I am not a former player. I am not a television commentator. I cannot stand on the pitch or deliver expert commentary. What I can do is build something under my control and hand it to others — journalists, coaches, streamers, and fans who simply want to show what they see.",
+          "That is ZoneBoard. Open it, place the players, and switch to broadcast mode (B). The tools hide. The pitch stays. The view is clean and ready for a stream, with no tutorial needed.",
+        ],
+        ja: [
+          "私はサッカー未経験です。公式試合で蹴ったことはありません。子どもの頃も、本気でやった記憶はほとんどありません。それでも、テレビの前、スタンド、旅先——選手の名前一つで知らない人と話が始まる、そんなふうにずっと「観る側」でした。",
+          "2026年、私は Web プロダクトも作っていました。北中米ワールドカップのシーズン、配信で有名な記者が試合を解説しているのを見ました。知識も熱もある。戦術ボードは Google スライド。図形を一つずつ動かし、インターフェースと格闘しながら話す。操作が遅れ、視聴者にもそのもどかしさが伝わる。ソフトウェアが、本人が伝えたい熱を削いでいました。",
+          "「……これは、アカン」",
+          "ピッチに立つ選手でも、解説席のアナリストでもありません。自分の手の届くところで、語る人に渡せるものを作る——それが ZoneBoard です。",
+          "開いて、選手を置き、配信モード（B）に入れてください。ツールは消え、ピッチが残ります。チュートリアルなしで、配信向けの見た目になります。",
+        ],
+      },
+      {
         headingEn: "Who operates the site",
         headingJa: "運営者",
         en: [
