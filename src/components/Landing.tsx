@@ -130,20 +130,32 @@ export function Landing() {
               {t("lpPriceBody")}{" "}
               <a href="/pricing/">{t("lpPriceLink")}</a>
             </p>
-            <Link
-              className="lp-cta lp-cta--close"
-              to="/board"
-              onClick={() => trackEvent("open_board")}
-            >
-              {savedBoard ? t("openBoardContinue") : t("lpCloseCta")}
-            </Link>
-            {savedBoard && (
+            {savedBoard ? (
+              <div className="lp-cta-row lp-cta-row--close">
+                <div className="lp-cta-pair">
+                  <Link
+                    className="lp-cta"
+                    to="/board"
+                    onClick={() => trackEvent("open_board")}
+                  >
+                    {t("openBoardContinue")}
+                  </Link>
+                  <Link
+                    className="lp-cta lp-cta--secondary"
+                    to="/board?new=1"
+                    onClick={() => trackEvent("open_board")}
+                  >
+                    {t("openBoardNew")}
+                  </Link>
+                </div>
+              </div>
+            ) : (
               <Link
-                className="lp-cta lp-cta--secondary lp-cta--close-secondary"
-                to="/board?new=1"
+                className="lp-cta lp-cta--close"
+                to="/board"
                 onClick={() => trackEvent("open_board")}
               >
-                {t("openBoardNew")}
+                {t("lpCloseCta")}
               </Link>
             )}
           </section>

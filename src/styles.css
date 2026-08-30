@@ -213,6 +213,16 @@ button:disabled {
   margin-top: 1.5rem;
 }
 
+.lp-cta-row--close {
+  grid-area: auto;
+  margin-top: 1.35rem;
+}
+
+.lp-cta-row--close .lp-cta {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .lp-saved-hint {
   margin: 0 0 0.65rem;
   font-size: 0.82rem;
@@ -238,11 +248,6 @@ button:disabled {
   background: #1e1f20;
   border-color: #9a9a96;
   color: #f3f3f1;
-}
-
-.lp-cta--close-secondary {
-  margin-top: 0.65rem;
-  display: inline-block;
 }
 
 .board-switcher {
@@ -945,9 +950,15 @@ button:disabled {
     max-width: none;
   }
 
-  .lp-cta {
+  .lp-hero > .lp-cta,
+  .lp-hero > .lp-cta-row {
     margin-top: 1.2rem;
     margin-bottom: 1.5rem;
+  }
+
+  .lp-hero .lp-cta-pair .lp-cta {
+    margin-top: 0;
+    margin-bottom: 0;
   }
 
   .lp-steps {
