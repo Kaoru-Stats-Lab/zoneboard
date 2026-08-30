@@ -20,10 +20,12 @@ import { kitsFromBoard, sportHasGk } from "../models/kits";
 import { normalizePieceNumber, numberFill, teamPairOk } from "../canvas/pieceInk";
 import { KitColorField } from "./KitColorField";
 import { STARTER_COUNT, formatRosterText } from "../presets/roster";
-import { viewPresetsForSport } from "../presets/viewport";
 import { scenePresetsForSport, type ScenePresetId } from "../presets/scenePresets";
 import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
 import { maxScenes } from "../lib/plan";
+import { activeViewport } from "../models/scene";
+import { PitchLookPicker } from "./PitchLookPicker";
+import { ViewportPresetGrid } from "./ViewportPresetGrid";
 import { LiveMatchControls } from "./LiveMatchControls";
 import { BoardLimitDialog } from "./BoardLimitDialog";
 import { useNewBoardFlow } from "./BoardSwitcher";
@@ -350,17 +352,12 @@ export function Drawer({ state, t }: Props) {
             <details className="drawer-details">
               <summary>{t("viewFocus")}</summary>
               <p className="hint-muted">{t("viewFocusHint")}</p>
-              <div className="tool-grid">
-                {viewPresetsForSport(board.sport).map(({ id, key }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => state.applyViewPreset(id)}
-                  >
-                    {t(key as MessageKey)}
-                  </button>
-                ))}
-              </div>
+              <ViewportPresetGrid
+                sport={board.sport}
+                viewport={activeViewport(board)}
+                onPreset={state.applyViewPreset}
+                t={t}
+              />
               <button type="button" onClick={state.resetViewport}>
                 {t("viewReset")}
               </button>
@@ -970,63 +967,35 @@ export function Drawer({ state, t }: Props) {
             </label>
 
             {board.sport === "soccer" && (
-              <div className="stack">
-                <div className="row">
-                  <button
-                    type="button"
-                    className={board.pitchView === "full" ? "active" : ""}
-                    onClick={() =>
-                      state.updateBoard(
-                        (b) => ({ ...b, pitchView: "full" }),
-                        false,
-                      )
-                    }
-                  >
-                    {t("full")}
-                  </button>
-                  <button
-                    type="button"
-                    className={board.pitchView === "half" ? "active" : ""}
-                    onClick={() =>
-                      state.updateBoard(
-                        (b) => ({ ...b, pitchView: "half" }),
-                        false,
-                      )
-                    }
-                  >
-                    {t("half")}
-                  </button>
-                </div>
-                <label className="check">
-                  <input
-                    type="checkbox"
-                    checked={board.showLanes5}
-                    onChange={(e) =>
-                      state.updateBoard(
-                        (b) => ({
-                          ...b,
-                          showLanes5: e.target.checked,
-                        }),
-                        false,
-                      )
-                    }
-                  />
-                  {t("lanes5")}
-                </label>
-                {board.pitchView === "half" && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      state.updateBoard((b) => ({
-                        ...b,
-                        pitchFlipped: !b.pitchFlipped,
-                      }))
-                    }
-                  >
-                    {t("flip")}
-                  </button>
-                )}
-              </div>
+              <PitchLookPicker
+                pitchView={board.pitchView}
+                showLanes5={board.showLanes5}
+                lanesControl
+                onPitchView={(view) =>
+                  state.updateBoard((b) => ({ ...b, pitchView: view }), false)
+                }
+                onLanes5={(on) =>
+                  state.updateBoard((b) => ({ ...b, showLanes5: on }), false)
+                }
+                showFlip={board.pitchView === "half"}
+                onFlip={() =>
+                  state.updateBoard((b) => ({
+                    ...b,
+                    pitchFlipped: !b.pitchFlipped,
+                  }))
+                }
+                labels={{
+                  pitchView: t("pitchView"),
+                  full: t("full"),
+                  half: t("half"),
+                  lanesOff: t("lanesOff"),
+                  lanesOffShort: t("lanesOffShort"),
+                  lanesOnShort: t("lanesOnShort"),
+                  lanes5: t("lanes5"),
+                  lanes5Hint: t("lanes5Hint"),
+                  flip: t("flip"),
+                }}
+              />
             )}
 
             {board.sport === "futsal" && (
@@ -1092,47 +1061,34 @@ export function Drawer({ state, t }: Props) {
 
             {board.sport === "basketball" && (
               <div className="stack">
-                <div className="row">
-                  <button
-                    type="button"
-                    className={board.pitchView === "full" ? "active" : ""}
-                    onClick={() =>
-                      state.updateBoard(
-                        (b) => ({ ...b, pitchView: "full" }),
-                        false,
-                      )
-                    }
-                  >
-                    {t("full")}
-                  </button>
-                  <button
-                    type="button"
-                    className={board.pitchView === "half" ? "active" : ""}
-                    onClick={() =>
-                      state.updateBoard(
-                        (b) => ({ ...b, pitchView: "half" }),
-                        false,
-                      )
-                    }
-                  >
-                    {t("half")}
-                  </button>
-                </div>
+                <PitchLookPicker
+                  pitchView={board.pitchView}
+                  lanesControl={false}
+                  court="basketball"
+                  onPitchView={(view) =>
+                    state.updateBoard((b) => ({ ...b, pitchView: view }), false)
+                  }
+                  showFlip={board.pitchView === "half"}
+                  onFlip={() =>
+                    state.updateBoard((b) => ({
+                      ...b,
+                      pitchFlipped: !b.pitchFlipped,
+                    }))
+                  }
+                  labels={{
+                    pitchView: t("pitchView"),
+                    full: t("full"),
+                    half: t("half"),
+                    lanesOff: t("lanesOff"),
+                    lanesOffShort: t("lanesOffShort"),
+                    lanesOnShort: t("lanesOnShort"),
+                    lanes5: t("lanes5"),
+                    lanes5Hint: t("lanes5Hint"),
+                    flip: t("flip"),
+                  }}
+                />
                 {board.pitchView === "half" && (
-                  <>
-                    <p className="hint-muted">{t("basketHalfHint")}</p>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        state.updateBoard((b) => ({
-                          ...b,
-                          pitchFlipped: !b.pitchFlipped,
-                        }))
-                      }
-                    >
-                      {t("flip")}
-                    </button>
-                  </>
+                  <p className="hint-muted">{t("basketHalfHint")}</p>
                 )}
                 <label className="check">
                   <input

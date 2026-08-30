@@ -222,7 +222,7 @@ function penStrokeWidth(
   );
 }
 
-/** 構成線はピッチ白線より一段太い注釈レイヤー。 */
+/** 構成線はピッチ白線より一段太い注釈レイヤー（Pen と同幅だと差が消える）。 */
 function linkStrokeWidth(
   pitch: PitchRect,
   board: BoardDocument,
@@ -230,7 +230,7 @@ function linkStrokeWidth(
 ): number {
   const pen = penStrokeWidth(pitch, board, strokeWidth);
   const pitchLw = pitchLineWidth(pitch);
-  return Math.max(pen, pitchLw * 1.18);
+  return Math.max(pen * 1.75, pitchLw * 1.5);
 }
 
 export type DragVisual = {
@@ -1410,7 +1410,7 @@ function linkPathPoints(
   return pts.length >= 2 ? pts : null;
 }
 
-/** 芝生: 黒下描き + 象牙。白地: 単色実線。 */
+/** 芝生: 薄い下描き + グレー実線。白地: 単色実線。 */
 function strokeLinkWorldPath(
   ctx: CanvasRenderingContext2D,
   board: BoardDocument,
@@ -1429,7 +1429,7 @@ function strokeLinkWorldPath(
     board,
     pitch,
     points,
-    lw * 1.25,
+    lw * 1.12,
     LINK_SHADOW_GRASS,
     alpha,
   );

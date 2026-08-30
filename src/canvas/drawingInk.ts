@@ -28,9 +28,9 @@ export const ZONE_COLORS_GRASS = {
 } as const;
 
 export const PEN_INK_GRASS = "#ffffff";
-/** 構成線（Link）— ピッチ白と Pen と差をつける象牙。STUDIO 字色と同系。 */
-export const LINK_INK_GRASS = "#f3f3f1";
-export const LINK_SHADOW_GRASS = "rgba(0, 0, 0, 0.48)";
+/** 構成線（Link）— 芝上で Pen 白と判別できるミディアムグレー（#c8 は ivory に近すぎる）。 */
+export const LINK_INK_GRASS = "#959b95";
+export const LINK_SHADOW_GRASS = "rgba(0, 0, 0, 0.28)";
 export const HALO_INK_GRASS = "rgba(255, 255, 255, 0.9)";
 
 export function lineColorForBoard(

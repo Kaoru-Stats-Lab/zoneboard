@@ -1,7 +1,7 @@
 # ZoneBoard — 開発者ストーリー
 
 **更新:** 2026-08-29  
-**状態:** **決定稿確定** · 未公開（note / About 掲載前）  
+**状態:** **note 第2稿**（Claude 評価反映 · 2026-08-30）· About EN は [`DEVELOPER_STORY_EN.md`](DEVELOPER_STORY_EN.md) · 未公開（note 掲載前）  
 **関連:** [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) §0 動機 · [`OUTREACH_JP_CREATORS.md`](OUTREACH_JP_CREATORS.md)
 
 **ストーリーの芯:** 手の届かないもの（JFA · メディア）と、渡せるもの（ZoneBoard / Under control）——サッカーへの恩返しは後者で
@@ -82,7 +82,7 @@
 
 **正本ファイル:** [`DEVELOPER_STORY_DECIDED_JA.md`](DEVELOPER_STORY_DECIDED_JA.md)
 
-カオル最終パス済み。note / About 掲載時は上記ファイルをそのまま使う。
+カオル最終パス + Claude 評価反映済（第2稿 · 2026-08-30）。note 掲載時は上記ファイルを使う。About 英語は別正本。
 
 ### 決定稿で整理した点（v15 草稿からの差分）
 

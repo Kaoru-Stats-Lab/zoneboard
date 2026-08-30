@@ -132,8 +132,9 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-056 | 画角プリセットのランドマーク監査 | CK は教本面積まで **再定義済**。FT・ペナ・スロー・バスケ・Export 余白は [`VIEWPORT_RESEARCH.md`](VIEWPORT_RESEARCH.md) |
 | B-057 | 局面ごとの画角（`scene.viewport`） | **済** 2026-08-25。Pro 画角テンプレは実装済・`FEATURE_PRO_VIEWPORT_TEMPLATES=false` |
 | B-058 | Pass ＝ ボール軌道（ユーザ認知） | **済** 2026-08-25 `passHint` / `deleteHint` ja·en。ボタンラベルは Pass のまま |
-| B-059 | `shot` 線種 | Later。[TacticsBoard](https://tacticsboard.app/) / FTB は Pass と Shot 分離。Pass=配球・クロス、Shot=ゴール向け軌道 |
+| B-059 | `shot` 線種 | Later。Pass=配球・クロス vs Shot=ゴール向けの**意味分離**（山なり UI とは別） |
 | B-060 | Pen + Shift = 直線 | **済** 2026-08-25。Figma 型。構造リンク・チャネル境界。第4線種は作らない |
+| B-061 | 山なり（浮き球）3D 軌道 | **却下 v1** 2026-08-30。曲線破線で足りる。[`LOFTED_BALL_PATH_RESEARCH.md`](LOFTED_BALL_PATH_RESEARCH.md)。Later=Pass スムージングのみ |
 
 ### P2 — Pro / データ
 

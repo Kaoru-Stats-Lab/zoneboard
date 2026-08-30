@@ -185,7 +185,19 @@
 
 **ユーザ認知:** 英語 Native の「Pass」は味方へのパスに狭く、CK クロス／シュート軌道までは読み取りにくい。コーチングアプリ経験者は Pass ツール＝ ball movement と分かる層もいるが、解説者向け ZB では **ヒントで ball path と明示**する（B-058 済）。
 
-**Later:** `shot` 線種で Pass と意味分離（B-059）。TacticsBoard / FTB 追随。
+**Later:** `shot` 線種で Pass と意味分離（B-059）。TacticsBoard / FTB 追随。立体山なり UI とは別論点 — [`LOFTED_BALL_PATH_RESEARCH.md`](LOFTED_BALL_PATH_RESEARCH.md)。
+
+### 決定ログ — 山なり（浮き球・クロス）軌道は v1 入れない（2026-08-30）
+
+**2D 真上視点では曲線の破線矢印が世界標準。3D 放物線専用 UI は v1 非対象。**
+
+| 判断 | 内容 |
+|------|------|
+| **v1** | **やらない** — 現状のパス（破線 + 自由曲線 / `smoothLinePath`） |
+| **Later** | 新線種・Arc トグルは入れない。Pass の **スムージング / 軽量カーブ微調整** のみ（B-061） |
+| **不可** | 3D 疑似アーチ · `loft` 線種 · ツールレール肥大 |
+
+根拠: [`LOFTED_BALL_PATH_RESEARCH.md`](LOFTED_BALL_PATH_RESEARCH.md)（Deep Research 2026-08-30）。配信楔（1 ストローク · B · 無学習）と OBS 圧縮視認性を優先。
 
 ### 決定ログ — Pen + Shift = 直線（2026-08-25）
 

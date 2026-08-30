@@ -1862,6 +1862,66 @@ button:disabled {
   margin-bottom: 0.4rem;
 }
 
+.drawer-details .view-preset-grid {
+  margin-bottom: 0.35rem;
+}
+
+.view-preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.view-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.28rem;
+  margin: 0;
+  padding: 0.32rem 0.28rem 0.35rem;
+  min-width: 0;
+  border: 1px solid var(--zb-border);
+  border-radius: var(--zb-radius);
+  background: var(--zb-ground);
+  cursor: pointer;
+  color: var(--zb-ink-muted);
+}
+
+.view-preset__svg {
+  display: block;
+  width: 100%;
+  max-width: 5.75rem;
+  height: auto;
+  max-height: 2.85rem;
+}
+
+.view-preset__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.view-preset:hover {
+  border-color: var(--zb-border-strong);
+}
+
+.view-preset.is-active {
+  border-color: var(--zb-aogai);
+  box-shadow: 0 0 0 1px var(--zb-aogai);
+  color: var(--zb-ink);
+}
+
+.view-preset:focus-visible {
+  outline: 2px solid var(--zb-accent);
+  outline-offset: 1px;
+}
+
 .drawer-details .tool-grid {
   margin-bottom: 0.35rem;
 }
@@ -2122,6 +2182,99 @@ button:disabled {
   width: 3.25rem;
   flex: 0 0 3.25rem;
   max-width: 3.25rem;
+}
+
+.pitch-look {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.pitch-look__block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.pitch-look__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--zb-ink-muted);
+}
+
+.pitch-look__thumbs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.pitch-look__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.32rem 0.28rem;
+  min-width: 0;
+  min-height: 3.35rem;
+  border: 1px solid var(--zb-border);
+  border-radius: var(--zb-radius);
+  background: var(--zb-ground);
+  cursor: pointer;
+}
+
+/* Landscape glyphs only — match the board camera (never rotate half to portrait) */
+.pitch-look__thumb svg.pitch-thumb--landscape {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 5.75rem;
+  height: auto;
+  max-height: 2.85rem;
+}
+
+.pitch-look__thumb:hover {
+  border-color: var(--zb-border-strong);
+}
+
+.pitch-look__thumb.is-active {
+  border-color: var(--zb-aogai);
+  box-shadow: 0 0 0 1px var(--zb-aogai);
+}
+
+.pitch-look__thumb:focus-visible {
+  outline: 2px solid var(--zb-accent);
+  outline-offset: 1px;
+}
+
+.pitch-look__hint {
+  margin: 0;
+}
+
+.pitch-look__lanes button {
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.pitch-look__lanes button.is-active {
+  background: color-mix(in srgb, var(--zb-aogai) 22%, var(--zb-ground));
+  color: var(--zb-ink);
+  box-shadow: inset 0 0 0 1px var(--zb-aogai);
+}
+
+.pitch-look__lanes button:focus-visible {
+  outline: 2px solid var(--zb-accent);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.pitch-look__flip {
+  width: 100%;
 }
 
 .piece-scale-presets {

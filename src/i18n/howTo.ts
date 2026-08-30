@@ -66,15 +66,15 @@ const ja: HowToDoc = {
     {
       heading: "準備で描く",
       paragraphs: [
-        "配信前に Pass・Run・Pen・Link を引くなら、ツールレールを使います。Pass はボールの道（パス・クロス・シュート）。Run は走る動き。Dribble はボールを運ぶ人です。",
-        "Pen は Pass でも Run でもない自由な線です。ブロックの線、チャネルの境界など。Shift を押したままドラッグすると直線になります。丸や囲みは Shift なしの自由描きです。Link は駒をクリックしてつなぎ、駒を動かしても線が追従します。",
+        "配信前にパス・ラン・ペン・リンクを引くなら、ツールレールを使います。パスはボールの道（クロス・シュート含む）。ランは走る動き。ドリブルはボールを運ぶ人です。",
+        "ペンはパスでもランでもない自由な線です。ブロックの線、チャネルの境界など。Shift を押したままドラッグすると直線になります。丸や囲みは Shift なしの自由描きです。リンクは駒をクリックしてつなぎ、駒を動かしても線が追従します。",
       ],
       keys: [
-        { combo: "Pass", meaning: "ボールの道（破線）" },
-        { combo: "Run / Dribble", meaning: "走り／ドリブル" },
-        { combo: "Pen", meaning: "自由な線" },
-        { combo: "Link", meaning: "駒どうしのリンク" },
-        { combo: "Shift+Pen drag", meaning: "始点–終点の直線" },
+        { combo: "パス", meaning: "ボールの道" },
+        { combo: "ラン / ドリブル", meaning: "走り／運び" },
+        { combo: "ペン", meaning: "自由な線" },
+        { combo: "リンク", meaning: "駒どうしのリンク" },
+        { combo: "Shift+ペンドラッグ", meaning: "始点–終点の直線" },
         { combo: "Zone + Shift", meaning: "正円に近いゾーン" },
       ],
     },

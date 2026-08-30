@@ -204,6 +204,27 @@ export const VIEW_PRESETS: Record<ViewPresetId, Viewport> = {
   "mid-right": { zoom: 1.8, cx: 0.65, cy: 0.5 },
 };
 
+/** Camera AABB in pitch-normalized coords (square; may extend past 0..1). */
+export function cameraNormRect(vp: Viewport): {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+} {
+  const { zoom, cx, cy } = clampViewport(vp);
+  const side = WORLD_SPAN / zoom;
+  return { x: cx - side / 2, y: cy - side / 2, w: side, h: side };
+}
+
+export function viewportMatchesPreset(vp: Viewport, id: ViewPresetId): boolean {
+  const p = VIEW_PRESETS[id];
+  return (
+    Math.abs(vp.zoom - p.zoom) < 0.08 &&
+    Math.abs(vp.cx - p.cx) < 0.04 &&
+    Math.abs(vp.cy - p.cy) < 0.04
+  );
+}
+
 export type ViewPresetEntry = { id: ViewPresetId; key: string };
 
 /** 局面タブに出す画角ボタン（競技別） */
