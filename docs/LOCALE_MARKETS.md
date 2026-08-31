@@ -1,8 +1,8 @@
 # 言語市場とローカライズ — 決定ログ
 
-**更新:** 2026-08-31（**es · pt · pl 出荷済** · Deep Research で **de → fr → tr** を第2波に確定）  
+**更新:** 2026-09-01（**es · pt · pl · de · fr 出荷済** · 第2波残り **tr**）  
 **きっかけ:** PH 公開面を英語一本にしたあと、「5大リーグ分（英西伊独仏）の UI 翻訳が要るか」→ 天皇杯同時視聴の壁打ち用に **ボード chrome だけ JA** を開放。  
-**結論:** 市場は広い。ただし **リーグ ≠ 言語**。公開デフォルトは英語。**第1波** es → pt-BR → pl は **出荷済**（2026-08-31）。**第2波** UI は Deep Research に基づき **de → fr → tr**（戦術ニッチ適合度 · 口コミ定着 · 既存ツール代替）。イタリア語（it）は流入トリガーまで保留。
+**結論:** 市場は広い。ただし **リーグ ≠ 言語**。公開デフォルトは英語。**第1波** es → pt-BR → pl は **出荷済**（2026-08-31）。**第2波** **de · fr 出荷済**（2026-09-01）。残り **tr**（戦術ニッチ適合度 · 口コミ定着 · 既存ツール代替）。イタリア語（it）は流入トリガーまで保留。
 
 関連: [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) §4-3 · [`SPEC.md`](SPEC.md) §9 · [`BACKLOG.md`](BACKLOG.md) B-035–037 · [`FUTSAL_BEACH_RESEARCH.md`](FUTSAL_BEACH_RESEARCH.md) · [`OUTREACH_EU_STREAM.md`](OUTREACH_EU_STREAM.md) §2F
 
@@ -16,13 +16,13 @@
 
 ---
 
-## 1. いまの実装（2026-08-31）
+## 1. いまの実装（2026-09-01）
 
 | 面 | 言語 |
 |----|------|
-| LP・法務・Guide・静的ページ | **英語**（`APP_LOCALE = "en"`）＋ **`/es/` `/pt/` `/pl/` `/de/`** 各ロケール LP |
-| ボード chrome（メニュー・Settings・How-to・Feedback） | **デフォルト EN。** Settings · `?lang=` · `/ja/board` `/es/board` `/pt/board` `/pl/board` `/de/board` |
-| 永続化 | `localStorage` の `zoneboard:v1:prefs` に `locale: "en" \| "ja" \| "es" \| "pt" \| "pl" \| "de"`。**ボード JSON（駒・局面）とは別** |
+| LP・法務・Guide・静的ページ | **英語**（`APP_LOCALE = "en"`）＋ **`/es/` `/pt/` `/pl/` `/de/` `/fr/`** 各ロケール LP |
+| ボード chrome（メニュー・Settings・How-to・Feedback） | **デフォルト EN。** Settings · `?lang=` · `/ja/board` `/es/board` `/pt/board` `/pl/board` `/de/board` `/fr/board` |
+| 永続化 | `localStorage` の `zoneboard:v1:prefs` に `locale: "en" \| "ja" \| "es" \| "pt" \| "pl" \| "de" \| "fr"`。**ボード JSON（駒・局面）とは別** |
 | ピッチ上の駒名・クラブ名 | ユーザ入力のまま（切替しても上書きしない）。フォントはラテン拡張・キリル・日本語を守る（[`STUDIO.md`](STUDIO.md)） |
 | 選手・ロスター DB | **持たない。** 贔屓クラブの「完璧データ」は配信者の頭と駒上の手入力。製品として J リーグ/選手マスタは載せない |
 | アラビア語・ヘブライ語（RTL） | Later（同） |
@@ -33,8 +33,8 @@
 |------|------|
 | `/board` | prefs の locale（未設定なら EN） |
 | `/board?lang=ja` | 一度 JA を prefs に保存し、クエリから `lang` を消す（URL は `/board` に戻る） |
-| `/ja/board` · `/es/board` · `/pt/board` · `/pl/board` · `/de/board` | `/board/?lang=<locale>` へ 301 |
-| `/es/` · `/pt/` · `/pl/` · `/de/` | 各ロケール LP（`dist/<locale>/index.html`） |
+| `/ja/board` · `/es/board` · `/pt/board` · `/pl/board` · `/de/board` · `/fr/board` | `/board/?lang=<locale>` へ 301 |
+| `/es/` · `/pt/` · `/pl/` · `/de/` · `/fr/` | 各ロケール LP（`dist/<locale>/index.html`） |
 | `/` · `/ja` · `/ja/` | LP は英語。`/ja` `/ja/` は `/` へ 301（**日本語 LP 面はまだ無い**） |
 
 OBS は **ウィンドウキャプチャ**（Browser Source ではない）。言語は配信者マシンの prefs。配信モードでも **最小 chrome**（局面・ツール・試合操作）はタッチ向けに残る（[`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 決定ログ 2026-08-28）。OBS で芝だけ取るのはキャプチャ領域の運用。
@@ -200,9 +200,9 @@ World Population Review 2025 前後。言語推定より国のほうが硬い。
 - フィードバックや問い合わせが特定言語で続く
 - 英語 UI のまま使われているが、How-to が読まれない国が厚い
 
-第2波着手前: **de** からドラフトパイプライン（es/pt/pl と同型）。**tr** は fr 後 · 軽量 UI ＋ Kadro 訴求を前提。**it** の `messages` は触らない。
+第2波残り: **tr**（fr 後 · 軽量 UI ＋ Kadro 訴求を前提）。**it** の `messages` は触らない。
 
-既存メモ: [`BACKLOG.md`](BACKLOG.md) B-035–037 · B-074（pl **済**）· **B-075（de）** · **B-076（fr）** · **B-077（tr）**。2026-08-31: 第1波完了 · 第2波 **de → fr → tr**。
+既存メモ: [`BACKLOG.md`](BACKLOG.md) B-035–037 · B-074（pl **済**）· **B-075（de 済）** · **B-076（fr 済）** · **B-077（tr）**。2026-09-01: 第1波完了 · 第2波 **de · fr 出荷済** · 残り **tr**。
 
 ---
 
