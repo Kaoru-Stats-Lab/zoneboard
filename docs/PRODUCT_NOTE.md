@@ -158,6 +158,7 @@
 | **やらない** | 試合全体解析 · 線自動 · 選手 DB · Piero 席 · 必須ウィザード |
 | **調査** | プロンプト [`AGENT_PROMPT_BROADCAST_CAPTURE_IMPORT.md`](AGENT_PROMPT_BROADCAST_CAPTURE_IMPORT.md) |
 | **Backlog** | **B-070** |
+| **ロールアウト（2026-08-31）** | **Deploy 済みでも UI 非公開。** 本番 QA は `?captureImport=1` → `localStorage zoneboard:v1:captureImportBeta`。changelog / LP / How-to は **公開決定まで書かない**。実装: [`AGENT_PROMPT_CAPTURE_IMPORT.md`](AGENT_PROMPT_CAPTURE_IMPORT.md) §隠し機能 |
 
 v1 コア（手置き · B · ローカル）を壊さない。出荷は Phase 1 から。コマ抜きの分離は **管理がスムーズなら決定**（モノリス必須ではない）。
 

@@ -9,6 +9,8 @@
 
 **社内ステータス（2026-08-30）:** 調査完了 · BACKLOG **B-070** · [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 決定ログ更新済。
 
+**実装（Phase 1 · Wave 分割）:** [`AGENT_PROMPT_CAPTURE_IMPORT.md`](AGENT_PROMPT_CAPTURE_IMPORT.md) — W01 Homography → W05 手置き確定。Cursor Auto 向けガードレール付き。
+
 ---
 
 ## 何を決めるか

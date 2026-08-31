@@ -39,7 +39,9 @@ import { TextInspector } from "./TextInspector";
 import { SettingsModal } from "./SettingsModal";
 import { HowToModal } from "./HowToModal";
 import { ToolRail } from "./ToolRail";
+import { CaptureCalibOverlay } from "./CaptureCalibOverlay";
 import { maxScenes } from "../lib/plan";
+import { isCaptureImportEnabled } from "../lib/captureImportGate";
 import { useFeedback } from "./FeedbackProvider";
 
 type Props = {
@@ -189,6 +191,17 @@ export function Editor({ state }: Props) {
 
       // ボード選択中の Delete は入力フォーカスより優先
       // （キャンバスをクリックしてもフォーカスがパネル入力に残るケースがある）
+      const cap = state.captureImport;
+      if (
+        cap?.phase === "place" &&
+        cap.selectedDraftPieceId &&
+        (e.key === "Delete" || e.key === "Backspace")
+      ) {
+        if (typing && e.key === "Backspace") return;
+        e.preventDefault();
+        state.deleteCaptureDraftSelected();
+        return;
+      }
       const hasBoardSelection = !!(
         state.selectedPieceIds.length > 0 ||
         state.selectedObjectId ||
@@ -374,6 +387,39 @@ export function Editor({ state }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [state, howToOpen]);
 
+  useEffect(() => {
+    if (state.broadcast || !isCaptureImportEnabled()) return;
+    const onPaste = (e: ClipboardEvent) => {
+      const ae = document.activeElement as HTMLElement | null;
+      if (
+        ae &&
+        (ae.tagName === "INPUT" ||
+          ae.tagName === "TEXTAREA" ||
+          ae.tagName === "SELECT" ||
+          ae.isContentEditable)
+      ) {
+        return;
+      }
+      const dt = e.clipboardData;
+      if (!dt?.types.some((ty) => ty.startsWith("image/"))) return;
+      e.preventDefault();
+      void state.ingestCaptureImportDataTransfer(dt).then((err) => {
+        if (err) window.alert(t(err));
+      });
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [state, t]);
+
+  const onCaptureDrop = (e: React.DragEvent) => {
+    if (state.broadcast || !isCaptureImportEnabled()) return;
+    if (!e.dataTransfer.types.includes("Files")) return;
+    e.preventDefault();
+    void state.ingestCaptureImportDataTransfer(e.dataTransfer).then((err) => {
+      if (err) window.alert(t(err));
+    });
+  };
+
   const toolLabel = t(toolMessageKey(state.tool));
 
   const sceneFullLabel = state.scene?.label?.trim() ?? "";
@@ -432,6 +478,16 @@ export function Editor({ state }: Props) {
             <div className="topbar-title-gap" aria-hidden />
           )}
           <div className="topbar-right">
+            {isCaptureImportEnabled() && state.captureImport && (
+              <button
+                type="button"
+                className="topbar-capture-cancel"
+                title={t("captureImportCancel")}
+                onClick={() => state.clearCaptureImport()}
+              >
+                {t("captureImportCancelShort")}
+              </button>
+            )}
             <div className="topbar-meta">
               <button
                 type="button"
@@ -470,7 +526,17 @@ export function Editor({ state }: Props) {
         </header>
       )}
 
-      <div className="editor-body">
+      <div
+        className="editor-body"
+        onDragOver={(e) => {
+          if (state.broadcast) return;
+          if (e.dataTransfer.types.includes("Files")) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "copy";
+          }
+        }}
+        onDrop={onCaptureDrop}
+      >
         <div className="board-stage">
           <BoardCanvas
             state={state}
@@ -576,6 +642,11 @@ export function Editor({ state }: Props) {
         exportCropAnchor={exportCropAnchor}
         exportStageAspect={exportStageAspect}
       />
+      {!state.broadcast &&
+        isCaptureImportEnabled() &&
+        state.captureImport?.phase === "calib" && (
+        <CaptureCalibOverlay state={state} t={t} />
+      )}
     </div>
   );
 }

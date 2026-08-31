@@ -113,7 +113,7 @@ import {
   defaultSceneLabel,
   defaultSceneName,
 } from "../i18n/localeDefaults";
-import type { Locale } from "../i18n/messages";
+import type { Locale, MessageKey } from "../i18n/messages";
 import { normalizeLocale } from "../i18n/locale";
 import { clampViewport } from "../presets/viewport";
 import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
@@ -126,6 +126,23 @@ import {
   saveStore,
   saveWatermark,
 } from "../storage/persist";
+import {
+  captureImportEligibility,
+  type CaptureImportBlockReason,
+} from "../capture/eligibility";
+import { isCaptureImportEnabled } from "../lib/captureImportGate";
+import { imageBlobFromDataTransfer, loadCaptureImage } from "../capture/imageLoad";
+import { defaultCalibPoints } from "../capture/calibPoints";
+import {
+  clampUnderlayOpacity,
+  DEFAULT_UNDERLAY_OPACITY,
+} from "../capture/drawCaptureUnderlay";
+import type { Point } from "../capture/homography";
+import { computeHomographyAsync } from "../capture/homographyAsync";
+import {
+  emptyCaptureImportSession,
+  type CaptureImportSession,
+} from "../capture/session";
 
 function touch(board: BoardDocument): BoardDocument {
   return { ...board, updatedAt: new Date().toISOString() };
@@ -134,12 +151,22 @@ function touch(board: BoardDocument): BoardDocument {
 export type LiveEventKind = "goal" | "card" | "sub";
 export type LiveEventRef = { kind: LiveEventKind; id: string };
 
+function captureImportBlockKey(
+  reason: CaptureImportBlockReason,
+): MessageKey {
+  return reason === "unsupportedSport"
+    ? "captureImportUnsupportedSport"
+    : "captureImportUnsupportedPitch";
+}
+
 export function useAppState() {
   const [store, setStore] = useState<BoardStore>(() => loadStore());
   const [watermark, setWatermark] = useState<WatermarkSettings>(() =>
     loadWatermark(),
   );
   const [tool, setToolState] = useState<ToolId>("select");
+  const toolRef = useRef(tool);
+  toolRef.current = tool;
   const setTool = useCallback((id: ToolId) => {
     setToolState(id);
   }, []);
@@ -175,6 +202,11 @@ export function useAppState() {
     () => normalizeLocale(loadPrefs().locale),
   );
   const [broadcast, setBroadcast] = useState(false);
+  const [captureImport, setCaptureImport] =
+    useState<CaptureImportSession | null>(null);
+  const captureImportRef = useRef<CaptureImportSession | null>(null);
+  captureImportRef.current = captureImport;
+  const captureImageUrlRef = useRef<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [settingsOpen, setSettingsOpenState] = useState(false);
   /** 配信中の誤入力取り消し用（永続しない。追加順スタック） */
@@ -1887,6 +1919,314 @@ export function useAppState() {
     if (broadcast) setDrawerOpen(false);
   }, [broadcast]);
 
+  const revokeCaptureImageUrl = useCallback(() => {
+    if (captureImageUrlRef.current) {
+      URL.revokeObjectURL(captureImageUrlRef.current);
+      captureImageUrlRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => revokeCaptureImageUrl(), [revokeCaptureImageUrl]);
+
+  const clearCaptureImport = useCallback(() => {
+    const restore = captureImportRef.current?.toolBeforePlace;
+    revokeCaptureImageUrl();
+    setCaptureImport(null);
+    if (restore != null) setToolState(restore);
+  }, [revokeCaptureImageUrl]);
+
+  useEffect(() => {
+    if (!isCaptureImportEnabled() && captureImportRef.current) {
+      clearCaptureImport();
+    }
+  }, [clearCaptureImport]);
+
+  const startCaptureImport = useCallback((): MessageKey | null => {
+    if (!isCaptureImportEnabled()) return null;
+    const block = captureImportEligibility(board);
+    if (block) return captureImportBlockKey(block);
+    setCaptureImport(emptyCaptureImportSession("idle"));
+    return null;
+  }, [board]);
+
+  const setCaptureImageFromBlob = useCallback(
+    async (blob: Blob): Promise<MessageKey | null> => {
+      if (!isCaptureImportEnabled()) return null;
+      const block = captureImportEligibility(board);
+      if (block) return captureImportBlockKey(block);
+
+      const image = await loadCaptureImage(blob);
+      if (!image) return null;
+
+      revokeCaptureImageUrl();
+      captureImageUrlRef.current = image.url;
+      setCaptureImport({
+        phase: "image",
+        image,
+        calibSrc4: null,
+        homography: null,
+        draftPieces: [],
+        draftBall: null,
+        selectedDraftPieceId: null,
+        toolBeforePlace: null,
+        underlayOpacity: DEFAULT_UNDERLAY_OPACITY,
+      });
+      return null;
+    },
+    [board, revokeCaptureImageUrl],
+  );
+
+  const ingestCaptureImportDataTransfer = useCallback(
+    async (dt: DataTransfer): Promise<MessageKey | null> => {
+      if (!isCaptureImportEnabled()) return null;
+      const blob = imageBlobFromDataTransfer(dt);
+      if (!blob) return null;
+      return setCaptureImageFromBlob(blob);
+    },
+    [setCaptureImageFromBlob],
+  );
+
+  const beginCaptureCalib = useCallback(() => {
+    setCaptureImport((prev) => {
+      if (!prev?.image) return prev;
+      const calibSrc4 =
+        prev.calibSrc4 ??
+        defaultCalibPoints(prev.image.width, prev.image.height);
+      return {
+        ...prev,
+        phase: "calib",
+        calibSrc4,
+        homography: null,
+      };
+    });
+  }, []);
+
+  const setCaptureCalibPoint = useCallback(
+    (index: number, point: Point) => {
+      setCaptureImport((prev) => {
+        if (!prev?.calibSrc4 || index < 0 || index > 3) return prev;
+        const calibSrc4 = prev.calibSrc4.map((p, i) =>
+          i === index ? point : p,
+        );
+        return { ...prev, calibSrc4 };
+      });
+    },
+    [],
+  );
+
+  const resetCaptureCalibPoints = useCallback(() => {
+    setCaptureImport((prev) => {
+      if (!prev?.image) return prev;
+      return {
+        ...prev,
+        calibSrc4: defaultCalibPoints(prev.image.width, prev.image.height),
+      };
+    });
+  }, []);
+
+  const backCaptureCalib = useCallback(() => {
+    setCaptureImport((prev) =>
+      prev ? { ...prev, phase: "image", homography: null } : prev,
+    );
+  }, []);
+
+  const reopenCaptureCalib = useCallback(() => {
+    setCaptureImport((prev) =>
+      prev
+        ? {
+            ...prev,
+            phase: "calib",
+            homography: null,
+            draftPieces: [],
+            draftBall: null,
+            selectedDraftPieceId: null,
+          }
+        : prev,
+    );
+  }, []);
+
+  const setCaptureUnderlayOpacity = useCallback((opacity: number) => {
+    setCaptureImport((prev) =>
+      prev
+        ? { ...prev, underlayOpacity: clampUnderlayOpacity(opacity) }
+        : prev,
+    );
+  }, []);
+
+  const applyCaptureHomography = useCallback(async (): Promise<boolean> => {
+    const src4 = captureImportRef.current?.calibSrc4;
+    if (!src4 || src4.length !== 4) return false;
+    const H = await computeHomographyAsync(src4);
+    if (!H) return false;
+    const savedTool = toolRef.current;
+    setCaptureImport((prev) =>
+      prev
+        ? {
+            ...prev,
+            homography: H,
+            phase: "place",
+            calibSrc4: src4,
+            draftPieces: [],
+            draftBall: null,
+            selectedDraftPieceId: null,
+            toolBeforePlace: savedTool,
+          }
+        : prev,
+    );
+    return true;
+  }, []);
+
+  const addCaptureDraftPiece = useCallback(
+    (x: number, y: number, team: "home" | "away") => {
+      if (!board) return;
+      const kits = kitsFromBoard(board);
+      const role = roleFromPosition(x, y);
+      const piece: Piece = {
+        id: uid(),
+        x,
+        y,
+        number: "",
+        label: "",
+        color: colorForKit(kits, team, "outfield") ?? (team === "home" ? HOME_COLOR : AWAY_COLOR),
+        team,
+        facing: team === "home" ? 0 : 180,
+        role,
+        kit: "outfield",
+      };
+      setCaptureImport((prev) => {
+        if (!prev || prev.phase !== "place" || !prev.homography) return prev;
+        return {
+          ...prev,
+          draftPieces: [...prev.draftPieces, piece],
+          selectedDraftPieceId: piece.id,
+        };
+      });
+      setSelectedPieceId(null);
+      setSelectedBall(false);
+      setSelectedObjectId(null);
+    },
+    [board, setSelectedPieceId],
+  );
+
+  const moveCaptureDraftPiece = useCallback(
+    (id: string, x: number, y: number, facing?: number) => {
+      const role = roleFromPosition(x, y);
+      setCaptureImport((prev) => {
+        if (!prev || prev.phase !== "place") return prev;
+        return {
+          ...prev,
+          draftPieces: prev.draftPieces.map((p) =>
+            p.id === id
+              ? { ...p, x, y, role, facing: facing ?? p.facing }
+              : p,
+          ),
+        };
+      });
+    },
+    [],
+  );
+
+  const setCaptureDraftBall = useCallback((x: number, y: number) => {
+    setCaptureImport((prev) => {
+      if (!prev || prev.phase !== "place" || !prev.homography) return prev;
+      return {
+        ...prev,
+        draftBall: { x, y, attachedTo: null },
+        selectedDraftPieceId: null,
+      };
+    });
+    setSelectedPieceId(null);
+    setSelectedObjectId(null);
+  }, [setSelectedPieceId]);
+
+  const selectCaptureDraftPiece = useCallback((id: string | null) => {
+    setCaptureImport((prev) =>
+      prev ? { ...prev, selectedDraftPieceId: id } : prev,
+    );
+    if (id) {
+      setSelectedPieceId(null);
+      setSelectedBall(false);
+      setSelectedObjectId(null);
+    }
+  }, [setSelectedPieceId]);
+
+  const deleteCaptureDraftSelected = useCallback(() => {
+    setCaptureImport((prev) => {
+      if (!prev?.selectedDraftPieceId) return prev;
+      const drop = prev.selectedDraftPieceId;
+      return {
+        ...prev,
+        draftPieces: prev.draftPieces.filter((p) => p.id !== drop),
+        selectedDraftPieceId: null,
+      };
+    });
+  }, []);
+
+  const applyCaptureToScene = useCallback(
+    (asNewScene: boolean): boolean => {
+      const cap = captureImportRef.current;
+      if (!cap || cap.phase !== "place" || !cap.homography || !board || !scene) {
+        return false;
+      }
+
+      captureUndo();
+
+      if (asNewScene) {
+        if (board.scenes.length >= maxScenes()) return false;
+        const next = createScene(
+          defaultSceneName(board.scenes.length + 1, board.sport, locale),
+          "custom",
+          {
+            pieces: cap.draftPieces,
+            ball: cap.draftBall ?? scene.ball,
+            objects: [],
+            viewport: { ...activeViewport(board) },
+          },
+        );
+        updateBoard(
+          (b) => ({
+            ...b,
+            scenes: [...b.scenes, next],
+            activeSceneId: next.id,
+          }),
+          false,
+        );
+      } else {
+        updateScene(
+          (s) => ({
+            ...s,
+            pieces: cap.draftPieces,
+            ball: cap.draftBall ?? s.ball,
+          }),
+          false,
+        );
+      }
+
+      const restore = cap.toolBeforePlace;
+      revokeCaptureImageUrl();
+      setCaptureImport(null);
+      setSelectedPieceId(null);
+      if (restore != null) setToolState(restore);
+      return true;
+    },
+    [
+      board,
+      scene,
+      locale,
+      captureUndo,
+      updateBoard,
+      updateScene,
+      revokeCaptureImageUrl,
+      setSelectedPieceId,
+    ],
+  );
+
+  useEffect(() => {
+    if (!broadcast) return;
+    revokeCaptureImageUrl();
+    setCaptureImport(null);
+  }, [broadcast, revokeCaptureImageUrl]);
+
   return {
     store,
     board,
@@ -1926,6 +2266,24 @@ export function useAppState() {
     moveBall,
     dropBall,
     broadcast,
+    captureImport,
+    startCaptureImport,
+    clearCaptureImport,
+    setCaptureImageFromBlob,
+    ingestCaptureImportDataTransfer,
+    beginCaptureCalib,
+    setCaptureCalibPoint,
+    resetCaptureCalibPoints,
+    backCaptureCalib,
+    reopenCaptureCalib,
+    setCaptureUnderlayOpacity,
+    applyCaptureHomography,
+    addCaptureDraftPiece,
+    moveCaptureDraftPiece,
+    setCaptureDraftBall,
+    selectCaptureDraftPiece,
+    deleteCaptureDraftSelected,
+    applyCaptureToScene,
     drawerOpen,
     setDrawerOpen,
     settingsOpen,

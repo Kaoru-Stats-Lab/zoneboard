@@ -11,8 +11,10 @@ import { AnalyticsRoot } from "./components/AnalyticsRoot";
 import { FeedbackProvider } from "./components/FeedbackProvider";
 import { Landing } from "./components/Landing";
 import { NotFoundPage } from "./components/StudioStatus";
+import { FrameExtractPage } from "./pages/FrameExtractPage";
 import { useAppState } from "./hooks/useAppState";
 import { localeFromSearchParam } from "./i18n/locale";
+import { isCaptureImportEnabled } from "./lib/captureImportGate";
 
 function BoardRoute() {
   const state = useAppState();
@@ -88,6 +90,26 @@ export default function App() {
         <Route path="/" element={<LandingRoute />} />
         <Route path="/board" element={<BoardRoute />} />
         <Route path="/board/" element={<BoardRoute />} />
+        <Route
+          path="/tools/frame"
+          element={
+            isCaptureImportEnabled() ? (
+              <FrameExtractPage />
+            ) : (
+              <Navigate to="/board" replace />
+            )
+          }
+        />
+        <Route
+          path="/tools/frame/"
+          element={
+            isCaptureImportEnabled() ? (
+              <FrameExtractPage />
+            ) : (
+              <Navigate to="/board" replace />
+            )
+          }
+        />
         <Route path="/en" element={<Navigate to="/" replace />} />
         <Route path="/en/" element={<Navigate to="/" replace />} />
         <Route path="/en/board" element={<Navigate to="/board" replace />} />

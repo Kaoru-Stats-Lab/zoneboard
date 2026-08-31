@@ -34,6 +34,10 @@ import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import type { BoardDocument, LineKind, Viewport } from "../models/types";
 import { isLineTool } from "../models/types";
+import {
+  buildCaptureUnderlayCanvas,
+  captureUnderlayCacheKey,
+} from "../capture/drawCaptureUnderlay";
 
 function zoneDragCorner(
   x0: number,
@@ -232,7 +236,15 @@ type DragState =
       x1: number;
       y1: number;
       additive: boolean;
-    };
+    }
+  | {
+      mode: "capture-draft-piece";
+      id: string;
+      lastX: number;
+      lastY: number;
+      boost: number;
+    }
+  | { mode: "capture-draft-ball"; boost: number };
 
 export function BoardCanvas({
   state,
@@ -259,6 +271,12 @@ export function BoardCanvas({
   const spaceHeldRef = useRef(false);
   const [spacePanReady, setSpacePanReady] = useState(false);
   const [spacePanning, setSpacePanning] = useState(false);
+  const captureSourceRef = useRef<HTMLImageElement | null>(null);
+  const captureSourceUrlRef = useRef<string | null>(null);
+  const underlayCacheRef = useRef<{
+    key: string;
+    canvas: HTMLCanvasElement;
+  } | null>(null);
 
   textEditRef.current = textEdit;
   selectedIdsRef.current = state.selectedPieceIds;
@@ -323,6 +341,36 @@ export function BoardCanvas({
       cancelled = true;
     };
   }, [board?.sport]);
+
+  useEffect(() => {
+    const url = state.captureImport?.image?.url ?? null;
+    if (!url) {
+      captureSourceRef.current = null;
+      captureSourceUrlRef.current = null;
+      underlayCacheRef.current = null;
+      return;
+    }
+    if (captureSourceUrlRef.current === url && captureSourceRef.current) return;
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      if (cancelled) return;
+      captureSourceRef.current = img;
+      captureSourceUrlRef.current = url;
+      underlayCacheRef.current = null;
+      setDragTick((n) => n + 1);
+    };
+    img.src = url;
+    return () => {
+      cancelled = true;
+    };
+  }, [state.captureImport?.image?.url]);
+
+  useEffect(() => {
+    if (state.captureImport?.phase !== "place") {
+      underlayCacheRef.current = null;
+    }
+  }, [state.captureImport?.phase, state.captureImport?.homography]);
 
   useEffect(() => {
     let alive = true;
@@ -498,13 +546,53 @@ export function BoardCanvas({
     const draggingPieceId =
       d?.mode === "piece" || d?.mode === "piece-line" || d?.mode === "piece-rotate"
         ? d.id
-        : null;
+        : d?.mode === "capture-draft-piece"
+          ? d.id
+          : null;
     // 配信の面積比は 16:9 フレーム基準（マット外は分母に入れない）
     const frameArea = frame ? frame.w * frame.h : w * h;
     const pitchArea = (pitch.w * pitch.h) / frameArea;
     const ground = state.broadcast
       ? BROADCAST_MATTE
       : outerFillForBoard(board);
+
+    let captureUnderlay: {
+      canvas: HTMLCanvasElement;
+      opacity: number;
+    } | null = null;
+    const cap = state.captureImport;
+    if (
+      !state.broadcast &&
+      cap?.phase === "place" &&
+      cap.homography &&
+      cap.image &&
+      captureSourceRef.current
+    ) {
+      const cacheKey = captureUnderlayCacheKey(
+        cap.image.url,
+        cap.homography,
+        pitch.w,
+        pitch.h,
+      );
+      if (underlayCacheRef.current?.key !== cacheKey) {
+        const built = buildCaptureUnderlayCanvas(
+          captureSourceRef.current,
+          cap.homography,
+          pitch.w,
+          pitch.h,
+        );
+        underlayCacheRef.current = built
+          ? { key: cacheKey, canvas: built }
+          : null;
+      }
+      if (underlayCacheRef.current) {
+        captureUnderlay = {
+          canvas: underlayCacheRef.current.canvas,
+          opacity: cap.underlayOpacity,
+        };
+      }
+    }
+
     drawBoard(ctx, pitch, boardWithActiveViewport(board), scene, {
       selectedPieceId: draggingPieceId ?? state.selectedPieceId,
       selectedPieceIds: selectedIdsRef.current,
@@ -548,6 +636,15 @@ export function BoardCanvas({
       })(),
       ballImage,
       editingTextId: textEdit?.objectId ?? null,
+      captureUnderlay,
+      draftPieces:
+        cap?.phase === "place" ? cap.draftPieces : undefined,
+      draftBall: cap?.phase === "place" ? cap.draftBall : undefined,
+      selectedDraftPieceId:
+        cap?.phase === "place" ? cap.selectedDraftPieceId : undefined,
+      draftDragPieceId:
+        d?.mode === "capture-draft-piece" ? d.id : undefined,
+      draftDragBall: d?.mode === "capture-draft-ball",
     });
     if (bannerH > 0) {
       if (frame) {
@@ -596,6 +693,7 @@ export function BoardCanvas({
     linkDraftIds,
     linkHoverWorld,
     state.tool,
+    state.captureImport,
   ]);
 
   if (!board || !scene || !view) return null;
@@ -783,6 +881,76 @@ export function BoardCanvas({
       };
       setSpacePanning(true);
       canvas.setPointerCapture(e.pointerId);
+      return;
+    }
+
+    const cap = state.captureImport;
+    const inCapturePlace =
+      !state.broadcast &&
+      cap?.phase === "place" &&
+      !!cap.homography;
+
+    if (inCapturePlace) {
+      const draftScene = {
+        ...scene,
+        pieces: cap.draftPieces,
+        ball: cap.draftBall ?? scene.ball,
+      };
+
+      if (state.tool === "ball") {
+        state.setCaptureDraftBall(world.x, world.y);
+        state.setSelectedBall(false);
+        drag.current = { mode: "capture-draft-ball", boost: 1.2 };
+        canvas.setPointerCapture(e.pointerId);
+        paint();
+        return;
+      }
+
+      if (state.tool === "piece-home") {
+        state.addCaptureDraftPiece(world.x, world.y, "home");
+        paint();
+        return;
+      }
+      if (state.tool === "piece-away") {
+        state.addCaptureDraftPiece(world.x, world.y, "away");
+        paint();
+        return;
+      }
+
+      if (
+        cap.draftBall &&
+        hitTestBall(board, draftScene, pitch, norm.x, norm.y)
+      ) {
+        state.selectCaptureDraftPiece(null);
+        drag.current = { mode: "capture-draft-ball", boost: 1.2 };
+        canvas.setPointerCapture(e.pointerId);
+        paint();
+        return;
+      }
+
+      const pieceHit = hitTestPiecePointer(
+        board,
+        draftScene,
+        pitch,
+        norm.x,
+        norm.y,
+      );
+      const draftPiece = pieceHit?.piece ?? null;
+      if (draftPiece) {
+        state.selectCaptureDraftPiece(draftPiece.id);
+        drag.current = {
+          mode: "capture-draft-piece",
+          id: draftPiece.id,
+          lastX: world.x,
+          lastY: world.y,
+          boost: 1.18,
+        };
+        canvas.setPointerCapture(e.pointerId);
+        paint();
+        return;
+      }
+
+      state.selectCaptureDraftPiece(null);
       return;
     }
 
@@ -1128,6 +1296,30 @@ export function BoardCanvas({
     if (d.mode === "marquee") {
       d.x1 = world.x;
       d.y1 = world.y;
+      bumpDragVisual();
+      return;
+    }
+
+    if (d.mode === "capture-draft-ball") {
+      state.setCaptureDraftBall(world.x, world.y);
+      bumpDragVisual();
+      return;
+    }
+
+    if (d.mode === "capture-draft-piece") {
+      const grab = state.captureImport?.draftPieces.find((p) => p.id === d.id);
+      if (!grab) return;
+      const dx = world.x - grab.x;
+      const dy = world.y - grab.y;
+      const dist = Math.hypot(dx, dy);
+      let facing: number | undefined;
+      if (dist > 0.004) {
+        facing = (Math.atan2(dy, dx) * 180) / Math.PI;
+        d.lastX = world.x;
+        d.lastY = world.y;
+        d.boost = Math.min(1.28, 1.12 + dist * 8);
+      }
+      state.moveCaptureDraftPiece(d.id, world.x, world.y, facing);
       bumpDragVisual();
       return;
     }

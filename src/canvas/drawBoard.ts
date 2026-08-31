@@ -1,5 +1,6 @@
 import { isPieceDrawn } from "../models/scene";
 import { resolveLinkPoints } from "../models/pieceLink";
+import { drawCaptureUnderlay } from "../capture/drawCaptureUnderlay";
 import type {
   BoardDocument,
   DrawObject,
@@ -292,6 +293,17 @@ export function drawBoard(
     editingTextId?: string | null;
     /** 競技ボール画像。未ロード時は幾何フォールバック */
     ballImage?: HTMLImageElement | null;
+    /** 局面取込 W04: ワープ済み実写下敷き（pitch ローカルサイズ） */
+    captureUnderlay?: {
+      canvas: HTMLCanvasElement;
+      opacity: number;
+    } | null;
+    /** 局面取込 W05: 確定前ゴースト駒 */
+    draftPieces?: Piece[];
+    draftBall?: { x: number; y: number } | null;
+    selectedDraftPieceId?: string | null;
+    draftDragPieceId?: string | null;
+    draftDragBall?: boolean;
   } = {},
 ) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -312,7 +324,19 @@ export function drawBoard(
 
   const sel = opts.selectionColor ?? "#111111";
 
-  // 下から: 面 → 5レーン → ロゴ → ピッチ線 → 描画 → 駒 → ボール
+  // 下から: 実写下敷き → 面 → 5レーン → ロゴ → ピッチ線 → 描画 → 駒 → ボール
+  if (opts.captureUnderlay) {
+    drawCaptureUnderlay(
+      ctx,
+      pitch.x,
+      pitch.y,
+      pitch.w,
+      pitch.h,
+      opts.captureUnderlay.canvas,
+      opts.captureUnderlay.opacity,
+    );
+  }
+
   drawPitchSurface(ctx, pitch, board);
   drawPitchLanes(ctx, pitch, board);
 
@@ -405,6 +429,43 @@ export function drawBoard(
       ballBoost > 1,
       opts.ballImage ?? null,
     );
+  }
+
+  if (opts.draftPieces && opts.draftPieces.length > 0) {
+    for (const piece of opts.draftPieces) {
+      const dragging = opts.draftDragPieceId === piece.id;
+      const boost = dragging ? 1.18 : 1;
+      const r = pieceRadius(pitch, board, piece.role) * boost;
+      drawPiece(
+        ctx,
+        pitch,
+        board,
+        piece,
+        r,
+        piece.id === opts.selectedDraftPieceId,
+        dragging,
+        sel,
+        true,
+      );
+    }
+  }
+
+  if (opts.draftBall) {
+    const dragging = !!opts.draftDragBall;
+    const boost = dragging ? 1.2 : 1;
+    ctx.save();
+    ctx.globalAlpha = 0.45;
+    drawBall(
+      ctx,
+      pitch,
+      board,
+      opts.draftBall,
+      ballRadius(pitch, board) * boost,
+      false,
+      dragging,
+      opts.ballImage ?? null,
+    );
+    ctx.restore();
   }
 
   if (opts.previewMarquee) {
@@ -525,6 +586,7 @@ function drawPiece(
   selected: boolean,
   dragging: boolean,
   _selectionColor: string,
+  ghost = false,
 ) {
   const mapped = worldToPitch(piece.x, piece.y, board);
   if (!mapped) return;
@@ -539,6 +601,11 @@ function drawPiece(
     ctx.shadowColor = "rgba(0,0,0,0.35)";
     ctx.shadowBlur = r * 0.8;
     ctx.shadowOffsetY = r * 0.15;
+  }
+
+  if (ghost) {
+    ctx.save();
+    ctx.globalAlpha = 0.45;
   }
 
   if (discipline.sentOff) {
@@ -602,10 +669,11 @@ function drawPiece(
   ctx.lineCap = "butt";
 
   if (discipline.sentOff) ctx.restore();
+  if (ghost) ctx.restore();
   if (dragging) ctx.restore();
 
   // カード形は番号と同様フル不透明（「提示された」が一見で読める）
-  if (discipline.cardMark) {
+  if (!ghost && discipline.cardMark) {
     drawPieceCardMark(ctx, x, y, r, discipline.cardMark);
   }
 
@@ -613,6 +681,8 @@ function drawPiece(
   if (selected) {
     drawPieceSelectionRing(ctx, x, y, r * 1.72);
   }
+
+  if (ghost) return;
 
   const displayNumber = normalizePieceNumber(piece.number);
   if (displayNumber) {

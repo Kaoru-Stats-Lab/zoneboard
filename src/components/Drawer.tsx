@@ -23,6 +23,7 @@ import { STARTER_COUNT, formatRosterText } from "../presets/roster";
 import { scenePresetsForSport, type ScenePresetId } from "../presets/scenePresets";
 import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
 import { maxScenes } from "../lib/plan";
+import { isCaptureImportEnabled } from "../lib/captureImportGate";
 import { activeViewport } from "../models/scene";
 import { PitchLookPicker } from "./PitchLookPicker";
 import { boardToSoccerPitchLookPreset } from "../presets/pitchLook";
@@ -91,6 +92,7 @@ export function Drawer({ state, t }: Props) {
   const [cardPlayer, setCardPlayer] = useState("");
   const [cardMinute, setCardMinute] = useState("");
   const [cardKind, setCardKind] = useState<CardKind>("YC");
+  const [captureApplyNewScene, setCaptureApplyNewScene] = useState(false);
 
   const newBoardFlow = useNewBoardFlow(state);
 
@@ -113,10 +115,17 @@ export function Drawer({ state, t }: Props) {
     setXiText({ home: homeXiKey, away: awayXiKey });
   }, [homeXiKey, awayXiKey]);
 
+  useEffect(() => {
+    if (state.captureImport?.phase !== "place") {
+      setCaptureApplyNewScene(false);
+    }
+  }, [state.captureImport?.phase]);
+
   if (!state.drawerOpen || state.broadcast || !state.board || !state.scene)
     return null;
   const board = state.board;
   const scene = state.scene;
+  const captureImportEnabled = isCaptureImportEnabled();
   const atLimit = newBoardFlow.atLimit;
   const sceneLimit = board.scenes.length >= maxScenes();
   const roster = board.roster[teamSide];
@@ -247,6 +256,19 @@ export function Drawer({ state, t }: Props) {
               >
                 {t("newSceneShort")}
               </button>
+              {board.sport === "soccer" && captureImportEnabled && (
+                <button
+                  type="button"
+                  className="drawer-chrome-label"
+                  title={t("captureImport")}
+                  onClick={() => {
+                    const err = state.startCaptureImport();
+                    if (err) window.alert(t(err));
+                  }}
+                >
+                  {t("captureImportShort")}
+                </button>
+              )}
               {scenePresetsForSport(board.sport).length > 0 && (
                 <label className="drawer-field">
                   {t("fromPresetShort")}
@@ -283,6 +305,117 @@ export function Drawer({ state, t }: Props) {
                 {t("deleteSceneShort")}
               </button>
             </div>
+            {captureImportEnabled && state.captureImport && (
+              <div className="capture-import-status">
+                <p className="hint-muted">
+                  {state.captureImport.phase === "place"
+                    ? t("capturePlaceHint")
+                    : state.captureImport.phase === "image"
+                      ? t("captureImportImageReady")
+                      : t("captureImportPasteHint")}
+                </p>
+                {state.captureImport.phase === "image" && (
+                  <button
+                    type="button"
+                    className="drawer-chrome-label"
+                    title={t("captureCalibStart")}
+                    onClick={() => state.beginCaptureCalib()}
+                  >
+                    {t("captureCalibStartShort")}
+                  </button>
+                )}
+                {state.captureImport.phase === "place" && (
+                  <>
+                    <label className="drawer-field capture-underlay-opacity">
+                      <span title={t("captureUnderlayOpacity")}>
+                        {t("captureUnderlayOpacityShort")}
+                      </span>
+                      <input
+                        type="range"
+                        min={0.3}
+                        max={0.8}
+                        step={0.05}
+                        value={state.captureImport.underlayOpacity}
+                        title={t("captureUnderlayOpacity")}
+                        aria-label={t("captureUnderlayOpacity")}
+                        onChange={(e) =>
+                          state.setCaptureUnderlayOpacity(
+                            Number(e.target.value),
+                          )
+                        }
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="drawer-chrome-label"
+                      title={t("captureBackToCalib")}
+                      onClick={() => state.reopenCaptureCalib()}
+                    >
+                      {t("captureBackToCalibShort")}
+                    </button>
+                    {captureImportEnabled && (
+                      <button
+                        type="button"
+                        className="drawer-chrome-label"
+                        title={t("captureFrameOpen")}
+                        onClick={() =>
+                          window.open(
+                            "/tools/frame",
+                            "_blank",
+                            "noopener,noreferrer",
+                          )
+                        }
+                      >
+                        {t("captureFrameOpenShort")}
+                      </button>
+                    )}
+                    <label className="drawer-field" title={t("captureNewScene")}>
+                      <input
+                        type="checkbox"
+                        checked={captureApplyNewScene}
+                        disabled={sceneLimit}
+                        onChange={(e) =>
+                          setCaptureApplyNewScene(e.target.checked)
+                        }
+                      />
+                      <span>{t("captureNewSceneShort")}</span>
+                    </label>
+                    <div className="drawer-stack-actions">
+                      <button
+                        type="button"
+                        className="drawer-chrome-label"
+                        title={t("captureApplyToScene")}
+                        onClick={() => {
+                          if (
+                            !state.applyCaptureToScene(captureApplyNewScene)
+                          ) {
+                            window.alert(t("sceneLimit"));
+                          }
+                        }}
+                      >
+                        {t("captureApplyToSceneShort")}
+                      </button>
+                      <button
+                        type="button"
+                        className="drawer-chrome-label"
+                        title={t("captureDiscard")}
+                        onClick={() => state.clearCaptureImport()}
+                      >
+                        {t("captureDiscardShort")}
+                      </button>
+                    </div>
+                  </>
+                )}
+                <button
+                  type="button"
+                  className="drawer-chrome-label"
+                  title={t("captureImportCancel")}
+                  onClick={() => state.clearCaptureImport()}
+                >
+                  {t("captureImportCancelShort")}
+                </button>
+              </div>
+            )}
             <p className="hint-muted">{t("newSceneHint")}</p>
             <label>
               {t("sceneLabel")}

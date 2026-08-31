@@ -53,6 +53,19 @@ const CHROME_SHORT_PAIRS: [string, string][] = [
   ["viewCornerBR", "viewCornerBRShort"],
   ["viewVolleyL", "viewVolleyLShort"],
   ["viewVolleyR", "viewVolleyRShort"],
+  ["captureImport", "captureImportShort"],
+  ["captureImportCancel", "captureImportCancelShort"],
+  ["captureCalibStart", "captureCalibStartShort"],
+  ["captureCalibApply", "captureCalibApplyShort"],
+  ["captureCalibReset", "captureCalibResetShort"],
+  ["captureUnderlayOpacity", "captureUnderlayOpacityShort"],
+  ["captureBackToCalib", "captureBackToCalibShort"],
+  ["captureApplyToScene", "captureApplyToSceneShort"],
+  ["captureDiscard", "captureDiscardShort"],
+  ["captureNewScene", "captureNewSceneShort"],
+  ["captureFrameOpen", "captureFrameOpenShort"],
+  ["captureFrameCopy", "captureFrameCopyShort"],
+  ["captureFrameChooseFile", "captureFrameChooseFileShort"],
 ];
 
 /** Soft cap for Short labels (Latin-ish). CJK packs more meaning per char. */
