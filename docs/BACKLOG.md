@@ -93,10 +93,10 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 正本: [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md)。
 
 - 公開面は英語一本。同一 URL に第二言語を積まない
-- UI の第1波 **es → pt-BR → pl は出荷済**。第2波 **de · fr · tr 出荷済**（[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) §3-7）。**第3波候補 = it**（§3-8 · 流入トリガーまで）。5大リーグ（英西伊独仏）を chrome で揃えない
+- UI **第1–3波 出荷済**（es·pt·pl · de·fr·tr · **it**）。[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) §3-8–9
 - 5大向けに先にやるならキット・フォーメ。決済は言語と別
 - **pl 翻訳正本は en のみ**（ja/es/pt 参照禁止）— [`AGENT_PROMPT_I18N_PL.md`](AGENT_PROMPT_I18N_PL.md)
-- `messages.it` は **第3波候補** — 流入トリガーまたは analyst デモ合意まで作らない（§3-8）
+- `messages.it` **出荷済** `/it/` · 3バック preset は B 層 Later
 
 ---
 
@@ -161,7 +161,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-075 | UI 言語 de | **実装済** `/de/` · [`AGENT_PROMPT_I18N_DE.md`](AGENT_PROMPT_I18N_DE.md) |
 | B-076 | UI 言語 fr | **実装済** `/fr/` · [`AGENT_PROMPT_I18N_FR.md`](AGENT_PROMPT_I18N_FR.md) |
 | B-077 | UI 言語 tr | **実装済** `/tr/` · [`AGENT_PROMPT_I18N_TR.md`](AGENT_PROMPT_I18N_TR.md) |
-| B-078 | UI 言語 it | **第3波候補 1位** · Fit 74% · 3 バック可変 preset 要検討 · `/it/` · [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) §3-8 |
+| B-078 | UI 言語 it | **実装済** `/it/` · [`AGENT_PROMPT_I18N_IT.md`](AGENT_PROMPT_I18N_IT.md) · 3-back preset Later |
 | B-038 | バスケ補助線リサーチ | **済**。ハーフ＋Must補助線実装 |
 | B-039 | バスケ スクリーンT字線種 | **済** バスケのみ・紫・T字先端 |
 | B-040 | バスケ 5-Out / Horns テンプレ | Should |

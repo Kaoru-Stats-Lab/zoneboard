@@ -751,4 +751,96 @@ const tr: HowToDoc = {
   ],
 };
 
-export const HOW_TO: Record<Locale, HowToDoc> = { ja, en, es, pt, pl, de, fr, tr };
+const it: HowToDoc = {
+  intro: "La modalità diretta (B) nasconde gli strumenti. Muovi i pezzi con la tastiera. Prova i tasti qui prima di andare in diretta — le stesse scorciatoie funzionano durante lo stream. Non c'è un tutorial iniziale sul campo. Questo pannello e la guida pubblica sono il manuale.",
+  sections: [
+    {
+      heading: "Perché la tastiera",
+      paragraphs: [
+        "Gli spettatori vogliono vedere il campo. Se il pannello laterale resta aperto, vedono menu, non tattica. La modalità diretta (B) nasconde gli strumenti. Restano selezionare, muovere e ruotare.",
+        "Non serve imparare ogni scorciatoia. Alcuni spostano un'intera linea. Altri selezionano solo la casa. Altri copiano una scena e confrontano due disegni. Impara solo i tasti che usi.",
+      ],
+    },
+    {
+      heading: "Selezionare i pezzi",
+      paragraphs: [
+        "Fai prima la selezione — una linea, un blocco in marcatura, o solo la casa — poi muovila. Se muovi prima, trascinerai un pezzo alla volta.",
+        "Trascina sul campo vuoto per disegnare un riquadro e selezionare i pezzi dentro. I pezzi non hanno etichette di ruolo come DC, quindi disegna un riquadro attorno alla linea difensiva. Tieni premuto Ctrl o Cmd mentre trascini per aggiungere alla selezione attuale.",
+        "Un clic breve quasi senza movimento annulla la selezione. Cliccare sul campo vuoto con Ctrl o Cmd premuto non la annulla.",
+      ],
+      keys: [
+        { combo: "Click", meaning: "Seleziona un pezzo" },
+        { combo: "Ctrl/Cmd+Click", meaning: "Aggiungi o rimuovi" },
+        { combo: "Shift+Click", meaning: "Aggiungi (mantieni il resto)" },
+        { combo: "Drag empty grass", meaning: "Selezione a riquadro" },
+        { combo: "Alt+1 / Alt+2", meaning: "Tutta la casa / tutta la trasferta" },
+        { combo: "Ctrl/Cmd+A", meaning: "Seleziona tutti i visibili" },
+        { combo: "Esc", meaning: "Annulla selezione" },
+      ],
+    },
+    {
+      heading: "Muovere la selezione",
+      paragraphs: [
+        "Trascina un pezzo selezionato e l'intera selezione si muove insieme. Usalo per alzare una linea, saltare al pressing o scivolare mantenendo la marcatura. Rilasciare una selezione multipla non scambia le maglie. Lo scambio funziona solo con un pezzo.",
+        "Le frecce muovono a piccoli passi. Shift + freccia fa un passo più grande. Usalo quando dici \"ancora mezzo passo\" durante la diretta.",
+        "R cambia solo l'orientamento. Le posizioni restano uguali. Usalo per squadrare un blocco. Q / E ruotano l'intera forma attorno al centro della selezione. Seleziona due o più pezzi.",
+        "- avvicina i pezzi. = li allontana. Il centro della selezione si muove appena — utile per una linea alta compatta o aperta.",
+        "Shift+H specchia sinistra e destra, orientamento incluso. Shift+V capovolge alto e basso. Ctrl/Cmd+D copia i pezzi; le copie restano selezionate così puoi farle scorrere a coppia.",
+      ],
+      keys: [
+        { combo: "Drag a selected piece", meaning: "Muovi l'intera selezione" },
+        { combo: "Arrow / Shift+Arrow", meaning: "Sposta (fine / grosso)" },
+        { combo: "R", meaning: "Solo orientamento +45°" },
+        { combo: "Q / E", meaning: "Ruota forma sul centro" },
+        { combo: "- / =", meaning: "Più stretto / più largo" },
+        { combo: "Shift+H / Shift+V", meaning: "Specchia H / specchia V" },
+        { combo: "Ctrl/Cmd+D", meaning: "Duplica (copie selezionate)" },
+        { combo: "Ctrl/Cmd+Shift+Arrow", meaning: "Allinea a bordo o asse" },
+        { combo: "Alt+Shift+Arrow", meaning: "Spaziatura uniforme (H / V)" },
+        { combo: "Delete", meaning: "Rimuovi pezzi selezionati" },
+      ],
+    },
+    {
+      heading: "Disegnare prima della diretta",
+      paragraphs: [
+        "Prima della diretta, usa la barra strumenti per Passaggio, Corsa, Pennello e Collegamento. Passaggio è la traiettoria della palla — passaggio, cross o tiro. Corsa è movimento senza palla. Dribbling è un giocatore che conduce la palla.",
+        "Pennello è una linea libera che non è Passaggio o Corsa — una linea di blocco o un confine di corridoio. Tieni premuto Shift mentre trascini Pennello per una linea dritta. Cerchi e loop restano a mano libera senza Shift. Collegamento unisce i pezzi; la linea li segue quando li muovi.",
+      ],
+      keys: [
+        { combo: "Pass", meaning: "Traiettoria palla (tratteggiata)" },
+        { combo: "Run / Dribble", meaning: "Corsa o dribbling" },
+        { combo: "Pen", meaning: "Linea a mano libera" },
+        { combo: "Link", meaning: "Collegamento pezzi (segue)" },
+        { combo: "Shift+Pen drag", meaning: "Linea dritta da A a B" },
+        { combo: "Zone + Shift", meaning: "Zona quasi circolare" },
+      ],
+    },
+    {
+      heading: "Muovere la vista",
+      paragraphs: [
+        "Zoom su una palla inattiva o guarda l'intera metà campo — Ctrl o Cmd + rotella zoom verso il cursore. Tieni premuto Spazio e trascina per spostare la vista. Alt + trascina funziona anche.",
+      ],
+      keys: [
+        { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom sul cursore" },
+        { combo: "Space+Drag", meaning: "Sposta la vista" },
+        { combo: "Alt+Drag", meaning: "Sposta la vista (alternativa)" },
+      ],
+    },
+    {
+      heading: "Prima e durante la diretta",
+      paragraphs: [
+        "Prima del calcio d'inizio, prova ad alzare una linea e riportarla indietro, o a selezionare la casa e avvicinarla. Poi quei tasti funzionano anche in modalità diretta. Premi B per la modalità diretta. Non aprire questa guida (? / F1) durante la diretta — compare a schermo.",
+        "Cambia scena con [ ]. Metti un calcio d'angolo e una forma di rest difesa su scene separate, non in un unico disegno affollato.",
+        "Per provare un movimento e tenere l'originale, copia la scena prima di trascinare. La prima scena resta — torna con [ ]. Durante la diretta, usa Duplica in basso a destra. Non c'è un pulsante per tornare all'inizio. Copiare la scena è come tenere un originale pulito.",
+      ],
+      keys: [
+        { combo: "B", meaning: "Attiva/disattiva modalità diretta" },
+        { combo: "[ ] or PageUp/PageDown", meaning: "Cambia scena" },
+        { combo: "Duplicate (Scenes or bottom-right)", meaning: "Copia scena, prova movimento" },
+        { combo: "? or F1", meaning: "Guida (non in diretta)" },
+      ],
+    },
+  ],
+};
+
+export const HOW_TO: Record<Locale, HowToDoc> = { ja, en, es, pt, pl, de, fr, tr, it };

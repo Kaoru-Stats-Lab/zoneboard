@@ -30,6 +30,10 @@
 /tr/      /tr/index.html  200
 /tr/board /board/?lang=tr   301
 /tr/board/ /board/?lang=tr  301
+/it       /it/    301
+/it/      /it/index.html  200
+/it/board /board/?lang=it   301
+/it/board/ /board/?lang=it  301
 /about    /about/    301
 /guide    /guide/    301
 /faq      /faq/      301

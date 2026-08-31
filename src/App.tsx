@@ -185,6 +185,16 @@ export default function App() {
           path="/tr/board/"
           element={<Navigate to="/board?lang=tr" replace />}
         />
+        <Route path="/it/" element={<LandingRoute locale="it" />} />
+        <Route path="/it" element={<Navigate to="/it/" replace />} />
+        <Route
+          path="/it/board"
+          element={<Navigate to="/board?lang=it" replace />}
+        />
+        <Route
+          path="/it/board/"
+          element={<Navigate to="/board?lang=it" replace />}
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AppErrorBoundary>

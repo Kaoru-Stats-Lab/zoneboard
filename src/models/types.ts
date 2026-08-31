@@ -415,7 +415,7 @@ export interface ToolRailPosition {
 export const DEFAULT_TOOL_RAIL: ToolRailPosition = { xRatio: 0, yRatio: 0.5 };
 
 export interface Prefs {
-  locale?: "ja" | "en" | "es" | "pt" | "pl" | "de" | "fr" | "tr";
+  locale?: "ja" | "en" | "es" | "pt" | "pl" | "de" | "fr" | "tr" | "it";
   lastSport?: SportId;
   selectionColor?: string;
   toolRail?: ToolRailPosition;
