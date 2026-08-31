@@ -20,6 +20,13 @@ export const CHANGELOG = {
     "Shipped changes only, in past tense. Upcoming work stays off this page.",
   entries: [
     {
+      id: "tool-mode-select-after-draw-20260831",
+      date: "2026-08-31",
+      type: "improve",
+      title: "Drawing tools return to Select after each action",
+      body: "Pass, run, dribble, pen, zone, text, and link now switch back to Select when you finish a stroke or confirm a link chain. Home and away pieces still return to Select after placement; ball stays active for dragging. The tool rail pins Select, shows the current tool, and highlights link mode while you chain pieces.",
+    },
+    {
       id: "optional-name-pills-20260831",
       date: "2026-08-31",
       type: "feature",
