@@ -120,10 +120,11 @@ Drawer / topbar / セグメント用。**~12 ラテン文字**（目安 6–14�
 - 収まらない場合: **できるだけ短い pt-BR** + ファイル末尾 `_shortOverflow` 配列に `{ "key": "...", "value": "...", "chars": N, "alt": "..." }` を付記
 - **full キー**（`title` / `aria-label` / hint）に説明を逃がしてよい
 
-### プレースホルダ
+### プレースホルダ（中立 · 全言語共通）
 
-- `pieceNamePh` 等 — **ブラジル風の例**（例: `Silva` · `10` · `Santos`）
-- `rosterPlaceholder*` — **1 行の JSON 文字列** · 改行は `\n`（例: `"10,Silva,R\n7,Santos\n4,Alves\n11,Costa,L"`）
+**実在クラブ略称・リーグ名・スター選手は禁止。** 例: `LOC`/`VIS` · `Rodada 1` · `Silva`/`Santos`（よくある姓）— `FLA`/`PAL` · `LeBron` · `Libertadores` は不可。
+
+- `rosterPlaceholder*` — `\n` 1 文字列 · hint/parseFail の例名と一致
 
 ### 空キー
 

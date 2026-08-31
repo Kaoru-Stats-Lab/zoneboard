@@ -54,12 +54,16 @@ Gemini にそのまま渡してよい。成果物は JSON のみ · コード変
 - **modo emisión 等の es 語彙を流用しない**
 - 配信モード B → **tryb transmisji** または **na żywo**（**1 ファイル内で統一**）
 - OBS → **Przechwytywanie okna**（Window Capture）
-- `rosterPlaceholder*` → 改行は `\n` 1 文字列（例: `"10,Kowalski,R\n7,Nowak\n4,Wiśniewski\n11,Lewandowski,L"`）
+- `rosterPlaceholder*` → 改行は `\n` 1 文字列（例: `"10,Kowalski,R\n7,Nowak\n4,Wiśniewski\n11,Wójcik,L"`）
 - `languageHint`: ボードメニューのみ pl · 法務読み物は英語 · figurki 名はユーザー入力のまま
 
 ### `*Short`
 
 ~12 ラテン文字。超えたら `_shortOverflow` に列挙。
+
+### プレースホルダ（中立 · 全言語共通）
+
+**実在クラブ（LEG, LPO…）・リーグ名・スター（Lewandowski, Sochan…）は禁止。** 例: `HOM`/`AWY` · `Kolejka 1` · `Kowalski`/`Nowak` — hint/parseFail も同じ姓。
 
 ---
 

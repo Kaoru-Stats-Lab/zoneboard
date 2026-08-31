@@ -116,9 +116,19 @@ Drawer / topbar / セグメント用。**~12 ラテン文字**（目安 6–14�
 - 収まらない場合: **できるだけ短い es** + ファイル末尾 `_shortOverflow` 配列に `{ "key": "...", "value": "...", "chars": N, "alt": "..." }` を付記
 - **full キー**（`title` / `aria-label` / hint）に説明を逃がしてよい
 
-### プレースホルダ
+### プレースホルダ（中立 · 全言語共通）
 
-- `pieceNamePh` 等 — **スペイン風の例**（例: `García` · `10`）でよい
+**特定クラブ・リーグ・スター選手は入れない** — ライバル関係で避難される。
+
+| 避ける | 代わりに |
+|--------|----------|
+| 実在クラブ略称（RMA, FCB, LIV, FLA…） | `HOM`/`AWY` または `LOC`/`VIS` |
+| リーグ固有名（Premier League, LaLiga, Brasileirão…） | 汎用ラウンド（`Jornada 1` · `Round 1` · `Rodada 1`） |
+| 大会名（UCL, Libertadores…） | `Notas del partido` 等 |
+| 有名選手（Salah, Lewandowski, LeBron, Gasol…） | その言語の**よくある姓**（García, Smith, Silva, Kowalski） |
+
+- `pieceNamePh` · `rosterPlaceholder*` · `matchLabelPh` · `homeTeamPh` · `titlePh` 等すべて対象
+- **hint / parseFail の例も同じ名前** — `rosterHint` · `rosterParseFail` は `pieceNamePh` と一致
 
 ### 空キー
 

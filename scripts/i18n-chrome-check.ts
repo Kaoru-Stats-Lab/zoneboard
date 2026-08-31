@@ -71,6 +71,14 @@ const CHROME_SHORT_PAIRS: [string, string][] = [
 /** Soft cap for Short labels (Latin-ish). CJK packs more meaning per char. */
 const SHORT_MAX_CHARS = 14;
 
+/** Placeholder keys must not cite real clubs, leagues, or star players. */
+const PLACEHOLDER_KEY = /Ph$|Placeholder$/;
+const BANNED_PLACEHOLDER: RegExp[] = [
+  /\b(LIV|AVL|RMA|FCB|FLA|PAL|LEG|LPO|MCI|ARS|CHE|BAR)\b/,
+  /\b(Salah|Robertson|Lewandowski|LeBron|Curry|Durant|Tatum|Gasol|Lucarelli|Bruninho)\b/i,
+  /Premier League|LaLiga|Brasileir[aã]o|Ekstraklasa|Libertadores|UCL SF/i,
+];
+
 const locales = Object.keys(messages) as Locale[];
 const baseKeys = Object.keys(messages.ja).sort();
 let failed = 0;
@@ -104,6 +112,20 @@ for (const loc of locales) {
       fail(
         `${loc}: "${short}" is ${[...text].length} chars (max ${SHORT_MAX_CHARS}): "${text}"`,
       );
+    }
+  }
+}
+
+for (const loc of locales) {
+  const bag = messages[loc] as Record<string, string>;
+  for (const k of Object.keys(bag)) {
+    if (!PLACEHOLDER_KEY.test(k)) continue;
+    const v = bag[k];
+    if (!v.trim()) continue;
+    for (const re of BANNED_PLACEHOLDER) {
+      if (re.test(v)) {
+        fail(`${loc}: non-neutral placeholder "${k}": "${v}"`);
+      }
     }
   }
 }

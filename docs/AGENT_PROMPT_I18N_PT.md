@@ -106,6 +106,7 @@
 | Grok: **césped** vs **campo** | **campo** 統一 |
 | Grok: CTA に **listo para OBS** 相当 | **pronto para OBS** を `lpCloseCta` に検討 |
 | 改行入り placeholder | JSON は **`\n` 1 文字列**（複数行を連結文字列にしない） |
+| **プレースホルダ中立** | 実在クラブ/リーグ/スター禁止 — `LOC`/`VIS` · `Rodada 1` · Silva 等（App 波 §プレースホルダ） |
 
 ---
 
