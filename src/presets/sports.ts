@@ -1,6 +1,6 @@
-import type { SportId } from "../models/types";
+import type { PitchOrientation, SportId } from "../models/types";
 
-/** Logical W:H ratios (SPEC §6) */
+/** Logical W:H ratios (SPEC §6). Landscape = length:width. */
 export const SPORT_RATIO: Record<SportId, { w: number; h: number }> = {
   soccer: { w: 105, h: 68 },
   futsal: { w: 40, h: 20 },
@@ -16,11 +16,24 @@ export const SPORT_RATIO: Record<SportId, { w: number; h: number }> = {
  */
 export const BASKET_HALF_START = 0.36;
 
+/**
+ * キャンバス用の論理比（幅/高さ）。
+ * orientation 省略・soccer 以外の portrait → landscape と同一（回帰ゼロ）。
+ * サッカー portrait フルは 68:105（横の逆）。ハーフは縦世界の長さ半分。
+ */
 export function aspectFor(
   sport: SportId,
   pitchView: "full" | "half",
+  orientation: PitchOrientation = "landscape",
 ): number {
   const { w, h } = SPORT_RATIO[sport];
+  const portrait = orientation === "portrait" && sport === "soccer";
+  if (portrait) {
+    if (pitchView === "half") {
+      return h / (w / 2);
+    }
+    return h / w;
+  }
   if (sport === "soccer" && pitchView === "half") {
     return w / 2 / h;
   }
@@ -28,4 +41,13 @@ export function aspectFor(
     return (w * (1 - BASKET_HALF_START)) / h;
   }
   return w / h;
+}
+
+/** soccer 以外は常に landscape。欠落は landscape。 */
+export function effectivePitchOrientation(
+  sport: SportId,
+  orientation: PitchOrientation | undefined | null,
+): PitchOrientation {
+  if (sport !== "soccer") return "landscape";
+  return orientation === "portrait" ? "portrait" : "landscape";
 }

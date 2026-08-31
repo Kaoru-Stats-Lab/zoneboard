@@ -1,5 +1,5 @@
 import type { BoardDocument, Viewport } from "../models/types";
-import { aspectFor } from "../presets/sports";
+import { aspectFor, effectivePitchOrientation } from "../presets/sports";
 import {
   clampViewport,
   DEFAULT_VIEWPORT,
@@ -102,7 +102,11 @@ export function fitField(
   viewport?: Viewport,
   topReserve = 0,
 ): FieldLayout {
-  const aspect = aspectFor(board.sport, board.pitchView);
+  const aspect = aspectFor(
+    board.sport,
+    board.pitchView,
+    effectivePitchOrientation(board.sport, board.pitchOrientation),
+  );
   const availW = Math.max(1, canvasW - pad * 2);
   const availH = Math.max(1, canvasH - pad * 2 - topReserve);
   let ow = availW;

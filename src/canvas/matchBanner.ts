@@ -30,8 +30,9 @@ export function scoreForTeam(
   return goals.filter((g) => g.team === team).length;
 }
 
-/** 試合帯 ON なら 0–0 / Home–Away でも出す。空帯はトグル OFF だけ。 */
+/** 試合帯 ON なら 0–0 / Home–Away でも出す。空帯はトグル OFF だけ。縦ボードは出さない。 */
 export function bannerHasContent(board: BoardDocument): boolean {
+  if (board.pitchOrientation === "portrait") return false;
   return board.showMatchBanner;
 }
 

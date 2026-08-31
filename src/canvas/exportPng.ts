@@ -2,7 +2,7 @@ import { getActiveScene, activeViewport } from "../models/scene";
 import type { BoardDocument, WatermarkSettings } from "../models/types";
 import { UI_FONT_STACK } from "../models/types";
 import type { Viewport } from "../models/types";
-import { aspectFor } from "../presets/sports";
+import { aspectFor, effectivePitchOrientation } from "../presets/sports";
 import {
   DEFAULT_VIEWPORT,
   VIEW_PRESETS,
@@ -69,7 +69,11 @@ export function exportAspectRatio(
   preset: ExportPresetId,
 ): number {
   if (preset === "native") {
-    return aspectFor(board.sport, board.pitchView);
+    return aspectFor(
+      board.sport,
+      board.pitchView,
+      effectivePitchOrientation(board.sport, board.pitchOrientation),
+    );
   }
   const s = PRESET_SIZE[preset];
   return s.w / s.h;

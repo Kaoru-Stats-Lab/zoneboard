@@ -6,7 +6,7 @@ import {
   SOCCER_PITCH_M,
   soccerMowingStripeWidthsM,
 } from "../presets/soccerPitch";
-import { BASKET_HALF_START } from "../presets/sports";
+import { BASKET_HALF_START, effectivePitchOrientation } from "../presets/sports";
 import { fromNorm, type PitchRect } from "./layout";
 
 const LINE = "#1a1a1a";
@@ -14,6 +14,13 @@ const GRASS_INK = "rgba(255, 255, 255, 0.94)";
 
 function usesGrassPitch(board?: BoardDocument): boolean {
   return board?.sport === "soccer" && !!board.showGrassPitch;
+}
+
+/** サッカー縦: ゴール↔ゴール＝画面上下 */
+function isPortraitSoccer(board?: BoardDocument): boolean {
+  if (!board || board.sport !== "soccer") return false;
+  return effectivePitchOrientation(board.sport, board.pitchOrientation) ===
+    "portrait";
 }
 
 function pitchInk(board?: BoardDocument): string {
@@ -102,14 +109,31 @@ function drawGrassSurface(
   const widthsM = soccerMowingStripeWidthsM(view);
   const lengthM =
     view === "half" ? SOCCER_PITCH_M.length / 2 : SOCCER_PITCH_M.length;
-  let cursor = x;
-  for (let i = 0; i < widthsM.length; i++) {
-    const sw = (widthsM[i]! / lengthM) * w;
-    const sx = cursor;
-    cursor += sw;
-    const bandW = i === widthsM.length - 1 ? x + w - sx : sw + 1;
-    ctx.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
-    ctx.fillRect(sx, y, bandW, h);
+  const portrait = isPortraitSoccer(board);
+
+  if (portrait) {
+    // 長さ＝縦: 刈り込み縞は横帯
+    let cursor = y;
+    for (let i = 0; i < widthsM.length; i++) {
+      const sh = (widthsM[i]! / lengthM) * h;
+      const sy = cursor;
+      cursor += sh;
+      const bandH = i === widthsM.length - 1 ? y + h - sy : sh + 1;
+      ctx.fillStyle =
+        i % 2 === 0 ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
+      ctx.fillRect(x, sy, w, bandH);
+    }
+  } else {
+    let cursor = x;
+    for (let i = 0; i < widthsM.length; i++) {
+      const sw = (widthsM[i]! / lengthM) * w;
+      const sx = cursor;
+      cursor += sw;
+      const bandW = i === widthsM.length - 1 ? x + w - sx : sw + 1;
+      ctx.fillStyle =
+        i % 2 === 0 ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)";
+      ctx.fillRect(sx, y, bandW, h);
+    }
   }
 
   const grains = Math.min(900, Math.floor((w * h) / 620));
@@ -153,7 +177,7 @@ export function drawPitchLanes(
   const lw = pitchLineWidth(pitch);
   setActivePitchInk(board);
   if (board.sport === "soccer" && board.showLanes5) {
-    drawLanes5(ctx, pitch, lw);
+    drawLanes5(ctx, pitch, lw, isPortraitSoccer(board));
   }
   if (board.sport === "futsal") {
     if (board.showCorridors3) drawCorridors3(ctx, pitch, lw);
@@ -428,6 +452,11 @@ function drawSoccerMarkings(
   board: BoardDocument,
   lw: number,
 ) {
+  if (isPortraitSoccer(board)) {
+    drawSoccerMarkingsPortrait(ctx, pitch, board, lw);
+    return;
+  }
+
   const { x, y, w, h } = pitch;
   const half = board.pitchView === "half";
   const N = SOCCER_NORM;
@@ -464,13 +493,78 @@ function drawSoccerMarkings(
   }
 }
 
+/**
+ * 縦サッカー: 正規化 x＝幅（タッチ↔タッチ）、y＝長さ（ゴール↔ゴール）。
+ * ハーフは長さの下半分（flip 時は上半分）をピッチ矩形にマップ。描画は常に上＝中線・下＝ゴール。
+ */
+function drawSoccerMarkingsPortrait(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  board: BoardDocument,
+  lw: number,
+) {
+  const { x, y, w, h } = pitch;
+  const N = SOCCER_NORM;
+  const half = board.pitchView === "half";
+
+  if (!half) {
+    line(ctx, x, y + h / 2, x + w, y + h / 2, lw);
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    const cr = N.centerR * w;
+    ctx.beginPath();
+    ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+    ctx.lineWidth = lw;
+    ctx.strokeStyle = activePitchInk;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(2, lw), 0, Math.PI * 2);
+    ctx.fillStyle = activePitchInk;
+    ctx.fill();
+
+    drawPenaltyBoxPortrait(ctx, pitch, lw, "top");
+    drawPenaltyBoxPortrait(ctx, pitch, lw, "bottom");
+    drawCornersPortrait(ctx, pitch, lw);
+    drawGoalPostsPortrait(ctx, pitch, lw, "top");
+    drawGoalPostsPortrait(ctx, pitch, lw, "bottom");
+    return;
+  }
+
+  drawPenaltyBoxPortrait(ctx, pitch, lw, "bottom", true);
+  const cr = N.centerR * w * 2;
+  ctx.beginPath();
+  ctx.arc(x + w / 2, y, cr, 0, Math.PI);
+  ctx.lineWidth = lw;
+  ctx.strokeStyle = activePitchInk;
+  ctx.stroke();
+  drawGoalPostsPortrait(ctx, pitch, lw, "bottom");
+}
+
 function drawLanes5(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,
   lw: number,
+  portrait = false,
 ) {
   const { x, y, w, h } = pitch;
   const [lhsOuter, lhsInner, rhsInner, rhsOuter] = LANE5_BOUNDARY_NORM;
+
+  if (portrait) {
+    // レーンはゴール方向（縦破線）。境界は幅方向の定数
+    ctx.fillStyle = "rgba(52, 152, 219, 0.07)";
+    ctx.fillRect(x + lhsOuter * w, y, (lhsInner - lhsOuter) * w, h);
+    ctx.fillRect(x + rhsInner * w, y, (rhsOuter - rhsInner) * w, h);
+
+    ctx.setLineDash([5, 5]);
+    ctx.globalAlpha = 0.45;
+    for (const t of LANE5_BOUNDARY_NORM) {
+      const lx = x + w * t;
+      line(ctx, lx, y, lx, y + h, lw * 0.75);
+    }
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    return;
+  }
 
   ctx.fillStyle = "rgba(52, 152, 219, 0.07)";
   ctx.fillRect(x, y + lhsOuter * h, w, (lhsInner - lhsOuter) * h);
@@ -621,6 +715,110 @@ function drawCorners(
 ) {
   const { x, y, w, h } = pitch;
   const r = SOCCER_NORM.cornerR * h;
+  const corners: [number, number, number, number][] = [
+    [x, y, 0, Math.PI / 2],
+    [x + w, y, Math.PI / 2, Math.PI],
+    [x, y + h, -Math.PI / 2, 0],
+    [x + w, y + h, Math.PI, Math.PI * 1.5],
+  ];
+  for (const [cx, cy, a0, a1] of corners) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, a0, a1);
+    ctx.lineWidth = lw;
+    ctx.strokeStyle = activePitchInk;
+    ctx.stroke();
+  }
+}
+
+function drawGoalPostsPortrait(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  lw: number,
+  side: "top" | "bottom",
+) {
+  const { x, y, w, h } = pitch;
+  const goalHalf = SOCCER_PITCH_M.goalWidth / 2 / SOCCER_PITCH_M.width;
+  const postThick = Math.max(3, lw * 2.2);
+  const depth = Math.max(postThick * 2.8, h * 0.025);
+  const left = x + w * (0.5 - goalHalf);
+  const right = x + w * (0.5 + goalHalf);
+  const topSide = side === "top";
+  const goalLineY = topSide ? y : y + h;
+  const backY = topSide ? goalLineY - depth : goalLineY + depth - postThick;
+
+  ctx.fillStyle = activePitchInk;
+  ctx.fillRect(
+    left - postThick / 2,
+    topSide ? backY : goalLineY,
+    postThick,
+    depth,
+  );
+  ctx.fillRect(
+    right - postThick / 2,
+    topSide ? backY : goalLineY,
+    postThick,
+    depth,
+  );
+  ctx.fillRect(left, backY, right - left, postThick);
+}
+
+function drawPenaltyBoxPortrait(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  lw: number,
+  side: "top" | "bottom",
+  halfView = false,
+) {
+  const { x, y, w, h } = pitch;
+  const N = SOCCER_NORM;
+  const penD = (halfView ? N.penDepth * 2 : N.penDepth) * h;
+  const penAcross = N.penHalfH * 2 * w;
+  const goalD = (halfView ? N.goalDepth * 2 : N.goalDepth) * h;
+  const goalAcross = N.goalHalfH * 2 * w;
+  const bx = x + (w - penAcross) / 2;
+  const gx = x + (w - goalAcross) / 2;
+  const topSide = side === "top";
+  const by = topSide ? y : y + h - penD;
+  const gy = topSide ? y : y + h - goalD;
+
+  strokeRect(ctx, bx, by, penAcross, penD, lw);
+  strokeRect(ctx, gx, gy, goalAcross, goalD, lw);
+
+  const spotY = topSide
+    ? y + (halfView ? N.penSpot * 2 : N.penSpot) * h
+    : y + h - (halfView ? N.penSpot * 2 : N.penSpot) * h;
+  const spotX = x + w / 2;
+  ctx.beginPath();
+  ctx.arc(spotX, spotY, Math.max(2, lw * 1.2), 0, Math.PI * 2);
+  ctx.fillStyle = activePitchInk;
+  ctx.fill();
+
+  const arcR = (SOCCER_PITCH_M.centerCircleR / SOCCER_PITCH_M.length) * h;
+  const boxEdgeY = topSide ? by + penD : by;
+  ctx.beginPath();
+  if (topSide) {
+    const ang = Math.acos(
+      Math.min(1, Math.max(-1, (boxEdgeY - spotY) / arcR)),
+    );
+    ctx.arc(spotX, spotY, arcR, Math.PI / 2 - ang, Math.PI / 2 + ang);
+  } else {
+    const ang = Math.acos(
+      Math.min(1, Math.max(-1, (spotY - boxEdgeY) / arcR)),
+    );
+    ctx.arc(spotX, spotY, arcR, -Math.PI / 2 - ang, -Math.PI / 2 + ang);
+  }
+  ctx.lineWidth = lw;
+  ctx.strokeStyle = activePitchInk;
+  ctx.stroke();
+}
+
+function drawCornersPortrait(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  lw: number,
+) {
+  const { x, y, w, h } = pitch;
+  const r = SOCCER_NORM.cornerR * w;
   const corners: [number, number, number, number][] = [
     [x, y, 0, Math.PI / 2],
     [x + w, y, Math.PI / 2, Math.PI],
