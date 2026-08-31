@@ -183,10 +183,7 @@ Soccer と Football が両方あるなら **Football のみ**（二重にしな�
 
 ### Embed / Follow badge
 
-PH Embed タブの HTML（`product_id=1301976`）は **メモのみ。LP には今載せない**（Draft · フォロワー0 · ヒーローを汚す）。
-
-- Launch 後（または Schedule 後）に LP フッターへ小さな Follow を足すか検討  
-- サイトへ入れるなら **small + dark**（86×32）のみ。Hero / How には置かない  
+**LP フッター:** `ProductHuntFollowBadge` · `src/site/productHunt.ts` · Follow small dark（86×32）。Hero 直下の「Live on Product Hunt」行は **2026-09-01〜09-07 JST** のみ。
 
 ```html
 <a href="https://www.producthunt.com/products/zoneboard-for-obs?utm_source=badge-follow&utm_medium=badge&utm_source=badge-zoneboard-for-obs" target="_blank" rel="noopener noreferrer"><img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=1301976&theme=dark&size=small" alt="ZoneBoard for OBS on Product Hunt" width="86" height="32" /></a>

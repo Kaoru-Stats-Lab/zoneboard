@@ -775,6 +775,35 @@ button:disabled {
   font-size: 1rem;
 }
 
+.lp-ph-launch {
+  margin: 0.35rem 0 0;
+  color: #9a9a96;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.lp-ph-launch a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.lp-ph-launch a:hover {
+  color: #f3f3f1;
+  text-decoration: underline;
+}
+
+.lp-ph-badge {
+  display: block;
+  margin: 0.65rem 0 0;
+  line-height: 0;
+}
+
+.lp-ph-badge img {
+  display: block;
+  width: 86px;
+  height: 32px;
+}
+
 .lp-footer-row {
   display: flex;
   flex-wrap: wrap;

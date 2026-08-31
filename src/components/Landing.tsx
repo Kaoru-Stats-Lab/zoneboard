@@ -7,10 +7,12 @@ import { trackEvent } from "../lib/ga";
 import { hasPersistedStore } from "../storage/persist";
 import { SITE_NAV } from "../site/publisher";
 import { CONSENT_BANNER } from "../site/consentCopy";
+import { isProductHuntLaunchVisible, PRODUCT_HUNT } from "../site/productHunt";
 import { useFeedback } from "./FeedbackProvider";
 import { BrandLockup } from "./BrandMark";
 import { ConsentBanner, useConsentBanner } from "./ConsentBanner";
 import { LpHeroBoard } from "./LpHeroBoard";
+import { ProductHuntFollowBadge } from "./ProductHuntBadge";
 
 /** note は空文字なら出さない（細文は例外だけ） */
 const CAN_ITEMS: { line: MessageKey; note: MessageKey }[] = [
@@ -44,6 +46,17 @@ export function Landing() {
               word={t("brand")}
             />
           </p>
+          {isProductHuntLaunchVisible() ? (
+            <p className="lp-ph-launch">
+              <a
+                href={PRODUCT_HUNT.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t("lpPhLaunch")}
+              </a>
+            </p>
+          ) : null}
           <h1>
             {t("lpHeadline1")}
             <br />
@@ -171,6 +184,7 @@ export function Landing() {
               word={t("brand")}
             />
           </p>
+          <ProductHuntFollowBadge className="lp-ph-badge" />
           <div className="lp-footer-row">
             <p>© 2026 zoneboard.app</p>
             <nav className="lp-footer-links" aria-label="Site">
