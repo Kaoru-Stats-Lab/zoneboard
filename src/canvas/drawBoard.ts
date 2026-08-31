@@ -44,7 +44,7 @@ import {
 import { textFontStack } from "../presets/textStyle";
 import { tracePenBezierPath } from "./smoothPath";
 import { pieceDiscipline, drawPieceCardMark } from "./matchCards";
-import { BASKET_HALF_START } from "../presets/sports";
+import { BASKET_HALF_START, effectivePitchOrientation } from "../presets/sports";
 import {
   drawPitchLanes,
   drawPitchMarkings,
@@ -151,6 +151,12 @@ export function worldToPitch(
   if (board.sport !== "soccer") {
     return { x, y };
   }
+  // 縦: 長さ＝y。ハーフは下半分（flip 時は上）
+  if (effectivePitchOrientation(board.sport, board.pitchOrientation) === "portrait") {
+    const visY = board.pitchFlipped ? (0.5 - y) * 2 : (y - 0.5) * 2;
+    if (visY < -0.02 || visY > 1.02) return null;
+    return { x, y: Math.min(1, Math.max(0, visY)) };
+  }
   const visX = board.pitchFlipped ? (0.5 - x) * 2 : (x - 0.5) * 2;
   if (visX < -0.02 || visX > 1.02) return null;
   return { x: Math.min(1, Math.max(0, visX)), y };
@@ -175,6 +181,12 @@ export function pitchToWorld(
   }
   if (board.sport !== "soccer") {
     return { x, y };
+  }
+  if (effectivePitchOrientation(board.sport, board.pitchOrientation) === "portrait") {
+    if (board.pitchFlipped) {
+      return { x, y: 0.5 - y / 2 };
+    }
+    return { x, y: 0.5 + y / 2 };
   }
   if (board.pitchFlipped) {
     return { x: 0.5 - x / 2, y };
@@ -607,10 +619,8 @@ function drawPiece(
     drawPieceNumberLabel(ctx, x, y, displayNumber, fillColor, r);
   }
 
-  if (piece.role === "bench") {
-    drawBenchNameChip(ctx, pitch, x, y, r, piece, board, selected);
-  } else {
-    drawPieceNameCaption(ctx, x, y, r, piece, board);
+  if (piece.role === "bench" || board.showPlayerNames) {
+    drawPlayerNameChip(ctx, pitch, x, y, r, piece, board, selected);
   }
 
   // 利き足（サカ系のみ）。向きに対して L=左 / R=右。両利きは両方出す（B 一文字にしない）
@@ -659,10 +669,10 @@ function shortPlayerName(full: string): string {
 }
 
 /**
- * 控え帯: 円下に暗いチップ。通常は短い姓、選択時はフル寄り。
- * 小さな円の下キャプションだと名前が消えるので帯で幅を取る。
+ * 円下の暗チップ（控え常時 · 芝上は showPlayerNames 時）。
+ * 通常は短い姓、選択時はフル寄り。
  */
-function drawBenchNameChip(
+function drawPlayerNameChip(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,
   x: number,
@@ -709,36 +719,6 @@ function drawBenchNameChip(
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(shown, x, top + chipH / 2);
-}
-
-/**
- * 円内が背番号。下は名前だけ。番号を二度出さない。
- * サイズは円に比例（ズームで伸びる）。下限は 1080p 全画面＋隅ワイプで読める線。
- * ZB 自身が小さいワイプのときは番号が残ればよい。名前をそのケースまで大きくしない。
- */
-function drawPieceNameCaption(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  r: number,
-  piece: Piece,
-  board: BoardDocument,
-) {
-  const name = captionNameForPiece(piece, board);
-  if (!name) return;
-  const fs = Math.max(11, r * 0.52);
-  // 700: Noto Sans JP の実体ウェイト。600 だとラテン専用フェイスに落ちて CJK が消える
-  ctx.font = `700 ${fs}px ${BANNER_FONT_STACK}`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "top";
-  const shown = truncateByWidth(ctx, name, r * 3.8);
-  const ty = y + r + Math.max(3, r * 0.18);
-  ctx.lineJoin = "round";
-  ctx.lineWidth = Math.max(2.4, fs * 0.22);
-  ctx.strokeStyle = "rgba(0, 0, 0, 0.72)";
-  ctx.strokeText(shown, x, ty);
-  ctx.fillStyle = "#f3f3f1";
-  ctx.fillText(shown, x, ty);
 }
 
 /** 芝上でも読める選択リング（暗ハロー＋白〜淡黄破線） */

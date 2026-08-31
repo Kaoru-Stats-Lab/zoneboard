@@ -26,6 +26,8 @@ export function usesWeight(sport: SportId): boolean {
 }
 export type LineKind = "pass" | "run" | "dribble" | "screen";
 export type PitchView = "full" | "half";
+/** ボード単位の向き。局面スイッチでは変わらない。欠落セーブは landscape。 */
+export type PitchOrientation = "landscape" | "portrait";
 export type ToolId =
   | "select"
   | "piece-home"
@@ -344,6 +346,11 @@ export interface BoardDocument {
   pk: PkShootout;
   /** 画面上部の試合帯（配信・編集プレビュー） */
   showMatchBanner: boolean;
+  /**
+   * ピッチの向き。既定 landscape。soccer 以外は landscape のみ有効。
+   * 横局面からの写像はしない（向きはボード生成時に固定する運用）。
+   */
+  pitchOrientation: PitchOrientation;
   pitchView: PitchView;
   pitchFlipped: boolean;
   /** サッカー: 5レーン（ハーフスペース） */
@@ -368,6 +375,8 @@ export interface BoardDocument {
   showWoodCourt: boolean;
   /** サッカー: 芝生テクスチャ（白面の代わり） */
   showGrassPitch: boolean;
+  /** 芝上スターターに名前ピル（暗チップ）を出す。控えは常にチップ。新規 false · migrate 欠落 true */
+  showPlayerNames: boolean;
   pieceScale: number;
   /** 控え人数（片チーム）。大会カテゴリではなく人数そのもの */
   benchCount: number;

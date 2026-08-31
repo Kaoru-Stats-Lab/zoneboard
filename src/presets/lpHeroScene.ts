@@ -115,6 +115,7 @@ export function createLpHeroData(): { board: BoardDocument; scene: Scene } {
     showMatchBanner: false,
     showLanes5: false,
     showGrassPitch: true,
+    showPlayerNames: true,
     pieceScale: PIECE_SCALE.tactics,
     scenes: [scene],
     activeSceneId: scene.id,

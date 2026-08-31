@@ -5,6 +5,7 @@ import type {
   GoalEntry,
   CardEntry,
   LineObject,
+  PitchOrientation,
   Scene,
   SportId,
   WatermarkSettings,
@@ -25,6 +26,7 @@ import {
 import { defaultTacticalSeed } from "../presets/defaultTacticalSeed";
 import { emptyRoster } from "../presets/roster";
 import { DEFAULT_VIEWPORT } from "../presets/viewport";
+import { effectivePitchOrientation } from "../presets/sports";
 import { defaultBoardTitle, defaultSceneLabel, defaultSceneName } from "../i18n/localeDefaults";
 import type { Locale } from "../i18n/messages";
 import {
@@ -68,14 +70,32 @@ function normalizeObjects(objects: DrawObject[]): DrawObject[] {
   });
 }
 
+export type CreateBoardOptions = {
+  pitchOrientation?: PitchOrientation;
+};
+
 export function createBoard(
   sport: SportId = "soccer",
   title?: string,
   locale?: Locale,
+  opts?: CreateBoardOptions,
 ): BoardDocument {
   const benchCount = DEFAULT_BENCH_COUNT;
   const kits = defaultKitPalette();
-  const seed = defaultTacticalSeed(sport, kits);
+  const pitchOrientation = effectivePitchOrientation(
+    sport,
+    opts?.pitchOrientation,
+  );
+  // 縦ボードは横シードを持ち込まない（空＋中央ボールで手置き）
+  const seed =
+    pitchOrientation === "portrait"
+      ? {
+          pieces: [] as Scene["pieces"],
+          ball: { x: 0.5, y: 0.5 },
+          objects: [] as Scene["objects"],
+          viewport: { ...DEFAULT_VIEWPORT },
+        }
+      : defaultTacticalSeed(sport, kits);
   const scene = createScene(defaultSceneLabel(sport, locale), "pre", {
     pieces: seed.pieces,
     ball: seed.ball,
@@ -99,7 +119,8 @@ export function createBoard(
     subs: [],
     maxSubs: DEFAULT_MAX_SUBS,
     pk: createPkShootout(false),
-    showMatchBanner: sport === "soccer",
+    showMatchBanner: sport === "soccer" && pitchOrientation === "landscape",
+    pitchOrientation,
     pitchView: sport === "basketball" ? "half" : "full",
     pitchFlipped: false,
     showLanes5: sport === "soccer",
@@ -113,6 +134,7 @@ export function createBoard(
     showSlotLines: false,
     showWoodCourt: false,
     showGrassPitch: sport === "soccer",
+    showPlayerNames: false,
     pieceScale: PIECE_SCALE.balanced,
     benchCount,
     scenes: [scene],
@@ -256,6 +278,10 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     showMatchBanner:
       (raw as { showMatchBanner?: boolean }).showMatchBanner ??
       raw.sport === "soccer",
+    pitchOrientation: effectivePitchOrientation(
+      sport,
+      (raw as { pitchOrientation?: PitchOrientation }).pitchOrientation,
+    ),
     pitchView: raw.pitchView ?? "full",
     pitchFlipped: raw.pitchFlipped ?? false,
     showLanes5: raw.showLanes5 ?? raw.sport === "soccer",
@@ -283,6 +309,8 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
       (raw as { showWoodCourt?: boolean }).showWoodCourt ?? false,
     showGrassPitch:
       (raw as { showGrassPitch?: boolean }).showGrassPitch ?? false,
+    showPlayerNames:
+      (raw as { showPlayerNames?: boolean }).showPlayerNames ?? true,
     pieceScale: raw.pieceScale ?? PIECE_SCALE.balanced,
     benchCount,
     scenes,

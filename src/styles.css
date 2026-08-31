@@ -2225,21 +2225,31 @@ button:disabled {
   align-items: stretch;
 }
 
+.pitch-look__thumbs--soccer {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.28rem;
+}
+
 .pitch-look__thumb {
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0;
-  padding: 0.32rem 0.28rem;
+  padding: 0.28rem 0.18rem;
   min-width: 0;
-  min-height: 3.35rem;
+  min-height: 3.1rem;
   border: 1px solid var(--zb-border);
   border-radius: var(--zb-radius);
   background: var(--zb-ground);
   cursor: pointer;
 }
 
-/* Landscape glyphs only — match the board camera (never rotate half to portrait) */
+.pitch-look__thumbs--soccer .pitch-look__thumb {
+  min-height: 2.85rem;
+  padding: 0.22rem 0.12rem;
+}
+
+/* Landscape glyphs — match the board camera */
 .pitch-look__thumb svg.pitch-thumb--landscape {
   display: block;
   flex: 0 0 auto;
@@ -2247,6 +2257,25 @@ button:disabled {
   max-width: 5.75rem;
   height: auto;
   max-height: 2.85rem;
+}
+
+.pitch-look__thumbs--soccer .pitch-look__thumb svg.pitch-thumb--landscape {
+  max-width: 100%;
+  max-height: 2.35rem;
+}
+
+.pitch-look__thumb svg.pitch-thumb--portrait {
+  display: block;
+  flex: 0 0 auto;
+  width: auto;
+  height: 100%;
+  max-width: 2.15rem;
+  max-height: 2.55rem;
+}
+
+.pitch-look__thumbs--soccer .pitch-look__thumb svg.pitch-thumb--portrait {
+  max-width: 1.85rem;
+  max-height: 2.45rem;
 }
 
 .pitch-look__thumb:hover {

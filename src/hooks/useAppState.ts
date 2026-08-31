@@ -69,6 +69,13 @@ import {
 } from "../models/kits";
 import { formationPieces } from "../presets/formations";
 import {
+  boardToSoccerPitchLookPreset,
+  resetAllScenesForOrientationChange,
+  soccerPitchLookPresetToBoardFields,
+  soccerPitchOrientationChanges,
+  type SoccerPitchLookPreset,
+} from "../presets/pitchLook";
+import {
   buildScenePreset,
   type ScenePresetId,
 } from "../presets/scenePresets";
@@ -318,6 +325,32 @@ export function useAppState() {
     [board?.sport, locale, persist, store.boards],
   );
 
+  const applySoccerPitchLook = useCallback(
+    (preset: SoccerPitchLookPreset) => {
+      if (!board || board.sport !== "soccer") return;
+      const current = boardToSoccerPitchLookPreset(board);
+      if (current === preset) return;
+      const fields = soccerPitchLookPresetToBoardFields(preset);
+      const orientationChanges = soccerPitchOrientationChanges(board, preset);
+      captureUndo();
+      if (orientationChanges) {
+        setSelectedPieceId(null);
+        setSelectedObjectId(null);
+        setSelectedBall(false);
+      }
+      updateBoard((b) => {
+        if (orientationChanges) {
+          return resetAllScenesForOrientationChange(b, fields);
+        }
+        return {
+          ...b,
+          ...fields,
+        };
+      }, false);
+    },
+    [board, captureUndo, updateBoard],
+  );
+
   /** 空きがなければ replaceOldestIfFull で最古ボードを差し替え（?new=1 用）。 */
   const requestNewBoard = useCallback(
     (opts?: { replaceOldestIfFull?: boolean }) => {
@@ -476,6 +509,7 @@ export function useAppState() {
             maxSubs: DEFAULT_MAX_SUBS,
             pk: createPkShootout(false),
             showMatchBanner: sport === "soccer",
+            pitchOrientation: "landscape",
             benchCount,
           },
           (s) => ({
@@ -1890,6 +1924,7 @@ export function useAppState() {
     setSettingsOpen,
     bakeWm,
     setBakeWm,
+    applySoccerPitchLook,
     updateBoard,
     updateScene,
     undo,

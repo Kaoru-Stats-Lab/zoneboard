@@ -25,6 +25,7 @@ import { FEATURE_PRO_VIEWPORT_TEMPLATES } from "../lib/features";
 import { maxScenes } from "../lib/plan";
 import { activeViewport } from "../models/scene";
 import { PitchLookPicker } from "./PitchLookPicker";
+import { boardToSoccerPitchLookPreset } from "../presets/pitchLook";
 import { ViewportPresetGrid } from "./ViewportPresetGrid";
 import { LiveMatchControls } from "./LiveMatchControls";
 import { BoardLimitDialog } from "./BoardLimitDialog";
@@ -741,6 +742,7 @@ export function Drawer({ state, t }: Props) {
                   <input
                     type="checkbox"
                     checked={board.showMatchBanner}
+                    disabled={board.pitchOrientation === "portrait"}
                     onChange={(e) =>
                       state.updateBoard(
                         (b) => ({
@@ -968,32 +970,25 @@ export function Drawer({ state, t }: Props) {
 
             {board.sport === "soccer" && (
               <PitchLookPicker
-                pitchView={board.pitchView}
+                mode="soccerPitchView"
+                preset={boardToSoccerPitchLookPreset(board)}
+                onPreset={(p) => state.applySoccerPitchLook(p)}
                 showLanes5={board.showLanes5}
-                lanesControl
-                onPitchView={(view) =>
-                  state.updateBoard((b) => ({ ...b, pitchView: view }), false)
-                }
                 onLanes5={(on) =>
                   state.updateBoard((b) => ({ ...b, showLanes5: on }), false)
                 }
-                showFlip={board.pitchView === "half"}
-                onFlip={() =>
-                  state.updateBoard((b) => ({
-                    ...b,
-                    pitchFlipped: !b.pitchFlipped,
-                  }))
-                }
                 labels={{
                   pitchView: t("pitchView"),
-                  full: t("full"),
-                  half: t("half"),
+                  lanes5: t("lanes5"),
                   lanesOff: t("lanesOff"),
                   lanesOffShort: t("lanesOffShort"),
                   lanesOnShort: t("lanesOnShort"),
-                  lanes5: t("lanes5"),
                   lanes5Hint: t("lanes5Hint"),
-                  flip: t("flip"),
+                  pitchLookLandscapeFull: t("pitchLookLandscapeFull"),
+                  pitchLookPortraitFull: t("pitchLookPortraitFull"),
+                  pitchLookPortraitHalfBottom: t("pitchLookPortraitHalfBottom"),
+                  pitchLookLandscapeHalfRight: t("pitchLookLandscapeHalfRight"),
+                  pitchLookPortraitHalfTop: t("pitchLookPortraitHalfTop"),
                 }}
               />
             )}
@@ -1062,9 +1057,9 @@ export function Drawer({ state, t }: Props) {
             {board.sport === "basketball" && (
               <div className="stack">
                 <PitchLookPicker
-                  pitchView={board.pitchView}
-                  lanesControl={false}
+                  mode="basketball"
                   court="basketball"
+                  pitchView={board.pitchView}
                   onPitchView={(view) =>
                     state.updateBoard((b) => ({ ...b, pitchView: view }), false)
                   }
@@ -1079,10 +1074,10 @@ export function Drawer({ state, t }: Props) {
                     pitchView: t("pitchView"),
                     full: t("full"),
                     half: t("half"),
+                    lanes5: t("lanes5"),
                     lanesOff: t("lanesOff"),
                     lanesOffShort: t("lanesOffShort"),
                     lanesOnShort: t("lanesOnShort"),
-                    lanes5: t("lanes5"),
                     lanes5Hint: t("lanes5Hint"),
                     flip: t("flip"),
                   }}
@@ -1207,6 +1202,26 @@ export function Drawer({ state, t }: Props) {
                 ))}
               </select>
             </label>
+
+            <div className="stack">
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={board.showPlayerNames}
+                  onChange={(e) =>
+                    state.updateBoard(
+                      (b) => ({
+                        ...b,
+                        showPlayerNames: e.target.checked,
+                      }),
+                      false,
+                    )
+                  }
+                />
+                {t("showPlayerNames")}
+              </label>
+              <p className="hint-muted">{t("showPlayerNamesHint")}</p>
+            </div>
 
             <label>
               {t("pieceSize")} ({board.pieceScale.toFixed(2)})
