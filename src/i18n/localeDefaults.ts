@@ -37,6 +37,8 @@ export function defaultSceneName(
   if (index <= 1) return defaultSceneLabel(sport, locale);
   if (locale === "ja") return `局面 ${index}`;
   if (locale === "es") return `Escena ${index}`;
+  if (locale === "pt") return `Cena ${index}`;
+  if (locale === "pl") return `Scena ${index}`;
   return `Scene ${index}`;
 }
 
@@ -46,5 +48,7 @@ export function defaultBoardTitle(
 ): string {
   if (locale === "ja") return `ボード ${index}`;
   if (locale === "es") return `Tablero ${index}`;
+  if (locale === "pt") return `Quadro ${index}`;
+  if (locale === "pl") return `Plansza ${index}`;
   return `Board ${index}`;
 }

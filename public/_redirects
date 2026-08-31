@@ -10,6 +10,14 @@
 /es/      /es/index.html  200
 /es/board /board/?lang=es   301
 /es/board/ /board/?lang=es  301
+/pt       /pt/    301
+/pt/      /pt/index.html  200
+/pt/board /board/?lang=pt   301
+/pt/board/ /board/?lang=pt  301
+/pl       /pl/    301
+/pl/      /pl/index.html  200
+/pl/board /board/?lang=pl   301
+/pl/board/ /board/?lang=pl  301
 /about    /about/    301
 /guide    /guide/    301
 /faq      /faq/      301

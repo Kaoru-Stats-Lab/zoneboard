@@ -291,4 +291,188 @@ const es: HowToDoc = {
   ],
 };
 
-export const HOW_TO: Record<Locale, HowToDoc> = { ja, en, es };
+const pt: HowToDoc = {
+  intro: "O modo live (B) oculta as ferramentas. Você move as peças com o teclado. Teste os atalhos aqui antes de entrar ao vivo — as mesmas teclas funcionam durante a live. Não há um tutorial inicial no gramado. Este painel e o guia público são o manual.",
+  sections: [
+    {
+      heading: "Por que usar o teclado",
+      paragraphs: [
+        "Os espectadores querem ver o campo. Se você deixar o painel lateral aberto, eles verão menus, não tática. O modo live (B) oculta as ferramentas. O que resta é selecionar, mover e girar.",
+        "Você não precisa memorizar todos os atalhos. Alguns movem a linha inteira. Outros selecionam apenas o time da casa. Alguns copiam a cena para comparar dois desenhos. Aprenda apenas as teclas que usar.",
+      ],
+    },
+    {
+      heading: "Selecionar peças",
+      paragraphs: [
+        "Faça a seleção primeiro — uma linha, um bloco de marcação, ou apenas o time da casa — e então mova. Se tentar mover primeiro, você arrastará uma peça de cada vez.",
+        "Arraste na grama vazia para criar uma caixa e selecionar as peças dentro dela. As peças não têm posições como ZAG, então crie a caixa ao redor da linha defensiva. Segure Ctrl ou Cmd enquanto arrasta para adicionar à seleção atual.",
+        "Um clique rápido quase sem movimento limpa a seleção. Clicar na grama vazia segurando Ctrl ou Cmd não limpa a seleção.",
+      ],
+      keys: [
+        { combo: "Click", meaning: "Selecionar uma peça" },
+        { combo: "Ctrl/Cmd+Click", meaning: "Adicionar ou remover" },
+        { combo: "Shift+Click", meaning: "Adicionar (manter o resto)" },
+        { combo: "Drag empty grass", meaning: "Selecionar em caixa" },
+        { combo: "Alt+1 / Alt+2", meaning: "Todos do Casa / Fora" },
+        { combo: "Ctrl/Cmd+A", meaning: "Selecionar todos visíveis" },
+        { combo: "Esc", meaning: "Limpar seleção" },
+      ],
+    },
+    {
+      heading: "Mover a seleção",
+      paragraphs: [
+        "Arraste qualquer peça selecionada e toda a seleção se moverá junto. Use isso para avançar a linha, pular para a pressão ou bascular mantendo a marcação. Soltar uma seleção de várias peças não troca as camisas. A troca funciona apenas para uma peça de cada vez.",
+        "As setas movem em pequenos toques. Shift + seta dá um passo maior. Use isso quando disser \"só mais um passinho\" durante a transmissão.",
+        "R altera apenas a direção que o jogador olha. As posições continuam as mesmas. Use para enquadrar o bloco. Q / E giram a forma inteira em torno do centro da seleção. Selecione duas ou mais peças.",
+        "- aproxima as peças. = afasta as peças. O centro da seleção quase não se move — ótimo para compactar ou abrir a linha alta.",
+        "Shift+H inverte esquerda e direita, incluindo para onde olham. Shift+V inverte cima e baixo. Ctrl/Cmd+D duplica as peças; as cópias permanecem selecionadas para você posicioná-las.",
+      ],
+      keys: [
+        { combo: "Drag a selected piece", meaning: "Mover toda a seleção" },
+        { combo: "Arrow / Shift+Arrow", meaning: "Mover (curto / longo)" },
+        { combo: "R", meaning: "Girar olhar +45°" },
+        { combo: "Q / E", meaning: "Girar forma pelo centro" },
+        { combo: "- / =", meaning: "Aproximar / afastar" },
+        { combo: "Shift+H / Shift+V", meaning: "Inverter H / inverter V" },
+        { combo: "Ctrl/Cmd+D", meaning: "Duplicar (cópias selecionadas)" },
+        { combo: "Ctrl/Cmd+Shift+Arrow", meaning: "Alinhar à borda ou eixo" },
+        { combo: "Alt+Shift+Arrow", meaning: "Distribuir (H / V)" },
+        { combo: "Delete", meaning: "Remover peças selecionadas" },
+      ],
+    },
+    {
+      heading: "Desenhar antes da live",
+      paragraphs: [
+        "Antes de entrar ao vivo, use as ferramentas Passe, Corrida, Caneta e Vincular. Passe é a rota da bola — passe, cruzamento ou chute. Corrida é o movimento sem a bola. Drible é um jogador conduzindo a bola.",
+        "Caneta é uma linha livre que não é Passe ou Corrida — uma linha de bloco ou um corredor. Segure Shift enquanto arrasta a Caneta para uma linha reta. Círculos e zonas continuam à mão livre sem o Shift. Vincular conecta as peças; a linha as segue quando você as move.",
+      ],
+      keys: [
+        { combo: "Pass", meaning: "Rota da bola (tracejada)" },
+        { combo: "Run / Dribble", meaning: "Corrida ou drible" },
+        { combo: "Pen", meaning: "Linha à mão livre" },
+        { combo: "Link", meaning: "Vínculo entre peças (segue)" },
+        { combo: "Shift+Pen drag", meaning: "Linha reta A para B" },
+        { combo: "Zone + Shift", meaning: "Zona quase circular" },
+      ],
+    },
+    {
+      heading: "Mover a câmera",
+      paragraphs: [
+        "Dê zoom em uma bola parada ou veja o meio-campo inteiro — Ctrl ou Cmd + roda do mouse dá zoom em direção ao cursor. Segure Espaço e arraste para mover a visão. Alt + arrastar também funciona.",
+      ],
+      keys: [
+        { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom no cursor" },
+        { combo: "Space+Drag", meaning: "Mover a câmera" },
+        { combo: "Alt+Drag", meaning: "Mover a câmera (alternativa)" },
+      ],
+    },
+    {
+      heading: "Antes e durante a transmissão",
+      paragraphs: [
+        "Antes do apito inicial, pratique subir e voltar a linha, ou selecionar os donos da casa e aproximá-los. Essas teclas continuam funcionando no modo live. Pressione B para ativar o modo live. Não abra este painel de ajuda (? / F1) durante a transmissão — ele aparecerá na tela.",
+        "Troque de cenas com [ ]. Coloque um escanteio e um bloco de vigilância preventiva em cenas separadas, e não tudo em um único desenho amontoado.",
+        "Para testar um movimento e manter o original, copie a cena antes de arrastar. A cena original fica — volte para ela com [ ]. Durante a live, use Duplicar no canto inferior direito. Não há um botão para restaurar ao início. Copiar a cena é a maneira de manter o seu original limpo.",
+      ],
+      keys: [
+        { combo: "B", meaning: "Ativar/desativar modo live" },
+        { combo: "[ ] or PageUp/PageDown", meaning: "Trocar de cena" },
+        { combo: "Duplicate (Scenes or bottom-right)", meaning: "Copiar cena, testar movimento" },
+        { combo: "? or F1", meaning: "Ajuda (não na live)" },
+      ],
+    },
+  ],
+};
+
+const pl: HowToDoc = {
+  intro: "Tryb transmisji (B) ukrywa narzędzia. Figurkami poruszasz za pomocą klawiatury. Wypróbuj klawisze tutaj przed rozpoczęciem transmisji — te same klawisze działają podczas relacji na żywo. Na boisku nie ma nakładki samouczka. Ten panel oraz publiczny przewodnik stanowią instrukcję.",
+  sections: [
+    {
+      heading: "Dlaczego klawiatura",
+      paragraphs: [
+        "Widzowie chcą widzieć boisko. Jeśli panel boczny pozostanie otwarty, zobaczysz menu, a nie taktykę. Tryb transmisji (B) ukrywa narzędzia. Pozostaje zaznaczanie, przesuwanie i obracanie.",
+        "Nie musisz znać każdego skrótu. Niektórzy przesuwają całą linię. Niektórzy zaznaczają tylko gospodarzy. Niektórzy kopiują scenę i porównują dwa ustawienia. Ucz się tylko tych klawiszy, z których korzystasz.",
+      ],
+    },
+    {
+      heading: "Zaznaczanie figurek",
+      paragraphs: [
+        "Najpierw dokonaj zaznaczenia — linii, bloku krycia lub tylko gospodarzy — a następnie przesuń. Jeśli najpierw zaczniesz przesuwać, będziesz przeciągać figurki po jednej.",
+        "Przeciągnij po pustej trawie, aby narysować ramkę i zaznaczyć figurki w środku. Figurki nie mają etykiet ról (np. ŚBO), więc obrysuj ramką linię obrony. Przytrzymaj Ctrl lub Cmd podczas przeciągania, aby dodać do bieżącego zaznaczenia.",
+        "Szybkie kliknięcie bez ruchu czyszcza zaznaczenie. Kliknięcie pustej trawy z przytrzymanym Ctrl lub Cmd nie czyści go.",
+      ],
+      keys: [
+        { combo: "Click", meaning: "Zaznacz jedną figurkę" },
+        { combo: "Ctrl/Cmd+Click", meaning: "Dodaj lub usuń" },
+        { combo: "Shift+Click", meaning: "Dodaj (zachowaj resztę)" },
+        { combo: "Drag empty grass", meaning: "Zaznacz ramką" },
+        { combo: "Alt+1 / Alt+2", meaning: "Wszyscy gospodarze / goście" },
+        { combo: "Ctrl/Cmd+A", meaning: "Zaznacz wszystkie widoczne" },
+        { combo: "Esc", meaning: "Anuluj zaznaczenie" },
+      ],
+    },
+    {
+      heading: "Przesuwanie zaznaczenia",
+      paragraphs: [
+        "Przeciągnij dowolną zaznaczoną figurkę, a całe zaznaczenie przesunie się razem. Użyj tego do wyjścia linią, skoku w pressing lub przesunięcia z zachowaniem krycia. Upuszczenie zaznaczenia złożonego z wielu figurek nie zamienia koszulek. Zamiana działa tylko dla pojedynczej figurki.",
+        "Klawisze strzałek przesuwają w małych krokach. Shift + strzałka robi większy krok. Użyj tego, gdy mówisz „jeszcze pół kroku” podczas transmisji.",
+        "R zmienia tylko kierunek patrzenia. Pozycje pozostają bez zmian. Użyj, aby wyrównać blok. Q / E obracają cały kształt wokół środka zaznaczenia. Zaznacz dwie lub więcej figurek.",
+        "- przybliża figurki do siebie. = oddala je. Środek zaznaczenia prawie się nie porusza — dobre dla zwartej lub szerokiej wysokiej linii.",
+        "Shift+H odbija w lewo i prawo, łącznie z kierunkiem patrzenia. Shift+V odbija w górę i w dół. Ctrl/Cmd+D kopiuje figurki; kopie pozostają zaznaczone, więc możesz je od razu przesunąć.",
+      ],
+      keys: [
+        { combo: "Drag a selected piece", meaning: "Przesuń całe zaznaczenie" },
+        { combo: "Arrow / Shift+Arrow", meaning: "Koryguj (drobne / duże)" },
+        { combo: "R", meaning: "Kierunek +45°" },
+        { combo: "Q / E", meaning: "Obróć kształt wokół środka" },
+        { combo: "- / =", meaning: "Bliżej / szerzej" },
+        { combo: "Shift+H / Shift+V", meaning: "Odbij w poziomie / w pionie" },
+        { combo: "Ctrl/Cmd+D", meaning: "Duplikuj (kopie zaznaczone)" },
+        { combo: "Ctrl/Cmd+Shift+Arrow", meaning: "Wyrównaj do krawędzi lub osi" },
+        { combo: "Alt+Shift+Arrow", meaning: "Równe odstępy (poziomo / pionowo)" },
+        { combo: "Delete", meaning: "Usuń zaznaczone figurki" },
+      ],
+    },
+    {
+      heading: "Rysowanie przed transmisją",
+      paragraphs: [
+        "Przed transmisją użyj paska narzędzi do rysowania Podania, Biegu, Pióra i Połączenia. Podanie to ścieżka piłki — podanie, dośrodkowanie lub strzał. Bieg to ruch bez piłki. Drybling to zawodnik prowadzący piłkę.",
+        "Pióro to swobodna linia, która nie jest Podaniem ani Biegiem — linia bloku lub krawędź korytarza. Przytrzymaj Shift podczas przeciągania Pióra, aby uzyskać linię prostą. Koła i pętle bez Shift pozostają rysowane od ręki. Połączenie łączy figurki; linia podąża za nimi, gdy je przesuwasz.",
+      ],
+      keys: [
+        { combo: "Pass", meaning: "Ścieżka piłki (przerywana)" },
+        { combo: "Run / Dribble", meaning: "Bieg lub drybling" },
+        { combo: "Pen", meaning: "Linia swobodna" },
+        { combo: "Link", meaning: "Połączenie figurek (podąża)" },
+        { combo: "Shift+Pen drag", meaning: "Prosta linia A do B" },
+        { combo: "Zone + Shift", meaning: "Strefa bliska koła" },
+      ],
+    },
+    {
+      heading: "Przesuwanie widoku",
+      paragraphs: [
+        "Zrób przybliżenie na stały fragment lub zobacz całą połowę — Ctrl lub Cmd + kółko myszy przybliża w stronę kursora. Przytrzymaj Spację i przeciągnij, aby przesuwać widok. Alt + przeciągnięcie również działa.",
+      ],
+      keys: [
+        { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom w miejscu kursora" },
+        { combo: "Space+Drag", meaning: "Przesuń widok" },
+        { combo: "Alt+Drag", meaning: "Przesuń widok (alternatywa)" },
+      ],
+    },
+    {
+      heading: "Przed i podczas transmisji",
+      paragraphs: [
+        "Przed rozpoczęciem meczu przećwicz podnoszenie i cofanie linii lub zaznaczanie gospodarzy i przybliżanie ich. Wtedy te klawisze będą działać w trybie transmisji. Naciśnij B, aby wejść w tryb transmisji. Nie otwieraj tej instrukcji (? / F1) podczas transmisji — pojawi się ona na ekranie.",
+        "Przełączaj sceny za pomocą [ ]. Umieść rzut rożny i ustawienie asekuracji na osobnych scenach, a nie na jednym zatłoczonym rysunku.",
+        "Aby wypróbować ruch i zachować oryginał, skopiuj scenę przed przesunięciem. Pierwsza scena pozostanie — wróć do niej za pomocą [ ]. Podczas transmisji użyj Duplikuj w prawym dolnym rogu. Nie ma przycisku resetowania do stanu początkowego. Kopiowanie sceny to sposób na zachowanie czystego oryginału.",
+      ],
+      keys: [
+        { combo: "B", meaning: "Przełącz tryb transmisji" },
+        { combo: "[ ] or PageUp/PageDown", meaning: "Przełącz sceny" },
+        { combo: "Duplicate (Scenes or bottom-right)", meaning: "Kopiuj scenę, wypróbuj ruch" },
+        { combo: "? or F1", meaning: "Instrukcja (nie na żywo)" },
+      ],
+    },
+  ],
+};
+
+export const HOW_TO: Record<Locale, HowToDoc> = { ja, en, es, pt, pl };

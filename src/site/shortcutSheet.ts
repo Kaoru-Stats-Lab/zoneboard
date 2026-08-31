@@ -41,6 +41,8 @@ function shortcutCopy(locale: Locale) {
 function boardHrefForLocale(locale: Locale): string {
   if (locale === "ja") return "/board/?lang=ja";
   if (locale === "es") return "/board/?lang=es";
+  if (locale === "pt") return "/board/?lang=pt";
+  if (locale === "pl") return "/board/?lang=pl";
   return "/board/";
 }
 

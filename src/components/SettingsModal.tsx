@@ -201,6 +201,8 @@ export function SettingsModal({
               <option value="en">English</option>
               <option value="ja">日本語</option>
               <option value="es">Español</option>
+              <option value="pt">Português (BR)</option>
+              <option value="pl">Polski</option>
             </select>
           </label>
           <p className="hint-muted">{t("languageHint")}</p>
