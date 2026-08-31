@@ -2,7 +2,7 @@
 
 このファイルをそのまま **別 Agent（Cursor Auto 可）** に渡してよい。
 
-**前提:** 縦ピッチ · Pitch View · 名前ピル等は触らない。いま直すのは **ツールのスティッキー挙動と現在地の可視化** だけ。
+**前提:** 縦ピッチ · Pitch View · 名前ピル等は触らない。**2026-08-31 改定:** 描画ツール（ペン・線種等）は **スティッキー維持**。リンク確定後の `select` 復帰と現在地 UI はそのまま有効。
 
 仕様: [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 決定ログ「ツールモード契約（2026-08-31）」。矛盾したら PRODUCT_NOTE を勝ちにする。
 
@@ -52,27 +52,25 @@
 
 ## 2. ゴール（受け入れ）
 
-### 2-1. モード契約（必須）
+### 2-1. モード契約（必須 · 2026-08-31 改定②）
+
+**原則: 明示的にメニューを変えない限り維持。** 自動 `select` 復帰は **一切なし**（`finishDrawAction` 削除）。
 
 | 契約 | ツール | 1アクション後 |
 |------|--------|----------------|
-| 選択 | `select` | — |
-| 配置 | `piece-home` · `piece-away` | `select`（**変更なし**） |
-| 描画 | `pass` · `run` · `dribble` · `screen` · `pen` · `zone` · `text` | **`select` に戻る** |
-| リンク | `link` | **鎖確定（`addLink`）直後に `select` に戻る** |
-| ボール | `ball` | **スティッキー維持**（変更なし） |
+| 選択 | `select` | —（`V`） |
+| 配置 | `piece-home` · `piece-away` | **そのまま** |
+| 描画 | `pass` · `run` · `dribble` · `screen` · `pen` · `zone` | **そのまま** |
+| テキスト | `text` | **入力確定で `select`**（唯一の例外） |
+| リンク | `link` | **そのまま**（鎖確定後も） |
+| ボール | `ball` | **そのまま** |
+
+**改定理由:** ペン・線種は一筆で終わらない。**テキストだけ**確定後に選択へ（1ラベル置いて次は駒操作が多い）。
+
+**テキスト確定:** Enter / blur で保存した直後 · ツールが `text` のときのみ `setTool("select")`。キャンセルでは戻さない。
 
 **リンク確定トリガー（既存 · 変えない）:** 同じ駒再クリック · 空き地クリック（2駒以上）· Enter。  
 **Esc:** 鎖だけクリア（ツールはリンクのまま — 既存どおり）。
-
-**描画の「1アクション」:**
-
-- 線（pass/run/dribble/screen）: `onPointerUp` で `addLine` / `movePieceWithLine` した直後
-- ゾーン: `addZone` した直後
-- ペン: `addPen` した直後
-- テキスト: テキスト編集を **確定**（Enter / blur で保存）した直後 — キャンセルだけでは戻さない
-
-**実装方針:** `setTool("select")` を BoardCanvas 各完了点に足すか、`useAppState` に `finishDrawAction()`（内部で `setTool("select")`）を1か所定義して呼ぶ。重複を最小に。
 
 ### 2-2. 発見性（必須）
 
@@ -102,8 +100,7 @@
 
 ## 3. やってはいけない
 
-- 全ツールを永久スティッキーのまま残す
-- リンク確定後もリンクのまま（現状維持）
+- **1アクションごとに `select` に戻す**（全ツール · 2026-08-31 改定②で撤回）
 - ボールを1ドラッグごとに `select` に戻す（スコープ外）
 - ツールレールをアイコンだけに作り替える
 - 新ツール追加 · リンクの `Shift` 連続モード（Later）
@@ -117,8 +114,8 @@
 
 | ファイル | 変更 |
 |----------|------|
-| `src/components/BoardCanvas.tsx` | 描画・リンク完了後 `select` |
-| `src/hooks/useAppState.ts` | 任意: `finishDrawAction` ヘルパ |
+| `src/components/BoardCanvas.tsx` | `commitTextEdit`: `text` ツール確定時のみ `setTool("select")` |
+| `src/hooks/useAppState.ts` | `addPieceAt` の `setTool("select")` 削除 · `finishDrawAction` 削除 |
 | `src/components/ToolRail.tsx` | 選択ピン · 現在地表示 |
 | `src/components/Editor.tsx` | 編集 chrome のツール表示（必要なら） |
 | `src/styles.css` | ピン · リンク active · ドラフトバナー |
@@ -142,9 +139,9 @@ Ship 後は [`docs/CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md) に従い `src/sit
 
 ## 6. 検証チェックリスト（手動）
 
-- [ ] パス1本描いたあと **自動で選択** · 駒をドラッグ移動できる
-- [ ] ラン/ドリブル（駒から線）も同様
-- [ ] リンク: 2駒以上つないで確定 → **選択に戻る** · 次のクリックは移動
+- [ ] テキスト: 確定後 **選択に戻る** · キャンセルでは戻らない
+- [ ] `V` またはレールで **選択** に明示切替できる
+- [ ] リンク: 鎖確定後も **リンクのまま** · 次の鎖を続けられる
 - [ ] リンク途中 Esc → 鎖だけ消える · ツールはリンクのまま
 - [ ] リンク途中にドリブルをレール選択 → ドリブルで駒ドラッグできる
 - [ ] ホーム駒配置 → 選択（回帰）

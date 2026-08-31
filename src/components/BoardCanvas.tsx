@@ -281,7 +281,6 @@ export function BoardCanvas({
       state.addLink(ids);
       setLinkDraftIds([]);
       setLinkHoverWorld(null);
-      state.finishDrawAction();
     },
     [state],
   );
@@ -667,7 +666,7 @@ export function BoardCanvas({
       state.addText(session.worldX, session.worldY, trimmed);
     }
     setTextEdit(null);
-    if (fromTextTool) state.finishDrawAction();
+    if (fromTextTool) state.setTool("select");
   };
 
   const cancelTextEdit = () => {
@@ -1326,7 +1325,6 @@ export function BoardCanvas({
         facing,
       );
       state.setSelectedPieceId(d.id);
-      state.finishDrawAction();
       return;
     }
 
@@ -1339,7 +1337,6 @@ export function BoardCanvas({
       }
       if (d.points.length >= 2) {
         state.addLine(d.kind, smoothLinePath(d.points));
-        state.finishDrawAction();
       }
     } else if (d.mode === "zone") {
       const corner = zoneDragCorner(d.x0, d.y0, world.x, world.y, e.shiftKey);
@@ -1349,7 +1346,6 @@ export function BoardCanvas({
       const h = Math.abs(corner.y - d.y0);
       if (w > 0.01 && h > 0.01) {
         state.addZone(x, y, w, h);
-        state.finishDrawAction();
       }
     } else if (d.mode === "pen" && d.points) {
       if (d.straight) {
@@ -1364,7 +1360,6 @@ export function BoardCanvas({
         Math.hypot(end.x - d.x0, end.y - d.y0) >= 0.008
       ) {
         state.addPen(d.points);
-        state.finishDrawAction();
       }
     }
   };

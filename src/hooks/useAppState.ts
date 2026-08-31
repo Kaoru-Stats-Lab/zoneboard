@@ -143,11 +143,6 @@ export function useAppState() {
   const setTool = useCallback((id: ToolId) => {
     setToolState(id);
   }, []);
-
-  /** 描画・リンク確定後に選択へ戻す（ボール配置は対象外） */
-  const finishDrawAction = useCallback(() => {
-    setToolState("select");
-  }, []);
   const [selectedPieceIds, setSelectedPieceIds] = useState<string[]>([]);
   const selectedPieceId =
     selectedPieceIds[selectedPieceIds.length - 1] ?? null;
@@ -891,7 +886,6 @@ export function useAppState() {
       };
       updateScene((s) => ({ ...s, pieces: [...s.pieces, piece] }));
       setSelectedPieceId(piece.id);
-      setTool("select");
     },
     [board, updateScene],
   );
@@ -1901,7 +1895,6 @@ export function useAppState() {
     watermark,
     tool,
     setTool,
-    finishDrawAction,
     selectedPieceId,
     selectedPieceIds,
     setSelectedPieceId,

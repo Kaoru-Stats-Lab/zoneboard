@@ -1048,7 +1048,7 @@ function drawObject(
   }
 }
 
-/** ゾーン作成中: 起点マーカー + ラバーバンド楕円（クリック直後から見える） */
+/** ゾーン作成中: シード楕円 / ラバーバンド楕円 + 起点ドット（Pen 同型） */
 function drawMarqueePreview(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,
@@ -1097,7 +1097,6 @@ function drawZonePreview(
   const stroke = ink.stroke;
   const scale = Math.min(pitch.w, pitch.h);
   const handleR = Math.max(5, scale * 0.012);
-  const cross = Math.max(10, scale * 0.028);
   const lw = Math.max(2, lwOnPitch(pitch, 2));
 
   // ドラッグ中の楕円。未移動時は小さなシード枠で「開始済み」を示す
@@ -1126,25 +1125,23 @@ function drawZonePreview(
   ctx.setLineDash([]);
   ctx.restore();
 
-  // 起点: 十字 + 塗りつぶし点（クリック直後の唯一の合図）
-  ctx.save();
-  ctx.strokeStyle = stroke;
-  ctx.lineWidth = Math.max(2, lw * 0.9);
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(p0.x - cross, p0.y);
-  ctx.lineTo(p0.x + cross, p0.y);
-  ctx.moveTo(p0.x, p0.y - cross);
-  ctx.lineTo(p0.x, p0.y + cross);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(p0.x, p0.y, handleR, 0, Math.PI * 2);
-  ctx.fillStyle = stroke;
-  ctx.fill();
-  ctx.strokeStyle = usesGrassInk(board) ? "rgba(0,0,0,0.55)" : "#fff";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.restore();
+  // 起点: Pen と同型の小ドット（ドラッグ中のみ · 未移動時はシード楕円で足りる）
+  if (showShape) {
+    const dotR = Math.max(3.5, lw * 0.75);
+    ctx.save();
+    if (usesGrassInk(board)) {
+      ctx.shadowColor = "rgba(0,0,0,0.42)";
+      ctx.shadowBlur = Math.max(1.5, lw * 0.55);
+    }
+    ctx.beginPath();
+    ctx.arc(p0.x, p0.y, dotR, 0, Math.PI * 2);
+    ctx.fillStyle = stroke;
+    ctx.fill();
+    ctx.strokeStyle = usesGrassInk(board) ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.6)";
+    ctx.lineWidth = 1.25;
+    ctx.stroke();
+    ctx.restore();
+  }
 
   // 対角角: ドラッグ先ハンドル（動いたときだけ）
   if (Math.hypot(p1.x - p0.x, p1.y - p0.y) > handleR * 2) {
