@@ -96,7 +96,7 @@
 | **横↔縦を押したとき（データ）** | **実装済（Pitch View UI）:** 向きが変わるプリセット → 全局面リセット（駒空・中央ボール）。同向き内フル↔ハーフは保持。[`AGENT_PROMPT_PITCH_VIEW_UI.md`](AGENT_PROMPT_PITCH_VIEW_UI.md) · `src/presets/pitchLook.ts` |
 | **やらない（UI）** | 「次の新規用」向きだけが青く、下のピッチ絵は横のまま、という二重時計 |
 | **i18n** | グループに `pitchView` 相当ラベル。各アイコンは `title` / `aria-label`。ドロワー幅を広げない。線画は ~40px 級で5つが1行に収まること。`npm run test:i18n-chrome` |
-| **画角プリセット** | 縦ボードでは **別実装**（カメラ座標の軸が変わる）。横は既存 `VIEW_PRESETS` のまま。[`AGENT_PROMPT_PORTRAIT_VIEWPORT.md`](AGENT_PROMPT_PORTRAIT_VIEWPORT.md) |
+| **画角プリセット** | 縦ボードでは **5 種のみ**（全体 · FT上/下 · ペナ上/下）。CK・スローは横語彙のため非表示。[`AGENT_PROMPT_PORTRAIT_VIEWPORT.md`](AGENT_PROMPT_PORTRAIT_VIEWPORT.md) |
 
 **参考:** Pitch View の見た目・並びは The Tactics App のセグメント（線画・区切り・青枠選択）を正とする。コーチ／教材寄りプロダクトだが、**ピッチの切り方の認知**は配信でも同じ。
 

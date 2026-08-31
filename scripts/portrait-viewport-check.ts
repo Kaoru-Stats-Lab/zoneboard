@@ -7,6 +7,7 @@ import {
   VIEW_PRESETS,
   resolveViewPreset,
   viewportMatchesPreset,
+  viewPresetsForSport,
 } from "../src/presets/viewport.ts";
 
 let failed = 0;
@@ -28,11 +29,21 @@ if (ftBot.cy < 0.72 || ftBot.cy > 0.9) {
   fail(`portrait final-third-right cy≈0.83, got cy=${ftBot.cy}`);
 }
 
-const ckBl = resolveViewPreset("soccer", "portrait", "corner-bl");
-if (ckBl.cy > 0.6 || ckBl.cx < 0.35) {
-  fail(
-    `portrait corner-bl should favor bottom-left, got cx=${ckBl.cx} cy=${ckBl.cy}`,
-  );
+const penTop = resolveViewPreset("soccer", "portrait", "pen-left");
+if (penTop.cy > 0.2 || penTop.cy < 0.05) {
+  fail(`portrait pen-left cy≈0.12, got cy=${penTop.cy}`);
+}
+
+const portraitPresets = viewPresetsForSport("soccer", "portrait");
+if (portraitPresets.length !== 5) {
+  fail(`portrait viewPresetsForSport should list 5, got ${portraitPresets.length}`);
+}
+const portraitIds = portraitPresets.map((p) => p.id).join(",");
+if (
+  portraitIds !==
+  "full,final-third-left,final-third-right,pen-left,pen-right"
+) {
+  fail(`unexpected portrait preset ids: ${portraitIds}`);
 }
 
 const landFt = resolveViewPreset("soccer", "landscape", "final-third-left");

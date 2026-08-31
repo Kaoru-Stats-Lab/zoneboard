@@ -207,16 +207,8 @@ export const VIEW_PRESETS: Record<ViewPresetId, Viewport> = {
 
 /**
  * 縦サッカー画角（正規化 x＝幅 · y＝長さ）。
- * 横プリセットの空間意味を 90° 回転（cx↔cy · 矩形は座標・ピンを入れ替え）。
- *
- * | id | 横の意味 | 縦 cy/cx 目安 |
- * |----|----------|---------------|
- * | final-third-left | 左ゴール三方 | cy≈0.17 |
- * | final-third-right | 右ゴール三方 | cy≈0.83 |
- * | pen-left / pen-right | 左/右ペナ | cy≈0.12 / 0.88 |
- * | throw-top / throw-bottom | 上/下スロー | cx≈0.06 / 0.94 |
- * | corner-* | 四隅（ゴール×タッチ） | viewportCoveringRect 縦座標 |
- * | ck-setup-left/right | 上/下ゴール CK 配置 | top/bottom ピン |
+ * UI はゴールエンド別 5 種のみ（全体 · FT上/下 · ペナ上/下）。
+ * CK・スローは横のセットプレー語彙 — 縦では局面タブに出さない。
  */
 export const PORTRAIT_SOCCER_VIEW_PRESETS: Partial<
   Record<ViewPresetId, Viewport>
@@ -224,32 +216,8 @@ export const PORTRAIT_SOCCER_VIEW_PRESETS: Partial<
   full: { zoom: 1, cx: 0.5, cy: 0.5 },
   "final-third-left": { zoom: 2.35, cx: 0.5, cy: 0.17 },
   "final-third-right": { zoom: 2.35, cx: 0.5, cy: 0.83 },
-  "corner-tl": viewportCoveringRect(0, 0, 1 - CK_FAR_Y, CK_TO_HALF, {
-    top: true,
-    left: true,
-  }),
-  "corner-tr": viewportCoveringRect(0, 1 - CK_TO_HALF, 1 - CK_FAR_Y, 1, {
-    bottom: true,
-    left: true,
-  }),
-  "corner-bl": viewportCoveringRect(CK_FAR_Y, 0, 1, CK_TO_HALF, {
-    top: true,
-    right: true,
-  }),
-  "corner-br": viewportCoveringRect(CK_FAR_Y, 1 - CK_TO_HALF, 1, 1, {
-    bottom: true,
-    right: true,
-  }),
-  "throw-top": { zoom: 2.1, cx: 0.06, cy: 0.5 },
-  "throw-bottom": { zoom: 2.1, cx: 0.94, cy: 0.5 },
   "pen-left": { zoom: 2.5, cx: 0.5, cy: 0.12 },
   "pen-right": { zoom: 2.5, cx: 0.5, cy: 0.88 },
-  "ck-setup-left": viewportCoveringRect(0.06, 0, 0.94, CK_TO_HALF, {
-    top: true,
-  }),
-  "ck-setup-right": viewportCoveringRect(0.06, 1 - CK_TO_HALF, 0.94, 1, {
-    bottom: true,
-  }),
 };
 
 export function resolveViewPreset(
@@ -295,7 +263,7 @@ export function viewportMatchesPreset(
 
 export type ViewPresetEntry = { id: ViewPresetId; key: string };
 
-/** 局面タブに出す画角ボタン（競技別 · 縦サッカーはラベルキーを差し替え） */
+/** 局面タブに出す画角ボタン（競技別 · 縦サッカーはゴールエンド 5 種のみ） */
 export function viewPresetsForSport(
   sport: SportId,
   orientation: PitchOrientation = "landscape",
@@ -305,18 +273,11 @@ export function viewPresetsForSport(
     effectivePitchOrientation(sport, orientation) === "portrait";
 
   if (portraitSoccer) {
+    // 縦はゴールエンド別ズームのみ。CK・スローは横のセットプレー語彙 — UI に出さない。
     return [
       { id: "full", key: "viewFull" },
       { id: "final-third-left", key: "viewFtTop" },
       { id: "final-third-right", key: "viewFtBottom" },
-      { id: "ck-setup-left", key: "viewCkSetupTop" },
-      { id: "ck-setup-right", key: "viewCkSetupBottom" },
-      { id: "corner-bl", key: "viewCkBl" },
-      { id: "corner-br", key: "viewCkBr" },
-      { id: "corner-tl", key: "viewCkTl" },
-      { id: "corner-tr", key: "viewCkTr" },
-      { id: "throw-top", key: "viewThrowLeft" },
-      { id: "throw-bottom", key: "viewThrowRight" },
       { id: "pen-left", key: "viewPenTop" },
       { id: "pen-right", key: "viewPenBottom" },
     ];
