@@ -1,0 +1,186 @@
+{
+  "_meta": {
+    "locale": "fr",
+    "bcp47": "fr-FR",
+    "source": "howTo.ts en ONLY"
+  },
+  "intro": "Le mode diffusion (B) masque les outils. Tu déplaces les figurines au clavier. Essaie les raccourcis ici avant de lancer ton live — ils fonctionneront à l'identique à l'écran. Il n'y a pas de tutoriel qui s'affiche sur le terrain. Ce panneau et le guide public servent de mode d'emploi.",
+  "sections": [
+    {
+      "heading": "Pourquoi le clavier ?",
+      "paragraphs": [
+        "Tes spectateurs veulent voir le terrain. Si tu laisses le panneau latéral ouvert, ils verront des menus, pas de la tactique. Le mode diffusion (B) masque les outils. Il ne te reste qu'à sélectionner, déplacer et pivoter.",
+        "Tu n'as pas besoin de retenir tous les raccourcis. Certains bougent toute la ligne de défense. D'autres sélectionnent uniquement l'équipe à domicile. Certains copient une scène pour comparer deux animations. Apprends juste les touches dont tu as besoin."
+      ]
+    },
+    {
+      "heading": "Sélectionner des figurines",
+      "paragraphs": [
+        "Fais d'abord ta sélection — une ligne, un bloc défensif, ou juste l'équipe à domicile — et ensuite déplace-la. Si tu commences par déplacer, tu glisseras les figurines une par une.",
+        "Glisse sur la pelouse vide pour dessiner un cadre et sélectionner les joueurs à l'intérieur. Les figurines n'ont pas de rôle comme DC, donc encadre simplement la ligne arrière. Maintiens Ctrl ou Cmd en glissant pour ajouter à la sélection actuelle.",
+        "Un petit clic rapide sans bouger annule la sélection. Cliquer sur la pelouse en maintenant Ctrl ou Cmd ne l'annule pas."
+      ],
+      "keys": [
+        {
+          "combo": "Click",
+          "meaning": "Sélectionner une figurine"
+        },
+        {
+          "combo": "Ctrl/Cmd+Click",
+          "meaning": "Ajouter ou retirer"
+        },
+        {
+          "combo": "Shift+Click",
+          "meaning": "Ajouter (garder le reste)"
+        },
+        {
+          "combo": "Drag empty grass",
+          "meaning": "Sélection en cadre"
+        },
+        {
+          "combo": "Alt+1 / Alt+2",
+          "meaning": "Tous les joueurs Domicile / Extérieur"
+        },
+        {
+          "combo": "Ctrl/Cmd+A",
+          "meaning": "Sélectionner tout ce qui est visible"
+        },
+        {
+          "combo": "Esc",
+          "meaning": "Annuler la sélection"
+        }
+      ]
+    },
+    {
+      "heading": "Déplacer la sélection",
+      "paragraphs": [
+        "Glisse n'importe quelle figurine sélectionnée et tout le groupe se déplacera ensemble. Pratique pour faire monter la ligne, déclencher le pressing ou faire coulisser le bloc avec les marquages. Lâcher une sélection multiple sur le banc ne remplace pas les maillots. Le changement de joueur ne fonctionne qu'un par un.",
+        "Les flèches déplacent par petits pas. Maj + flèche fait un plus grand pas. Utilise ça quand tu dis \"juste un demi-mètre\" en plein live.",
+        "R ne change que l'orientation. Les positions restent les mêmes. Parfait pour réorienter un bloc. Q / E font pivoter toute la forme autour du centre de la sélection. Sélectionne au moins deux joueurs.",
+        "- resserre les joueurs. = les écarte. Le centre de la sélection bouge à peine — idéal pour compacter ou écarter une ligne haute.",
+        "Maj+H inverse la gauche et la droite, y compris l'orientation. Maj+V inverse le haut et le bas. Ctrl/Cmd+D copie les figurines ; les copies restent sélectionnées pour pouvoir les aligner facilement."
+      ],
+      "keys": [
+        {
+          "combo": "Drag a selected piece",
+          "meaning": "Déplacer toute la sélection"
+        },
+        {
+          "combo": "Arrow / Shift+Arrow",
+          "meaning": "Ajuster (petit / grand pas)"
+        },
+        {
+          "combo": "R",
+          "meaning": "Orientation +45° uniquement"
+        },
+        {
+          "combo": "Q / E",
+          "meaning": "Faire pivoter la forme depuis le centre"
+        },
+        {
+          "combo": "- / =",
+          "meaning": "Resserrer / écarter"
+        },
+        {
+          "combo": "Shift+H / Shift+V",
+          "meaning": "Inverser Horizontalement / Verticalement"
+        },
+        {
+          "combo": "Ctrl/Cmd+D",
+          "meaning": "Dupliquer (copies sélectionnées)"
+        },
+        {
+          "combo": "Ctrl/Cmd+Shift+Arrow",
+          "meaning": "Aligner sur le bord ou l'axe"
+        },
+        {
+          "combo": "Alt+Shift+Arrow",
+          "meaning": "Espacement égal (H / V)"
+        },
+        {
+          "combo": "Delete",
+          "meaning": "Supprimer les figurines sélectionnées"
+        }
+      ]
+    },
+    {
+      "heading": "Dessiner avant le direct",
+      "paragraphs": [
+        "Avant ton live, utilise la barre d'outils pour Passe, Course, Stylo et Lien. La passe est la trajectoire du ballon — passe, centre ou tir. La course est un appel de balle. Le dribble est un joueur qui porte le ballon.",
+        "Stylo est une ligne libre (ni Passe ni Course) — pour dessiner un bloc ou une zone. Maintiens Maj en glissant le Stylo pour faire une ligne droite. Les ronds restent tracés à la main (sans Maj). Lien connecte les figurines ; le trait les suit quand tu les déplaces."
+      ],
+      "keys": [
+        {
+          "combo": "Pass",
+          "meaning": "Trajectoire du ballon (pointillés)"
+        },
+        {
+          "combo": "Run / Dribble",
+          "meaning": "Appel de balle ou dribble"
+        },
+        {
+          "combo": "Pen",
+          "meaning": "Ligne libre"
+        },
+        {
+          "combo": "Link",
+          "meaning": "Lien entre figurines (suit le mouvement)"
+        },
+        {
+          "combo": "Shift+Pen drag",
+          "meaning": "Ligne droite A vers B"
+        },
+        {
+          "combo": "Zone + Shift",
+          "meaning": "Zone quasi-circulaire"
+        }
+      ]
+    },
+    {
+      "heading": "Déplacer la vue",
+      "paragraphs": [
+        "Zoome sur un coup de pied arrêté ou regarde toute la moitié de terrain — Ctrl ou Cmd + molette zoome vers le pointeur. Maintiens la barre Espace et glisse pour déplacer la caméra. Alt + glisser marche aussi."
+      ],
+      "keys": [
+        {
+          "combo": "Ctrl/Cmd+Wheel",
+          "meaning": "Zoom sur le curseur"
+        },
+        {
+          "combo": "Space+Drag",
+          "meaning": "Déplacer la caméra"
+        },
+        {
+          "combo": "Alt+Drag",
+          "meaning": "Déplacer la caméra (alternatif)"
+        }
+      ]
+    },
+    {
+      "heading": "Avant et pendant le live",
+      "paragraphs": [
+        "Avant le coup d'envoi, entraîne-toi à monter et redescendre la ligne, ou à sélectionner l'équipe à domicile pour resserrer l'axe. Ensuite, ces touches marcheront en mode diffusion. Appuie sur B pour passer en mode diffusion. N'ouvre pas ce guide (? / F1) pendant le direct — ça se verra à l'écran.",
+        "Change de scène avec [ ]. Mets un corner et une animation de contre-pressing sur deux scènes différentes, au lieu de surcharger un seul dessin.",
+        "Pour tester un mouvement en gardant l'original, copie la scène avant de glisser. La première scène restera intacte — reviens-y avec [ ]. Pendant le direct, utilise Dupliquer en bas à droite. Il n'y a pas de bouton pour revenir au tout début. Copier la scène est le meilleur moyen de garder un original propre."
+      ],
+      "keys": [
+        {
+          "combo": "B",
+          "meaning": "Basculer en mode diffusion"
+        },
+        {
+          "combo": "[ ] or PageUp/PageDown",
+          "meaning": "Changer de scène"
+        },
+        {
+          "combo": "Duplicate (Scenes or bottom-right)",
+          "meaning": "Copier la scène, tester un mouvement"
+        },
+        {
+          "combo": "? or F1",
+          "meaning": "Mode d'emploi (pas en direct)"
+        }
+      ]
+    }
+  ]
+}

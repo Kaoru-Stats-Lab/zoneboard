@@ -159,7 +159,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-037 | UI 言語 pt-BR | **実装済** `/pt/` |
 | B-074 | UI 言語 pl | **実装済** `/pl/` · en 正本。[`AGENT_PROMPT_I18N_PL.md`](AGENT_PROMPT_I18N_PL.md) |
 | B-075 | UI 言語 de | **実装済** `/de/` · [`AGENT_PROMPT_I18N_DE.md`](AGENT_PROMPT_I18N_DE.md) |
-| B-076 | UI 言語 fr | 第2波 **2位** · Wiloo/Le Coach 向け · `/fr/` |
+| B-076 | UI 言語 fr | 第2波 **2位** · プロンプト [`AGENT_PROMPT_I18N_FR.md`](AGENT_PROMPT_I18N_FR.md) · `/fr/` |
 | B-077 | UI 言語 tr | 第2波 **3位** · Kadro/PNG 軽量訴求 · `/tr/` |
 | B-038 | バスケ補助線リサーチ | **済**。ハーフ＋Must補助線実装 |
 | B-039 | バスケ スクリーンT字線種 | **済** バスケのみ・紫・T字先端 |
