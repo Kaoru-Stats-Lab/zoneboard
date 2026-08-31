@@ -417,7 +417,7 @@ CK 角の旧値はコーナー弧だけ入りゴールが外れ、サッカー�
 - **公開デフォルトは英語**（PH / 欧州戦術・OBS の共通語）。同じ URL に JA/FR/DE を積まない
 - キャンバス（駒名・クラブ）は言語非依存。chrome / LP / 法務だけがロケール
 - **第1波 UI 面** **`/es/` → `/pt/` → `/pl/`** — **出荷済**（2026-08-31）。`/ja/` は JP ローンチ用にソースへ残す
-- **第2波 UI 面** **de · fr · tr 出荷済**（`/de/` `/fr/` `/tr/`）（Deep Research · [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) §3-7）。**pl は en 正本**
+- **第2波 UI 面** **de · fr · tr 出荷済**（`/de/` `/fr/` `/tr/`）。**第3波候補 = it**（§3-8 Deep Research · Fit 74% · 流入トリガーまで）。[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) §3-7–8。**pl は en 正本**
 - 5大リーグはキット・フォーメの話。UI を英西伊独仏で揃える理由にはしない
 - 決済・税・価格は言語面と別チケット
 

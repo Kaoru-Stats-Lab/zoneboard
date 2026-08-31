@@ -93,10 +93,10 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 正本: [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md)。
 
 - 公開面は英語一本。同一 URL に第二言語を積まない
-- UI の第1波 **es → pt-BR → pl は出荷済**（2026-08-31）。第2波 **de · fr · tr 出荷済**（[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) §3-7）。5大リーグ（英西伊独仏）を chrome で揃えない
+- UI の第1波 **es → pt-BR → pl は出荷済**。第2波 **de · fr · tr 出荷済**（[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) §3-7）。**第3波候補 = it**（§3-8 · 流入トリガーまで）。5大リーグ（英西伊独仏）を chrome で揃えない
 - 5大向けに先にやるならキット・フォーメ。決済は言語と別
 - **pl 翻訳正本は en のみ**（ja/es/pt 参照禁止）— [`AGENT_PROMPT_I18N_PL.md`](AGENT_PROMPT_I18N_PL.md)
-- `messages.de` / `fr` / `tr` は第2波順。**it** は流入トリガーまで作らない
+- `messages.it` は **第3波候補** — 流入トリガーまたは analyst デモ合意まで作らない（§3-8）
 
 ---
 
@@ -154,13 +154,14 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 |----|------|------|
 | B-030 | ビーチ射線ガイド | **済** ON/OFF |
 | B-034 | フットサル／ビーチ現場 FB | [`FUTSAL_BEACH_RESEARCH.md`](FUTSAL_BEACH_RESEARCH.md) §6 の問い |
-| B-035 | 海外事情（es/pt/pl · de/fr/tr 圏） | **調査済**。第1波 es→pt→pl **済**。第2波 **de→fr→tr**。[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) §3-7 |
+| B-035 | 海外事情（es/pt/pl · de/fr/tr · **it** · 西欧中欧東欧） | **調査済**（§3-8 it · **§3-9 戦術熱×Streaming**）。第1波 **済** · 第2波 **済** · 第3波候補 **it** |
 | B-036 | UI 言語 es | **実装済** `/es/` |
 | B-037 | UI 言語 pt-BR | **実装済** `/pt/` |
 | B-074 | UI 言語 pl | **実装済** `/pl/` · en 正本。[`AGENT_PROMPT_I18N_PL.md`](AGENT_PROMPT_I18N_PL.md) |
 | B-075 | UI 言語 de | **実装済** `/de/` · [`AGENT_PROMPT_I18N_DE.md`](AGENT_PROMPT_I18N_DE.md) |
 | B-076 | UI 言語 fr | **実装済** `/fr/` · [`AGENT_PROMPT_I18N_FR.md`](AGENT_PROMPT_I18N_FR.md) |
 | B-077 | UI 言語 tr | **実装済** `/tr/` · [`AGENT_PROMPT_I18N_TR.md`](AGENT_PROMPT_I18N_TR.md) |
+| B-078 | UI 言語 it | **第3波候補 1位** · Fit 74% · 3 バック可変 preset 要検討 · `/it/` · [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) §3-8 |
 | B-038 | バスケ補助線リサーチ | **済**。ハーフ＋Must補助線実装 |
 | B-039 | バスケ スクリーンT字線種 | **済** バスケのみ・紫・T字先端 |
 | B-040 | バスケ 5-Out / Horns テンプレ | Should |

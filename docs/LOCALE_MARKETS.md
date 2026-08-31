@@ -1,8 +1,8 @@
 # 言語市場とローカライズ — 決定ログ
 
-**更新:** 2026-09-01（**es · pt · pl · de · fr · tr 出荷済** · 第2波完了）  
+**更新:** 2026-09-01（**es · pt · pl · de · fr · tr 出荷済** · 第2波完了 · Deep Research **§3-8 it · §3-9 西欧中欧東欧**）  
 **きっかけ:** PH 公開面を英語一本にしたあと、「5大リーグ分（英西伊独仏）の UI 翻訳が要るか」→ 天皇杯同時視聴の壁打ち用に **ボード chrome だけ JA** を開放。  
-**結論:** 市場は広い。ただし **リーグ ≠ 言語**。公開デフォルトは英語。**第1波** es → pt-BR → pl は **出荷済**（2026-08-31）。**第2波** **de · fr · tr 出荷済**（2026-09-01）。イタリア語（it）は流入トリガーまで保留。
+**結論:** 市場は広い。ただし **リーグ ≠ 言語**。公開デフォルトは英語。**第1波** es → pt-BR → pl **出荷済**。**第2波** de · fr · tr **出荷済**。**第3波候補第1位 = it**（Deep Research §3-8 · Fit 74% · 流入トリガーまたは Alesia 系デモまで `messages.it` は切らない）。
 
 関連: [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) §4-3 · [`SPEC.md`](SPEC.md) §9 · [`BACKLOG.md`](BACKLOG.md) B-035–037 · [`FUTSAL_BEACH_RESEARCH.md`](FUTSAL_BEACH_RESEARCH.md) · [`OUTREACH_EU_STREAM.md`](OUTREACH_EU_STREAM.md) §2F
 
@@ -180,7 +180,141 @@ World Population Review 2025 前後。言語推定より国のほうが硬い。
 
 詳細 DM 文面: [`OUTREACH_EU_STREAM.md`](OUTREACH_EU_STREAM.md) §2-D（de は **営業文面を DE 優先** — UI ローカライズとは別）。
 
-**第2波ローカライズ決定:** **de → fr → tr**。it は触らない。
+**第2波ローカライズ決定:** **de → fr → tr**（**2026-09-01 出荷済**）。it は第2波には含めず §3-8 参照。
+
+---
+
+### 3-8. Deep Research — イタリア語圏（it · 2026-09-01）
+
+**出典:** 社内 Deep Research（Calcio 配信 · 既存ツール · シミュレーション）。一次検証前。**推測は推測と書く。**
+
+**位置づけ:** Fit シミュレーション上は **DACH 次点（74%）**。ただし **第2波は de→fr→tr を先に出荷済** — it は **第3波の第1候補**。`messages.it` は **流入トリガー（§4）または top analyst デモ合意** まで作らない。
+
+#### 市場の厚さ
+
+| 軸 | 評価 |
+|----|------|
+| **熱量** | **極めて高** — 欧州最高峰の戦術理論 · Match Analysis 文化（FIGC Coverciano） |
+| **地理** | イタリア本国 + 海外カルチョ・コミュニティ（ディアスポラ） |
+| **スタイル** | **Struttura / Fase** — 3-5-2 可変 · Braccetto · Costruzione dal basso 等の用語が一般層まで浸透 |
+
+#### 代表クリエイター / メディア（調査メモ）
+
+| 名前 | 役割 |
+|------|------|
+| **Alesia** | 試合直後 ~10 分の深い戦術解剖（YouTube） |
+| **MatchStudio / Filippo Lorenzon (YouCoach)** | FIGC 公認講師 · Match Analysis 教育 |
+| **Magicomonta** | FM 戦術再現（Emulazioni Tattiche）· リアル戦術分析 |
+| **SteveRed 等** | ACミラン · インテル · ユヴェ · ローマ特化 Twitch Watchalong |
+
+**コンテンツ:** Twitch 討論 ＋ YouTube の「1 フレーム · 数分」の戦術解説。DrawTactics / スライド / 画面共有ボードが混在。
+
+#### 既存ツールと ZB の隙間
+
+| ツール | 形態 | 不満 / 隙間 |
+|--------|------|-------------|
+| **DrawTactics** | Web | **it 対応** · Voronoi · PNG — 配信中の 1 ストローク描画の軽快さに課題 |
+| **TacticalPad** | PC / モバイル | 年 ~59€ · プロ定番 — 起動の手間 · 有料壁 |
+| **Easy2Coach / CoachPad** | Web / モバイル | 練習メニュー向け — OBS キャプチャに不向き |
+| **Tactical-Board.com / FTB** | Web | 無料だが **広告 · 右下 WM** が配信者の不満 |
+
+**ZB の楔:** ブラウザ即起動 · **Broadcast（B）** · **自ロゴのみ（ZB ロゴなし）** · Pass/Run 線種 — DrawTactics より配信向け · TacticalPad より軽い。
+
+#### 語圏別 Must（UI 以外含む）
+
+| 区分 | 内容 | ZB 現状 |
+|------|------|---------|
+| **UI 用語** | Costruzione dal basso · Braccetto · Tra le linee · Blocco basso/alto · Pressione alta · Sottopunta — hint / LP で自然に | **未ローカライズ**（it UI 未着手） |
+| **3 バック可変** | 守 4-4-2 ↔ 攻 3-2-5 等の **1 クリック切替プリセット** | **未実装** — シーン/フォーメ preset 拡張が it 向け Must（B 層 · 翻訳だけでは足りない） |
+
+#### マーケティングの芯（第3波候補）
+
+| 項目 | 内容 |
+|------|------|
+| **コアメッセージ** | *La lavagna tattica 2D più veloce per i tuoi video e live stream — Zero registrazioni, qualità broadcast* |
+| **アクション 1** | Alesia / MatchStudio 等へ — スライド・ロゴ入りツール不要 · B で番組品質ピッチ |
+| **アクション 2** | **3 バック可変（Braccetto overlap）** 短尺デモ → X / Instagram（インテル · アタランタ等） |
+| **アクション 3** | Twitch 敗因ポジションを **画面共有フリップ** で即示す訴求 |
+
+#### 4 語圏シミュレーション（it 追加 · 2026-09-01）
+
+モデルは §3-7 同型。**ZoneBoard 固有の検証ではない。**
+
+| パラメータ | DACH | **it** | fr | tr |
+|------------|------|--------|-----|-----|
+| 潜在クリエイター規模 | 中〜高 | **高** | 高 | 極めて高 |
+| ニーズ一致度 \(F\) | **95%** | **92%** | 85% | 70% |
+| 乗換障壁 \(S\) | **15%** | **20%** | 30% | 10% |
+| 口コミ \(\beta\) | 1.4 | **1.6** | 1.2 | 1.8 |
+| 推定アクティブシェア | **35–45%** | **30–40%** | 25–35% | 15–25% |
+| シェア最大化確率 | **78%** | **74%** | 62% | 45% |
+
+**解釈:** it は **プロダクト思想（無学習 · ロゴなし · 爆速 2D · Broadcast）** との相性が DACH に次ぐ。DrawTactics からの乗換 \(S=20%\) は fr より低い。**ただし 3 バック可変プリセット無しでは Fit の一部が机上の数値** — 第3波着手前に B 層要件を見る。
+
+**ローカライズ優先度（Fit 順 · 参考）:** de（済）→ **it** → fr（済）→ tr（済）。**実装順は第1/2波の決定を覆さない。**
+
+---
+
+### 3-9. Deep Research — 西欧 · 中欧 · 東欧の戦術熱 × Streaming 需要（2026-09-01）
+
+**出典:** 社内 Deep Research（国別戦術文化 · 配信市場 · ZB シナジー）。一次検証前。**推測は推測と書く。**
+
+**ZB シナジー軸:** OBS 最適化 · ブラウザ即起動 · ロゴなし · 2D 作戦盤 · Broadcast（B）。
+
+#### 戦術熱ランキング（国 · 代理スコア）
+
+| 順位 | 国 | 地域 | スコア | 特徴（要約） |
+|------|-----|------|--------|--------------|
+| 1 | **ドイツ** | 中欧 | 98 | Spielverlagerung · Halbraum · Gegenpressing — 概念体系の本場 |
+| 2 | **イタリア** | 南欧 | 96 | Coverciano · 可変システム · Struttura/Fase |
+| 3 | **スペイン** | 南欧 | 94 | Juego de Posición · **Pizarra** 文化（Quintana 等） |
+| 4 | **イギリス** | 西欧 | 90 | The Athletic · MNF — 商業化された視覚解説 |
+| 5 | **オランダ** | 西欧 | 88 | Totaalvoetbal · Voetbal International |
+| 6 | **ポーランド** | 中欧 | 85 | 若手アナリスト · YouTube/Twitch 成長 |
+| 7 | **フランス** | 西欧 | 82 | Wiloo / Le Coach — Play-by-Play 大衆化 |
+| 8 | **ポルトガル** | 南欧 | 80 | タクティカル・ペリオダイゼーション · 指導者理論 |
+
+**注意:** スコアは調査メモ上の相対評価。**戦術熱 ≠ 配信需要 ≠ UI ローカライズ ROI**（§3-6 の pl 判断と同型）。
+
+#### Streaming 需要（Twitch / YouTube Live · 粗い二段）
+
+| 区分 | 国 | メモ |
+|------|-----|------|
+| **高** | **es** · **UK** · **pl** · **it** · **fr** | Watchalong · LIVE 討論 · 試合直後配信 |
+| **中** | **de** · **nl** | Podcast · Substack · 編集動画 · TV 専門番組比率がやや高い |
+
+**解釈:** de は **戦術熱 1 位**だが **Streaming 出力は中** — それでも **製品 Fit（ローカル · 5 レーン · 軽量）** で第2波 1 位は妥当（§3-7）。UK は **en デフォルト**でカバー · 別ロケール不要。
+
+#### ZB シナジー TOP 4（調査提案 · 語圏）
+
+| 順 | 語圏 | シナジー | 理由（要約） | **ZB 現状** |
+|----|------|----------|--------------|-------------|
+| 1 | **es**（+ LATAM） | **95%** | Twitch 欧州大国 · **Pizarra** が番組名級 · ラテン横展開 | **`/es/` 出荷済**（第1波） |
+| 2 | **en**（UK+Global） | **90%** | Watchalong 世界最大 · PL コンテンツパワー | **デフォルト EN** |
+| 3 | **de**（DACH） | **88%** | Taktik-Nerd · GDPR/ローカル · **5 レーン** | **`/de/` 出荷済**（第2波） |
+| 4 | **pl** | **82%** | Kanał Sportowy 等 · 競合 it 薄 · CEE ハブ | **`/pl/` 出荷済**（第1波） |
+
+**第1波 TOP4 は 4/4 カバー**（en + es + de + pl）。**pt** は本調査 TOP4 外だが **ブラジル/LATAM**（§3-1 · 第1波）— es とセット。**fr · tr** は §3-7 の別 Deep Research（配信ニッチ · Kadro）で第2波出荷済。
+
+#### 調査提案ロードマップ vs 実装（2026-09-01）
+
+| 調査 Phase | 言語 | 実装 |
+|------------|------|------|
+| 1 | en | **済** — 公開デフォルト |
+| 2 | es | **済** — 第1波 |
+| 3 | de | **済** — 第2波（調査順より pl/fr/tr が先に出たが de 自体は出荷済） |
+| 4 | it | **未** — 第3波候補 §3-8 |
+| 5 | pl | **済** — 第1波（調査 Phase 5 だが **niche 感謝度**で第1波 3 位に前倒し · §3-6） |
+
+**結論:** 西欧中欧東欧調査の **シナジー TOP4 は既に UI 面でほぼ充足**（it のみ未着手）。次のレバーは **it 第3波** ＋ **B 層**（3 バック可変 · キット/フォーメ）— C（chrome）だけ増やさない。
+
+#### 参照 URL（2026-09-01）
+
+- [La Pizarra de Quintana — Radio MARCA](https://www.youtube.com/watch?v=eQpYslk0Pe0)
+- [Ecos del Balón — Miguel Quintana](http://www.ecosdelbalon.com/2017/10/videos-youtube-dibujando-ecos-miguel-quintana/)
+- [Kanał Sportowy — Poland](https://www.youtube.com/@Kanal_Sportowy/streams)
+- [r/footballtactics — channel recommendations](https://www.reddit.com/r/footballtactics/comments/1udcum2/recommendations_for_best_youtube_channel_for/)
+- [Lezione di Match Analysis — FIGC/YouCoach](https://www.youtube.com/watch?v=_vfi4hg4mZ4)
 
 ---
 
@@ -188,7 +322,7 @@ World Population Review 2025 前後。言語推定より国のほうが硬い。
 
 1. **公開デフォルトは英語。** `/` と静的ドキュメントは EN。Accept-Language で JA に飛ばさない（SPEC 旧稿を廃止）。
 2. **同じ LP URL に第二言語を積まない。** 公開面を足すときは `/es/` `/pt/` `/pl/` **`/de/` `/fr/` `/tr/`** のように面を分ける。**ボード chrome の JA** は同じ `/board` 上の prefs / `?lang=`（§1）で足りる。`/ja/` のフル LP はまだ切らない。
-3. **UI ローカライズは2波。** **第1波（済）:** es → pt-BR → pl。**第2波（次）:** **de → fr → tr**（§3-7 Deep Research）。5大リーグ順ではない。it は流入トリガーまで。
+3. **UI ローカライズは2波＋候補。** **第1波（済）:** es → pt-BR → pl。**第2波（済）:** de → fr → tr。**第3波候補:** **it**（§3-8 · 流入トリガーまで）。5大リーグ順ではない。
 4. **日本語**はボード chrome で Settings / deep link 可。PH・LP には出さない。フル `/ja/` LP は流入を見てから。
 5. **5大リーグ向けに先にやるなら C ではなく B。** キットとフォーメ。翻訳の代用にしない。**選手ロスター DB も C の代用にしない**（ユーザ入力）。
 6. **決済・税・価格は C と同時にやらなくてよい。** 英語のまま欧州課金は可。現地通貨は言語面とは別チケット。
@@ -200,9 +334,9 @@ World Population Review 2025 前後。言語推定より国のほうが硬い。
 - フィードバックや問い合わせが特定言語で続く
 - 英語 UI のまま使われているが、How-to が読まれない国が厚い
 
-第2波 **完了**（de · fr · tr）。**it** の `messages` は触らない。
+第2波 **完了**（de · fr · tr）。**第3波候補 = it**（§3-8）— **`messages.it` は流入トリガーまたは analyst デモ合意まで作らない**。着手前に **3 バック可変プリセット**（B 層）要否を確認。
 
-既存メモ: [`BACKLOG.md`](BACKLOG.md) B-035–037 · B-074（pl **済**）· **B-075–077（de/fr/tr 済）**。2026-09-01: 第1波 · 第2波 **出荷完了**。
+既存メモ: [`BACKLOG.md`](BACKLOG.md) B-035–037 · B-074（pl **済**）· **B-075–077（de/fr/tr 済）** · **B-078（it 候補）**。2026-09-01: 第1波 · 第2波 **出荷完了**。
 
 ---
 
@@ -214,8 +348,10 @@ YouTube 国別: World Population Review *YouTube Users by Country*（2025 推計
 
 SaaS の「英語で出して、需要が出てから1言語ずつ」は一般論。ZoneBoard 固有の検証ではない。
 
-Deep Research（2026-08-31）参照 URL:
+Deep Research（2026-08-31 · 2026-09-01）参照:
 
 - [Breaking the Lines — tactics YouTubers](https://breakingthelines.com/@btl/some-tactics-obsessed-football-youtubers-to-watch)
 - [YouTube — Wiloo 系](https://www.youtube.com/watch?v=eiNQziewt4s) · [Le Coach 系](https://www.youtube.com/watch?v=qhJtEz1DdSg) · [DACH 戦術](https://www.youtube.com/watch?v=YxK4j9XujzY)
 - [r/footballtactics — channel recommendations](https://www.reddit.com/r/footballtactics/comments/1udcum2/recommendations_for_best_youtube_channel_for/)
+- it（2026-09-01）: Alesia · MatchStudio/YouCoach · Magicomonta · DrawTactics — 社内 Deep Research（§3-8）
+- 西欧中欧東欧（2026-09-01）: 戦術熱国別 · Streaming 二段 · ZB シナジー TOP4 — 社内 Deep Research（§3-9）
