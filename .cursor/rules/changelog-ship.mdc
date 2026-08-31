@@ -1,0 +1,24 @@
+---
+description: Public /updates changelog — when and how to update changelog.ts
+globs:
+  - src/site/changelog.ts
+  - docs/CHANGELOG_PUBLIC.md
+  - public/updates/**
+---
+
+# Public changelog (/updates)
+
+**Policy:** [`docs/CHANGELOG_PUBLIC.md`](../../docs/CHANGELOG_PUBLIC.md)
+
+## When to update (required)
+
+Update `src/site/changelog.ts` when shipping user-visible Board, Export/capture, Match/Scenes, Plan, or Materials/Guide **product** changes.
+
+**Skip:** marketing (PH badge), copy-only, docs/backlog, hit-test tweaks, routing fixes.
+
+## How
+
+1. Add entry at **top** of `entries` (English, past tense). One entry = one user-visible change; batch by ship, not per commit.
+2. Set `updatedAt` to ship date.
+3. Run `npm run site:pages`.
+4. Commit `changelog.ts` and `public/updates/` together.
