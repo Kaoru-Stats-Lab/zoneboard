@@ -309,6 +309,31 @@ HT で「複数枚取込 → 配置 → **誰か当て** → 解説」が一本�
 
 実装プロンプト: [`AGENT_PROMPT_TOOL_MODE.md`](AGENT_PROMPT_TOOL_MODE.md)
 
+### 決定ログ — 縦ピッチの画角プリセット（2026-08-31 · **実装済**）
+
+**縦サッカーボードでは、局面タブの画角（ズーム）プリセットを横用のまま流用しない。**
+
+| 現状の問題 | 原因 |
+|---|---|
+| 「全体」以外のプリセットが **横ピッチのゴール方向**（左＝攻撃三方等）前提 | `VIEW_PRESETS` の `cx/cy` は横世界（長さ＝x）で定義 |
+| サムネがすべて **横向き** | `ViewportPresetGrid` が `SoccerLandscapeBody` 固定（[`UI_UX.md`](UI_UX.md) §4-5 は横ボード向け） |
+| 縦フルで横長キャンバスに **左右にランオフ緑** | `fitField` の contain は仕様どおり（[`VERTICAL_PITCH.md`](VERTICAL_PITCH.md) §5）。画角バグではない |
+| プリセット押下で **意図と違う場所にズーム** | `applyViewPreset` が orientation 非対応で `VIEW_PRESETS[id]` をそのまま適用 |
+
+**座標（縦サッカー · 正本）:** 正規化 0–1 は **その向きのピッチ矩形**。縦では **x＝タッチライン幅 · y＝ゴール↔ゴール（長さ）**（`drawBoard` `worldToPitch` / [`VERTICAL_PITCH.md`](VERTICAL_PITCH.md) §3）。
+
+**やる（Phase 1 · サッカー縦のみ）:**
+
+1. **orientation 対応のプリセット解決** — `applyViewPreset` / `viewportMatchesPreset` が `pitchOrientation` を見る。横は既存 `VIEW_PRESETS` 不変
+2. **縦用プリセット表** — 横の語彙を 90° 回した意味に再定義（例: FT左 → 上ゴール側三方 · CK左下 → 下ゴール左コーナー）。`viewportCoveringRect` 系は縦用に **別 id または別矩形**で定義し、ゴール裏ピンを **top/bottom** に
+3. **`ViewportPresetGrid`** — `pitchOrientation === "portrait"` かつ soccer のとき `SoccerPortraitBody` + 縦 viewBox（46×72）のファインダー。ラベルは空間（上／下／左タッチ等）· Short + `title`
+4. **向き切替時** — 既存どおり `resetAllScenesForOrientationChange` で `DEFAULT_VIEWPORT`（維持）。横局面の viewport を縦に持ち込まない
+5. **回帰** — 横ボード・バスケ・配信 16:9 contain は変えない
+
+**Later（本プロンプト外）:** 縦の `hideHalf`（left/right ラベルが空間とズレる）· Export 画角プリセットの縦対応 · 編集窓いっぱいに自動ズーム（contain 方針と要議論）
+
+実装プロンプト: [`AGENT_PROMPT_PORTRAIT_VIEWPORT.md`](AGENT_PROMPT_PORTRAIT_VIEWPORT.md)
+
 ### 決定ログ — 局面ごとの画角（2026-08-25）
 
 **画角の正本は `scene.viewport`。** 局面＝配置＋描画＋カメラの再現パッケージ。CK 局面に切り替えると CK フレームに戻る。

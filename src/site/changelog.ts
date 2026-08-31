@@ -20,6 +20,13 @@ export const CHANGELOG = {
     "Shipped changes only, in past tense. Upcoming work stays off this page.",
   entries: [
     {
+      id: "portrait-viewport-presets-20260831",
+      date: "2026-08-31",
+      type: "improve",
+      title: "Portrait pitch viewport presets and thumbnails",
+      body: "On portrait soccer boards, scene camera presets now zoom to the correct goal, corner, and touchline areas. Thumbnails use a vertical pitch with a finder overlay. Landscape boards and other sports are unchanged.",
+    },
+    {
       id: "tool-mode-select-after-draw-20260831",
       date: "2026-08-31",
       type: "improve",
