@@ -5,7 +5,7 @@ import type { Plugin } from "vite";
 /**
  * Cloudflare Pages was 308-redirecting `/board` → `/` when only a
  * `_redirects` rewrite to `/index.html` existed. Emitting real
- * `board/index.html` and locale LP shells (`es`/`pt`/`pl`/`de`/`fr`)
+ * `board/index.html` and locale LP shells (`es`/`pt`/`pl`/`de`/`fr`/`tr`)
  * (same SPA shell) makes hard
  * links and locale LPs work.
  */
@@ -15,7 +15,7 @@ export function boardSpaShellPlugin(): Plugin {
     async closeBundle() {
       const outDir = path.resolve("dist");
       const indexHtml = path.join(outDir, "index.html");
-      for (const sub of ["board", "es", "pt", "pl", "de", "fr"]) {
+      for (const sub of ["board", "es", "pt", "pl", "de", "fr", "tr"]) {
         const dir = path.join(outDir, sub);
         await mkdir(dir, { recursive: true });
         await copyFile(indexHtml, path.join(dir, "index.html"));

@@ -26,6 +26,10 @@
 /fr/      /fr/index.html  200
 /fr/board /board/?lang=fr   301
 /fr/board/ /board/?lang=fr  301
+/tr       /tr/    301
+/tr/      /tr/index.html  200
+/tr/board /board/?lang=tr   301
+/tr/board/ /board/?lang=tr  301
 /about    /about/    301
 /guide    /guide/    301
 /faq      /faq/      301

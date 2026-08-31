@@ -13,7 +13,8 @@ export function isLocale(value: unknown): value is Locale {
     value === "pt" ||
     value === "pl" ||
     value === "de" ||
-    value === "fr"
+    value === "fr" ||
+    value === "tr"
   );
 }
 
@@ -32,5 +33,6 @@ export function localeFromSearchParam(raw: string | null): Locale | null {
   if (v === "pl") return "pl";
   if (v === "de") return "de";
   if (v === "fr") return "fr";
+  if (v === "tr") return "tr";
   return null;
 }

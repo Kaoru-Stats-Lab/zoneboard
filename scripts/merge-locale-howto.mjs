@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Merge docs/i18n-draft/<locale>/howTo.<locale>.json into src/i18n/howTo.ts
- * Usage: node scripts/merge-locale-howto.mjs pt|pl|de|fr
+ * Usage: node scripts/merge-locale-howto.mjs pt|pl|de|fr|tr
  */
 import fs from "fs";
 import path from "path";
@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 
 const locale = process.argv[2];
 if (!locale || !/^[a-z]{2}$/.test(locale)) {
-  console.error("Usage: node scripts/merge-locale-howto.mjs <pt|pl|de|fr>");
+  console.error("Usage: node scripts/merge-locale-howto.mjs <pt|pl|de|fr|tr>");
   process.exit(1);
 }
 

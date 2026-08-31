@@ -659,4 +659,96 @@ const fr: HowToDoc = {
   ],
 };
 
-export const HOW_TO: Record<Locale, HowToDoc> = { ja, en, es, pt, pl, de, fr };
+const tr: HowToDoc = {
+  intro: "Yayın modu (B) araçları gizler. Figürleri klavyeyle hareket ettirirsin. Yayına girmeden önce kısayolları burada test et — aynı tuşlar yayında da çalışır. Çim üzerinde başlangıç rehberi yoktur. Bu panel ve açık rehber kullanım kılavuzundur.",
+  sections: [
+    {
+      heading: "Neden klavye?",
+      paragraphs: [
+        "Seyirciler sahayı görmek ister. Eğer yan panel açık kalırsa, taktiği değil menüleri görürler. Yayın modu (B) araçları gizler. Geriye sadece seçmek, hareket ettirmek ve döndürmek kalır.",
+        "Tüm kısayolları bilmen gerekmez. Bazıları tüm hattı kaydırır. Bazıları sadece ev sahibi takımı seçer. Bazıları ise iki şekli karşılaştırmak için sahneyi kopyalar. Sadece kullandığın tuşları öğrenmen yeterli.",
+      ],
+    },
+    {
+      heading: "Figürleri seçmek",
+      paragraphs: [
+        "Önce seçimi yap — bir savunma hattı, markaj bloğu veya sadece ev sahibi — ve sonra hareket ettir. Eğer önce hareket ettirmeye başlarsan, figürleri tek tek sürüklemiş olursun.",
+        "Boş çim üzerinde sürükleyerek bir kutu oluştur ve içindeki figürleri seç. Figürlerin STP gibi rol etiketleri yoktur, bu yüzden savunma hattının etrafını kutuyla çiz. Sürüklerken Ctrl veya Cmd tuşunu basılı tutarak mevcut seçime ekleme yapabilirsin.",
+        "Neredeyse hiç hareket etmeden yapılan küçük bir tıklama seçimi temizler. Boş çime Ctrl veya Cmd basılıyken tıklamak ise seçimi temizlemez.",
+      ],
+      keys: [
+        { combo: "Click", meaning: "Bir figürü seç" },
+        { combo: "Ctrl/Cmd+Click", meaning: "Ekle veya çıkar" },
+        { combo: "Shift+Click", meaning: "Ekle (diğerlerini tut)" },
+        { combo: "Drag empty grass", meaning: "Kutuyla seç" },
+        { combo: "Alt+1 / Alt+2", meaning: "Tüm Ev / Tüm Deplasman" },
+        { combo: "Ctrl/Cmd+A", meaning: "Görünür tüm figürleri seç" },
+        { combo: "Esc", meaning: "Seçimi temizle" },
+      ],
+    },
+    {
+      heading: "Seçimi hareket ettirmek",
+      paragraphs: [
+        "Seçili figürlerden herhangi birini sürüklediğinde tüm grup birlikte hareket eder. Bunu hattı çıkarmak, prese kalkmak veya markajları koruyarak kaymak için kullan. Birden fazla figür seçiliyken bırakmak formaları değiştirmez. Değişiklik sadece tek bir figür için çalışır.",
+        "Yön tuşları küçük adımlarla hareket ettirir. Shift + yön tuşu daha büyük bir adım atar. Yayında \"yarım adım daha\" dediğin zamanlarda bunu kullan.",
+        "R sadece baktığı yönü değiştirir. Konumlar aynı kalır. Bir bloğu hizalamak için bunu kullan. Q / E tüm şekli seçimin merkezine göre döndürür. İki veya daha fazla figür seçin.",
+        "- figürleri birbirine yaklaştırır. = onları uzaklaştırır. Seçimin merkezi pek hareket etmez — sıkı veya geniş bir savunma hattı için idealdir.",
+        "Shift+H baktığı yön de dahil sağ-sol olarak aynalar. Shift+V alt-üst olarak çevirir. Ctrl/Cmd+D figürleri kopyalar; kopyalar seçili kalır, böylece eşleştirmek için hemen kaydırabilirsin.",
+      ],
+      keys: [
+        { combo: "Drag a selected piece", meaning: "Tüm seçimi hareket ettir" },
+        { combo: "Arrow / Shift+Arrow", meaning: "Kalkındır (kısa / uzun)" },
+        { combo: "R", meaning: "Sadece yönü +45°" },
+        { combo: "Q / E", meaning: "Şekli merkez etrafında döndür" },
+        { combo: "- / =", meaning: "Yaklaştır / uzaklaştır" },
+        { combo: "Shift+H / Shift+V", meaning: "Yatay çevir / Dikey çevir" },
+        { combo: "Ctrl/Cmd+D", meaning: "Çoğalt (kopyalar seçili kalır)" },
+        { combo: "Ctrl/Cmd+Shift+Arrow", meaning: "Kenara veya eksene hizala" },
+        { combo: "Alt+Shift+Arrow", meaning: "Eşit aralıkla (Yatay / Dikey)" },
+        { combo: "Delete", meaning: "Seçili figürleri sil" },
+      ],
+    },
+    {
+      heading: "Yayından önce çizmek",
+      paragraphs: [
+        "Yayından önce araç çubuğunu kullanarak Pas, Koşu, Kalem ve Bağlantı araçlarını kullan. Pas topun yoludur — pas, orta veya şut. Koşu topsuz harekettir. Dripling ise oyuncunun topla hareket etmesidir.",
+        "Kalem, Pas veya Koşu olmayan serbest bir çizgidir — bir blok çizgisi veya koridor kenarı. Düz bir çizgi çekmek için Kalem ile sürüklerken Shift tuşuna basılı tut. Daireler ve kavisler Shift olmadan serbest çizilir. Bağlantı figürleri birbirine bağlar; figürleri hareket ettirdiğinde çizgi de onları izler.",
+      ],
+      keys: [
+        { combo: "Pass", meaning: "Top yolu (kesik çizgi)" },
+        { combo: "Run / Dribble", meaning: "Koşu veya dripling" },
+        { combo: "Pen", meaning: "Serbest çizgi" },
+        { combo: "Link", meaning: "Figür bağlantısı (izler)" },
+        { combo: "Shift+Pen drag", meaning: "A'dan B'ye düz çizgi" },
+        { combo: "Zone + Shift", meaning: "Daireye yakın bölge" },
+      ],
+    },
+    {
+      heading: "Kamerayı hareket ettirmek",
+      paragraphs: [
+        "Bir duran topa yaklaş veya yarı sahanın tamamını gör — Ctrl veya Cmd + tekerlek, imlece doğru yakınlaştırır. Boşluk tuşuna basılı tutarak sürüklemek görünümü kaydırır. Alt + sürükle de aynı işi görür.",
+      ],
+      keys: [
+        { combo: "Ctrl/Cmd+Wheel", meaning: "İmleç konumuna yakınlaştır" },
+        { combo: "Space+Drag", meaning: "Görünümü kaydır" },
+        { combo: "Alt+Drag", meaning: "Kaydır (alternatif)" },
+      ],
+    },
+    {
+      heading: "Yayın öncesi ve sırası",
+      paragraphs: [
+        "Başlama vuruşundan önce bir hattı ileri alıp geri getirmeyi veya sadece ev sahibini seçip yaklaştırmayı pratik et. O zaman bu tuşlar yayın modunda da çalışacaktır. Yayın moduna geçmek için B'ye bas. Yayındayken bu rehberi (? / F1) açma — ekranda görünür.",
+        "Sahneleri [ ] ile değiştir. Bir korneri ve karşı pres pozisyonunu tek bir karmaşık çizim yerine ayrı sahnelere yerleştir.",
+        "Bir hareketi denemek ama orijinalini korumak için kaydırmadan önce sahneyi kopyala. İlk sahne kalır — [ ] ile geri dönebilirsin. Yayındayken sağ alttaki Çoğalt butonunu kullan. Başlangıca dön diye bir buton yoktur. Orijinali temiz tutmanın yolu sahneyi kopyalamaktır.",
+      ],
+      keys: [
+        { combo: "B", meaning: "Yayın modunu aç/kapat" },
+        { combo: "[ ] or PageUp/PageDown", meaning: "Sahneleri değiştir" },
+        { combo: "Duplicate (Scenes or bottom-right)", meaning: "Sahneyi kopyala, bir hareket dene" },
+        { combo: "? or F1", meaning: "Nasıl kullanılır (yayında olmaz)" },
+      ],
+    },
+  ],
+};
+
+export const HOW_TO: Record<Locale, HowToDoc> = { ja, en, es, pt, pl, de, fr, tr };

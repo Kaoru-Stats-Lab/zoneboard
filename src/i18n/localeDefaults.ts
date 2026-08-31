@@ -41,6 +41,7 @@ export function defaultSceneName(
   if (locale === "pl") return `Scena ${index}`;
   if (locale === "de") return `Szene ${index}`;
   if (locale === "fr") return `Scène ${index}`;
+  if (locale === "tr") return `Sahne ${index}`;
   return `Scene ${index}`;
 }
 
@@ -54,5 +55,6 @@ export function defaultBoardTitle(
   if (locale === "pl") return `Plansza ${index}`;
   if (locale === "de") return `Taktikboard ${index}`;
   if (locale === "fr") return `Tableau ${index}`;
+  if (locale === "tr") return `Tahta ${index}`;
   return `Board ${index}`;
 }
