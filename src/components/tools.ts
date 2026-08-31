@@ -37,3 +37,22 @@ export function toolItemsForSport(sport: SportId | undefined): ToolItem[] {
     ...TOOL_ITEMS.slice(idx + 1),
   ];
 }
+
+const TOOL_LABEL_KEYS: Record<ToolId, MessageKey> = {
+  select: "select",
+  "piece-home": "pieceHome",
+  "piece-away": "pieceAway",
+  ball: "ball",
+  pass: "pass",
+  run: "run",
+  dribble: "dribble",
+  screen: "screen",
+  zone: "zone",
+  pen: "pen",
+  link: "link",
+  text: "text",
+};
+
+export function toolMessageKey(tool: ToolId): MessageKey {
+  return TOOL_LABEL_KEYS[tool] ?? "select";
+}

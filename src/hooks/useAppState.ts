@@ -139,7 +139,15 @@ export function useAppState() {
   const [watermark, setWatermark] = useState<WatermarkSettings>(() =>
     loadWatermark(),
   );
-  const [tool, setTool] = useState<ToolId>("select");
+  const [tool, setToolState] = useState<ToolId>("select");
+  const setTool = useCallback((id: ToolId) => {
+    setToolState(id);
+  }, []);
+
+  /** 描画・リンク確定後に選択へ戻す（ボール配置は対象外） */
+  const finishDrawAction = useCallback(() => {
+    setToolState("select");
+  }, []);
   const [selectedPieceIds, setSelectedPieceIds] = useState<string[]>([]);
   const selectedPieceId =
     selectedPieceIds[selectedPieceIds.length - 1] ?? null;
@@ -528,7 +536,9 @@ export function useAppState() {
         );
       });
       setSelectedPieceId(null);
-      setTool((t) => (t === "screen" && sport !== "basketball" ? "select" : t));
+      setToolState((t) =>
+        t === "screen" && sport !== "basketball" ? "select" : t,
+      );
     },
     [locale, updateBoard],
   );
@@ -1887,6 +1897,7 @@ export function useAppState() {
     watermark,
     tool,
     setTool,
+    finishDrawAction,
     selectedPieceId,
     selectedPieceIds,
     setSelectedPieceId,

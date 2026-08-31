@@ -1221,9 +1221,47 @@ button:disabled {
   border-radius: var(--zb-radius);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
   max-height: calc(100% - 16px);
-  overflow-y: auto;
+  overflow: hidden;
   touch-action: none;
   backdrop-filter: blur(8px);
+}
+
+.tool-rail-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 6px 6px;
+  border-bottom: 1px solid var(--zb-border);
+  line-height: 1.2;
+}
+
+.tool-rail-indicator-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--zb-ink-muted);
+}
+
+.tool-rail-indicator-value {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--zb-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tool-rail-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.tool-rail-btn--pinned {
+  flex-shrink: 0;
 }
 
 .tool-rail-grip {
@@ -1281,6 +1319,32 @@ button:disabled {
   background: var(--tool-color, #2a2b2c);
   border-color: var(--tool-color, #2a2b2c);
   color: #fff;
+}
+
+.tool-rail-btn[data-tool="link"].active {
+  border-left-width: 5px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 0 0 1px color-mix(in srgb, var(--zb-aogai) 55%, transparent);
+  background: color-mix(in srgb, var(--tool-color, #404040) 55%, #6b7a8f);
+  color: #fff;
+}
+
+.link-draft-status {
+  position: absolute;
+  z-index: 4;
+  left: 72px;
+  top: 10px;
+  max-width: min(280px, calc(100% - 80px));
+  padding: 6px 10px;
+  border-radius: var(--zb-radius);
+  background: color-mix(in srgb, var(--zb-ground) 90%, transparent);
+  border: 1px solid var(--zb-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  font-size: 0.78rem;
+  color: var(--zb-ink);
+  pointer-events: none;
+  backdrop-filter: blur(6px);
 }
 
 .tool-rail-undo {

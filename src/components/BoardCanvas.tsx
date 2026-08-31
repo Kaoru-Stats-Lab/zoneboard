@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -275,6 +276,16 @@ export function BoardCanvas({
     }
   }, [state.tool]);
 
+  const finishLinkChain = useCallback(
+    (ids: string[]) => {
+      state.addLink(ids);
+      setLinkDraftIds([]);
+      setLinkHoverWorld(null);
+      state.finishDrawAction();
+    },
+    [state],
+  );
+
   useEffect(() => {
     if (state.tool !== "link" || state.broadcast) return;
     const onKey = (e: KeyboardEvent) => {
@@ -296,14 +307,12 @@ export function BoardCanvas({
       }
       if (e.key === "Enter" && linkDraftIds.length >= 2) {
         e.preventDefault();
-        state.addLink(linkDraftIds);
-        setLinkDraftIds([]);
-        setLinkHoverWorld(null);
+        finishLinkChain(linkDraftIds);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [state.tool, state.broadcast, state.addLink, linkDraftIds]);
+  }, [state.tool, state.broadcast, finishLinkChain, linkDraftIds]);
 
   useEffect(() => {
     if (!board) return;
@@ -650,6 +659,7 @@ export function BoardCanvas({
     const session = textEditRef.current;
     if (!session) return;
     const trimmed = value.trim();
+    const fromTextTool = state.tool === "text";
     if (session.objectId) {
       state.updateText(session.objectId, trimmed);
       state.setSelectedObjectId(trimmed ? session.objectId : null);
@@ -657,6 +667,7 @@ export function BoardCanvas({
       state.addText(session.worldX, session.worldY, trimmed);
     }
     setTextEdit(null);
+    if (fromTextTool) state.finishDrawAction();
   };
 
   const cancelTextEdit = () => {
@@ -1015,9 +1026,11 @@ export function BoardCanvas({
       if (piece) {
         const last = linkDraftIds[linkDraftIds.length - 1];
         if (last === piece.id) {
-          if (linkDraftIds.length >= 2) state.addLink(linkDraftIds);
-          setLinkDraftIds([]);
-          setLinkHoverWorld(null);
+          if (linkDraftIds.length >= 2) finishLinkChain(linkDraftIds);
+          else {
+            setLinkDraftIds([]);
+            setLinkHoverWorld(null);
+          }
           paint();
           return;
         }
@@ -1034,10 +1047,11 @@ export function BoardCanvas({
         return;
       }
       if (linkDraftIds.length >= 2) {
-        state.addLink(linkDraftIds);
+        finishLinkChain(linkDraftIds);
+      } else {
+        setLinkDraftIds([]);
+        setLinkHoverWorld(null);
       }
-      setLinkDraftIds([]);
-      setLinkHoverWorld(null);
       paint();
       return;
     }
@@ -1312,6 +1326,7 @@ export function BoardCanvas({
         facing,
       );
       state.setSelectedPieceId(d.id);
+      state.finishDrawAction();
       return;
     }
 
@@ -1324,6 +1339,7 @@ export function BoardCanvas({
       }
       if (d.points.length >= 2) {
         state.addLine(d.kind, smoothLinePath(d.points));
+        state.finishDrawAction();
       }
     } else if (d.mode === "zone") {
       const corner = zoneDragCorner(d.x0, d.y0, world.x, world.y, e.shiftKey);
@@ -1331,7 +1347,10 @@ export function BoardCanvas({
       const y = Math.min(d.y0, corner.y);
       const w = Math.abs(corner.x - d.x0);
       const h = Math.abs(corner.y - d.y0);
-      if (w > 0.01 && h > 0.01) state.addZone(x, y, w, h);
+      if (w > 0.01 && h > 0.01) {
+        state.addZone(x, y, w, h);
+        state.finishDrawAction();
+      }
     } else if (d.mode === "pen" && d.points) {
       if (d.straight) {
         d.points.length = 0;
@@ -1345,6 +1364,7 @@ export function BoardCanvas({
         Math.hypot(end.x - d.x0, end.y - d.y0) >= 0.008
       ) {
         state.addPen(d.points);
+        state.finishDrawAction();
       }
     }
   };
@@ -1388,6 +1408,11 @@ export function BoardCanvas({
         onDoubleClick={onDoubleClick}
         onContextMenu={onContextMenu}
       />
+      {state.tool === "link" && linkDraftIds.length > 0 && (
+        <div className="link-draft-status" role="status">
+          {t("linkDraftStatus").replace("{n}", String(linkDraftIds.length))}
+        </div>
+      )}
       {textEdit && textOverlay && (
         <CanvasTextEditor
           board={board}

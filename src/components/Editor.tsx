@@ -8,6 +8,7 @@ import {
 } from "../canvas/exportPng";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
+import { toolMessageKey } from "./tools";
 import { messages } from "../i18n/messages";
 import type { SportId } from "../models/types";
 
@@ -373,23 +374,7 @@ export function Editor({ state }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [state, howToOpen]);
 
-  const toolLabel = (() => {
-    const map: Record<string, MessageKey> = {
-      select: "select",
-      "piece-home": "pieceHome",
-      "piece-away": "pieceAway",
-      ball: "ball",
-      pass: "pass",
-      run: "run",
-      dribble: "dribble",
-      screen: "screen",
-      zone: "zone",
-      pen: "pen",
-      link: "link",
-      text: "text",
-    };
-    return t(map[state.tool] ?? "select");
-  })();
+  const toolLabel = t(toolMessageKey(state.tool));
 
   const sceneFullLabel = state.scene?.label?.trim() ?? "";
   const sceneIndex =

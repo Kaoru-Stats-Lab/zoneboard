@@ -407,6 +407,7 @@ export const messages = {
     link: "リンク",
     linkHint:
       "リンク＝駒をクリックして直線でつなぐ。同じ駒・空き地・Enter で確定。Esc で取消",
+    linkDraftStatus: "リンク中: {n}駒 · Escで取消",
     text: "テキスト",
     textPlaceholder: "ラベルを入力…",
     textEditHint: "ダブルクリックで再編集",
@@ -942,6 +943,7 @@ export const messages = {
     link: "Link",
     linkHint:
       "Link = click pieces to join with a line. Same piece, empty grass, or Enter to finish. Esc cancels",
+    linkDraftStatus: "Linking: {n} pieces · Esc cancel",
     text: "Text",
     textPlaceholder: "High press",
     textEditHint: "Double-click to edit",

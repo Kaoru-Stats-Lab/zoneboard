@@ -15,7 +15,7 @@ import {
   type ToolRailPosition,
 } from "../models/types";
 import { loadPrefs, savePrefs } from "../storage/persist";
-import { toolItemsForSport } from "./tools";
+import { toolItemsForSport, toolMessageKey } from "./tools";
 
 const STAGE_MARGIN = 8;
 
@@ -154,6 +154,31 @@ export function ToolRail({ state, t }: Props) {
 
   if (state.broadcast) return null;
 
+  const allTools = toolItemsForSport(state.board?.sport);
+  const selectTool = allTools.find((tool) => tool.id === "select");
+  const scrollTools = allTools.filter((tool) => tool.id !== "select");
+  const currentToolLabel = t(toolMessageKey(state.tool));
+
+  const renderToolBtn = (tool: (typeof allTools)[number]) => {
+    const color = toolColorForBoard(state.board, tool.id);
+    const active = state.tool === tool.id;
+    return (
+      <button
+        key={tool.id}
+        type="button"
+        data-tool={tool.id}
+        className={`tool-rail-btn${active ? " active" : ""}${
+          tool.id === "select" ? " tool-rail-btn--pinned" : ""
+        }`}
+        title={tool.hint ? t(tool.hint) : t(tool.key)}
+        style={{ "--tool-color": color } as CSSProperties}
+        onClick={() => state.setTool(tool.id)}
+      >
+        {t(tool.short ?? tool.key)}
+      </button>
+    );
+  };
+
   const railStyle: CSSProperties | undefined =
     offset != null
       ? { left: offset.left, top: offset.top, transform: "none" }
@@ -179,22 +204,17 @@ export function ToolRail({ state, t }: Props) {
       >
         <span className="tool-rail-grip-bars" aria-hidden />
       </button>
-      {toolItemsForSport(state.board?.sport).map((tool) => {
-        const color = toolColorForBoard(state.board, tool.id);
-        const active = state.tool === tool.id;
-        return (
-          <button
-            key={tool.id}
-            type="button"
-            className={`tool-rail-btn${active ? " active" : ""}`}
-            title={tool.hint ? t(tool.hint) : t(tool.key)}
-            style={{ "--tool-color": color } as CSSProperties}
-            onClick={() => state.setTool(tool.id)}
-          >
-            {t(tool.short ?? tool.key)}
-          </button>
-        );
-      })}
+      <div
+        className="tool-rail-indicator"
+        title={`${t("toolIndicator")}: ${currentToolLabel}`}
+      >
+        <span className="tool-rail-indicator-label">{t("toolIndicator")}</span>
+        <span className="tool-rail-indicator-value">{currentToolLabel}</span>
+      </div>
+      {selectTool ? renderToolBtn(selectTool) : null}
+      <div className="tool-rail-scroll">
+        {scrollTools.map((tool) => renderToolBtn(tool))}
+      </div>
       <button
         type="button"
         className="tool-rail-wipe"

@@ -44,6 +44,7 @@ export function BroadcastToolMenu({ state, t, toolLabel }: Props) {
                 key={tool.id}
                 type="button"
                 role="menuitem"
+                data-tool={tool.id}
                 className={`tool-rail-btn${active ? " active" : ""}`}
                 style={{ "--tool-color": color } as CSSProperties}
                 title={tool.hint ? t(tool.hint) : t(tool.key)}
