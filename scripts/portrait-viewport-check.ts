@@ -5,6 +5,7 @@
 import {
   PORTRAIT_SOCCER_VIEW_PRESETS,
   VIEW_PRESETS,
+  cameraNormRect,
   resolveViewPreset,
   viewportMatchesPreset,
   viewPresetsForSport,
@@ -17,16 +18,24 @@ function fail(msg: string) {
 }
 
 const ftTop = resolveViewPreset("soccer", "portrait", "final-third-left");
-if (ftTop.cy > 0.28 || ftTop.cy < 0.1) {
-  fail(`portrait final-third-left cy≈0.17, got cy=${ftTop.cy}`);
+const ftTopCam = cameraNormRect(ftTop);
+if (ftTop.cy > 0.22 || ftTop.cy < 0.1) {
+  fail(`portrait final-third-left cy≈0.15, got cy=${ftTop.cy}`);
 }
 if (Math.abs(ftTop.cx - 0.5) > 0.02) {
   fail(`portrait final-third-left cx should be centered, got ${ftTop.cx}`);
 }
+if (ftTopCam.y > 0.02 || ftTopCam.y + ftTopCam.h < 0.28) {
+  fail(`portrait final-third-left should cover top third, got y=${ftTopCam.y} h=${ftTopCam.h}`);
+}
 
 const ftBot = resolveViewPreset("soccer", "portrait", "final-third-right");
-if (ftBot.cy < 0.72 || ftBot.cy > 0.9) {
-  fail(`portrait final-third-right cy≈0.83, got cy=${ftBot.cy}`);
+const ftBotCam = cameraNormRect(ftBot);
+if (ftBot.cy < 0.78 || ftBot.cy > 0.92) {
+  fail(`portrait final-third-right cy≈0.85, got cy=${ftBot.cy}`);
+}
+if (ftBotCam.y > 0.72 || ftBotCam.y + ftBotCam.h < 0.98) {
+  fail(`portrait final-third-right should cover bottom third, got y=${ftBotCam.y} h=${ftBotCam.h}`);
 }
 
 const portraitPresets = viewPresetsForSport("soccer", "portrait");

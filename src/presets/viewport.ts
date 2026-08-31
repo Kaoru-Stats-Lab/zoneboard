@@ -151,6 +151,11 @@ export type ViewPresetId =
 const CK_TO_HALF = 0.52;
 const CK_FAR_Y = 0.22; // ペナ遠方〜反対タッチ側の動き
 
+/** 縦サッカー FT: 長さ方向 1/3 · 幅は中央帯（正方形カメラで三方が読める） */
+const PORTRAIT_FT_DEPTH = 1 / 3;
+const PORTRAIT_FT_X0 = 0.33;
+const PORTRAIT_FT_X1 = 0.67;
+
 export const VIEW_PRESETS: Record<ViewPresetId, Viewport> = {
   full: { zoom: 1, cx: 0.5, cy: 0.5 },
   "final-third-left": { zoom: 2.35, cx: 0.17, cy: 0.5 },
@@ -214,8 +219,20 @@ export const PORTRAIT_SOCCER_VIEW_PRESETS: Partial<
   Record<ViewPresetId, Viewport>
 > = {
   full: { zoom: 1, cx: 0.5, cy: 0.5 },
-  "final-third-left": { zoom: 2.35, cx: 0.5, cy: 0.17 },
-  "final-third-right": { zoom: 2.35, cx: 0.5, cy: 0.83 },
+  "final-third-left": viewportCoveringRect(
+    PORTRAIT_FT_X0,
+    0,
+    PORTRAIT_FT_X1,
+    PORTRAIT_FT_DEPTH,
+    { top: true },
+  ),
+  "final-third-right": viewportCoveringRect(
+    PORTRAIT_FT_X0,
+    1 - PORTRAIT_FT_DEPTH,
+    PORTRAIT_FT_X1,
+    1,
+    { bottom: true },
+  ),
 };
 
 export function resolveViewPreset(

@@ -483,7 +483,8 @@ function drawSoccerMarkings(
     drawGoalPosts(ctx, pitch, lw, "right");
   } else {
     drawPenaltyBoxAccurate(ctx, pitch, lw, "right", true);
-    const cr = N.centerR * h * 2;
+    // ハーフも R=9.15m（幅方向 h）。*2 すると規格比が崩れ座標キャリブレーションと齟齬する。
+    const cr = N.centerR * h;
     ctx.beginPath();
     ctx.arc(x, y + h / 2, cr, -Math.PI / 2, Math.PI / 2);
     ctx.lineWidth = lw;
@@ -531,7 +532,7 @@ function drawSoccerMarkingsPortrait(
   }
 
   drawPenaltyBoxPortrait(ctx, pitch, lw, "bottom", true);
-  const cr = N.centerR * w * 2;
+  const cr = N.centerR * w;
   ctx.beginPath();
   ctx.arc(x + w / 2, y, cr, 0, Math.PI);
   ctx.lineWidth = lw;
@@ -689,7 +690,11 @@ function drawPenaltyBoxAccurate(
   ctx.fillStyle = activePitchInk;
   ctx.fill();
 
-  const arcR = (SOCCER_PITCH_M.centerCircleR / SOCCER_PITCH_M.length) * w;
+  const visibleLenM = halfView
+    ? SOCCER_PITCH_M.length / 2
+    : SOCCER_PITCH_M.length;
+  const arcR =
+    (SOCCER_PITCH_M.centerCircleR / visibleLenM) * w;
   const boxEdgeX = left ? bx + penW : bx;
   ctx.beginPath();
   if (left) {
@@ -793,7 +798,11 @@ function drawPenaltyBoxPortrait(
   ctx.fillStyle = activePitchInk;
   ctx.fill();
 
-  const arcR = (SOCCER_PITCH_M.centerCircleR / SOCCER_PITCH_M.length) * h;
+  const visibleLenM = halfView
+    ? SOCCER_PITCH_M.length / 2
+    : SOCCER_PITCH_M.length;
+  const arcR =
+    (SOCCER_PITCH_M.centerCircleR / visibleLenM) * h;
   const boxEdgeY = topSide ? by + penD : by;
   ctx.beginPath();
   if (topSide) {
