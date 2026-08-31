@@ -14,6 +14,7 @@ import { NotFoundPage } from "./components/StudioStatus";
 import { FrameExtractPage } from "./pages/FrameExtractPage";
 import { useAppState } from "./hooks/useAppState";
 import { localeFromSearchParam } from "./i18n/locale";
+import type { Locale } from "./i18n/messages";
 import { isCaptureImportEnabled } from "./lib/captureImportGate";
 
 function BoardRoute() {
@@ -74,10 +75,10 @@ function BoardRoute() {
   );
 }
 
-function LandingRoute() {
+function LandingRoute({ locale }: { locale?: Locale }) {
   return (
-    <FeedbackProvider>
-      <Landing />
+    <FeedbackProvider locale={locale}>
+      <Landing locale={locale} />
     </FeedbackProvider>
   );
 }
@@ -123,6 +124,16 @@ export default function App() {
         <Route
           path="/ja/board/"
           element={<Navigate to="/board?lang=ja" replace />}
+        />
+        <Route path="/es/" element={<LandingRoute locale="es" />} />
+        <Route path="/es" element={<Navigate to="/es/" replace />} />
+        <Route
+          path="/es/board"
+          element={<Navigate to="/board?lang=es" replace />}
+        />
+        <Route
+          path="/es/board/"
+          element={<Navigate to="/board?lang=es" replace />}
         />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

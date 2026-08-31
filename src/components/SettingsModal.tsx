@@ -14,6 +14,7 @@ import {
   type ExportPresetId,
 } from "../canvas/exportPng";
 import type { AppState } from "../hooks/useAppState";
+import { normalizeLocale } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { STREAM_SHARE_BLURB } from "../site/shareCopy";
 import { useFeedback } from "./FeedbackProvider";
@@ -194,11 +195,12 @@ export function SettingsModal({
             <select
               value={state.locale}
               onChange={(e) =>
-                state.setLocale(e.target.value === "ja" ? "ja" : "en")
+                state.setLocale(normalizeLocale(e.target.value))
               }
             >
               <option value="en">English</option>
               <option value="ja">日本語</option>
+              <option value="es">Español</option>
             </select>
           </label>
           <p className="hint-muted">{t("languageHint")}</p>

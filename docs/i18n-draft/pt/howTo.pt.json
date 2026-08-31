@@ -1,0 +1,96 @@
+{
+  "_meta": {
+    "locale": "pt",
+    "bcp47": "pt-BR",
+    "source": "howTo.ts en"
+  },
+  "intro": "O modo live (B) oculta as ferramentas. Você move as peças com o teclado. Teste os atalhos aqui antes de entrar ao vivo — as mesmas teclas funcionam durante a live. Não há um tutorial inicial no gramado. Este painel e o guia público são o manual.",
+  "sections": [
+    {
+      "heading": "Por que usar o teclado",
+      "paragraphs": [
+        "Os espectadores querem ver o campo. Se você deixar o painel lateral aberto, eles verão menus, não tática. O modo live (B) oculta as ferramentas. O que resta é selecionar, mover e girar.",
+        "Você não precisa memorizar todos os atalhos. Alguns movem a linha inteira. Outros selecionam apenas o time da casa. Alguns copiam a cena para comparar dois desenhos. Aprenda apenas as teclas que usar."
+      ]
+    },
+    {
+      "heading": "Selecionar peças",
+      "paragraphs": [
+        "Faça a seleção primeiro — uma linha, um bloco de marcação, ou apenas o time da casa — e então mova. Se tentar mover primeiro, você arrastará uma peça de cada vez.",
+        "Arraste na grama vazia para criar uma caixa e selecionar as peças dentro dela. As peças não têm posições como ZAG, então crie a caixa ao redor da linha defensiva. Segure Ctrl ou Cmd enquanto arrasta para adicionar à seleção atual.",
+        "Um clique rápido quase sem movimento limpa a seleção. Clicar na grama vazia segurando Ctrl ou Cmd não limpa a seleção."
+      ],
+      "keys": [
+        { "combo": "Click", "meaning": "Selecionar uma peça" },
+        { "combo": "Ctrl/Cmd+Click", "meaning": "Adicionar ou remover" },
+        { "combo": "Shift+Click", "meaning": "Adicionar (manter o resto)" },
+        { "combo": "Drag empty grass", "meaning": "Selecionar em caixa" },
+        { "combo": "Alt+1 / Alt+2", "meaning": "Todos do Casa / Fora" },
+        { "combo": "Ctrl/Cmd+A", "meaning": "Selecionar todos visíveis" },
+        { "combo": "Esc", "meaning": "Limpar seleção" }
+      ]
+    },
+    {
+      "heading": "Mover a seleção",
+      "paragraphs": [
+        "Arraste qualquer peça selecionada e toda a seleção se moverá junto. Use isso para avançar a linha, pular para a pressão ou bascular mantendo a marcação. Soltar uma seleção de várias peças não troca as camisas. A troca funciona apenas para uma peça de cada vez.",
+        "As setas movem em pequenos toques. Shift + seta dá um passo maior. Use isso quando disser \"só mais um passinho\" durante a transmissão.",
+        "R altera apenas a direção que o jogador olha. As posições continuam as mesmas. Use para enquadrar o bloco. Q / E giram a forma inteira em torno do centro da seleção. Selecione duas ou mais peças.",
+        "- aproxima as peças. = afasta as peças. O centro da seleção quase não se move — ótimo para compactar ou abrir a linha alta.",
+        "Shift+H inverte esquerda e direita, incluindo para onde olham. Shift+V inverte cima e baixo. Ctrl/Cmd+D duplica as peças; as cópias permanecem selecionadas para você posicioná-las."
+      ],
+      "keys": [
+        { "combo": "Drag a selected piece", "meaning": "Mover toda a seleção" },
+        { "combo": "Arrow / Shift+Arrow", "meaning": "Mover (curto / longo)" },
+        { "combo": "R", "meaning": "Girar olhar +45°" },
+        { "combo": "Q / E", "meaning": "Girar forma pelo centro" },
+        { "combo": "- / =", "meaning": "Aproximar / afastar" },
+        { "combo": "Shift+H / Shift+V", "meaning": "Inverter H / inverter V" },
+        { "combo": "Ctrl/Cmd+D", "meaning": "Duplicar (cópias selecionadas)" },
+        { "combo": "Ctrl/Cmd+Shift+Arrow", "meaning": "Alinhar à borda ou eixo" },
+        { "combo": "Alt+Shift+Arrow", "meaning": "Distribuir (H / V)" },
+        { "combo": "Delete", "meaning": "Remover peças selecionadas" }
+      ]
+    },
+    {
+      "heading": "Desenhar antes da live",
+      "paragraphs": [
+        "Antes de entrar ao vivo, use as ferramentas Passe, Corrida, Caneta e Vincular. Passe é a rota da bola — passe, cruzamento ou chute. Corrida é o movimento sem a bola. Drible é um jogador conduzindo a bola.",
+        "Caneta é uma linha livre que não é Passe ou Corrida — uma linha de bloco ou um corredor. Segure Shift enquanto arrasta a Caneta para uma linha reta. Círculos e zonas continuam à mão livre sem o Shift. Vincular conecta as peças; a linha as segue quando você as move."
+      ],
+      "keys": [
+        { "combo": "Pass", "meaning": "Rota da bola (tracejada)" },
+        { "combo": "Run / Dribble", "meaning": "Corrida ou drible" },
+        { "combo": "Pen", "meaning": "Linha à mão livre" },
+        { "combo": "Link", "meaning": "Vínculo entre peças (segue)" },
+        { "combo": "Shift+Pen drag", "meaning": "Linha reta A para B" },
+        { "combo": "Zone + Shift", "meaning": "Zona quase circular" }
+      ]
+    },
+    {
+      "heading": "Mover a câmera",
+      "paragraphs": [
+        "Dê zoom em uma bola parada ou veja o meio-campo inteiro — Ctrl ou Cmd + roda do mouse dá zoom em direção ao cursor. Segure Espaço e arraste para mover a visão. Alt + arrastar também funciona."
+      ],
+      "keys": [
+        { "combo": "Ctrl/Cmd+Wheel", "meaning": "Zoom no cursor" },
+        { "combo": "Space+Drag", "meaning": "Mover a câmera" },
+        { "combo": "Alt+Drag", "meaning": "Mover a câmera (alternativa)" }
+      ]
+    },
+    {
+      "heading": "Antes e durante a transmissão",
+      "paragraphs": [
+        "Antes do apito inicial, pratique subir e voltar a linha, ou selecionar os donos da casa e aproximá-los. Essas teclas continuam funcionando no modo live. Pressione B para ativar o modo live. Não abra este painel de ajuda (? / F1) durante a transmissão — ele aparecerá na tela.",
+        "Troque de cenas com [ ]. Coloque um escanteio e um bloco de vigilância preventiva em cenas separadas, e não tudo em um único desenho amontoado.",
+        "Para testar um movimento e manter o original, copie a cena antes de arrastar. A cena original fica — volte para ela com [ ]. Durante a live, use Duplicar no canto inferior direito. Não há um botão para restaurar ao início. Copiar a cena é a maneira de manter o seu original limpo."
+      ],
+      "keys": [
+        { "combo": "B", "meaning": "Ativar/desativar modo live" },
+        { "combo": "[ ] or PageUp/PageDown", "meaning": "Trocar de cena" },
+        { "combo": "Duplicate (Scenes or bottom-right)", "meaning": "Copiar cena, testar movimento" },
+        { "combo": "? or F1", "meaning": "Ajuda (não na live)" }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { APP_LOCALE } from "../i18n/locale";
-import type { MessageKey } from "../i18n/messages";
+import type { Locale, MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
 import { trackEvent } from "../lib/ga";
 import { hasPersistedStore } from "../storage/persist";
@@ -23,8 +23,15 @@ const CAN_ITEMS: { line: MessageKey; note: MessageKey }[] = [
   { line: "lpCan5", note: "lpCan5Note" },
 ];
 
-export function Landing() {
-  const t = (k: MessageKey) => messages[APP_LOCALE][k];
+export function Landing({ locale = APP_LOCALE }: { locale?: Locale }) {
+  const t = (k: MessageKey) => messages[locale][k];
+  const boardHref = (query?: Record<string, string>) => {
+    if (locale === "en" && !query) return "/board";
+    const params = new URLSearchParams(query);
+    if (locale !== "en") params.set("lang", locale);
+    const q = params.toString();
+    return q ? `/board?${q}` : "/board";
+  };
   const { openFeedback } = useFeedback();
   const consent = useConsentBanner();
   const [savedBoard, setSavedBoard] = useState(false);
@@ -70,14 +77,14 @@ export function Landing() {
               <div className="lp-cta-pair">
                 <Link
                   className="lp-cta"
-                  to="/board"
+                  to={boardHref()}
                   onClick={() => trackEvent("open_board")}
                 >
                   {t("openBoardContinue")}
                 </Link>
                 <Link
                   className="lp-cta lp-cta--secondary"
-                  to="/board?new=1"
+                  to={boardHref({ new: "1" })}
                   onClick={() => trackEvent("open_board")}
                 >
                   {t("openBoardNew")}
@@ -87,13 +94,13 @@ export function Landing() {
           ) : (
             <Link
               className="lp-cta"
-              to="/board"
+              to={boardHref()}
               onClick={() => trackEvent("open_board")}
             >
               {t("openBoard")}
             </Link>
           )}
-          <LpHeroBoard />
+          <LpHeroBoard locale={locale} />
         </header>
 
         <ol className="lp-steps" aria-label={t("lpStepsLabel")}>
@@ -148,14 +155,14 @@ export function Landing() {
                 <div className="lp-cta-pair">
                   <Link
                     className="lp-cta"
-                    to="/board"
+                    to={boardHref()}
                     onClick={() => trackEvent("open_board")}
                   >
                     {t("openBoardContinue")}
                   </Link>
                   <Link
                     className="lp-cta lp-cta--secondary"
-                    to="/board?new=1"
+                    to={boardHref({ new: "1" })}
                     onClick={() => trackEvent("open_board")}
                   >
                     {t("openBoardNew")}
@@ -165,7 +172,7 @@ export function Landing() {
             ) : (
               <Link
                 className="lp-cta lp-cta--close"
-                to="/board"
+                to={boardHref()}
                 onClick={() => trackEvent("open_board")}
               >
                 {t("lpCloseCta")}

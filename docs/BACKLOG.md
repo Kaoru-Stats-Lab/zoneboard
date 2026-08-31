@@ -93,9 +93,10 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 正本: [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md)。
 
 - 公開面は英語一本。同一 URL に第二言語を積まない
-- UI の次点は **es → pt-BR → fr**。5大リーグ（英西伊独仏）を chrome で揃えない
+- UI の次点は **es → pt-BR → pl → fr**。5大リーグ（英西伊独仏）を chrome で揃えない
 - 5大向けに先にやるならキット・フォーメ。決済は言語と別
-- `messages.fr` / `de` / `it` は流入トリガーまで作らない
+- **pl 翻訳正本は en のみ**（ja/es/pt 参照禁止）— [`AGENT_PROMPT_I18N_PL.md`](AGENT_PROMPT_I18N_PL.md)
+- `messages.fr` / `de` / `it` は pl 以降 · 流入トリガーまで作らない
 
 ---
 
@@ -153,9 +154,10 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 |----|------|------|
 | B-030 | ビーチ射線ガイド | **済** ON/OFF |
 | B-034 | フットサル／ビーチ現場 FB | [`FUTSAL_BEACH_RESEARCH.md`](FUTSAL_BEACH_RESEARCH.md) §6 の問い |
-| B-035 | 海外事情（es/pt 圏・強豪国） | **調査済**。言語順は [`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) で再確認（es→pt-BR→fr） |
-| B-036 | UI 言語 es | 流入トリガー後。`/es/`。同一ページ併記はしない |
-| B-037 | UI 言語 pt-BR | es の直後。ビーチは *futebol de areia* |
+| B-035 | 海外事情（es/pt/pl 圏） | **調査済**。言語順 es→pt-BR→**pl**→fr。[`LOCALE_MARKETS.md`](LOCALE_MARKETS.md) |
+| B-036 | UI 言語 es | **実装済** `/es/` |
+| B-037 | UI 言語 pt-BR | ドラフト済 · `/pt/` は後日 |
+| B-074 | UI 言語 pl | **en 正本のみ** · `/pl/` · fr より先。[`AGENT_PROMPT_I18N_PL.md`](AGENT_PROMPT_I18N_PL.md) |
 | B-038 | バスケ補助線リサーチ | **済**。ハーフ＋Must補助線実装 |
 | B-039 | バスケ スクリーンT字線種 | **済** バスケのみ・紫・T字先端 |
 | B-040 | バスケ 5-Out / Horns テンプレ | Should |

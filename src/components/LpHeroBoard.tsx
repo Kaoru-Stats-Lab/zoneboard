@@ -8,7 +8,7 @@ import {
   polylineByProgress,
 } from "../canvas/smoothPath";
 import { APP_LOCALE } from "../i18n/locale";
-import type { MessageKey } from "../i18n/messages";
+import type { Locale, MessageKey } from "../i18n/messages";
 import { messages } from "../i18n/messages";
 import { ballPosOnPiece } from "../models/ballAttach";
 import { sceneViewport } from "../models/scene";
@@ -31,8 +31,8 @@ import {
 
 const REDUCED_MOTION_T = 5500;
 
-function lpCaption(): string {
-  return messages[APP_LOCALE]["lpHeroCaption" satisfies MessageKey];
+function lpCaption(locale: Locale): string {
+  return messages[locale]["lpHeroCaption" satisfies MessageKey];
 }
 
 function heroBallAt(t: number, pieces: Scene["pieces"]): BallState {
@@ -83,7 +83,7 @@ function heroSceneAt(t: number, base: Scene, board: ReturnType<typeof createLpHe
   };
 }
 
-export function LpHeroBoard() {
+export function LpHeroBoard({ locale = APP_LOCALE }: { locale?: Locale }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -213,7 +213,7 @@ export function LpHeroBoard() {
           <div className="lp-obs-chat" />
         </div>
       </div>
-      <figcaption ref={captionRef}>{lpCaption()}</figcaption>
+      <figcaption ref={captionRef}>{lpCaption(locale)}</figcaption>
     </figure>
   );
 }

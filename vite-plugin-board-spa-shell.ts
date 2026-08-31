@@ -4,8 +4,9 @@ import type { Plugin } from "vite";
 
 /**
  * Cloudflare Pages was 308-redirecting `/board` → `/` when only a
- * `_redirects` rewrite to `/index.html` existed. Emitting a real
- * `board/index.html` (same SPA shell) makes hard links and OBS URLs work.
+ * `_redirects` rewrite to `/index.html` existed. Emitting real
+ * `board/index.html` and `es/index.html` (same SPA shell) makes hard
+ * links and locale LPs work.
  */
 export function boardSpaShellPlugin(): Plugin {
   return {
@@ -13,9 +14,11 @@ export function boardSpaShellPlugin(): Plugin {
     async closeBundle() {
       const outDir = path.resolve("dist");
       const indexHtml = path.join(outDir, "index.html");
-      const boardDir = path.join(outDir, "board");
-      await mkdir(boardDir, { recursive: true });
-      await copyFile(indexHtml, path.join(boardDir, "index.html"));
+      for (const sub of ["board", "es"]) {
+        const dir = path.join(outDir, sub);
+        await mkdir(dir, { recursive: true });
+        await copyFile(indexHtml, path.join(dir, "index.html"));
+      }
     },
   };
 }

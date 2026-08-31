@@ -36,6 +36,7 @@ export function defaultSceneName(
 ): string {
   if (index <= 1) return defaultSceneLabel(sport, locale);
   if (locale === "ja") return `局面 ${index}`;
+  if (locale === "es") return `Escena ${index}`;
   return `Scene ${index}`;
 }
 
@@ -44,5 +45,6 @@ export function defaultBoardTitle(
   locale: Locale = DEFAULT_UI_LOCALE,
 ): string {
   if (locale === "ja") return `ボード ${index}`;
+  if (locale === "es") return `Tablero ${index}`;
   return `Board ${index}`;
 }

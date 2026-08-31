@@ -34,6 +34,16 @@ export const SHORTCUT_SHEET_COPY = {
   },
 } as const;
 
+function shortcutCopy(locale: Locale) {
+  return SHORTCUT_SHEET_COPY[locale === "ja" ? "ja" : "en"];
+}
+
+function boardHrefForLocale(locale: Locale): string {
+  if (locale === "ja") return "/board/?lang=ja";
+  if (locale === "es") return "/board/?lang=es";
+  return "/board/";
+}
+
 function esc(text: string): string {
   return text
     .replaceAll("&", "&amp;")
@@ -46,7 +56,7 @@ function renderKeysTable(
   locale: Locale,
   keys: { combo: string; meaning: string }[],
 ): string {
-  const c = SHORTCUT_SHEET_COPY[locale];
+  const c = shortcutCopy(locale);
   const rows = keys
     .map(
       (row) =>
@@ -64,8 +74,8 @@ ${rows}
 /** Printable article body — keys only, sourced from HOW_TO. */
 export function shortcutSheetArticle(locale: Locale): string {
   const doc = HOW_TO[locale];
-  const c = SHORTCUT_SHEET_COPY[locale];
-  const boardHref = locale === "ja" ? "/board/?lang=ja" : "/board/";
+  const c = shortcutCopy(locale);
+  const boardHref = boardHrefForLocale(locale);
   const sections = doc.sections
     .filter((s) => s.keys && s.keys.length > 0)
     .map(

@@ -1,0 +1,95 @@
+{
+  "_meta": {
+    "locale": "pl",
+    "source": "howTo.ts en ONLY"
+  },
+  "intro": "Tryb transmisji (B) ukrywa narzędzia. Figurkami poruszasz za pomocą klawiatury. Wypróbuj klawisze tutaj przed rozpoczęciem transmisji — te same klawisze działają podczas relacji na żywo. Na boisku nie ma nakładki samouczka. Ten panel oraz publiczny przewodnik stanowią instrukcję.",
+  "sections": [
+    {
+      "heading": "Dlaczego klawiatura",
+      "paragraphs": [
+        "Widzowie chcą widzieć boisko. Jeśli panel boczny pozostanie otwarty, zobaczysz menu, a nie taktykę. Tryb transmisji (B) ukrywa narzędzia. Pozostaje zaznaczanie, przesuwanie i obracanie.",
+        "Nie musisz znać każdego skrótu. Niektórzy przesuwają całą linię. Niektórzy zaznaczają tylko gospodarzy. Niektórzy kopiują scenę i porównują dwa ustawienia. Ucz się tylko tych klawiszy, z których korzystasz."
+      ]
+    },
+    {
+      "heading": "Zaznaczanie figurek",
+      "paragraphs": [
+        "Najpierw dokonaj zaznaczenia — linii, bloku krycia lub tylko gospodarzy — a następnie przesuń. Jeśli najpierw zaczniesz przesuwać, będziesz przeciągać figurki po jednej.",
+        "Przeciągnij po pustej trawie, aby narysować ramkę i zaznaczyć figurki w środku. Figurki nie mają etykiet ról (np. ŚBO), więc obrysuj ramką linię obrony. Przytrzymaj Ctrl lub Cmd podczas przeciągania, aby dodać do bieżącego zaznaczenia.",
+        "Szybkie kliknięcie bez ruchu czyszcza zaznaczenie. Kliknięcie pustej trawy z przytrzymanym Ctrl lub Cmd nie czyści go."
+      ],
+      "keys": [
+        { "combo": "Click", "meaning": "Zaznacz jedną figurkę" },
+        { "combo": "Ctrl/Cmd+Click", "meaning": "Dodaj lub usuń" },
+        { "combo": "Shift+Click", "meaning": "Dodaj (zachowaj resztę)" },
+        { "combo": "Drag empty grass", "meaning": "Zaznacz ramką" },
+        { "combo": "Alt+1 / Alt+2", "meaning": "Wszyscy gospodarze / goście" },
+        { "combo": "Ctrl/Cmd+A", "meaning": "Zaznacz wszystkie widoczne" },
+        { "combo": "Esc", "meaning": "Anuluj zaznaczenie" }
+      ]
+    },
+    {
+      "heading": "Przesuwanie zaznaczenia",
+      "paragraphs": [
+        "Przeciągnij dowolną zaznaczoną figurkę, a całe zaznaczenie przesunie się razem. Użyj tego do wyjścia linią, skoku w pressing lub przesunięcia z zachowaniem krycia. Upuszczenie zaznaczenia złożonego z wielu figurek nie zamienia koszulek. Zamiana działa tylko dla pojedynczej figurki.",
+        "Klawisze strzałek przesuwają w małych krokach. Shift + strzałka robi większy krok. Użyj tego, gdy mówisz „jeszcze pół kroku” podczas transmisji.",
+        "R zmienia tylko kierunek patrzenia. Pozycje pozostają bez zmian. Użyj, aby wyrównać blok. Q / E obracają cały kształt wokół środka zaznaczenia. Zaznacz dwie lub więcej figurek.",
+        "- przybliża figurki do siebie. = oddala je. Środek zaznaczenia prawie się nie porusza — dobre dla zwartej lub szerokiej wysokiej linii.",
+        "Shift+H odbija w lewo i prawo, łącznie z kierunkiem patrzenia. Shift+V odbija w górę i w dół. Ctrl/Cmd+D kopiuje figurki; kopie pozostają zaznaczone, więc możesz je od razu przesunąć."
+      ],
+      "keys": [
+        { "combo": "Drag a selected piece", "meaning": "Przesuń całe zaznaczenie" },
+        { "combo": "Arrow / Shift+Arrow", "meaning": "Koryguj (drobne / duże)" },
+        { "combo": "R", "meaning": "Kierunek +45°" },
+        { "combo": "Q / E", "meaning": "Obróć kształt wokół środka" },
+        { "combo": "- / =", "meaning": "Bliżej / szerzej" },
+        { "combo": "Shift+H / Shift+V", "meaning": "Odbij w poziomie / w pionie" },
+        { "combo": "Ctrl/Cmd+D", "meaning": "Duplikuj (kopie zaznaczone)" },
+        { "combo": "Ctrl/Cmd+Shift+Arrow", "meaning": "Wyrównaj do krawędzi lub osi" },
+        { "combo": "Alt+Shift+Arrow", "meaning": "Równe odstępy (poziomo / pionowo)" },
+        { "combo": "Delete", "meaning": "Usuń zaznaczone figurki" }
+      ]
+    },
+    {
+      "heading": "Rysowanie przed transmisją",
+      "paragraphs": [
+        "Przed transmisją użyj paska narzędzi do rysowania Podania, Biegu, Pióra i Połączenia. Podanie to ścieżka piłki — podanie, dośrodkowanie lub strzał. Bieg to ruch bez piłki. Drybling to zawodnik prowadzący piłkę.",
+        "Pióro to swobodna linia, która nie jest Podaniem ani Biegiem — linia bloku lub krawędź korytarza. Przytrzymaj Shift podczas przeciągania Pióra, aby uzyskać linię prostą. Koła i pętle bez Shift pozostają rysowane od ręki. Połączenie łączy figurki; linia podąża za nimi, gdy je przesuwasz."
+      ],
+      "keys": [
+        { "combo": "Pass", "meaning": "Ścieżka piłki (przerywana)" },
+        { "combo": "Run / Dribble", "meaning": "Bieg lub drybling" },
+        { "combo": "Pen", "meaning": "Linia swobodna" },
+        { "combo": "Link", "meaning": "Połączenie figurek (podąża)" },
+        { "combo": "Shift+Pen drag", "meaning": "Prosta linia A do B" },
+        { "combo": "Zone + Shift", "meaning": "Strefa bliska koła" }
+      ]
+    },
+    {
+      "heading": "Przesuwanie widoku",
+      "paragraphs": [
+        "Zrób przybliżenie na stały fragment lub zobacz całą połowę — Ctrl lub Cmd + kółko myszy przybliża w stronę kursora. Przytrzymaj Spację i przeciągnij, aby przesuwać widok. Alt + przeciągnięcie również działa."
+      ],
+      "keys": [
+        { "combo": "Ctrl/Cmd+Wheel", "meaning": "Zoom w miejscu kursora" },
+        { "combo": "Space+Drag", "meaning": "Przesuń widok" },
+        { "combo": "Alt+Drag", "meaning": "Przesuń widok (alternatywa)" }
+      ]
+    },
+    {
+      "heading": "Przed i podczas transmisji",
+      "paragraphs": [
+        "Przed rozpoczęciem meczu przećwicz podnoszenie i cofanie linii lub zaznaczanie gospodarzy i przybliżanie ich. Wtedy te klawisze będą działać w trybie transmisji. Naciśnij B, aby wejść w tryb transmisji. Nie otwieraj tej instrukcji (? / F1) podczas transmisji — pojawi się ona na ekranie.",
+        "Przełączaj sceny za pomocą [ ]. Umieść rzut rożny i ustawienie asekuracji na osobnych scenach, a nie na jednym zatłoczonym rysunku.",
+        "Aby wypróbować ruch i zachować oryginał, skopiuj scenę przed przesunięciem. Pierwsza scena pozostanie — wróć do niej za pomocą [ ]. Podczas transmisji użyj Duplikuj w prawym dolnym rogu. Nie ma przycisku resetowania do stanu początkowego. Kopiowanie sceny to sposób na zachowanie czystego oryginału."
+      ],
+      "keys": [
+        { "combo": "B", "meaning": "Przełącz tryb transmisji" },
+        { "combo": "[ ] or PageUp/PageDown", "meaning": "Przełącz sceny" },
+        { "combo": "Duplicate (Scenes or bottom-right)", "meaning": "Kopiuj scenę, wypróbuj ruch" },
+        { "combo": "? or F1", "meaning": "Instrukcja (nie na żywo)" }
+      ]
+    }
+  ]
+}

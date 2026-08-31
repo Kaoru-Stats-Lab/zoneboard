@@ -6,6 +6,10 @@
 /ja/      /        301
 /ja/board /board/?lang=ja   301
 /ja/board/ /board/?lang=ja  301
+/es       /es/    301
+/es/      /es/index.html  200
+/es/board /board/?lang=es   301
+/es/board/ /board/?lang=es  301
 /about    /about/    301
 /guide    /guide/    301
 /faq      /faq/      301

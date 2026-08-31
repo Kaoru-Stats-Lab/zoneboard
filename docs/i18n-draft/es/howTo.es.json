@@ -1,0 +1,95 @@
+{
+  "_meta": {
+    "locale": "es",
+    "source": "howTo.ts en"
+  },
+  "intro": "El modo emisión (B) oculta las herramientas. Mueves las fichas con el teclado. Prueba los atajos aquí antes de emitir — funcionarán igual en directo. No hay tutorial inicial en el césped. Este panel y la guía pública son el manual.",
+  "sections": [
+    {
+      "heading": "Por qué usar el teclado",
+      "paragraphs": [
+        "Los espectadores quieren ver el campo. Si dejas el panel lateral abierto, verán menús, no táctica. El modo emisión (B) oculta las herramientas. Solo queda seleccionar, mover y girar.",
+        "No necesitas aprenderte todos los atajos. Algunos mueven líneas enteras. Otros seleccionan solo al equipo local. Otros copian una escena y comparan dos dibujos. Aprende solo las teclas que necesites."
+      ]
+    },
+    {
+      "heading": "Seleccionar fichas",
+      "paragraphs": [
+        "Haz la selección primero —una línea, un bloque al hombre, o solo el local— y luego muévela. Si mueves directamente, arrastrarás una por una.",
+        "Arrastra sobre el césped para hacer un recuadro y seleccionar las fichas de dentro. Las fichas no tienen etiquetas como DFC, así que envuelve la línea defensiva en un recuadro. Mantén pulsado Ctrl o Cmd mientras arrastras para añadir a la selección actual.",
+        "Un pequeño clic sin apenas movimiento anula la selección. Hacer clic en el césped manteniendo Ctrl o Cmd no la anula."
+      ],
+      "keys": [
+        { "combo": "Click", "meaning": "Seleccionar una ficha" },
+        { "combo": "Ctrl/Cmd+Click", "meaning": "Añadir o quitar" },
+        { "combo": "Shift+Click", "meaning": "Añadir (mantener el resto)" },
+        { "combo": "Drag empty grass", "meaning": "Selección en recuadro" },
+        { "combo": "Alt+1 / Alt+2", "meaning": "Todo el local / todo el visitante" },
+        { "combo": "Ctrl/Cmd+A", "meaning": "Seleccionar todo lo visible" },
+        { "combo": "Esc", "meaning": "Anular selección" }
+      ]
+    },
+    {
+      "heading": "Mover la selección",
+      "paragraphs": [
+        "Arrastra cualquier ficha seleccionada y toda la selección se moverá junta. Úsalo para adelantar la línea, saltar a la presión o vascular manteniendo las marcas. Soltar varias fichas a la vez no intercambia camisetas. El intercambio funciona solo de una en una.",
+        "Las flechas mueven paso a paso. Shift + flecha da un paso más grande. Úsalo cuando digas \"un pasito más\" durante el directo.",
+        "R solo cambia la orientación. Las posiciones se mantienen. Úsalo para cuadrar un bloque. Q / E giran toda la forma sobre el centro de la selección. Debes seleccionar dos o más fichas.",
+        "- junta las fichas. = las separa. El centro de la selección apenas se mueve — perfecto para un bloque compacto o una línea alta abierta.",
+        "Shift+H invierte de izquierda a derecha, incluida la orientación. Shift+V voltea de arriba a abajo. Ctrl/Cmd+D duplica fichas; las copias se quedan seleccionadas para que puedas moverlas y armar pares."
+      ],
+      "keys": [
+        { "combo": "Drag a selected piece", "meaning": "Mover toda la selección" },
+        { "combo": "Arrow / Shift+Arrow", "meaning": "Mover a toques (corto / largo)" },
+        { "combo": "R", "meaning": "Girar +45° en el sitio" },
+        { "combo": "Q / E", "meaning": "Girar forma sobre el centro" },
+        { "combo": "- / =", "meaning": "Juntar / separar" },
+        { "combo": "Shift+H / Shift+V", "meaning": "Voltear H / voltear V" },
+        { "combo": "Ctrl/Cmd+D", "meaning": "Duplicar (copias seleccionadas)" },
+        { "combo": "Ctrl/Cmd+Shift+Arrow", "meaning": "Alinear al borde o eje" },
+        { "combo": "Alt+Shift+Arrow", "meaning": "Distribuir (H / V)" },
+        { "combo": "Delete", "meaning": "Eliminar fichas seleccionadas" }
+      ]
+    },
+    {
+      "heading": "Dibujar antes del directo",
+      "paragraphs": [
+        "Antes del directo, usa las herramientas Pase, Carrera, Regate, Lápiz y Enlazar. Pase es la ruta del balón (pase, centro o tiro). Carrera es movimiento sin balón. Regate es un jugador conduciendo el balón.",
+        "Lápiz es una línea libre que no es Pase o Carrera — una línea de bloque o pasillo. Mantén pulsado Shift al arrastrar el Lápiz para hacer una recta. Los círculos y formas se hacen a mano alzada sin Shift. Enlazar une fichas; la línea las sigue cuando las mueves."
+      ],
+      "keys": [
+        { "combo": "Pase", "meaning": "Ruta del balón (punteada)" },
+        { "combo": "Carrera / Regate", "meaning": "Movimiento sin balón o conducción" },
+        { "combo": "Lápiz", "meaning": "Línea a mano alzada" },
+        { "combo": "Enlace", "meaning": "Une fichas (las sigue)" },
+        { "combo": "Shift+Lápiz", "meaning": "Línea recta A a B" },
+        { "combo": "Zona + Shift", "meaning": "Zona casi circular" }
+      ]
+    },
+    {
+      "heading": "Mover la cámara",
+      "paragraphs": [
+        "Haz zoom a un córner o mira toda la mitad del campo — Ctrl o Cmd + rueda hace zoom hacia el cursor. Mantén Espacio y arrastra para moverte por el campo. Alt + arrastrar también funciona."
+      ],
+      "keys": [
+        { "combo": "Ctrl/Cmd+Wheel", "meaning": "Zoom en el cursor" },
+        { "combo": "Space+Drag", "meaning": "Mover la cámara" },
+        { "combo": "Alt+Drag", "meaning": "Mover la cámara (alternativa)" }
+      ]
+    },
+    {
+      "heading": "Antes y durante el directo",
+      "paragraphs": [
+        "Antes del pitido inicial, practica adelantar una línea y devolverla, o seleccionar al local y juntarlos. Esas teclas seguirán funcionando en modo emisión. Pulsa B para activar el modo emisión. No abras este panel de ayuda (? / F1) durante el directo — saldrá en pantalla.",
+        "Cambia de escena con [ ]. Pon un córner y un dibujo de vigilancia (rest-defence) en escenas separadas, no apelotonados en la misma.",
+        "Para probar un movimiento y conservar el original, copia la escena antes de arrastrar. La primera escena se mantendrá — vuelve a ella con [ ]. Durante el directo, usa Duplicar abajo a la derecha. No hay botón para restaurar al estado inicial. Copiar la escena es la forma de mantener limpio tu original."
+      ],
+      "keys": [
+        { "combo": "B", "meaning": "Activar/desactivar modo emisión" },
+        { "combo": "[ ] or PageUp/PageDown", "meaning": "Cambiar de escena" },
+        { "combo": "Duplicate (Scenes or bottom-right)", "meaning": "Copiar escena, probar movimiento" },
+        { "combo": "? or F1", "meaning": "Ayuda (no en directo)" }
+      ]
+    }
+  ]
+}
