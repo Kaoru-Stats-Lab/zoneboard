@@ -43,6 +43,7 @@ function boardHrefForLocale(locale: Locale): string {
   if (locale === "es") return "/board/?lang=es";
   if (locale === "pt") return "/board/?lang=pt";
   if (locale === "pl") return "/board/?lang=pl";
+  if (locale === "de") return "/board/?lang=de";
   return "/board/";
 }
 

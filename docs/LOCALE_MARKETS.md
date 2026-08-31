@@ -1,8 +1,8 @@
 # 言語市場とローカライズ — 決定ログ
 
-**更新:** 2026-08-31（**pl を fr より先** — 喜ばれそうな未開拓圏優先）  
+**更新:** 2026-08-31（**es · pt · pl 出荷済** · Deep Research で **de → fr → tr** を第2波に確定）  
 **きっかけ:** PH 公開面を英語一本にしたあと、「5大リーグ分（英西伊独仏）の UI 翻訳が要るか」→ 天皇杯同時視聴の壁打ち用に **ボード chrome だけ JA** を開放。  
-**結論:** 市場は広い。ただし **リーグ ≠ 言語**。公開デフォルトは英語。ボードは Settings / `?lang=` で JA。次の公開面 UI は **es → pt-BR → pl**。**fr** は人口・L2 期待より **ローカル感度（「ふーん」）** が低いため **pl の後**。
+**結論:** 市場は広い。ただし **リーグ ≠ 言語**。公開デフォルトは英語。**第1波** es → pt-BR → pl は **出荷済**（2026-08-31）。**第2波** UI は Deep Research に基づき **de → fr → tr**（戦術ニッチ適合度 · 口コミ定着 · 既存ツール代替）。イタリア語（it）は流入トリガーまで保留。
 
 関連: [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) §4-3 · [`SPEC.md`](SPEC.md) §9 · [`BACKLOG.md`](BACKLOG.md) B-035–037 · [`FUTSAL_BEACH_RESEARCH.md`](FUTSAL_BEACH_RESEARCH.md) · [`OUTREACH_EU_STREAM.md`](OUTREACH_EU_STREAM.md) §2F
 
@@ -16,13 +16,13 @@
 
 ---
 
-## 1. いまの実装（2026-08-26）
+## 1. いまの実装（2026-08-31）
 
 | 面 | 言語 |
 |----|------|
-| LP・法務・Guide・静的ページ | **英語のみ**（`APP_LOCALE = "en"`） |
-| ボード chrome（メニュー・Settings・How-to・Feedback） | **デフォルト EN。** Settings の Language、または `?lang=ja` / `/ja/board` → `/board?lang=ja` |
-| 永続化 | `localStorage` の `zoneboard:v1:prefs` に `locale: "en" \| "ja"`。**ボード JSON（駒・局面）とは別** |
+| LP・法務・Guide・静的ページ | **英語**（`APP_LOCALE = "en"`）＋ **`/es/` `/pt/` `/pl/` `/de/`** 各ロケール LP |
+| ボード chrome（メニュー・Settings・How-to・Feedback） | **デフォルト EN。** Settings · `?lang=` · `/ja/board` `/es/board` `/pt/board` `/pl/board` `/de/board` |
+| 永続化 | `localStorage` の `zoneboard:v1:prefs` に `locale: "en" \| "ja" \| "es" \| "pt" \| "pl" \| "de"`。**ボード JSON（駒・局面）とは別** |
 | ピッチ上の駒名・クラブ名 | ユーザ入力のまま（切替しても上書きしない）。フォントはラテン拡張・キリル・日本語を守る（[`STUDIO.md`](STUDIO.md)） |
 | 選手・ロスター DB | **持たない。** 贔屓クラブの「完璧データ」は配信者の頭と駒上の手入力。製品として J リーグ/選手マスタは載せない |
 | アラビア語・ヘブライ語（RTL） | Later（同） |
@@ -33,7 +33,8 @@
 |------|------|
 | `/board` | prefs の locale（未設定なら EN） |
 | `/board?lang=ja` | 一度 JA を prefs に保存し、クエリから `lang` を消す（URL は `/board` に戻る） |
-| `/ja/board` · `/ja/board/` | `/board/?lang=ja` へ 301（CF `_redirects`）。SPA でも同趣旨 |
+| `/ja/board` · `/es/board` · `/pt/board` · `/pl/board` · `/de/board` | `/board/?lang=<locale>` へ 301 |
+| `/es/` · `/pt/` · `/pl/` · `/de/` | 各ロケール LP（`dist/<locale>/index.html`） |
 | `/` · `/ja` · `/ja/` | LP は英語。`/ja` `/ja/` は `/` へ 301（**日本語 LP 面はまだ無い**） |
 
 OBS は **ウィンドウキャプチャ**（Browser Source ではない）。言語は配信者マシンの prefs。配信モードでも **最小 chrome**（局面・ツール・試合操作）はタッチ向けに残る（[`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 決定ログ 2026-08-28）。OBS で芝だけ取るのはキャプチャ領域の運用。
@@ -125,15 +126,69 @@ World Population Review 2025 前後。言語推定より国のほうが硬い。
 | 期待反応 | 「ふーん」（L2 含むと薄い） | **「ついに pl 版」感**（推測 · 要 Grok/現場） |
 | ZoneBoard の楔 | OBS · B · 無登録 — 言語以前の差 | 同左 · **母語 LP が口コミの点火剤になりやすい** |
 
-**決定:** 第 3 ロケールは **pl**。**fr** は pl 実装 · 流入データ後。ブラジル（pt）を飛ばさない — 人口規模は pt が先。
+**決定（第1波 · 2026-08-31 まで）:** 第 3 ロケールは **pl**（fr より先 — niche の感謝度）。**出荷済。**
+
+### 3-7. Deep Research — DACH · フランス · トルコ（2026-08-31）
+
+**出典:** 社内 Deep Research（クリエイター市場 · 既存ツール · シミュレーション）。一次検証前。**推測は推測と書く。**
+
+#### 市場の厚さ（戦術ボード需要の代理）
+
+| 語圏 | 熱量 | 代表クリエイター / メディア | コンテンツスタイル |
+|------|------|------------------------------|-------------------|
+| **DACH（de）** | **極めて高** — 「Taktik-Nerd」文化 | Spielverlagerung · Bohndesliga · Calcio Berlin · Manu Thiele · Tobias Escher | 試合前後の**本格戦術解剖** · Halbraum · Gegenpressing 等の用語体系 |
+| **fr** | **非常に高** — YouTube 戦術解説成熟期 | Wiloo（60万+）· Le Coach · Piotr Foot | ピッチを動かす Play-by-Play · ディープ分析＋トーク |
+| **tr** | **熱量最大級** — SNS 拡散主体 | Uğur Karakullukçu · Emre Özcan · MertAbi · 3大クラブ Watchalong 多数 | **リアルタイム感情・討論** ＞ 静かな戦術解剖。試合前 **Kadro（予想スタメン）** の X 拡散 |
+
+#### 既存ツールと ZB の隙間
+
+| 語圏 | 主な利用 | 不満 / 隙間 |
+|------|----------|-------------|
+| **de** | TACTICALista · TacticalPad · Metrica · PPT | プロ向け 3D は**重い**。個人 YouTuber は「配信中にさっと動かせない」 |
+| **fr** | Metrica · TacticalPad · スライド / 紙 | アナリスト層は Metrica。ライト層は画像代用 → **ブラウザ即起動** の潜在需要 |
+| **tr** | 簡易 Web ボード · 画像ペースト · 物理板 | Metrica 率低。**10 秒で綺麗な Kadro 画像 → X** が最優先 |
+
+#### 語圏別 Must（UI 翻訳以外）
+
+| 語圏 | 必須要件 | ZB 現状 |
+|------|----------|---------|
+| **de** | Halbraum 用 **5 レーン分割** · Gegenpressing 等の用語 · GDPR/ローカル訴求 | **5 レーン実装済**（`lanes5`）。de UI と LP で Halbraum を前面訴求可 |
+| **fr** | 直感的戦術用語（Bloc bas/haut · Relance · Coup franc）· Pass vs Run の線種明確化 | Pass/Run 線種 **済**。fr UI が主タスク |
+| **tr** | Kadro/Diziliş 用語 · **ロゴなし PNG 即 Export** · スタメン議論向け軽量さ | Broadcast + Export **済**。tr UI は軽量アプローチで可 |
+
+#### シミュレーション（カテゴリ内シェア最大化の粗い確率）
+
+モデル: \(P = F \times (1-S) \times \beta\)（Fit · 乗換障壁 · 口コミ係数）。**ZoneBoard 固有の検証ではない。**
+
+| パラメータ | DACH | fr | tr |
+|------------|------|-----|-----|
+| ニーズ一致度 \(F\) | **95%** | 85% | 70% |
+| 乗換障壁 \(S\) | **15%** | 30% | **10%** |
+| 口コミ \(\beta\) | 1.4 | 1.2 | **1.8** |
+| 推定アクティブシェア | **35–45%** | 25–35% | 15–25% |
+| シェア最大化確率 | **78%** | 62% | 45% |
+
+**解釈:** de はプロダクト思想（軽量 · ローカル · 5 レーン）との **Fit が最高**。fr はトップ YouTuber 1–2 名の画面露出で一気に伸びうる。**tr** はバズは最大だが **戦術ツールとしての定着はブレやすい** — フル UI より「10 秒 Kadro 画像ジェネレーター」訴求が費用対効果高い。
+
+#### マーケティングの芯（第2波）
+
+| 語圏 | コアメッセージ | アクション例 |
+|------|----------------|--------------|
+| **de** | *Die schnellste 2D-Taktiktafel — server-frei & sofort bereit* | r/fussball · Spielverlagerung 読者 · **Halbraum ワンクリック** · GDPR/アカウント不要 |
+| **fr** | *Le tableau tactique instantané pour vos débriefs et live streams* | Wiloo / Le Coach へのデモ · Pass vs Appel de balle 訴求 |
+| **tr** | *10 saniyede harika 2D kadro görseli* | ビッグマッチ前の X 画像 · Twitch Watchalong 向けフリップ |
+
+詳細 DM 文面: [`OUTREACH_EU_STREAM.md`](OUTREACH_EU_STREAM.md) §2-D（de は **営業文面を DE 優先** — UI ローカライズとは別）。
+
+**第2波ローカライズ決定:** **de → fr → tr**。it は触らない。
 
 ---
 
 ## 4. 決定（2026-08-24 · 2026-08-31 改定）
 
 1. **公開デフォルトは英語。** `/` と静的ドキュメントは EN。Accept-Language で JA に飛ばさない（SPEC 旧稿を廃止）。
-2. **同じ LP URL に第二言語を積まない。** 公開面を足すときは `/es/` `/pt/` **`/pl/`** `/fr/` のように面を分ける。**ボード chrome の JA** は同じ `/board` 上の prefs / `?lang=`（§1）で足りる。`/ja/` のフル LP はまだ切らない。
-3. **UI の次点はリーグ順ではない。** **es → pt-BR → pl**。その次が **fr**（アフリカ L2 は pl より後）。独・伊は流入が出てから。
+2. **同じ LP URL に第二言語を積まない。** 公開面を足すときは `/es/` `/pt/` `/pl/` **`/de/` `/fr/` `/tr/`** のように面を分ける。**ボード chrome の JA** は同じ `/board` 上の prefs / `?lang=`（§1）で足りる。`/ja/` のフル LP はまだ切らない。
+3. **UI ローカライズは2波。** **第1波（済）:** es → pt-BR → pl。**第2波（次）:** **de → fr → tr**（§3-7 Deep Research）。5大リーグ順ではない。it は流入トリガーまで。
 4. **日本語**はボード chrome で Settings / deep link 可。PH・LP には出さない。フル `/ja/` LP は流入を見てから。
 5. **5大リーグ向けに先にやるなら C ではなく B。** キットとフォーメ。翻訳の代用にしない。**選手ロスター DB も C の代用にしない**（ユーザ入力）。
 6. **決済・税・価格は C と同時にやらなくてよい。** 英語のまま欧州課金は可。現地通貨は言語面とは別チケット。
@@ -145,9 +200,9 @@ World Population Review 2025 前後。言語推定より国のほうが硬い。
 - フィードバックや問い合わせが特定言語で続く
 - 英語 UI のまま使われているが、How-to が読まれない国が厚い
 
-トリガーが来るまで **fr**/DE/IT の `messages` は足さない（**pl** は es/pt ドラフトパイプラインに沿って先行準備可）。
+第2波着手前: **de** からドラフトパイプライン（es/pt/pl と同型）。**tr** は fr 後 · 軽量 UI ＋ Kadro 訴求を前提。**it** の `messages` は触らない。
 
-既存メモとの関係: [`BACKLOG.md`](BACKLOG.md) B-035–037 · **B-074（pl）**。2026-08-31 改定: **fr を pl の後へ**。
+既存メモ: [`BACKLOG.md`](BACKLOG.md) B-035–037 · B-074（pl **済**）· **B-075（de）** · **B-076（fr）** · **B-077（tr）**。2026-08-31: 第1波完了 · 第2波 **de → fr → tr**。
 
 ---
 
@@ -158,3 +213,9 @@ World Population Review 2025 前後。言語推定より国のほうが硬い。
 YouTube 国別: World Population Review *YouTube Users by Country*（2025 推計）。ブラジルサッカー時間: Lance!（Google イベント、2024）。CAN 権利: Canal+ Group / SuperSport 発表（2025-11、仏英葡＋現地語）。ブンデス国際フィード: SVG Europe / Bundesliga International。
 
 SaaS の「英語で出して、需要が出てから1言語ずつ」は一般論。ZoneBoard 固有の検証ではない。
+
+Deep Research（2026-08-31）参照 URL:
+
+- [Breaking the Lines — tactics YouTubers](https://breakingthelines.com/@btl/some-tactics-obsessed-football-youtubers-to-watch)
+- [YouTube — Wiloo 系](https://www.youtube.com/watch?v=eiNQziewt4s) · [Le Coach 系](https://www.youtube.com/watch?v=qhJtEz1DdSg) · [DACH 戦術](https://www.youtube.com/watch?v=YxK4j9XujzY)
+- [r/footballtactics — channel recommendations](https://www.reddit.com/r/footballtactics/comments/1udcum2/recommendations_for_best_youtube_channel_for/)

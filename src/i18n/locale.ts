@@ -11,7 +11,8 @@ export function isLocale(value: unknown): value is Locale {
     value === "ja" ||
     value === "es" ||
     value === "pt" ||
-    value === "pl"
+    value === "pl" ||
+    value === "de"
   );
 }
 
@@ -19,7 +20,7 @@ export function normalizeLocale(value: unknown): Locale {
   return isLocale(value) ? value : DEFAULT_UI_LOCALE;
 }
 
-/** `?lang=ja` / `?lang=en` / `?lang=es` / `?lang=pt` / `?lang=pl` for DM deep links. */
+/** `?lang=` deep links for DM / locale LP board URLs. */
 export function localeFromSearchParam(raw: string | null): Locale | null {
   if (!raw) return null;
   const v = raw.trim().toLowerCase();
@@ -28,5 +29,6 @@ export function localeFromSearchParam(raw: string | null): Locale | null {
   if (v === "es") return "es";
   if (v === "pt" || v === "pt-br") return "pt";
   if (v === "pl") return "pl";
+  if (v === "de") return "de";
   return null;
 }

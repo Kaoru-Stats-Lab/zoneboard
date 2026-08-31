@@ -18,6 +18,10 @@
 /pl/      /pl/index.html  200
 /pl/board /board/?lang=pl   301
 /pl/board/ /board/?lang=pl  301
+/de       /de/    301
+/de/      /de/index.html  200
+/de/board /board/?lang=de   301
+/de/board/ /board/?lang=de  301
 /about    /about/    301
 /guide    /guide/    301
 /faq      /faq/      301

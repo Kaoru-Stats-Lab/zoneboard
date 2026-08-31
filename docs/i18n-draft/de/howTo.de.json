@@ -1,0 +1,96 @@
+{
+  "_meta": {
+    "locale": "de",
+    "bcp47": "de-DE",
+    "source": "howTo.ts en ONLY"
+  },
+  "intro": "Der Sendemodus (B) verbirgt die Werkzeuge. Du bewegst die Figuren mit der Tastatur. Teste die Shortcuts hier, bevor du live gehst — die Tasten funktionieren im Stream genauso. Es gibt kein Overlay-Tutorial auf dem Rasen. Dieses Panel und das öffentliche Handbuch sind die Anleitung.",
+  "sections": [
+    {
+      "heading": "Warum Tastatur?",
+      "paragraphs": [
+        "Die Zuschauer wollen das Spielfeld sehen. Wenn das Seitenpanel offen bleibt, sehen sie Menüs, keine Taktik. Der Sendemodus (B) verbirgt die Werkzeuge. Es bleiben nur noch: Auswählen, Bewegen und Drehen.",
+        "Du musst nicht jeden Shortcut kennen. Manche verschieben die ganze Abwehrkette. Andere wählen nur das Heimteam aus. Wieder andere kopieren eine Szene, um zwei Formationen zu vergleichen. Lerne nur die Tasten, die du auch brauchst."
+      ]
+    },
+    {
+      "heading": "Figuren auswählen",
+      "paragraphs": [
+        "Wähle zuerst aus — eine Kette, einen Pressing-Block oder nur Heim — und bewege sie dann. Wenn du zuerst ziehst, bewegst du nur eine Figur auf einmal.",
+        "Ziehe auf dem freien Rasen, um eine Box aufzuziehen und die Figuren darin auszuwählen. Da es keine Positionsbezeichnungen wie IV gibt, ziehe einfach einen Rahmen um die Abwehrkette. Halte Ctrl oder Cmd beim Ziehen gedrückt, um der aktuellen Auswahl etwas hinzuzufügen.",
+        "Ein kurzer Klick (ohne Mausbewegung) hebt die Auswahl auf. Klickst du mit gedrückter Ctrl- oder Cmd-Taste auf freien Rasen, bleibt die Auswahl bestehen."
+      ],
+      "keys": [
+        { "combo": "Click", "meaning": "Eine Figur auswählen" },
+        { "combo": "Ctrl/Cmd+Click", "meaning": "Hinzufügen oder entfernen" },
+        { "combo": "Shift+Click", "meaning": "Hinzufügen (Rest behalten)" },
+        { "combo": "Drag empty grass", "meaning": "Rahmen-Auswahl" },
+        { "combo": "Alt+1 / Alt+2", "meaning": "Alle Heim / alle Auswärts" },
+        { "combo": "Ctrl/Cmd+A", "meaning": "Alle sichtbaren auswählen" },
+        { "combo": "Esc", "meaning": "Auswahl aufheben" }
+      ]
+    },
+    {
+      "heading": "Auswahl bewegen",
+      "paragraphs": [
+        "Ziehe eine beliebige ausgewählte Figur und die ganze Gruppe bewegt sich mit. Nutze das fürs Aufrücken, fürs Anlaufen oder fürs Verschieben, während die Deckung bestehen bleibt. Das Loslassen mehrerer Figuren führt nicht zum Spielerwechsel. Einwechslungen funktionieren nur mit einzelnen Figuren.",
+        "Die Pfeiltasten bewegen in kleinen Schritten. Shift + Pfeiltaste macht einen größeren Schritt. Nutze das, wenn du im Stream sagst: \"Nur noch einen halben Schritt rüber\".",
+        "R ändert nur die Blickrichtung. Die Positionen bleiben gleich. Ideal, um einen Block auszurichten. Q / E rotieren die ganze Form um die Mitte der Auswahl. Wähle dazu mindestens zwei Figuren aus.",
+        "- schiebt die Figuren zusammen. = zieht sie auseinander. Die Mitte der Auswahl bewegt sich dabei kaum — gut für das Kompaktmachen oder Auseinanderziehen einer Kette.",
+        "Shift+H spiegelt horizontal (links/rechts), inklusive Blickrichtung. Shift+V spiegelt vertikal (oben/unten). Ctrl/Cmd+D kopiert die Figuren; die Kopien bleiben ausgewählt, sodass du sie gleich an die richtige Stelle ziehen kannst."
+      ],
+      "keys": [
+        { "combo": "Drag a selected piece", "meaning": "Die ganze Auswahl bewegen" },
+        { "combo": "Arrow / Shift+Arrow", "meaning": "Bewegen (fein / grob)" },
+        { "combo": "R", "meaning": "Nur Blickrichtung +45°" },
+        { "combo": "Q / E", "meaning": "Form um das Zentrum rotieren" },
+        { "combo": "- / =", "meaning": "Enger / breiter" },
+        { "combo": "Shift+H / Shift+V", "meaning": "Horizontal / vertikal spiegeln" },
+        { "combo": "Ctrl/Cmd+D", "meaning": "Duplizieren (Kopien sind ausgewählt)" },
+        { "combo": "Ctrl/Cmd+Shift+Arrow", "meaning": "Am Rand oder der Achse ausrichten" },
+        { "combo": "Alt+Shift+Arrow", "meaning": "Gleiche Abstände (H / V)" },
+        { "combo": "Delete", "meaning": "Ausgewählte Figuren entfernen" }
+      ]
+    },
+    {
+      "heading": "Vor dem Stream zeichnen",
+      "paragraphs": [
+        "Nutze vor dem Stream die Werkzeuge für Pass, Lauf, Stift und Verbindung. Pass ist der Weg des Balls — Pass, Flanke oder Schuss. Lauf ist die Bewegung ohne Ball. Dribbling bedeutet, ein Spieler führt den Ball.",
+        "Stift ist eine freie Linie, die weder Pass noch Lauf ist — z. B. eine Block-Linie oder die Begrenzung eines Halbraums. Halte Shift beim Zeichnen gedrückt, um eine gerade Linie zu erhalten. Kreise und freie Formen zeichnest du ohne Shift. Verbindung verknüpft Figuren; die Linie folgt ihnen, wenn du sie bewegst."
+      ],
+      "keys": [
+        { "combo": "Pass", "meaning": "Weg des Balls (gestrichelt)" },
+        { "combo": "Run / Dribble", "meaning": "Lauf oder Dribbling" },
+        { "combo": "Pen", "meaning": "Freihandlinie" },
+        { "combo": "Link", "meaning": "Figuren verbinden (folgt)" },
+        { "combo": "Shift+Pen drag", "meaning": "Gerade Linie A nach B" },
+        { "combo": "Zone + Shift", "meaning": "Kreisförmige Zone" }
+      ]
+    },
+    {
+      "heading": "Kamera bewegen",
+      "paragraphs": [
+        "Zoome an eine Standardsituation heran oder zeige die ganze Spielfeldhälfte — Ctrl oder Cmd + Mausrad zoomt dorthin, wo der Mauszeiger ist. Halte die Leertaste gedrückt und ziehe, um die Ansicht zu verschieben. Alt + Ziehen funktioniert genauso."
+      ],
+      "keys": [
+        { "combo": "Ctrl/Cmd+Wheel", "meaning": "Zum Mauszeiger zoomen" },
+        { "combo": "Space+Drag", "meaning": "Ansicht verschieben" },
+        { "combo": "Alt+Drag", "meaning": "Ansicht verschieben (Alternativ)" }
+      ]
+    },
+    {
+      "heading": "Vor und während des Streams",
+      "paragraphs": [
+        "Übe vor dem Anpfiff kurz, eine Linie aufrücken zu lassen oder nur das Heimteam auszuwählen und enger zusammenzuschieben. Dann klappen diese Tasten auch im Sendemodus. Drücke B, um in den Sendemodus zu wechseln. Öffne dieses Handbuch (? / F1) nicht während des Streams — es wird sonst im Bild angezeigt.",
+        "Wechsle die Szenen mit [ ]. Lege eine Ecke und das Gegenpressing auf zwei verschiedene Szenen, statt alles unübersichtlich in ein einziges Bild zu packen.",
+        "Um eine Bewegung zu zeigen, aber das Original zu behalten, kopiere die Szene vor dem Ziehen. Die erste Szene bleibt erhalten — kehre mit [ ] zu ihr zurück. Nutze im Stream die Schaltfläche 'Duplizieren' unten rechts. Es gibt keinen Button, der alles auf Anfang zurücksetzt. Das Kopieren der Szene ist der Weg, um ein sauberes Original zu behalten."
+      ],
+      "keys": [
+        { "combo": "B", "meaning": "Sendemodus umschalten" },
+        { "combo": "[ ] or PageUp/PageDown", "meaning": "Szenen wechseln" },
+        { "combo": "Duplicate (Scenes or bottom-right)", "meaning": "Szene kopieren, Aktion zeigen" },
+        { "combo": "? or F1", "meaning": "Anleitung (nicht live öffnen)" }
+      ]
+    }
+  ]
+}
