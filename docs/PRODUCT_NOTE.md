@@ -322,23 +322,21 @@ HT で「複数枚取込 → 配置 → **誰か当て** → 解説」が一本�
 
 **座標（縦サッカー · 正本）:** 正規化 0–1 は **その向きのピッチ矩形**。縦では **x＝タッチライン幅 · y＝ゴール↔ゴール（長さ）**（`drawBoard` `worldToPitch` / [`VERTICAL_PITCH.md`](VERTICAL_PITCH.md) §3）。
 
-**縦サッカーで UI に出すプリセット（5 種のみ）:**
+**縦サッカーで UI に出すプリセット（3 種のみ）:**
 
 | id | ラベル | 意味 |
 |---|---|---|
 | `full` | 全体 | フルピッチ |
 | `final-third-left` | FT上 | 上ゴール側ファイナルサード |
 | `final-third-right` | FT下 | 下ゴール側ファイナルサード |
-| `pen-left` | ペナ上 | 上ペナルティエリア |
-| `pen-right` | ペナ下 | 下ペナルティエリア |
 
-**縦では出さない:** CK 四隅 · CK配置 · スロー — 横のセットプレー語彙。Story 向け縦ボードではゴールエンド別ズームだけで足りる。セットプレーは局面複製で対応。
+**縦では出さない:** ペナ · CK · スロー — 正方形カメラではペナと FT がほぼ同枠になり差が出ない。ペナ寄りは FT + 手動ズーム。セットプレーは局面複製で対応。
 
 **やる（Phase 1 · サッカー縦のみ）:**
 
 1. **orientation 対応のプリセット解決** — `applyViewPreset` / `viewportMatchesPreset` が `pitchOrientation` を見る。横は既存 `VIEW_PRESETS` 不変
-2. **縦用プリセット表** — 上記 5 種の `cx/cy` を縦世界で定義（`PORTRAIT_SOCCER_VIEW_PRESETS`）
-3. **`ViewportPresetGrid`** — `pitchOrientation === "portrait"` かつ soccer のとき `SoccerPortraitBody` + 縦 viewBox（46×72）のファインダー。ラベルは FT上/下 · ペナ上/下 · Short + `title`
+2. **縦用プリセット表** — 上記 3 種の `cx/cy` を縦世界で定義（`PORTRAIT_SOCCER_VIEW_PRESETS`）
+3. **`ViewportPresetGrid`** — `pitchOrientation === "portrait"` かつ soccer のとき `SoccerPortraitBody` + 縦 viewBox（46×72）のファインダー。ラベルは FT上/下 · Short + `title`
 4. **向き切替時** — 既存どおり `resetAllScenesForOrientationChange` で `DEFAULT_VIEWPORT`（維持）。横局面の viewport を縦に持ち込まない
 5. **回帰** — 横ボード・バスケ・配信 16:9 contain は変えない
 

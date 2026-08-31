@@ -207,8 +207,8 @@ export const VIEW_PRESETS: Record<ViewPresetId, Viewport> = {
 
 /**
  * 縦サッカー画角（正規化 x＝幅 · y＝長さ）。
- * UI はゴールエンド別 5 種のみ（全体 · FT上/下 · ペナ上/下）。
- * CK・スローは横のセットプレー語彙 — 縦では局面タブに出さない。
+ * UI はゴールエンド別 3 種のみ（全体 · FT上/下）。
+ * ペナは FT と正方形カメラ上ほぼ同枠のため出さない。CK・スローも横語彙。
  */
 export const PORTRAIT_SOCCER_VIEW_PRESETS: Partial<
   Record<ViewPresetId, Viewport>
@@ -216,8 +216,6 @@ export const PORTRAIT_SOCCER_VIEW_PRESETS: Partial<
   full: { zoom: 1, cx: 0.5, cy: 0.5 },
   "final-third-left": { zoom: 2.35, cx: 0.5, cy: 0.17 },
   "final-third-right": { zoom: 2.35, cx: 0.5, cy: 0.83 },
-  "pen-left": { zoom: 2.5, cx: 0.5, cy: 0.12 },
-  "pen-right": { zoom: 2.5, cx: 0.5, cy: 0.88 },
 };
 
 export function resolveViewPreset(
@@ -263,7 +261,7 @@ export function viewportMatchesPreset(
 
 export type ViewPresetEntry = { id: ViewPresetId; key: string };
 
-/** 局面タブに出す画角ボタン（競技別 · 縦サッカーはゴールエンド 5 種のみ） */
+/** 局面タブに出す画角ボタン（競技別 · 縦サッカーはゴールエンド 3 種のみ） */
 export function viewPresetsForSport(
   sport: SportId,
   orientation: PitchOrientation = "landscape",
@@ -273,13 +271,11 @@ export function viewPresetsForSport(
     effectivePitchOrientation(sport, orientation) === "portrait";
 
   if (portraitSoccer) {
-    // 縦はゴールエンド別ズームのみ。CK・スローは横のセットプレー語彙 — UI に出さない。
+    // 縦は全体 + FT上/下のみ。ペナは FT とほぼ同枠（正方形カメラ）— CK/スローも非表示。
     return [
       { id: "full", key: "viewFull" },
       { id: "final-third-left", key: "viewFtTop" },
       { id: "final-third-right", key: "viewFtBottom" },
-      { id: "pen-left", key: "viewPenTop" },
-      { id: "pen-right", key: "viewPenBottom" },
     ];
   }
 
