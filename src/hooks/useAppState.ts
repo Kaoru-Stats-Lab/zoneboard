@@ -91,7 +91,7 @@ import {
 } from "../presets/roster";
 import {
   DEFAULT_VIEWPORT,
-  VIEW_PRESETS,
+  resolveViewPreset,
   type ViewPresetId,
 } from "../presets/viewport";
 import { defaultTextFont } from "../presets/textStyle";
@@ -631,9 +631,13 @@ export function useAppState() {
 
   const applyViewPreset = useCallback(
     (id: ViewPresetId) => {
-      setViewport(VIEW_PRESETS[id], false);
+      if (!board) return;
+      setViewport(
+        resolveViewPreset(board.sport, board.pitchOrientation, id),
+        false,
+      );
     },
-    [setViewport],
+    [setViewport, board],
   );
 
   const resetViewport = useCallback(() => {

@@ -355,6 +355,7 @@ export function Drawer({ state, t }: Props) {
               <p className="hint-muted">{t("viewFocusHint")}</p>
               <ViewportPresetGrid
                 sport={board.sport}
+                pitchOrientation={board.pitchOrientation}
                 viewport={activeViewport(board)}
                 onPreset={state.applyViewPreset}
                 t={t}

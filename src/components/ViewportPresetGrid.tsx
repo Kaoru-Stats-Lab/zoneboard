@@ -1,20 +1,23 @@
 /**
  * Scene camera presets: landscape pitch + viewfinder (crop). Not Match-tab world crop.
+ * Soccer portrait uses vertical thumb + orientation-aware preset resolution.
  */
 import type { MessageKey } from "../i18n/messages";
-import type { SportId, Viewport } from "../models/types";
+import type { PitchOrientation, SportId, Viewport } from "../models/types";
+import { effectivePitchOrientation } from "../presets/sports";
 import {
-  VIEW_PRESETS,
   cameraNormRect,
+  resolveViewPreset,
   viewportMatchesPreset,
   viewPresetsForSport,
   type ViewPresetId,
 } from "../presets/viewport";
-import { SoccerLandscapeBody } from "./PitchLookPicker";
+import { SoccerLandscapeBody, SoccerPortraitBody } from "./PitchLookPicker";
 
 const FINDER = "#7eb8c4";
 const DIM = "rgba(6, 7, 8, 0.48)";
-const SOCCER_INNER = { x: 2.5, y: 2.5, w: 67, h: 41 };
+const SOCCER_INNER_LANDSCAPE = { x: 2.5, y: 2.5, w: 67, h: 41 };
+const SOCCER_INNER_PORTRAIT = { x: 2.5, y: 2.5, w: 41, h: 67 };
 const COURT_INNER = { x: 2, y: 2, w: 68, h: 34 };
 
 type Inner = { x: number; y: number; w: number; h: number };
@@ -38,13 +41,13 @@ function finderOnInner(vp: Viewport, inner: Inner) {
 }
 
 function FinderOverlay({
-  presetId,
+  viewport,
   inner,
 }: {
-  presetId: ViewPresetId;
+  viewport: Viewport;
   inner: Inner;
 }) {
-  const f = finderOnInner(VIEW_PRESETS[presetId], inner);
+  const f = finderOnInner(viewport, inner);
   return (
     <>
       <path
@@ -65,7 +68,16 @@ function FinderOverlay({
   );
 }
 
-function SoccerFinderThumb({ presetId }: { presetId: ViewPresetId }) {
+function SoccerLandscapeFinderThumb({
+  presetId,
+  sport,
+  orientation,
+}: {
+  presetId: ViewPresetId;
+  sport: SportId;
+  orientation: PitchOrientation;
+}) {
+  const vp = resolveViewPreset(sport, orientation, presetId);
   return (
     <svg
       className="pitch-thumb pitch-thumb--landscape view-preset__svg"
@@ -77,14 +89,49 @@ function SoccerFinderThumb({ presetId }: { presetId: ViewPresetId }) {
       focusable="false"
     >
       <SoccerLandscapeBody />
-      <FinderOverlay presetId={presetId} inner={SOCCER_INNER} />
+      <FinderOverlay viewport={vp} inner={SOCCER_INNER_LANDSCAPE} />
     </svg>
   );
 }
 
-function CourtFinderThumb({ presetId }: { presetId: ViewPresetId }) {
+function SoccerPortraitFinderThumb({
+  presetId,
+  sport,
+  orientation,
+}: {
+  presetId: ViewPresetId;
+  sport: SportId;
+  orientation: PitchOrientation;
+}) {
+  const vp = resolveViewPreset(sport, orientation, presetId);
+  return (
+    <svg
+      className="pitch-thumb pitch-thumb--portrait view-preset__svg"
+      viewBox="0 0 46 72"
+      width="46"
+      height="72"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <SoccerPortraitBody />
+      <FinderOverlay viewport={vp} inner={SOCCER_INNER_PORTRAIT} />
+    </svg>
+  );
+}
+
+function CourtFinderThumb({
+  presetId,
+  sport,
+  orientation,
+}: {
+  presetId: ViewPresetId;
+  sport: SportId;
+  orientation: PitchOrientation;
+}) {
   const wood = "#c4a574";
   const line = "#1a1612";
+  const vp = resolveViewPreset(sport, orientation, presetId);
   return (
     <svg
       className="pitch-thumb pitch-thumb--landscape view-preset__svg"
@@ -126,29 +173,35 @@ function CourtFinderThumb({ presetId }: { presetId: ViewPresetId }) {
         stroke={line}
         strokeWidth="1"
       />
-      <FinderOverlay presetId={presetId} inner={COURT_INNER} />
+      <FinderOverlay viewport={vp} inner={COURT_INNER} />
     </svg>
   );
 }
 
 export function ViewportPresetGrid({
   sport,
+  pitchOrientation = "landscape",
   viewport,
   onPreset,
   t,
 }: {
   sport: SportId;
+  pitchOrientation?: PitchOrientation;
   viewport: Viewport;
   onPreset: (id: ViewPresetId) => void;
   t: (k: MessageKey) => string;
 }) {
   const court = sport === "basketball";
+  const portraitSoccer =
+    sport === "soccer" &&
+    effectivePitchOrientation(sport, pitchOrientation) === "portrait";
+
   return (
     <div className="view-preset-grid">
-      {viewPresetsForSport(sport).map(({ id, key }) => {
+      {viewPresetsForSport(sport, pitchOrientation).map(({ id, key }) => {
         const full = t(key as MessageKey);
         const short = t(`${key}Short` as MessageKey);
-        const active = viewportMatchesPreset(viewport, id);
+        const active = viewportMatchesPreset(viewport, id, sport, pitchOrientation);
         return (
           <button
             key={id}
@@ -162,9 +215,23 @@ export function ViewportPresetGrid({
             onClick={() => onPreset(id)}
           >
             {court ? (
-              <CourtFinderThumb presetId={id} />
+              <CourtFinderThumb
+                presetId={id}
+                sport={sport}
+                orientation={pitchOrientation}
+              />
+            ) : portraitSoccer ? (
+              <SoccerPortraitFinderThumb
+                presetId={id}
+                sport={sport}
+                orientation={pitchOrientation}
+              />
             ) : (
-              <SoccerFinderThumb presetId={id} />
+              <SoccerLandscapeFinderThumb
+                presetId={id}
+                sport={sport}
+                orientation={pitchOrientation}
+              />
             )}
             <span className="view-preset__label">{short}</span>
           </button>
