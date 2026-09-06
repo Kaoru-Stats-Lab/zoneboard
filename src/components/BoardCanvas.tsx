@@ -334,15 +334,13 @@ export function BoardCanvas({
   useEffect(() => {
     if (!board) return;
     let cancelled = false;
-    const look =
-      board.sport === "soccer" ? board.soccerBallLook : "classic";
-    loadBallImage(board.sport, look).then((img) => {
+    loadBallImage(board.sport).then((img) => {
       if (!cancelled) setBallImage(img);
     });
     return () => {
       cancelled = true;
     };
-  }, [board?.sport, board?.soccerBallLook]);
+  }, [board?.sport]);
 
   useEffect(() => {
     const url = state.captureImport?.image?.url ?? null;
@@ -605,6 +603,7 @@ export function BoardCanvas({
       watermarkImage,
       outer,
       background: ground,
+      broadcastFrame: frame,
       dragVisual:
         d?.mode === "piece" || d?.mode === "piece-line"
           ? { pieceId: d.id, boost: d.boost }

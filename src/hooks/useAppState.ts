@@ -7,6 +7,11 @@ import {
 } from "../models/ballAttach";
 import { roleFromPosition } from "../models/pieceRole";
 import {
+  defaultFacingForTeam,
+  setGroupFacing,
+  setGroupFacingToTeamAttack,
+} from "../models/pieceFacing";
+import {
   DEFAULT_MAX_SUBS,
   statusesAfterSub,
 } from "../models/matchStatus";
@@ -553,7 +558,13 @@ export function useAppState() {
             hideHalf: "none",
             teamFocus: "both",
             pieces: withRosterIdentity(
-              formationPieces(sport, true, benchCount, kitsFromBoard(b)),
+              formationPieces(
+                sport,
+                true,
+                benchCount,
+                kitsFromBoard(b),
+                "landscape",
+              ),
               b.roster,
               s.pieces,
             ),
@@ -580,6 +591,7 @@ export function useAppState() {
           true,
           board.benchCount,
           kitsFromBoard(board),
+          board.pitchOrientation,
         ),
         board.roster,
         s.pieces,
@@ -594,7 +606,13 @@ export function useAppState() {
         mapActiveScene({ ...b, benchCount }, (s) => ({
           ...s,
           pieces: withRosterIdentity(
-            formationPieces(b.sport, true, benchCount, kitsFromBoard(b)),
+            formationPieces(
+              b.sport,
+              true,
+              benchCount,
+              kitsFromBoard(b),
+              b.pitchOrientation,
+            ),
             b.roster,
             s.pieces,
           ),
@@ -762,6 +780,7 @@ export function useAppState() {
               nextTeam,
               b.benchCount,
               kits,
+              b.pitchOrientation,
             ),
           })),
         };
@@ -806,6 +825,7 @@ export function useAppState() {
               nextTeam,
               b.benchCount,
               kits,
+              b.pitchOrientation,
             ),
           })),
         };
@@ -837,6 +857,7 @@ export function useAppState() {
       board.roster.away,
       board.benchCount,
       kitsFromBoard(board),
+      board.pitchOrientation,
     );
     if (pieces.length === 0) return false;
     updateScene((s) => ({
@@ -912,7 +933,10 @@ export function useAppState() {
             ? HOME_COLOR
             : AWAY_COLOR,
         team,
-        facing: team === "home" ? 0 : 180,
+        facing: defaultFacingForTeam(
+          team,
+          board?.pitchOrientation ?? "landscape",
+        ),
         role,
         kit: "outfield",
       };
@@ -1056,6 +1080,19 @@ export function useAppState() {
     () => applyToSelectedPieces(flipGroupVertical),
     [applyToSelectedPieces],
   );
+
+  const setSelectedFacing = useCallback(
+    (facing: number, record = true) =>
+      applyToSelectedPieces((g) => setGroupFacing(g, facing), record),
+    [applyToSelectedPieces],
+  );
+
+  const faceSelectedTeamAttack = useCallback(() => {
+    const orientation = board?.pitchOrientation ?? "landscape";
+    applyToSelectedPieces((g) =>
+      setGroupFacingToTeamAttack(g, orientation),
+    );
+  }, [applyToSelectedPieces, board?.pitchOrientation]);
 
   const alignSelected = useCallback(
     (axis: AlignAxis) => applyToSelectedPieces((g) => alignGroup(g, axis)),
@@ -2089,7 +2126,7 @@ export function useAppState() {
         label: "",
         color: colorForKit(kits, team, "outfield") ?? (team === "home" ? HOME_COLOR : AWAY_COLOR),
         team,
-        facing: team === "home" ? 0 : 180,
+        facing: defaultFacingForTeam(team, board.pitchOrientation),
         role,
         kit: "outfield",
       };
@@ -2247,6 +2284,8 @@ export function useAppState() {
     scaleSelectedFromCentroid,
     flipSelectedHorizontal,
     flipSelectedVertical,
+    setSelectedFacing,
+    faceSelectedTeamAttack,
     alignSelected,
     distributeSelected,
     duplicateSelected,

@@ -32,8 +32,8 @@ export const FIELD_BUFFER = 0.14;
 export const BROADCAST_FRAME_ASPECT = 16 / 9;
 
 /**
- * 配信フレーム外（ピラー／レターボックス）。
- * 芝ランオフ緑と分け、横リサイズしても「ピッチが広がった」ように見せない。
+ * 配信フレーム外（ウィンドウのレターボックス）。
+ * フレーム内の縦ピッチ・ピラーは outerFillForBoard（ランオフ）で塗る。
  * クロマキー用マットではない（ピッチ面の緑はキーらない）。
  */
 export const BROADCAST_MATTE = "#0a0a0a";
@@ -66,7 +66,8 @@ export type SurfaceLayout = FieldLayout & { frame: PitchRect | null };
 /**
  * 編集: キャンバス全体。帯は上端予約。
  * 配信: 窓内に 16:9 を contain。帯はその内側上端。ピッチは帯の下。
- * フレーム外は呼び出し側で BROADCAST_MATTE（芝緑にしない）。
+ * フレーム外は呼び出し側で BROADCAST_MATTE。
+ * フレーム内・outer 外（縦ピッチのピラー等）は outerFillForBoard（ランオフ）。
  */
 export function fitSurfaceLayout(
   canvasW: number,

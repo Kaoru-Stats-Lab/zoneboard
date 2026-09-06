@@ -4,9 +4,8 @@
 
 | ファイル | 競技 | 形式 | 備考 |
 |----------|------|------|------|
-| `soccer_ball2.svg` | サッカー | SVG | クラシック（Telstar）正本 |
-| `soccer_starball.svg` | サッカー | SVG | CL夜用スターボール（ロゴなし） |
-| `soccer.png` | サッカー | PNG 256px | 背景除去済み（クラシック補助） |
+| `soccer.png` | サッカー | PNG 256px | 背景除去済み（推奨） |
+| `soccer_ball2.svg` | サッカー | SVG | 軽量フォールバック |
 | `basketball.png` | バスケ | PNG 256px | 背景除去済み |
 | `volleyball.png` | バレー | PNG 256px | ミカサ配色・背景除去済み |
 | `futsal.png` | フットサル | PNG 256px | 白＋赤緑青ベタ・背景除去済み |

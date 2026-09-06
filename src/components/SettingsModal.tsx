@@ -136,12 +136,7 @@ export function SettingsModal({
 
   const onExport = async () => {
     if (!state.board) return;
-    const ballImg = await loadBallImage(
-      state.board.sport,
-      state.board.sport === "soccer"
-        ? state.board.soccerBallLook
-        : "classic",
-    );
+    const ballImg = await loadBallImage(state.board.sport);
     const blob = await exportBoardPng(
       state.board,
       state.watermark,

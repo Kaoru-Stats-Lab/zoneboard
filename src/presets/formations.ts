@@ -1,7 +1,8 @@
 import { DEFAULT_BENCH_COUNT } from "./bench";
 import type { KitPalette, PieceKit } from "../models/kits";
 import { colorForKit, defaultKitPalette } from "../models/kits";
-import type { Piece, SportId } from "../models/types";
+import type { Piece, PitchOrientation, SportId } from "../models/types";
+import { defaultFacingForTeam } from "../models/pieceFacing";
 import { uid } from "../models/id";
 import { FIVE_A_SIDE_DEFAULT_BENCH } from "./smallPitches";
 
@@ -30,8 +31,9 @@ export function piecesFromSpots(
   team: "home" | "away",
   role: "starter" | "bench" = "starter",
   kits: KitPalette = defaultKitPalette(),
+  orientation: PitchOrientation = "landscape",
 ): Piece[] {
-  const facing = team === "home" ? 0 : 180;
+  const facing = defaultFacingForTeam(team, orientation);
   return toPieces(spots, team, facing, role, kits);
 }
 
@@ -87,15 +89,36 @@ export function formationPieces(
   bothTeams: boolean,
   benchCount: number = DEFAULT_BENCH_COUNT,
   kits: KitPalette = defaultKitPalette(),
+  orientation: PitchOrientation = "landscape",
 ): Piece[] {
   const benchN = benchCount;
+  const fh = defaultFacingForTeam("home", orientation);
+  const fa = defaultFacingForTeam("away", orientation);
 
   if (sport === "soccer") {
-    const home = toPieces(SOCCER_442_HOME, "home", 0, "starter", kits);
-    const homeBench = toPieces(benchSpots(benchN, "home"), "home", 0, "bench", kits);
+    const home = toPieces(SOCCER_442_HOME, "home", fh, "starter", kits);
+    const homeBench = toPieces(
+      benchSpots(benchN, "home"),
+      "home",
+      fh,
+      "bench",
+      kits,
+    );
     if (!bothTeams) return [...home, ...homeBench];
-    const away = toPieces(mirrorAway(SOCCER_442_HOME), "away", 180, "starter", kits);
-    const awayBench = toPieces(benchSpots(benchN, "away"), "away", 180, "bench", kits);
+    const away = toPieces(
+      mirrorAway(SOCCER_442_HOME),
+      "away",
+      fa,
+      "starter",
+      kits,
+    );
+    const awayBench = toPieces(
+      benchSpots(benchN, "away"),
+      "away",
+      fa,
+      "bench",
+      kits,
+    );
     return [...home, ...homeBench, ...away, ...awayBench];
   }
 
@@ -108,14 +131,14 @@ export function formationPieces(
       { x: 0.72, y: 0.5, number: "5" },
     ];
     const n = Math.min(benchN, FIVE_A_SIDE_DEFAULT_BENCH);
-    const home = toPieces(spots, "home", 0, "starter", kits);
-    const homeBench = toPieces(benchSpots(n, "home"), "home", 0, "bench", kits);
+    const home = toPieces(spots, "home", fh, "starter", kits);
+    const homeBench = toPieces(benchSpots(n, "home"), "home", fh, "bench", kits);
     if (!bothTeams) return [...home, ...homeBench];
     return [
       ...home,
       ...homeBench,
-      ...toPieces(mirrorAway(spots), "away", 180, "starter", kits),
-      ...toPieces(benchSpots(n, "away"), "away", 180, "bench", kits),
+      ...toPieces(mirrorAway(spots), "away", fa, "starter", kits),
+      ...toPieces(benchSpots(n, "away"), "away", fa, "bench", kits),
     ];
   }
 
@@ -135,11 +158,11 @@ export function formationPieces(
       { x: 0.92, y: 0.38, number: "4" },
       { x: 0.92, y: 0.62, number: "5" },
     ];
-    const home = toPieces(homeSpots, "home", 0, "starter", kits);
+    const home = toPieces(homeSpots, "home", fh, "starter", kits);
     const homeBench = toPieces(
       benchSpots(Math.min(benchN, 7), "home"),
       "home",
-      0,
+      fh,
       "bench",
       kits,
     );
@@ -147,8 +170,8 @@ export function formationPieces(
     return [
       ...home,
       ...homeBench,
-      ...toPieces(awaySpots, "away", 180, "starter", kits),
-      ...toPieces(benchSpots(Math.min(benchN, 7), "away"), "away", 180, "bench", kits),
+      ...toPieces(awaySpots, "away", fa, "starter", kits),
+      ...toPieces(benchSpots(Math.min(benchN, 7), "away"), "away", fa, "bench", kits),
     ];
   }
 
@@ -160,11 +183,11 @@ export function formationPieces(
     { x: 0.5, y: 0.35, number: "5" },
     { x: 0.5, y: 0.65, number: "6" },
   ];
-  const home = toPieces(homeSpots, "home", 0, "starter", kits);
+  const home = toPieces(homeSpots, "home", fh, "starter", kits);
   const homeBench = toPieces(
     benchSpots(Math.min(benchN, 6), "home"),
     "home",
-    0,
+    fh,
     "bench",
     kits,
   );
@@ -172,7 +195,7 @@ export function formationPieces(
   return [
     ...home,
     ...homeBench,
-    ...toPieces(mirrorAway(homeSpots), "away", 180, "starter", kits),
-    ...toPieces(benchSpots(Math.min(benchN, 6), "away"), "away", 180, "bench", kits),
+    ...toPieces(mirrorAway(homeSpots), "away", fa, "starter", kits),
+    ...toPieces(benchSpots(Math.min(benchN, 6), "away"), "away", fa, "bench", kits),
   ];
 }

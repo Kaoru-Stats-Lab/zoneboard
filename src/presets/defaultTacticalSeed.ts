@@ -15,6 +15,7 @@ import type {
   Scene,
   SportId,
 } from "../models/types";
+import { defaultFacingForTeam } from "../models/pieceFacing";
 import { DEFAULT_VIEWPORT } from "./viewport";
 
 type Spot = {
@@ -42,7 +43,7 @@ function pieceFromSpot(spot: Spot, kits: KitPalette): Piece {
     label: "",
     color: colorForKit(kits, spot.team, kit),
     team: spot.team,
-    facing: spot.team === "home" ? 0 : 180,
+    facing: defaultFacingForTeam(spot.team, "landscape"),
     role: "starter",
     kit,
   };

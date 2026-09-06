@@ -460,7 +460,7 @@ export const messages = {
     ballSnapHint: "ボールを選手に重ねて離すと吸着。選手を動かすと一緒に動く。",
     pieceSwapHint:
       "ピッチの選手をベンチ側にドロップで交代。人数オーバー可（解説用）。",
-    pieceRotateHint: "向き三角をドラッグ（R で +45°）",
+    pieceRotateHint: "向き三角をドラッグ（R=+45° · Shift+R=攻撃方向揃え · Ctrl+矢印=方位・斜め可）",
     selectionColor: "選択色",
     pass: "パス",
     passHint: "パス＝ボールの軌道（クロス・シュート含む）。選手は動かない。",
@@ -508,12 +508,6 @@ export const messages = {
     showPlayerNamesHint:
       "この試合だけ。名簿の名前をピッチ上に表示。サイズは選手マーカーに連動。",
     pieceSize: "マーカーサイズ",
-    ballLook: "試合球",
-    ballLookClassicShort: "古典",
-    ballLookStarballShort: "CL",
-    ballLookClassic: "クラシック",
-    ballLookStarball: "CLスターボール",
-    ballLookHint: "CL解説の夜はスターボール。ブランドロゴなし。",
     sizeTactics: "戦術（大）",
     sizeBalanced: "標準",
     sizePosition: "精密（小）",
@@ -1070,7 +1064,7 @@ export const messages = {
     ballSnapHint: "Drop the ball on a piece to snap. It moves with the piece",
     pieceSwapHint:
       "Drop a pitch piece on a bench piece to sub. Extra pieces on court are OK for commentary",
-    pieceRotateHint: "Drag the facing triangle (R = +45°)",
+    pieceRotateHint: "Drag the facing triangle (R=+45° · Shift+R=team attack · Ctrl/Cmd+arrows=cardinal/diagonal)",
     selectionColor: "Selection color",
     pass: "Pass",
     passHint: "Pass = ball path (pass, cross, shot). Pieces stay put",
@@ -1118,12 +1112,6 @@ export const messages = {
     showPlayerNamesHint:
       "This match only. Roster names on the pitch. Size follows piece scale",
     pieceSize: "Piece size",
-    ballLook: "Match ball",
-    ballLookClassicShort: "Classic",
-    ballLookStarballShort: "CL",
-    ballLookClassic: "Classic",
-    ballLookStarball: "CL starball",
-    ballLookHint: "Use the starball for Champions League nights. No brand logos.",
     sizeTactics: "Tactics (large)",
     sizeBalanced: "Balanced",
     sizePosition: "Position (small)",
@@ -1675,7 +1663,7 @@ export const messages = {
     ballSnapHint: "Suelta el balón sobre una ficha para pegarlo. Se moverá con ella.",
     pieceSwapHint:
       "Suelta una ficha del campo sobre una del banquillo para cambiar. Puede haber más de 11 para explicar jugadas.",
-    pieceRotateHint: "Arrastra el triángulo (R = +45°)",
+    pieceRotateHint: "Arrastra el triángulo (R=+45° · Shift+R=ataque · Ctrl+flechas=cardinal/diagonal)",
     selectionColor: "Color de selección",
     pass: "Pase",
     passHint: "Pase = ruta del balón (pase, centro, tiro). Las fichas no se mueven.",
@@ -1723,12 +1711,6 @@ export const messages = {
     showPlayerNamesHint:
       "Solo este partido. Nombres de plantilla en el campo. El tamaño va con la escala de la ficha.",
     pieceSize: "Tamaño de ficha",
-    ballLook: "Balón",
-    ballLookClassicShort: "Clásico",
-    ballLookStarballShort: "CL",
-    ballLookClassic: "Clásico",
-    ballLookStarball: "Estrella CL",
-    ballLookHint: "Estrella para noches de Champions. Sin logos de marca.",
     sizeTactics: "Táctica (grande)",
     sizeBalanced: "Equilibrado",
     sizePosition: "Posición (pequeña)",
@@ -2279,7 +2261,7 @@ export const messages = {
     ballSnapHint: "Solte a bola em uma peça para colar. Ela se moverá junto",
     pieceSwapHint:
       "Solte uma peça do campo em uma peça reserva para substituir. O quadro aceita jogadores extras para explicação",
-    pieceRotateHint: "Arraste o triângulo para girar (R = +45°)",
+    pieceRotateHint: "Arraste o triângulo (R=+45° · Shift+R=ataque · Ctrl+setas=cardinal/diagonal)",
     selectionColor: "Cor de seleção",
     pass: "Passe",
     passHint:
@@ -2328,12 +2310,6 @@ export const messages = {
     showPlayerNamesHint:
       "Apenas nesta partida. Nomes do elenco no campo. O tamanho acompanha a escala da peça",
     pieceSize: "Tamanho da peça",
-    ballLook: "Bola",
-    ballLookClassicShort: "Clássica",
-    ballLookStarballShort: "CL",
-    ballLookClassic: "Clássica",
-    ballLookStarball: "Estrela CL",
-    ballLookHint: "Estrela para noites de Champions. Sem logos de marca.",
     sizeTactics: "Tática (grande)",
     sizeBalanced: "Equilibrado",
     sizePosition: "Posição (pequena)",
@@ -2892,7 +2868,7 @@ export const messages = {
     ballSnapHint: "Upuść piłkę na figurkę, aby przyczepić. Porusza się razem z figurką",
     pieceSwapHint:
       "Upuść figurkę z boiska na figurkę z ławki, aby dokonać zmiany. Dodatkowe figurki są OK do komentarza",
-    pieceRotateHint: "Przeciągnij trójkąt kierunku (R = +45°)",
+    pieceRotateHint: "Przeciągnij trójkąt (R=+45° · Shift+R=atak · Ctrl+strzałki=kierunek/ukośnie)",
     selectionColor: "Kolor zaznaczenia",
     pass: "Podanie",
     passHint:
@@ -2941,12 +2917,6 @@ export const messages = {
     showPlayerNamesHint:
       "Tylko ten mecz. Nazwiska ze składu na boisku. Rozmiar zależy od skali figurki",
     pieceSize: "Rozmiar figurki",
-    ballLook: "Piłka",
-    ballLookClassicShort: "Klasyczna",
-    ballLookStarballShort: "CL",
-    ballLookClassic: "Klasyczna",
-    ballLookStarball: "Gwiazda CL",
-    ballLookHint: "Gwiazda na noce Ligi Mistrzów. Bez logo marek.",
     sizeTactics: "Taktyka (duży)",
     sizeBalanced: "Zrównoważony",
     sizePosition: "Pozycja (mały)",
@@ -3518,7 +3488,7 @@ export const messages = {
       "Lass den Ball auf einer Figur los, damit er einrastet und sich mitbewegt",
     pieceSwapHint:
       "Lass eine Figur auf der Bank los, um einzuwechseln. Zusätzliche Spieler auf dem Feld sind für Analysen OK",
-    pieceRotateHint: "Ziehe das Dreieck, um die Blickrichtung zu ändern (R = +45°)",
+    pieceRotateHint: "Dreieck ziehen (R=+45° · Shift+R=Angriff · Ctrl+Pfeile=Himmelsrichtung/diagonal)",
     selectionColor: "Auswahlfarbe",
     pass: "Pass",
     passHint:
@@ -3567,12 +3537,6 @@ export const messages = {
     showPlayerNamesHint:
       "Nur für dieses Spiel. Namen aus dem Kader auf dem Rasen. Größe skaliert mit der Figur",
     pieceSize: "Größe der Figuren",
-    ballLook: "Spielball",
-    ballLookClassicShort: "Klassik",
-    ballLookStarballShort: "CL",
-    ballLookClassic: "Klassik",
-    ballLookStarball: "CL-Sternball",
-    ballLookHint: "Sternball für Champions-League-Abende. Ohne Markenlogos.",
     sizeTactics: "Taktik (groß)",
     sizeBalanced: "Ausgewogen",
     sizePosition: "Position (klein)",
@@ -4141,7 +4105,7 @@ export const messages = {
     ballSnapHint: "Lâche le ballon sur une figurine pour l'attacher. Il bougera avec elle",
     pieceSwapHint:
       "Lâche un joueur du terrain sur un joueur du banc pour faire un changement",
-    pieceRotateHint: "Glisse le triangle pour tourner (R = +45°)",
+    pieceRotateHint: "Glisse le triangle (R=+45° · Shift+R=attaque · Ctrl+flèches=cardinal/diagonal)",
     selectionColor: "Couleur de sélection",
     pass: "Passe",
     passHint:
@@ -4190,12 +4154,6 @@ export const messages = {
     showPlayerNamesHint:
       "Pour ce match uniquement. Noms de l'effectif sur la pelouse. S'adapte à la taille de la figurine",
     pieceSize: "Taille",
-    ballLook: "Ballon",
-    ballLookClassicShort: "Classique",
-    ballLookStarballShort: "CL",
-    ballLookClassic: "Classique",
-    ballLookStarball: "Étoile CL",
-    ballLookHint: "Étoile pour les soirs de Ligue des champions. Sans logos.",
     sizeTactics: "Tactique (grand)",
     sizeBalanced: "Équilibré",
     sizePosition: "Position (petit)",
@@ -4760,7 +4718,7 @@ export const messages = {
       "Topu bir figürün üzerine bırakarak yapıştırın. Figürle birlikte hareket eder",
     pieceSwapHint:
       "Sahadaki figürü yedek figürün üzerine bırakıp değiştirin. Analiz için sahada fazladan figür olabilir",
-    pieceRotateHint: "Baktığı yön üçgenini sürükle (R = +45°)",
+    pieceRotateHint: "Üçgeni sürükle (R=+45° · Shift+R=hücum · Ctrl+oklar=yön/çapraz)",
     selectionColor: "Seçim rengi",
     pass: "Pas",
     passHint: "Pas = top yolu (pas, orta, şut). Figürler sabit kalır",
@@ -4808,12 +4766,6 @@ export const messages = {
     showPlayerNamesHint:
       "Sadece bu maç için. Kadrodaki isimler sahada görünür. Boyutu figüre göre değişir",
     pieceSize: "Figür boyutu",
-    ballLook: "Top",
-    ballLookClassicShort: "Klasik",
-    ballLookStarballShort: "CL",
-    ballLookClassic: "Klasik",
-    ballLookStarball: "CL yıldız",
-    ballLookHint: "Şampiyonlar Ligi geceleri için yıldız top. Marka logosu yok.",
     sizeTactics: "Taktik (büyük)",
     sizeBalanced: "Dengeli",
     sizePosition: "Konum (küçük)",
@@ -5369,7 +5321,7 @@ export const messages = {
     ballSnapHint: "Rilascia la palla su un pezzo per agganciarla. Si muove con il pezzo",
     pieceSwapHint:
       "Rilascia un pezzo in campo su uno in panchina per cambiare. Pezzi extra in campo OK per commento",
-    pieceRotateHint: "Trascina il triangolo di orientamento (R = +45°)",
+    pieceRotateHint: "Trascina il triangolo (R=+45° · Shift+R=attacco · Ctrl+frecce=cardinali/diagonali)",
     selectionColor: "Colore selezione",
     pass: "Passaggio",
     passHint:
@@ -5418,12 +5370,6 @@ export const messages = {
     showPlayerNamesHint:
       "Solo questa partita. Nomi dalla rosa sul campo. La dimensione segue la scala pezzi",
     pieceSize: "Dimensione pezzi",
-    ballLook: "Pallone",
-    ballLookClassicShort: "Classico",
-    ballLookStarballShort: "CL",
-    ballLookClassic: "Classico",
-    ballLookStarball: "Stella CL",
-    ballLookHint: "Stella per le serate di Champions. Nessun logo di marca.",
     sizeTactics: "Tattica (grande)",
     sizeBalanced: "Bilanciato",
     sizePosition: "Posizione (piccolo)",

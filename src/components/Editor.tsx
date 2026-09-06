@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   exportAspectRatio,
   type ExportCropAnchor,
@@ -11,6 +11,7 @@ import type { MessageKey } from "../i18n/messages";
 import { toolMessageKey } from "./tools";
 import { messages } from "../i18n/messages";
 import type { SportId } from "../models/types";
+import { facingFromArrowKeys } from "../models/pieceFacing";
 
 function sceneLabelPhKey(sport: SportId | undefined): MessageKey {
   switch (sport) {
@@ -62,6 +63,9 @@ export function Editor({ state }: Props) {
   const [windowFocused, setWindowFocused] = useState(true);
   const [howToOpen, setHowToOpen] = useState(false);
   const [inlineBanner, setInlineBanner] = useState<string | null>(null);
+  /** Ctrl/Cmd+矢印の同時押し（斜め向き） */
+  const facingArrowKeysRef = useRef(new Set<string>());
+  const facingChordRecordingRef = useRef(false);
 
   useEffect(() => {
     if (!inlineBanner) return;
@@ -292,6 +296,24 @@ export function Editor({ state }: Props) {
             );
             return;
           }
+          // Alt+矢印はブラウザの戻る／進むと衝突するため使わない。
+          // Ctrl/Cmd+矢印は同時押しで斜め（右+上=右上 など）
+          if (
+            (e.ctrlKey || e.metaKey) &&
+            !e.shiftKey &&
+            !e.altKey
+          ) {
+            facingArrowKeysRef.current.add(e.key);
+            const facing = facingFromArrowKeys(facingArrowKeysRef.current);
+            if (facing != null) {
+              const record = !facingChordRecordingRef.current;
+              facingChordRecordingRef.current = true;
+              state.setSelectedFacing(facing, record);
+            }
+            return;
+          }
+          facingArrowKeysRef.current.clear();
+          facingChordRecordingRef.current = false;
           const step = e.shiftKey ? 0.04 : 0.012;
           state.nudgeSelected(
             arrow === "left" ? -step : arrow === "right" ? step : 0,
@@ -369,6 +391,11 @@ export function Editor({ state }: Props) {
         return;
       }
       if (e.key.toLowerCase() === "r" && state.selectedPieceIds.length > 0 && state.scene) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          state.faceSelectedTeamAttack();
+          return;
+        }
         state.captureUndo();
         for (const id of state.selectedPieceIds) {
           const p = state.scene.pieces.find((x) => x.id === id);
@@ -390,8 +417,48 @@ export function Editor({ state }: Props) {
       if (e.key === "l" || e.key === "L") state.setTool("link");
       if (e.key === "t" || e.key === "T") state.setTool("text");
     };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight" ||
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown"
+      ) {
+        facingArrowKeysRef.current.delete(e.key);
+        if (facingArrowKeysRef.current.size === 0) {
+          facingChordRecordingRef.current = false;
+          return;
+        }
+        if (
+          state.selectedPieceIds.length > 0 &&
+          (e.ctrlKey || e.metaKey) &&
+          !e.shiftKey &&
+          !e.altKey
+        ) {
+          const facing = facingFromArrowKeys(facingArrowKeysRef.current);
+          if (facing != null) state.setSelectedFacing(facing, false);
+        }
+        return;
+      }
+      if (e.key === "Control" || e.key === "Meta") {
+        facingArrowKeysRef.current.clear();
+        facingChordRecordingRef.current = false;
+      }
+    };
+
+    const clearFacingChord = () => {
+      facingArrowKeysRef.current.clear();
+      facingChordRecordingRef.current = false;
+    };
+
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", clearFacingChord);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", clearFacingChord);
+    };
   }, [state, howToOpen]);
 
   useEffect(() => {

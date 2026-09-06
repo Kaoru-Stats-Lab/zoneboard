@@ -15,6 +15,7 @@ import {
   HOME_GK_COLOR,
   PIECE_SCALE,
 } from "../models/types";
+import { defaultFacingForTeam } from "../models/pieceFacing";
 import { DEFAULT_VIEWPORT } from "../presets/viewport";
 
 export const LP_HERO_CYCLE_MS = 6000;
@@ -84,7 +85,7 @@ function makePiece(spot: Spot, team: "home" | "away"): Piece {
         ? HOME_COLOR
         : AWAY_COLOR,
     team,
-    facing: team === "home" ? 0 : 180,
+    facing: defaultFacingForTeam(team, "landscape"),
     role: "starter",
     kit: isGk ? "gk" : "outfield",
   };

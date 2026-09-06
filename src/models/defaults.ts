@@ -138,7 +138,6 @@ export function createBoard(
     soccerPitchSurface: sport === "soccer" ? "grass" : "paper",
     showPlayerNames: false,
     pieceScale: PIECE_SCALE.balanced,
-    soccerBallLook: "classic",
     benchCount,
     scenes: [scene],
     activeSceneId: scene.id,
@@ -328,11 +327,6 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     showPlayerNames:
       (raw as { showPlayerNames?: boolean }).showPlayerNames ?? true,
     pieceScale: raw.pieceScale ?? PIECE_SCALE.balanced,
-    soccerBallLook:
-      (raw as { soccerBallLook?: BoardDocument["soccerBallLook"] })
-        .soccerBallLook === "starball"
-        ? "starball"
-        : "classic",
     benchCount,
     scenes,
     activeSceneId: activeSceneId!,

@@ -1466,43 +1466,6 @@ export function Drawer({ state, t }: Props) {
                 }
               />
             </label>
-            {board.sport === "soccer" && (
-              <div className="piece-scale-presets" role="group" aria-label={t("ballLook")}>
-                <button
-                  type="button"
-                  className={
-                    board.soccerBallLook === "classic" ? "active" : undefined
-                  }
-                  title={t("ballLookClassic")}
-                  onClick={() =>
-                    state.updateBoard(
-                      (b) => ({ ...b, soccerBallLook: "classic" }),
-                      false,
-                    )
-                  }
-                >
-                  {t("ballLookClassicShort")}
-                </button>
-                <button
-                  type="button"
-                  className={
-                    board.soccerBallLook === "starball" ? "active" : undefined
-                  }
-                  title={t("ballLookStarball")}
-                  onClick={() =>
-                    state.updateBoard(
-                      (b) => ({ ...b, soccerBallLook: "starball" }),
-                      false,
-                    )
-                  }
-                >
-                  {t("ballLookStarballShort")}
-                </button>
-              </div>
-            )}
-            {board.sport === "soccer" && (
-              <p className="hint-muted">{t("ballLookHint")}</p>
-            )}
             <div className="piece-scale-presets" role="group" aria-label={t("pieceSize")}>
               <button
                 type="button"

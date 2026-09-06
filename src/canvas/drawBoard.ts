@@ -268,6 +268,11 @@ export function drawBoard(
     watermarkImage?: HTMLImageElement | null;
     outer?: PitchRect;
     background?: string;
+    /**
+     * 配信 16:9 フレーム。マット地のうえにランオフ色で塗り、
+     * 縦ピッチの左右ピラーが真っ黒にならないようにする。
+     */
+    broadcastFrame?: PitchRect | null;
     dragVisual?: DragVisual | null;
     /** 描画中の自由曲線プレビュー */
     previewLine?: { kind: LineKind; points: { x: number; y: number }[] } | null;
@@ -307,8 +312,16 @@ export function drawBoard(
   } = {},
 ) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.fillStyle = opts.background ?? outerFillForBoard(board);
+  const runoff = outerFillForBoard(board);
+  ctx.fillStyle = opts.background ?? runoff;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  // 16:9 内・outer 外（縦ピッチのピラー等）はランオフ色。フレーム外マットは残す。
+  const bf = opts.broadcastFrame;
+  if (bf) {
+    ctx.fillStyle = runoff;
+    ctx.fillRect(bf.x, bf.y, bf.w, bf.h);
+  }
 
   const outer =
     opts.outer ??
@@ -319,7 +332,7 @@ export function drawBoard(
       h: pitch.h * 1.28,
     } satisfies PitchRect);
 
-  ctx.fillStyle = outerFillForBoard(board);
+  ctx.fillStyle = runoff;
   ctx.fillRect(outer.x, outer.y, outer.w, outer.h);
 
   const sel = opts.selectionColor ?? "#111111";
@@ -659,6 +672,12 @@ function drawPiece(
   const edgeW = pieceIdleEdgeWidth(r, darkFill);
   const nose = pieceNoseGeom(x, y, r, piece.facing);
   const fillR = Math.max(1, r - edgeW * 0.5);
+  // 暗面ピッチ: 白縁／白ノーズ。白ピッチ: 暗縁／暗ノーズ（白 on 白で向きが消えるのを防ぐ）
+  const darkPitch = usesDarkPitchInk(board);
+  const silInk = darkPitch ? "#ffffff" : "#111111";
+  const silSelectHalo = darkPitch
+    ? "rgba(0,0,0,0.55)"
+    : "rgba(255,255,255,0.85)";
 
   if (dragging) {
     ctx.save();
@@ -677,11 +696,11 @@ function drawPiece(
     ctx.globalAlpha = 0.45;
   }
 
-  // 1) 白シルエット（ノーズ含む一体）→ 2) キット円（番号の座）→ 3) 外枠1回
+  // 1) シルエット（ノーズ含む一体）→ 2) キット円（番号の座）→ 3) 外枠1回
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
   tracePieceSilhouette(ctx, x, y, r, nose);
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = silInk;
   ctx.fill();
 
   ctx.beginPath();
@@ -692,15 +711,15 @@ function drawPiece(
   tracePieceSilhouette(ctx, x, y, r, nose);
   if (selected || dragging) {
     ctx.lineWidth = Math.max(4, edgeW + 1.5);
-    ctx.strokeStyle = "rgba(0,0,0,0.55)";
+    ctx.strokeStyle = silSelectHalo;
     ctx.stroke();
     tracePieceSilhouette(ctx, x, y, r, nose);
     ctx.lineWidth = Math.max(2.25, edgeW);
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = silInk;
     ctx.stroke();
   } else {
     ctx.lineWidth = edgeW;
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = silInk;
     ctx.stroke();
   }
   ctx.lineJoin = "miter";
@@ -709,7 +728,9 @@ function drawPiece(
   if (piece.role === "bench") {
     ctx.beginPath();
     ctx.arc(x, y, fillR * 0.92, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.75)";
+    ctx.strokeStyle = darkPitch
+      ? "rgba(255,255,255,0.75)"
+      : "rgba(17,17,17,0.7)";
     ctx.setLineDash([2, 2]);
     ctx.lineWidth = 1;
     ctx.stroke();

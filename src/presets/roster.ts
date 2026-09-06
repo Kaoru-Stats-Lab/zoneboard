@@ -1,8 +1,15 @@
 import { normalizePieceNumber } from "../canvas/pieceInk";
 import type { KitPalette } from "../models/kits";
 import { colorForKit, defaultKitPalette, sportHasGk } from "../models/kits";
-import type { Piece, RosterPlayer, SportId, TeamRoster } from "../models/types";
+import type {
+  Piece,
+  PitchOrientation,
+  RosterPlayer,
+  SportId,
+  TeamRoster,
+} from "../models/types";
 import { uid } from "../models/id";
+import { defaultFacingForTeam } from "../models/pieceFacing";
 import { DEFAULT_BENCH_COUNT } from "./bench";
 
 /** 競技ごとのスタメン人数 */
@@ -253,8 +260,9 @@ export function piecesFromRoster(
   roster: TeamRoster,
   benchCount: number = DEFAULT_BENCH_COUNT,
   kits: KitPalette = defaultKitPalette(),
+  orientation: PitchOrientation = "landscape",
 ): Piece[] {
-  const facing = team === "home" ? 0 : 180;
+  const facing = defaultFacingForTeam(team, orientation);
   const nStart = STARTER_COUNT[sport];
   let spots = starterSpots(sport);
   if (team === "away") spots = mirrorX(spots);
@@ -365,10 +373,11 @@ export function applyLineupToScenePieces(
   away: TeamRoster,
   benchCount: number = DEFAULT_BENCH_COUNT,
   kits: KitPalette = defaultKitPalette(),
+  orientation: PitchOrientation = "landscape",
 ): Piece[] {
   return [
-    ...piecesFromRoster(sport, "home", home, benchCount, kits),
-    ...piecesFromRoster(sport, "away", away, benchCount, kits),
+    ...piecesFromRoster(sport, "home", home, benchCount, kits, orientation),
+    ...piecesFromRoster(sport, "away", away, benchCount, kits, orientation),
   ];
 }
 
@@ -380,12 +389,13 @@ export function applyTeamLineupToScenePieces(
   roster: TeamRoster,
   benchCount: number = DEFAULT_BENCH_COUNT,
   kits: KitPalette = defaultKitPalette(),
+  orientation: PitchOrientation = "landscape",
 ): Piece[] {
   const kept = existing.filter((p) => p.team !== team);
   if (roster.players.length === 0) return kept;
   return [
     ...kept,
-    ...piecesFromRoster(sport, team, roster, benchCount, kits),
+    ...piecesFromRoster(sport, team, roster, benchCount, kits, orientation),
   ];
 }
 

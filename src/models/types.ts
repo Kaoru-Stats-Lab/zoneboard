@@ -381,11 +381,6 @@ export interface BoardDocument {
   /** 芝上スターターに名前ピル（暗チップ）を出す。控えは常にチップ。新規 false · migrate 欠落 true */
   showPlayerNames: boolean;
   pieceScale: number;
-  /**
-   * Soccer match-ball look. Classic Telstar vs CL-night starball pictogram.
-   * Other sports ignore this (always their single ball).
-   */
-  soccerBallLook: SoccerBallLook;
   /** 控え人数（片チーム）。大会カテゴリではなく人数そのもの */
   benchCount: number;
   scenes: Scene[];
@@ -501,9 +496,6 @@ export const PIECE_SCALE = {
   position: 0.65,
 } as const;
 
-/** Soccer only — classic Telstar vs CL-night starball (no brand logos). */
-export type SoccerBallLook = "classic" | "starball";
-
 /** Soccer-only pitch face. Other sports ignore. */
 export type SoccerPitchSurface = "paper" | "grass" | "slate";
 
@@ -511,11 +503,6 @@ export const SOCCER_PITCH_SURFACES: readonly SoccerPitchSurface[] = [
   "paper",
   "grass",
   "slate",
-] as const;
-
-export const SOCCER_BALL_LOOKS: readonly SoccerBallLook[] = [
-  "classic",
-  "starball",
 ] as const;
 
 export const UI_FONT_STACK =

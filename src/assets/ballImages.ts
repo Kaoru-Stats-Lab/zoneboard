@@ -1,6 +1,6 @@
 /** 競技別ボール画像（/public/balls）— デザイン言語は docs/BALL_DESIGN.md */
 
-import type { SoccerBallLook, SportId } from "../models/types";
+import type { SportId } from "../models/types";
 
 const cache = new Map<string, HTMLImageElement>();
 const inflight = new Map<string, Promise<HTMLImageElement | null>>();
@@ -18,19 +18,6 @@ const BALL_SRC: Partial<Record<SportId | "rugby", string[]>> = {
   volleyball: ["balls/volleyball.png"],
   // rugby: ["balls/rugby.png"],
 };
-
-const SOCCER_LOOK_SRC: Record<SoccerBallLook, string[]> = {
-  classic: ["balls/soccer_ball2.svg", "balls/soccer.png"],
-  starball: ["balls/soccer_starball.svg", "balls/soccer_ball2.svg"],
-};
-
-function pathsFor(
-  sport: SportId | "rugby",
-  soccerBallLook: SoccerBallLook = "classic",
-): string[] | undefined {
-  if (sport === "soccer") return SOCCER_LOOK_SRC[soccerBallLook];
-  return BALL_SRC[sport];
-}
 
 function urlFor(path: string): string {
   return `${import.meta.env.BASE_URL}${path}`;
@@ -61,9 +48,8 @@ function loadOne(path: string): Promise<HTMLImageElement | null> {
 
 export function getBallImage(
   sport: SportId | "rugby",
-  soccerBallLook: SoccerBallLook = "classic",
 ): HTMLImageElement | null {
-  const paths = pathsFor(sport, soccerBallLook);
+  const paths = BALL_SRC[sport];
   if (!paths) return null;
   for (const path of paths) {
     const img = cache.get(path);
@@ -74,9 +60,8 @@ export function getBallImage(
 
 export async function loadBallImage(
   sport: SportId | "rugby",
-  soccerBallLook: SoccerBallLook = "classic",
 ): Promise<HTMLImageElement | null> {
-  const paths = pathsFor(sport, soccerBallLook);
+  const paths = BALL_SRC[sport];
   if (!paths) return null;
   for (const path of paths) {
     const img = await loadOne(path);
@@ -85,24 +70,17 @@ export async function loadBallImage(
   return null;
 }
 
-export function loadSoccerBallImage(
-  soccerBallLook: SoccerBallLook = "classic",
-): Promise<HTMLImageElement> {
-  return loadBallImage("soccer", soccerBallLook).then((img) => {
+export function loadSoccerBallImage(): Promise<HTMLImageElement> {
+  return loadBallImage("soccer").then((img) => {
     if (!img) return Promise.reject(new Error("soccer ball asset"));
     return img;
   });
 }
 
-export function getSoccerBallImage(
-  soccerBallLook: SoccerBallLook = "classic",
-): HTMLImageElement | null {
-  return getBallImage("soccer", soccerBallLook);
+export function getSoccerBallImage(): HTMLImageElement | null {
+  return getBallImage("soccer");
 }
 
-export function preloadBallForSport(
-  sport: SportId,
-  soccerBallLook: SoccerBallLook = "classic",
-): void {
-  void loadBallImage(sport, soccerBallLook);
+export function preloadBallForSport(sport: SportId): void {
+  void loadBallImage(sport);
 }
