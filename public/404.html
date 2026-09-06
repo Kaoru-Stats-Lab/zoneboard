@@ -6,6 +6,16 @@
     <title>Page not found — ZoneBoard</title>
     <meta name="description" content="This address is not a ZoneBoard page." />
     <meta name="robots" content="noindex, nofollow" />
+    <link rel="alternate" hreflang="en" href="https://zoneboard.app/" />
+    <link rel="alternate" hreflang="de" href="https://zoneboard.app/de/" />
+    <link rel="alternate" hreflang="es" href="https://zoneboard.app/es/" />
+    <link rel="alternate" hreflang="fr" href="https://zoneboard.app/fr/" />
+    <link rel="alternate" hreflang="it" href="https://zoneboard.app/it/" />
+    <link rel="alternate" hreflang="pl" href="https://zoneboard.app/pl/" />
+    <link rel="alternate" hreflang="pt" href="https://zoneboard.app/pt/" />
+    <link rel="alternate" hreflang="tr" href="https://zoneboard.app/tr/" />
+    <link rel="alternate" hreflang="ja" href="https://zoneboard.app/ja/" />
+    <link rel="alternate" hreflang="x-default" href="https://zoneboard.app/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ZoneBoard" />
     <meta property="og:title" content="Page not found — ZoneBoard" />
@@ -75,5 +85,31 @@
       <p>© 2026 ZoneBoard · Kaoru Stats Lab</p>
     </footer>
     
+  <script>
+(function () {
+  var map = {"en":{"lang":"en-GB","title":"This page is not here","copy":"The address is wrong, or the page has moved. The tactics board is still on this site.","board":"Open board","home":"Home","homeHref":"/","boardHref":"/board"},"de":{"lang":"de","title":"Diese Seite gibt es nicht","copy":"Die Adresse ist falsch oder die Seite wurde verschoben. Das Taktikboard ist weiterhin auf dieser Site.","board":"Board öffnen","home":"Start","homeHref":"/de/","boardHref":"/board/?lang=de"},"es":{"lang":"es","title":"Esta página no está aquí","copy":"La dirección es incorrecta o la página se movió. El tablero táctico sigue en este sitio.","board":"Abrir tablero","home":"Inicio","homeHref":"/es/","boardHref":"/board/?lang=es"},"fr":{"lang":"fr","title":"Cette page n'existe pas","copy":"L'adresse est incorrecte ou la page a été déplacée. Le tableau tactique est toujours sur ce site.","board":"Ouvrir le tableau","home":"Accueil","homeHref":"/fr/","boardHref":"/board/?lang=fr"},"it":{"lang":"it","title":"Questa pagina non c'è","copy":"L'indirizzo è sbagliato o la pagina è stata spostata. La lavagna tattica è ancora su questo sito.","board":"Apri lavagna","home":"Home","homeHref":"/it/","boardHref":"/board/?lang=it"},"pl":{"lang":"pl","title":"Nie ma takiej strony","copy":"Adres jest błędny lub strona została przeniesiona. Plansza taktyczna nadal jest na tej stronie.","board":"Otwórz planszę","home":"Start","homeHref":"/pl/","boardHref":"/board/?lang=pl"},"pt":{"lang":"pt-BR","title":"Esta página não existe","copy":"O endereço está errado ou a página mudou. O quadro tático continua neste site.","board":"Abrir quadro","home":"Início","homeHref":"/pt/","boardHref":"/board/?lang=pt"},"tr":{"lang":"tr","title":"Bu sayfa burada değil","copy":"Adres yanlış veya sayfa taşındı. Taktik tahtası hâlâ bu sitede.","board":"Tahtayı aç","home":"Ana sayfa","homeHref":"/tr/","boardHref":"/board/?lang=tr"},"ja":{"lang":"ja","title":"ページが見つかりません","copy":"アドレスが間違っているか、ページが移動しました。戦術ボードは引き続き利用できます。","board":"ボードを開く","home":"ホーム","homeHref":"/ja/","boardHref":"/board/?lang=ja"}};
+  var pick = "en";
+  var m = location.pathname.match(/^\/(ja|es|pt|pl|de|fr|tr|it)(\/|$)/);
+  if (m) pick = m[1];
+  else {
+    var langs = navigator.languages || [navigator.language || "en"];
+    for (var i = 0; i < langs.length; i++) {
+      var base = String(langs[i] || "").toLowerCase().split("-")[0];
+      if (map[base]) { pick = base; break; }
+    }
+  }
+  var c = map[pick] || map.en;
+  document.documentElement.lang = c.lang;
+  document.title = "404 — ZoneBoard";
+  var h1 = document.querySelector(".site-status h1");
+  var lede = document.querySelector(".site-status .lede");
+  if (h1) h1.textContent = c.title;
+  if (lede) lede.textContent = c.copy;
+  var actions = document.querySelector(".site-status-actions");
+  if (actions) {
+    actions.innerHTML = '<a class="primary" href="' + c.boardHref + '">' + c.board + '</a>\n  <a class="ghost" href="' + c.homeHref + '">' + c.home + '</a>';
+  }
+})();
+</script>
   </body>
 </html>

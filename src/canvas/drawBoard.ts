@@ -495,6 +495,68 @@ function drawPieceNumberLabel(
   ctx.fillText(text, x, y);
 }
 
+/** 向きノーズ（円＋短い一体シルエット）。比率は全サイズ共通 · 画面 px 床のみ。 */
+const NOSE_LEN_RATIO = 0.45;
+const NOSE_HALF_RATIO = 0.35;
+const NOSE_LEN_MIN_PX = 3.5;
+const NOSE_HALF_MIN_PX = 2.5;
+
+type PieceNoseGeom = {
+  rad: number;
+  tipLen: number;
+  tipHalf: number;
+  halfAngle: number;
+  tipX: number;
+  tipY: number;
+};
+
+function pieceNoseGeom(
+  x: number,
+  y: number,
+  r: number,
+  facingDeg: number,
+): PieceNoseGeom {
+  const rad = (facingDeg * Math.PI) / 180;
+  const tipLen = Math.max(r * NOSE_LEN_RATIO, NOSE_LEN_MIN_PX);
+  const tipHalf = Math.max(r * NOSE_HALF_RATIO, NOSE_HALF_MIN_PX);
+  const halfAngle = Math.asin(Math.min(0.95, tipHalf / Math.max(r, 1)));
+  return {
+    rad,
+    tipLen,
+    tipHalf,
+    halfAngle,
+    tipX: x + Math.cos(rad) * (r + tipLen),
+    tipY: y + Math.sin(rad) * (r + tipLen),
+  };
+}
+
+/** 円の長弧＋先端2辺の閉パス（弦で円を切らない）。 */
+function tracePieceSilhouette(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  nose: PieceNoseGeom,
+) {
+  const a0 = nose.rad - nose.halfAngle;
+  const a1 = nose.rad + nose.halfAngle;
+  ctx.beginPath();
+  // canvas: counterclockwise=true → a0→a1 の長弧（ノーズ開口を空ける）
+  ctx.arc(x, y, r, a0, a1, true);
+  ctx.lineTo(nose.tipX, nose.tipY);
+  ctx.closePath();
+}
+
+function pieceIdleEdgeWidth(r: number, darkFill: boolean): number {
+  const floor = darkFill ? 2 : 1.5;
+  return Math.min(3.25, Math.max(floor, r * 0.07));
+}
+
+function pieceSelectionRingRadius(r: number, tipLen: number): number {
+  const tipReach = r + tipLen;
+  return Math.max(r * 1.72, tipReach + Math.max(3, r * 0.12));
+}
+
 /** OUT / INJ / IN — 帯内記号。色は第4審判ボード（赤=出・緑=入）。docs/BROADCAST_SUBS.md §5b */
 function drawMatchStatusMark(
   ctx: CanvasRenderingContext2D,
@@ -594,7 +656,9 @@ function drawPiece(
   const discipline = pieceDiscipline(board, piece);
   const fillColor = pieceFillColor(piece);
   const darkFill = relativeLuminance(fillColor) < 0.15;
-  const idleEdgeW = darkFill ? 2 : 1.5;
+  const edgeW = pieceIdleEdgeWidth(r, darkFill);
+  const nose = pieceNoseGeom(x, y, r, piece.facing);
+  const fillR = Math.max(1, r - edgeW * 0.5);
 
   if (dragging) {
     ctx.save();
@@ -613,29 +677,38 @@ function drawPiece(
     ctx.globalAlpha = 0.45;
   }
 
+  // 1) 白シルエット（ノーズ含む一体）→ 2) キット円（番号の座）→ 3) 外枠1回
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  tracePieceSilhouette(ctx, x, y, r, nose);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+
   ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.arc(x, y, fillR, 0, Math.PI * 2);
   ctx.fillStyle = fillColor;
   ctx.fill();
-  // 選択縁は芝生でも読める白＋暗ハロー（設定の黒選択色は使わない）
+
+  tracePieceSilhouette(ctx, x, y, r, nose);
   if (selected || dragging) {
-    ctx.lineWidth = 4;
+    ctx.lineWidth = Math.max(4, edgeW + 1.5);
     ctx.strokeStyle = "rgba(0,0,0,0.55)";
     ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.lineWidth = 2.25;
+    tracePieceSilhouette(ctx, x, y, r, nose);
+    ctx.lineWidth = Math.max(2.25, edgeW);
     ctx.strokeStyle = "#fff";
     ctx.stroke();
   } else {
-    ctx.lineWidth = idleEdgeW;
+    ctx.lineWidth = edgeW;
     ctx.strokeStyle = "#fff";
     ctx.stroke();
   }
+  ctx.lineJoin = "miter";
+  ctx.lineCap = "butt";
 
   if (piece.role === "bench") {
     ctx.beginPath();
-    ctx.arc(x, y, r * 0.92, 0, Math.PI * 2);
+    ctx.arc(x, y, fillR * 0.92, 0, Math.PI * 2);
     ctx.strokeStyle = "rgba(255,255,255,0.75)";
     ctx.setLineDash([2, 2]);
     ctx.lineWidth = 1;
@@ -644,29 +717,6 @@ function drawPiece(
   }
 
   drawMatchStatusMark(ctx, x, y, r, piece.matchStatus);
-
-  const rad = (piece.facing * Math.PI) / 180;
-  const fx = x + Math.cos(rad) * r;
-  const fy = y + Math.sin(rad) * r;
-  const tx = x + Math.cos(rad) * (r + r * 0.45);
-  const ty = y + Math.sin(rad) * (r + r * 0.45);
-  const ox = Math.cos(rad + Math.PI / 2) * r * 0.35;
-  const oy = Math.sin(rad + Math.PI / 2) * r * 0.35;
-  ctx.beginPath();
-  ctx.moveTo(tx, ty);
-  ctx.lineTo(fx - ox, fy - oy);
-  ctx.lineTo(fx + ox, fy + oy);
-  ctx.closePath();
-  ctx.fillStyle = "#fff";
-  ctx.fill();
-  // 向きは二次情報。キットの番号インクに追従させない（黄GKだけ黒三角になる）
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-  ctx.strokeStyle = "rgba(0,0,0,0.55)";
-  ctx.lineWidth = Math.max(0.7, Math.min(1.05, r * 0.048));
-  ctx.stroke();
-  ctx.lineJoin = "miter";
-  ctx.lineCap = "butt";
 
   if (discipline.sentOff) ctx.restore();
   if (ghost) ctx.restore();
@@ -677,9 +727,14 @@ function drawPiece(
     drawPieceCardMark(ctx, x, y, r, discipline.cardMark);
   }
 
-  // 押した瞬間からリング。ドラッグ中に消すと「1テンポ遅れてアクティブ」に見える
+  // 押した瞬間からリング。ノーズ先端を切らない
   if (selected) {
-    drawPieceSelectionRing(ctx, x, y, r * 1.72);
+    drawPieceSelectionRing(
+      ctx,
+      x,
+      y,
+      pieceSelectionRingRadius(r, nose.tipLen),
+    );
   }
 
   if (ghost) return;
@@ -699,7 +754,7 @@ function drawPiece(
     const marks: ("L" | "R")[] =
       foot === "B" ? ["L", "R"] : [foot];
     for (const mark of marks) {
-      const footRad = rad + (mark === "L" ? -Math.PI / 2 : Math.PI / 2);
+      const footRad = nose.rad + (mark === "L" ? -Math.PI / 2 : Math.PI / 2);
       const footDist = r * 0.9;
       const mx = x + Math.cos(footRad) * footDist;
       const my = y + Math.sin(footRad) * footDist;
@@ -1833,7 +1888,7 @@ function pieceCenterNorm(
   return worldToPitch(piece.x, piece.y, board);
 }
 
-/** 描画と同じ向き三角付近か（本体円の外側） */
+/** 描画と同じ向きノーズ外側か（本体円の外側） */
 function hitsPieceFacing(
   board: BoardDocument,
   piece: Piece,
@@ -1843,12 +1898,15 @@ function hitsPieceFacing(
 ): boolean {
   const m = pieceCenterNorm(board, piece);
   if (!m) return false;
+  const rPx = pieceRadius(pitch, board, piece.role);
+  const tipLen = Math.max(rPx * NOSE_LEN_RATIO, NOSE_LEN_MIN_PX);
   const rn = pieceHitRadiusNorm(board, pitch, piece);
   const d = Math.hypot(m.x - normX, m.y - normY);
   if (d <= rn * 1.05) return false;
+  const tipFactor = (rPx + tipLen) / Math.max(rPx, 1);
   const rad = (piece.facing * Math.PI) / 180;
-  const tipX = m.x + Math.cos(rad) * rn * 1.4;
-  const tipY = m.y + Math.sin(rad) * rn * 1.4;
+  const tipX = m.x + Math.cos(rad) * rn * tipFactor;
+  const tipY = m.y + Math.sin(rad) * rn * tipFactor;
   const tipD = Math.hypot(normX - tipX, normY - tipY);
   return tipD <= rn * 0.7;
 }

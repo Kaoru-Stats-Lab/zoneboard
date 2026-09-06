@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://zoneboard.app/</loc></url>
+  <url><loc>https://zoneboard.app/de/</loc></url>
+  <url><loc>https://zoneboard.app/es/</loc></url>
+  <url><loc>https://zoneboard.app/fr/</loc></url>
+  <url><loc>https://zoneboard.app/it/</loc></url>
+  <url><loc>https://zoneboard.app/pl/</loc></url>
+  <url><loc>https://zoneboard.app/pt/</loc></url>
+  <url><loc>https://zoneboard.app/tr/</loc></url>
+  <url><loc>https://zoneboard.app/ja/</loc></url>
   <url><loc>https://zoneboard.app/board</loc></url>
   <url><loc>https://zoneboard.app/about/</loc><lastmod>2026-08-26</lastmod></url>
   <url><loc>https://zoneboard.app/guide/</loc><lastmod>2026-08-26</lastmod></url>
@@ -13,5 +21,12 @@
   <url><loc>https://zoneboard.app/cookies/</loc><lastmod>2026-08-26</lastmod></url>
   <url><loc>https://zoneboard.app/contact/</loc><lastmod>2026-08-26</lastmod></url>
   <url><loc>https://zoneboard.app/materials/shortcut-sheet/</loc><lastmod>2026-08-26</lastmod></url>
+  <url><loc>https://zoneboard.app/materials/shortcut-sheet/de/</loc><lastmod>2026-08-26</lastmod></url>
+  <url><loc>https://zoneboard.app/materials/shortcut-sheet/es/</loc><lastmod>2026-08-26</lastmod></url>
+  <url><loc>https://zoneboard.app/materials/shortcut-sheet/fr/</loc><lastmod>2026-08-26</lastmod></url>
+  <url><loc>https://zoneboard.app/materials/shortcut-sheet/it/</loc><lastmod>2026-08-26</lastmod></url>
+  <url><loc>https://zoneboard.app/materials/shortcut-sheet/pl/</loc><lastmod>2026-08-26</lastmod></url>
+  <url><loc>https://zoneboard.app/materials/shortcut-sheet/pt/</loc><lastmod>2026-08-26</lastmod></url>
+  <url><loc>https://zoneboard.app/materials/shortcut-sheet/tr/</loc><lastmod>2026-08-26</lastmod></url>
   <url><loc>https://zoneboard.app/materials/shortcut-sheet/ja/</loc><lastmod>2026-08-26</lastmod></url>
 </urlset>

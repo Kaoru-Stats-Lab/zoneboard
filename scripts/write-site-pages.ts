@@ -7,7 +7,13 @@ import {
   publicChangelogEntries,
   type ChangelogType,
 } from "../src/site/changelog.ts";
-import { CONSENT_BANNER } from "../src/site/consentCopy.ts";
+import { consentFor } from "../src/site/consentCopy.ts";
+import { LP_LOCALES, LOCALE_META, hreflangLinks, landingUrl } from "../src/site/localeNav.ts";
+import { publicCopy } from "../src/site/localePublicCopy.ts";
+import {
+  PRIVACY_SUMMARY,
+  privacySummaryLabel,
+} from "../src/site/privacySummaries.ts";
 import { STREAM_SHARE_BLURB } from "../src/site/shareCopy.ts";
 import {
   SITE_META,
@@ -18,7 +24,10 @@ import { uniqueSectionIds } from "../src/site/siteAnchors.ts";
 import {
   SHORTCUT_SHEET_COPY,
   shortcutSheetArticle,
+  shortcutSheetPath,
+  shortcutSheetSubdir,
 } from "../src/site/shortcutSheet.ts";
+import type { Locale } from "../src/i18n/messages.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
 const publicDir = path.join(root, "public");
@@ -51,7 +60,22 @@ function nav(current: string): string {
   }).join("\n");
 }
 
-/** Public pages ship English only. Japanese copy on SitePage is not written to HTML. */
+function privacySummariesBlock(): string {
+  const items = LP_LOCALES.map((locale) => {
+    const lang = LOCALE_META[locale].bcp47;
+    return `<section id="privacy-summary-${locale}" class="privacy-summary" lang="${esc(lang)}">
+<h2>${esc(privacySummaryLabel(locale))}</h2>
+<p>${linkify(PRIVACY_SUMMARY[locale])}</p>
+</section>`;
+  }).join("\n");
+  return `<aside class="privacy-summaries" aria-labelledby="privacy-summaries-heading">
+<h2 id="privacy-summaries-heading">${esc(publicCopy("en").privacySummaryHeading)}</h2>
+<p class="privacy-summaries-note">${esc(publicCopy("en").siteNavEnTitle)}. Full policy below is in English.</p>
+${items}
+</aside>`;
+}
+
+/** Public pages ship English only. Native one-paragraph privacy summaries at top. */
 function article(page: SitePage): string {
   const ids = uniqueSectionIds(page.sections);
   const sectionBlocks = page.sections.map(
@@ -72,10 +96,12 @@ function article(page: SitePage): string {
       : page.slug === "updates"
         ? updatesExtras()
         : "";
+  const privacyLead =
+    page.slug === "privacy" ? `${privacySummariesBlock()}\n` : "";
   return `<article>
 <h1>${esc(page.titleEn)}</h1>
 <p class="lede">${linkify(page.ledeEn)}</p>
-${extras}
+${privacyLead}${extras}
 ${form}
 ${sections}
 </article>`;
@@ -88,24 +114,30 @@ ${materialsShareCopy()}`;
 }
 
 function shortcutSheetLinks(): string {
+  const links = LP_LOCALES.map(
+    (locale) =>
+      `<a class="${locale === "en" ? "primary" : "ghost"}" href="${esc(shortcutSheetPath(locale))}">${esc(LOCALE_META[locale].nativeName)}</a>`,
+  ).join("\n");
   return `<aside class="site-share shortcut-sheet-promo" aria-labelledby="shortcut-sheet-heading">
 <h2 id="shortcut-sheet-heading">Broadcast shortcut sheet</h2>
 <p>Printable command table for on-air piece work. Same shortcuts as the in-app how-to (? / F1).</p>
 <p class="site-share__row">
-<a class="primary" href="/materials/shortcut-sheet/">English · Print / PDF</a>
-<a class="ghost" href="/materials/shortcut-sheet/ja/">日本語</a>
+${links}
 </p>
 </aside>`;
 }
 
 /** After Guide § rehearse — anchor #shortcut-sheet for PH / outreach links. */
 function guideShortcutSheetAside(): string {
+  const links = LP_LOCALES.map(
+    (locale) =>
+      `<a class="${locale === "en" ? "primary" : "ghost"}" href="${esc(shortcutSheetPath(locale))}">${esc(LOCALE_META[locale].nativeName)}</a>`,
+  ).join("\n");
   return `<aside id="shortcut-sheet" class="site-share shortcut-sheet-promo" aria-labelledby="guide-shortcut-heading">
 <h2 id="guide-shortcut-heading">Print before you go live</h2>
 <p>Broadcast mode hides the tools. Keep this command table beside the keyboard — same shortcuts as ? / F1 in the editor.</p>
 <p class="site-share__row">
-<a class="primary" href="/materials/shortcut-sheet/">English · Print / PDF</a>
-<a class="ghost" href="/materials/shortcut-sheet/ja/">日本語</a>
+${links}
 </p>
 </aside>`;
 }
@@ -230,27 +262,61 @@ document.getElementById("contact-form").addEventListener("submit", async (event)
 </script>`;
 }
 
+function consentLocaleScript(): string {
+  const payload = Object.fromEntries(
+    LP_LOCALES.map((locale) => [locale, consentFor(locale)]),
+  );
+  return `<script>
+(function () {
+  var map = ${JSON.stringify(payload)};
+  var pick = "en";
+  var langs = navigator.languages || [navigator.language || "en"];
+  for (var i = 0; i < langs.length; i++) {
+    var base = String(langs[i] || "").toLowerCase().split("-")[0];
+    if (map[base]) { pick = base; break; }
+  }
+  var c = map[pick] || map.en;
+  var root = document.getElementById("site-consent");
+  if (!root) return;
+  var title = root.querySelector(".site-consent__title");
+  var copy = root.querySelector(".site-consent__copy");
+  if (title) title.textContent = c.title;
+  if (copy) copy.textContent = c.copy;
+  root.querySelectorAll("[data-consent]").forEach(function (btn) {
+    var key = btn.getAttribute("data-consent");
+    if (key === "reject") btn.textContent = c.reject;
+    if (key === "analytics") btn.textContent = c.analytics;
+    if (key === "ads") btn.textContent = c.ads;
+  });
+  var policy = root.querySelector("a[href='/cookies/']");
+  if (policy) policy.textContent = c.policyLabel;
+})();
+</script>`;
+}
+
 function consentBanner(): string {
+  const c = consentFor("en");
   return `<aside id="site-consent" class="site-consent site-consent--compact" hidden role="region" aria-labelledby="site-consent-title">
   <div class="site-consent__inner">
-    <p class="site-consent__title" id="site-consent-title">${esc(CONSENT_BANNER.title)}</p>
+    <p class="site-consent__title" id="site-consent-title">${esc(c.title)}</p>
     <p class="site-consent__copy">
-      ${esc(CONSENT_BANNER.copy)}
+      ${esc(c.copy)}
     </p>
     <div class="site-consent__actions">
       <button type="button" class="site-consent__btn" data-consent="reject">
-        ${esc(CONSENT_BANNER.reject)}
+        ${esc(c.reject)}
       </button>
       <button type="button" class="site-consent__btn" data-consent="analytics">
-        ${esc(CONSENT_BANNER.analytics)}
+        ${esc(c.analytics)}
       </button>
       <button type="button" class="site-consent__btn site-consent__btn--allow" data-consent="ads">
-        ${esc(CONSENT_BANNER.ads)}
+        ${esc(c.ads)}
       </button>
-      <a href="${esc(CONSENT_BANNER.policyHref)}">${esc(CONSENT_BANNER.policyLabel)}</a>
+      <a href="${esc(c.policyHref)}">${esc(c.policyLabel)}</a>
     </div>
   </div>
 </aside>
+${consentLocaleScript()}
 <script src="/consent.js" defer></script>`;
 }
 
@@ -282,6 +348,10 @@ function documentShell(opts: ShellOpts): string {
     ? `    <meta property="og:url" content="${esc(opts.canonical)}" />\n`
     : "";
   const ogImage = absoluteUrl(PUBLISHER.siteUrl, SITE_META.ogImagePath);
+  const alternates = hreflangLinks(PUBLISHER.siteUrl)
+    .split("\n")
+    .map((line) => `    ${line}`)
+    .join("\n");
   return `<!doctype html>
 <html lang="${esc(lang)}">
   <head>
@@ -289,7 +359,8 @@ function documentShell(opts: ShellOpts): string {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${esc(title)}</title>
     <meta name="description" content="${esc(opts.description)}" />
-${canonical}${robots}    <meta property="og:type" content="website" />
+${canonical}${robots}${alternates}
+    <meta property="og:type" content="website" />
     <meta property="og:site_name" content="${esc(PUBLISHER.product)}" />
     <meta property="og:title" content="${esc(title)}" />
     <meta property="og:description" content="${esc(opts.description)}" />
@@ -386,11 +457,10 @@ for (const page of SITE_PAGES) {
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>${PUBLISHER.siteUrl}/</loc></url>
+${LP_LOCALES.map((locale) => `  <url><loc>${landingUrl(locale, PUBLISHER.siteUrl)}</loc></url>`).join("\n")}
   <url><loc>${PUBLISHER.siteUrl}/board</loc></url>
 ${SITE_PAGES.map((p) => `  <url><loc>${PUBLISHER.siteUrl}/${p.slug}/</loc><lastmod>${PUBLISHER.updatedIso}</lastmod></url>`).join("\n")}
-  <url><loc>${PUBLISHER.siteUrl}/materials/shortcut-sheet/</loc><lastmod>${PUBLISHER.updatedIso}</lastmod></url>
-  <url><loc>${PUBLISHER.siteUrl}/materials/shortcut-sheet/ja/</loc><lastmod>${PUBLISHER.updatedIso}</lastmod></url>
+${LP_LOCALES.map((locale) => `  <url><loc>${PUBLISHER.siteUrl}${shortcutSheetPath(locale)}</loc><lastmod>${PUBLISHER.updatedIso}</lastmod></url>`).join("\n")}
 </urlset>
 `;
 await writeFile(path.join(publicDir, "sitemap.xml"), sitemap);
@@ -403,6 +473,52 @@ Allow: /
 Sitemap: ${PUBLISHER.siteUrl}/sitemap.xml
 `,
 );
+
+function notFoundLocaleScript(): string {
+  const payload = Object.fromEntries(
+    LP_LOCALES.map((locale) => {
+      const c = publicCopy(locale);
+      return [
+        locale,
+        {
+          lang: LOCALE_META[locale].bcp47,
+          title: c.notFoundTitle,
+          copy: c.notFoundCopy,
+          board: c.notFoundOpenBoard,
+          home: c.notFoundHome,
+          homeHref: locale === "en" ? "/" : `/${locale}/`,
+          boardHref: locale === "en" ? "/board" : `/board/?lang=${locale}`,
+        },
+      ];
+    }),
+  );
+  return `<script>
+(function () {
+  var map = ${JSON.stringify(payload)};
+  var pick = "en";
+  var m = location.pathname.match(/^\\/(ja|es|pt|pl|de|fr|tr|it)(\\/|$)/);
+  if (m) pick = m[1];
+  else {
+    var langs = navigator.languages || [navigator.language || "en"];
+    for (var i = 0; i < langs.length; i++) {
+      var base = String(langs[i] || "").toLowerCase().split("-")[0];
+      if (map[base]) { pick = base; break; }
+    }
+  }
+  var c = map[pick] || map.en;
+  document.documentElement.lang = c.lang;
+  document.title = "404 — ZoneBoard";
+  var h1 = document.querySelector(".site-status h1");
+  var lede = document.querySelector(".site-status .lede");
+  if (h1) h1.textContent = c.title;
+  if (lede) lede.textContent = c.copy;
+  var actions = document.querySelector(".site-status-actions");
+  if (actions) {
+    actions.innerHTML = '<a class="primary" href="' + c.boardHref + '">' + c.board + '</a>\\n  <a class="ghost" href="' + c.homeHref + '">' + c.home + '</a>';
+  }
+})();
+</script>`;
+}
 
 await writeFile(
   path.join(publicDir, "404.html"),
@@ -419,7 +535,7 @@ await writeFile(
   <a class="ghost" href="/guide/">Guide</a>`,
     }),
     consent: false,
-  }),
+  }).replace("</body>", `${notFoundLocaleScript()}\n  </body>`),
 );
 
 await writeFile(
@@ -441,13 +557,12 @@ await writeFile(
 
 console.log(`wrote ${SITE_PAGES.length} pages, ~${totalWords} words`);
 
-for (const locale of ["en", "ja"] as const) {
+for (const locale of LP_LOCALES) {
   const copy = SHORTCUT_SHEET_COPY[locale];
-  const subdir =
-    locale === "ja" ? "materials/shortcut-sheet/ja" : "materials/shortcut-sheet";
+  const subdir = shortcutSheetSubdir(locale);
   const dir = path.join(publicDir, subdir);
   await mkdir(dir, { recursive: true });
-  const canonical = `${PUBLISHER.siteUrl}/${subdir}/`;
+  const canonical = `${PUBLISHER.siteUrl}${shortcutSheetPath(locale)}`;
   await writeFile(
     path.join(dir, "index.html"),
     documentShell({
@@ -457,11 +572,11 @@ for (const locale of ["en", "ja"] as const) {
       currentNav: "materials",
       main: shortcutSheetArticle(locale),
       consent: true,
-      lang: locale === "ja" ? "ja" : "en-GB",
+      lang: LOCALE_META[locale].bcp47,
       extraStylesheet: "/shortcut-sheet.css",
     }),
   );
-  console.log(`shortcut-sheet/${locale === "ja" ? "ja" : "en"}`);
+  console.log(`shortcut-sheet/${locale}`);
 }
 
 console.log("wrote 404.html and maintenance.html");

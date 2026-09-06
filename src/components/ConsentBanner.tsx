@@ -7,7 +7,8 @@ import {
   readConsent,
   writeConsent,
 } from "../lib/consent";
-import { CONSENT_BANNER } from "../site/consentCopy";
+import type { Locale } from "../i18n/messages";
+import { consentFor } from "../site/consentCopy";
 
 export function useConsentBanner() {
   const [open, setOpen] = useState(() => readConsent() === null);
@@ -46,6 +47,7 @@ export function useConsentBanner() {
 }
 
 type BannerProps = {
+  locale?: Locale;
   open: boolean;
   onReject: () => void;
   onAnalytics: () => void;
@@ -53,11 +55,13 @@ type BannerProps = {
 };
 
 export function ConsentBanner({
+  locale = "en",
   open,
   onReject,
   onAnalytics,
   onAds,
 }: BannerProps) {
+  const copy = consentFor(locale);
   useEffect(() => {
     document.body.classList.toggle("has-consent", open);
     return () => document.body.classList.remove("has-consent");
@@ -73,28 +77,28 @@ export function ConsentBanner({
     >
       <div className="site-consent__inner">
         <p className="site-consent__title" id="site-consent-title">
-          {CONSENT_BANNER.title}
+          {copy.title}
         </p>
-        <p className="site-consent__copy">{CONSENT_BANNER.copy}</p>
+        <p className="site-consent__copy">{copy.copy}</p>
         <div className="site-consent__actions">
           <button type="button" className="site-consent__btn" onClick={onReject}>
-            {CONSENT_BANNER.reject}
+            {copy.reject}
           </button>
           <button
             type="button"
             className="site-consent__btn"
             onClick={onAnalytics}
           >
-            {CONSENT_BANNER.analytics}
+            {copy.analytics}
           </button>
           <button
             type="button"
             className="site-consent__btn site-consent__btn--allow"
             onClick={onAds}
           >
-            {CONSENT_BANNER.ads}
+            {copy.ads}
           </button>
-          <a href={CONSENT_BANNER.policyHref}>{CONSENT_BANNER.policyLabel}</a>
+          <a href={copy.policyHref}>{copy.policyLabel}</a>
         </div>
       </div>
     </aside>

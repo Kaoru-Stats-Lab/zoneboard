@@ -6,11 +6,20 @@ import { messages } from "../i18n/messages";
 import { trackEvent } from "../lib/ga";
 import { hasPersistedStore } from "../storage/persist";
 import { SITE_NAV } from "../site/publisher";
-import { CONSENT_BANNER } from "../site/consentCopy";
+import { consentFor } from "../site/consentCopy";
+import { LP_LOCALES, landingPath, localePickerLabel } from "../site/localeNav.ts";
+import { publicCopy } from "../site/localePublicCopy.ts";
+import {
+  siteFooterHref,
+  siteFooterLinkTitle,
+} from "../site/siteFooterNav.ts";
+import { siteNavLabel } from "../site/siteNavI18n.ts";
 import { isProductHuntLaunchVisible, PRODUCT_HUNT } from "../site/productHunt";
 import { useFeedback } from "./FeedbackProvider";
 import { BrandLockup } from "./BrandMark";
 import { ConsentBanner, useConsentBanner } from "./ConsentBanner";
+import { LocaleDocumentHead } from "./LocaleDocumentHead";
+import { LocaleSuggestBanner } from "./LocaleSuggestBanner";
 import { LpHeroBoard } from "./LpHeroBoard";
 import { ProductHuntFollowBadge } from "./ProductHuntBadge";
 
@@ -25,6 +34,8 @@ const CAN_ITEMS: { line: MessageKey; note: MessageKey }[] = [
 
 export function Landing({ locale = APP_LOCALE }: { locale?: Locale }) {
   const t = (k: MessageKey) => messages[locale][k];
+  const chrome = publicCopy(locale);
+  const consentCopy = consentFor(locale);
   const boardHref = (query?: Record<string, string>) => {
     if (locale === "en" && !query) return "/board";
     const params = new URLSearchParams(query);
@@ -42,6 +53,8 @@ export function Landing({ locale = APP_LOCALE }: { locale?: Locale }) {
 
   return (
     <div className="lp">
+      <LocaleDocumentHead locale={locale} />
+      <LocaleSuggestBanner locale={locale} />
       <div className="lp-stage">
         <header className="lp-hero">
           <p className="lp-eyebrow">
@@ -192,14 +205,53 @@ export function Landing({ locale = APP_LOCALE }: { locale?: Locale }) {
             />
           </p>
           <ProductHuntFollowBadge className="lp-ph-badge" />
-          <div className="lp-footer-row">
-            <p>© 2026 zoneboard.app</p>
+          <p className="lp-footer-copy">© 2026 zoneboard.app</p>
+          <div className="lp-footer-stack">
+            <nav
+              className="lp-footer-lang"
+              aria-label={chrome.lpFooterLanguage}
+            >
+              {LP_LOCALES.map((code) => {
+                const active = code === locale;
+                const label = localePickerLabel(code);
+                return active ? (
+                  <span
+                    key={code}
+                    className="lp-footer-lang__current"
+                    aria-current="true"
+                  >
+                    {label}
+                  </span>
+                ) : (
+                  <Link
+                    key={code}
+                    className="lp-footer-lang__link"
+                    to={landingPath(code)}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <p className="lp-footer-reading-note">{chrome.siteNavEnTitle}</p>
             <nav className="lp-footer-links" aria-label="Site">
-              {SITE_NAV.map((item) => (
-                <a key={item.slug} href={`/${item.slug}/`}>
-                  {item.labelEn}
-                </a>
-              ))}
+              {SITE_NAV.map((item) => {
+                const label = siteNavLabel(locale, item.slug);
+                return (
+                  <a
+                    key={item.slug}
+                    href={siteFooterHref(item.slug, locale)}
+                    title={siteFooterLinkTitle(
+                      label,
+                      item.slug,
+                      locale,
+                      chrome.siteNavEnTitle,
+                    )}
+                  >
+                    {label}
+                  </a>
+                );
+              })}
               <button
                 type="button"
                 className="lp-footer-fb"
@@ -212,13 +264,14 @@ export function Landing({ locale = APP_LOCALE }: { locale?: Locale }) {
                 className="lp-footer-fb"
                 onClick={consent.openChoices}
               >
-                {CONSENT_BANNER.choices}
+                {consentCopy.choices}
               </button>
             </nav>
           </div>
         </footer>
       </div>
       <ConsentBanner
+        locale={locale}
         open={consent.open}
         onReject={consent.reject}
         onAnalytics={consent.allowAnalytics}

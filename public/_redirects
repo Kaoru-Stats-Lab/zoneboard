@@ -2,8 +2,8 @@
 /en/      /        301
 /en/board /board/  301
 /en/board/ /board/ 301
-/ja       /        301
-/ja/      /        301
+/ja       /ja/    301
+/ja/      /ja/index.html  200
 /ja/board /board/?lang=ja   301
 /ja/board/ /board/?lang=ja  301
 /es       /es/    301
@@ -34,6 +34,14 @@
 /it/      /it/index.html  200
 /it/board /board/?lang=it   301
 /it/board/ /board/?lang=it  301
+/materials/shortcut-sheet/es/ /materials/shortcut-sheet/es/index.html 200
+/materials/shortcut-sheet/pt/ /materials/shortcut-sheet/pt/index.html 200
+/materials/shortcut-sheet/pl/ /materials/shortcut-sheet/pl/index.html 200
+/materials/shortcut-sheet/de/ /materials/shortcut-sheet/de/index.html 200
+/materials/shortcut-sheet/fr/ /materials/shortcut-sheet/fr/index.html 200
+/materials/shortcut-sheet/tr/ /materials/shortcut-sheet/tr/index.html 200
+/materials/shortcut-sheet/it/ /materials/shortcut-sheet/it/index.html 200
+/materials/shortcut-sheet/ja/ /materials/shortcut-sheet/ja/index.html 200
 /about    /about/    301
 /guide    /guide/    301
 /faq      /faq/      301

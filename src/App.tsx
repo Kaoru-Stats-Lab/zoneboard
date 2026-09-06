@@ -10,7 +10,7 @@ import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { AnalyticsRoot } from "./components/AnalyticsRoot";
 import { FeedbackProvider } from "./components/FeedbackProvider";
 import { Landing } from "./components/Landing";
-import { NotFoundPage } from "./components/StudioStatus";
+import { NotFoundPage } from "./components/NotFoundPage";
 import { FrameExtractPage } from "./pages/FrameExtractPage";
 import { useAppState } from "./hooks/useAppState";
 import { localeFromSearchParam } from "./i18n/locale";
@@ -115,8 +115,8 @@ export default function App() {
         <Route path="/en/" element={<Navigate to="/" replace />} />
         <Route path="/en/board" element={<Navigate to="/board" replace />} />
         <Route path="/en/board/" element={<Navigate to="/board" replace />} />
-        <Route path="/ja" element={<Navigate to="/" replace />} />
-        <Route path="/ja/" element={<Navigate to="/" replace />} />
+        <Route path="/ja" element={<Navigate to="/ja/" replace />} />
+        <Route path="/ja/" element={<LandingRoute locale="ja" />} />
         <Route
           path="/ja/board"
           element={<Navigate to="/board?lang=ja" replace />}

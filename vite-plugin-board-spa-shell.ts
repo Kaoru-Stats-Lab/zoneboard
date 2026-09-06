@@ -15,7 +15,7 @@ export function boardSpaShellPlugin(): Plugin {
     async closeBundle() {
       const outDir = path.resolve("dist");
       const indexHtml = path.join(outDir, "index.html");
-      for (const sub of ["board", "es", "pt", "pl", "de", "fr", "tr", "it"]) {
+      for (const sub of ["board", "ja", "es", "pt", "pl", "de", "fr", "tr", "it"]) {
         const dir = path.join(outDir, sub);
         await mkdir(dir, { recursive: true });
         await copyFile(indexHtml, path.join(dir, "index.html"));

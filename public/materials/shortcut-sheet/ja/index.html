@@ -6,6 +6,16 @@
     <title>配信コマンド表 — ZoneBoard</title>
     <meta name="description" content="ZoneBoard 配信モード用の印刷可能なキーボード早見表 — 選択・移動・局面・オンエア操作。" />
     <link rel="canonical" href="https://zoneboard.app/materials/shortcut-sheet/ja/" />
+    <link rel="alternate" hreflang="en" href="https://zoneboard.app/" />
+    <link rel="alternate" hreflang="de" href="https://zoneboard.app/de/" />
+    <link rel="alternate" hreflang="es" href="https://zoneboard.app/es/" />
+    <link rel="alternate" hreflang="fr" href="https://zoneboard.app/fr/" />
+    <link rel="alternate" hreflang="it" href="https://zoneboard.app/it/" />
+    <link rel="alternate" hreflang="pl" href="https://zoneboard.app/pl/" />
+    <link rel="alternate" hreflang="pt" href="https://zoneboard.app/pt/" />
+    <link rel="alternate" hreflang="tr" href="https://zoneboard.app/tr/" />
+    <link rel="alternate" hreflang="ja" href="https://zoneboard.app/ja/" />
+    <link rel="alternate" hreflang="x-default" href="https://zoneboard.app/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ZoneBoard" />
     <meta property="og:title" content="配信コマンド表 — ZoneBoard" />
@@ -56,8 +66,17 @@
 <div class="shortcut-actions no-print">
 <button type="button" class="shortcut-print" onclick="window.print()">印刷 / PDF 保存</button>
 <a class="shortcut-board ghost" href="/board/?lang=ja">ボードを開く</a>
-<a class="shortcut-lang" href="../">English</a>
 </div>
+<nav class="shortcut-langs" aria-label="他の言語">
+<a href="/materials/shortcut-sheet/">English</a>
+<a href="/materials/shortcut-sheet/de/">Deutsch</a>
+<a href="/materials/shortcut-sheet/es/">Español</a>
+<a href="/materials/shortcut-sheet/fr/">Français</a>
+<a href="/materials/shortcut-sheet/it/">Italiano</a>
+<a href="/materials/shortcut-sheet/pl/">Polski</a>
+<a href="/materials/shortcut-sheet/pt/">Português (BR)</a>
+<a href="/materials/shortcut-sheet/tr/">Türkçe</a>
+</nav>
 <h1>配信コマンド表</h1>
 <p class="lede">印刷または PDF 保存（Ctrl/Cmd+P）。配信デスクの横に置いて使えます。</p>
 <p class="shortcut-tagline">配信モード（B）ではツールが消えます。駒はキーボードで動かします。配信前にここで一度試せば、本番でも同じキーが使えます。芝の上に初回チュートリアルは出しません。この画面と公開ガイドが説明書です。</p>
@@ -135,6 +154,7 @@
 </div>
 <footer class="shortcut-foot">
 <p><strong>ZoneBoard</strong> · zoneboard.app/board · 本番前に一度リハーサルしてください。エディタでは ? または F1 で全文の使い方を開けます。</p>
+<p><a href="/ja/">日本語 LP</a></p>
 </footer>
 </article>
     </main>
@@ -171,6 +191,32 @@
     </div>
   </div>
 </aside>
+<script>
+(function () {
+  var map = {"en":{"policyHref":"/cookies/","title":"Privacy choices","copy":"Analytics and ads stay off until you choose. The board stays on this device.","reject":"Reject optional","analytics":"Allow analytics","ads":"Allow advertising","policyLabel":"Cookie policy","choices":"Cookie choices"},"de":{"policyHref":"/cookies/","title":"Datenschutz-Auswahl","copy":"Analyse und Werbung bleiben aus, bis du wählst. Das Board bleibt auf diesem Gerät.","reject":"Optional ablehnen","analytics":"Analyse erlauben","ads":"Werbung erlauben","policyLabel":"Cookie-Richtlinie","choices":"Cookie-Auswahl"},"es":{"policyHref":"/cookies/","title":"Opciones de privacidad","copy":"Análisis y anuncios permanecen desactivados hasta que elijas. El tablero se queda en este dispositivo.","reject":"Rechazar opcionales","analytics":"Permitir analítica","ads":"Permitir publicidad","policyLabel":"Política de cookies","choices":"Opciones de cookies"},"fr":{"policyHref":"/cookies/","title":"Choix de confidentialité","copy":"Analyses et publicités restent désactivées jusqu'à ton choix. Le tableau reste sur cet appareil.","reject":"Refuser l'optionnel","analytics":"Autoriser l'analyse","ads":"Autoriser la pub","policyLabel":"Politique cookies","choices":"Choix des cookies"},"it":{"policyHref":"/cookies/","title":"Scelte privacy","copy":"Analitica e annunci restano off finché non scegli. La lavagna resta su questo dispositivo.","reject":"Rifiuta opzionali","analytics":"Consenti analitica","ads":"Consenti pubblicità","policyLabel":"Policy cookie","choices":"Scelta cookie"},"pl":{"policyHref":"/cookies/","title":"Wybór prywatności","copy":"Analityka i reklamy są wyłączone, dopóki nie wybierzesz. Plansza zostaje na tym urządzeniu.","reject":"Odrzuć opcjonalne","analytics":"Zezwól na analitykę","ads":"Zezwól na reklamy","policyLabel":"Polityka cookies","choices":"Ustawienia cookies"},"pt":{"policyHref":"/cookies/","title":"Opções de privacidade","copy":"Análise e anúncios ficam desligados até você escolher. O quadro permanece neste dispositivo.","reject":"Rejeitar opcionais","analytics":"Permitir análise","ads":"Permitir publicidade","policyLabel":"Política de cookies","choices":"Opções de cookies"},"tr":{"policyHref":"/cookies/","title":"Gizlilik tercihleri","copy":"Analitik ve reklamlar seçene kadar kapalıdır. Tahta bu cihazda kalır.","reject":"İsteğe bağlıyı reddet","analytics":"Analitiğe izin ver","ads":"Reklama izin ver","policyLabel":"Çerez politikası","choices":"Çerez tercihleri"},"ja":{"policyHref":"/cookies/","title":"プライバシーの選択","copy":"計測と広告は、選ぶまでオフです。ボードはこの端末に残ります。","reject":"任意を拒否","analytics":"計測を許可","ads":"広告を許可","policyLabel":"Cookie ポリシー","choices":"Cookie の選択"}};
+  var pick = "en";
+  var langs = navigator.languages || [navigator.language || "en"];
+  for (var i = 0; i < langs.length; i++) {
+    var base = String(langs[i] || "").toLowerCase().split("-")[0];
+    if (map[base]) { pick = base; break; }
+  }
+  var c = map[pick] || map.en;
+  var root = document.getElementById("site-consent");
+  if (!root) return;
+  var title = root.querySelector(".site-consent__title");
+  var copy = root.querySelector(".site-consent__copy");
+  if (title) title.textContent = c.title;
+  if (copy) copy.textContent = c.copy;
+  root.querySelectorAll("[data-consent]").forEach(function (btn) {
+    var key = btn.getAttribute("data-consent");
+    if (key === "reject") btn.textContent = c.reject;
+    if (key === "analytics") btn.textContent = c.analytics;
+    if (key === "ads") btn.textContent = c.ads;
+  });
+  var policy = root.querySelector("a[href='/cookies/']");
+  if (policy) policy.textContent = c.policyLabel;
+})();
+</script>
 <script src="/consent.js" defer></script>
   </body>
 </html>

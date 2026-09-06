@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BrandLockup } from "./BrandMark";
 
@@ -54,20 +53,5 @@ export function StudioStatus({
         ) : null}
       </p>
     </div>
-  );
-}
-
-export function NotFoundPage() {
-  useEffect(() => {
-    document.title = "Page not found — ZoneBoard";
-  }, []);
-  return (
-    <StudioStatus
-      kicker="404"
-      title="This page is not here"
-      copy="The address is wrong, or the page has moved. The tactics board is still on this site."
-      primary={{ to: "/board", label: "Open board" }}
-      secondary={{ to: "/", label: "Home" }}
-    />
   );
 }

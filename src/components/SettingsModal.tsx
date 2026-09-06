@@ -17,6 +17,8 @@ import type { AppState } from "../hooks/useAppState";
 import { normalizeLocale } from "../i18n/locale";
 import type { MessageKey } from "../i18n/messages";
 import { STREAM_SHARE_BLURB } from "../site/shareCopy";
+import { landingPath, LP_LOCALES, localePickerLabel } from "../site/localeNav.ts";
+import { publicCopy } from "../site/localePublicCopy.ts";
 import { useFeedback } from "./FeedbackProvider";
 
 type Props = {
@@ -73,6 +75,7 @@ export function SettingsModal({
 
   if (!state.settingsOpen || !state.board || state.broadcast) return null;
   const wm = state.watermark;
+  const localeChrome = publicCopy(state.locale);
 
   const onHeaderPointerDown = (e: ReactPointerEvent) => {
     if ((e.target as HTMLElement).closest("button")) return;
@@ -198,18 +201,17 @@ export function SettingsModal({
                 state.setLocale(normalizeLocale(e.target.value))
               }
             >
-              <option value="en">English</option>
-              <option value="ja">日本語</option>
-              <option value="es">Español</option>
-              <option value="pt">Português (BR)</option>
-              <option value="pl">Polski</option>
-              <option value="de">Deutsch</option>
-              <option value="fr">Français</option>
-              <option value="tr">Türkçe</option>
-              <option value="it">Italiano</option>
+              {LP_LOCALES.map((code) => (
+                <option key={code} value={code}>
+                  {localePickerLabel(code)}
+                </option>
+              ))}
             </select>
           </label>
-          <p className="hint-muted">{t("languageHint")}</p>
+          <p className="hint-muted">{localeChrome.languageHint}</p>
+          <p className="hint-muted">
+            <a href={landingPath(state.locale)}>{localeChrome.languageLandingLink}</a>
+          </p>
         </section>
 
         <section>

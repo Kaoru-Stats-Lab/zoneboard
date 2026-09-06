@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "test:ink": "npx --yes tsx scripts/pieceInk-check.ts",
     "test:i18n-chrome": "npx --yes tsx scripts/i18n-chrome-check.ts",
+    "test:text-input-locale": "node scripts/text-input-locale-check.mjs",
+    "test:canvas-glyph-locale": "node scripts/canvas-glyph-locale-check.mjs",
     "brand:marks": "npx --yes tsx scripts/write-brand-marks.ts",
     "brand:og": "node scripts/raster-og.mjs",
     "brand:motion": "python scripts/export-brand-motion.py"
@@ -23,6 +25,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.2",
+    "puppeteer": "^25.9.0",
     "typescript": "~5.8.3",
     "vite": "^6.3.5"
   }
