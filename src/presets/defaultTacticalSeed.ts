@@ -28,7 +28,7 @@ type Spot = {
 function inkBoard(sport: SportId): BoardDocument {
   return {
     sport,
-    showGrassPitch: sport === "soccer",
+    soccerPitchSurface: sport === "soccer" ? "grass" : "paper",
   } as BoardDocument;
 }
 

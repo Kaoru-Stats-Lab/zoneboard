@@ -11,9 +11,20 @@ import { fromNorm, type PitchRect } from "./layout";
 
 const LINE = "#1a1a1a";
 const GRASS_INK = "rgba(255, 255, 255, 0.94)";
+const SLATE_FILL = "#2c3038";
+const SLATE_OUTER = "#242830";
 
-function usesGrassPitch(board?: BoardDocument): boolean {
-  return board?.sport === "soccer" && !!board.showGrassPitch;
+/** 芝面（緑縞）。描画専用 */
+export function usesGrassPitch(board?: BoardDocument): boolean {
+  return board?.sport === "soccer" && board.soccerPitchSurface === "grass";
+}
+
+export function usesSlatePitch(board?: BoardDocument): boolean {
+  return board?.sport === "soccer" && board.soccerPitchSurface === "slate";
+}
+
+function usesWhitePitchLines(board?: BoardDocument): boolean {
+  return usesGrassPitch(board) || usesSlatePitch(board);
 }
 
 /** サッカー縦: ゴール↔ゴール＝画面上下 */
@@ -24,7 +35,7 @@ function isPortraitSoccer(board?: BoardDocument): boolean {
 }
 
 function pitchInk(board?: BoardDocument): string {
-  return usesGrassPitch(board) ? GRASS_INK : LINE;
+  return usesWhitePitchLines(board) ? GRASS_INK : LINE;
 }
 
 /** drawPitchMarkings / drawPitchLanes 中の線色（line / strokeRect が参照） */
@@ -63,9 +74,10 @@ function line(
   ctx.stroke();
 }
 
-/** ピッチ外周〜キャンバス地。芝ならランオフ緑、ズームのレターボックスもこれ。 */
+/** ピッチ外周〜キャンバス地。芝ならランオフ緑、スレートなら暗グレー。 */
 export function outerFillForBoard(board: BoardDocument): string {
   if (usesGrassPitch(board)) return "#1f5230";
+  if (usesSlatePitch(board)) return SLATE_OUTER;
   if (board.sport === "beach_soccer") return "#e8d4a8";
   if (board.sport === "basketball" && board.showWoodCourt) return "#8f5e32";
   return "#ffffff";
@@ -89,9 +101,27 @@ export function drawPitchSurface(
     drawWoodSurface(ctx, pitch);
   } else if (usesGrassPitch(board)) {
     drawGrassSurface(ctx, pitch, board);
+  } else if (usesSlatePitch(board)) {
+    drawSlateSurface(ctx, pitch);
   } else {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(x, y, w, h);
+  }
+}
+
+/** スレート（マットなダークグレー。緑縞なし · 微細ノイズのみ） */
+function drawSlateSurface(ctx: CanvasRenderingContext2D, pitch: PitchRect) {
+  const { x, y, w, h } = pitch;
+  ctx.fillStyle = SLATE_FILL;
+  ctx.fillRect(x, y, w, h);
+
+  const grains = Math.min(700, Math.floor((w * h) / 720));
+  for (let i = 0; i < grains; i++) {
+    const gx = x + (((i * 7919) % 997) / 997) * w;
+    const gy = y + (((i * 6271) % 991) / 991) * h;
+    ctx.fillStyle =
+      i % 3 === 0 ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.035)";
+    ctx.fillRect(gx, gy, 1.1, 1.1);
   }
 }
 

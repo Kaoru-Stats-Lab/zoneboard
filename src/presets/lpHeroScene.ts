@@ -114,7 +114,7 @@ export function createLpHeroData(): { board: BoardDocument; scene: Scene } {
     title: "",
     showMatchBanner: false,
     showLanes5: false,
-    showGrassPitch: true,
+    soccerPitchSurface: "grass",
     showPlayerNames: true,
     pieceScale: PIECE_SCALE.tactics,
     scenes: [scene],

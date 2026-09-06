@@ -61,6 +61,13 @@ export function Editor({ state }: Props) {
   const [exportStageAspect, setExportStageAspect] = useState(16 / 9);
   const [windowFocused, setWindowFocused] = useState(true);
   const [howToOpen, setHowToOpen] = useState(false);
+  const [inlineBanner, setInlineBanner] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!inlineBanner) return;
+    const id = window.setTimeout(() => setInlineBanner(null), 6000);
+    return () => window.clearTimeout(id);
+  }, [inlineBanner]);
 
   useEffect(() => {
     setExportCropAnchor({ x: 0.5, y: 0.5 });
@@ -404,7 +411,7 @@ export function Editor({ state }: Props) {
       if (!dt?.types.some((ty) => ty.startsWith("image/"))) return;
       e.preventDefault();
       void state.ingestCaptureImportDataTransfer(dt).then((err) => {
-        if (err) window.alert(t(err));
+        if (err) setInlineBanner(t(err));
       });
     };
     window.addEventListener("paste", onPaste);
@@ -416,7 +423,7 @@ export function Editor({ state }: Props) {
     if (!e.dataTransfer.types.includes("Files")) return;
     e.preventDefault();
     void state.ingestCaptureImportDataTransfer(e.dataTransfer).then((err) => {
-      if (err) window.alert(t(err));
+      if (err) setInlineBanner(t(err));
     });
   };
 
@@ -538,6 +545,22 @@ export function Editor({ state }: Props) {
         onDrop={onCaptureDrop}
       >
         <div className="board-stage">
+          {inlineBanner && (
+            <p
+              className="editor-inline-banner"
+              role="alert"
+              onClick={() => setInlineBanner(null)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setInlineBanner(null);
+                }
+              }}
+              tabIndex={0}
+            >
+              {inlineBanner}
+            </p>
+          )}
           <BoardCanvas
             state={state}
             watermarkImage={wmImage}
@@ -603,7 +626,7 @@ export function Editor({ state }: Props) {
                   title={t("newScene")}
                   aria-label={t("newScene")}
                   onClick={() => {
-                    if (!state.addScene()) window.alert(t("sceneLimit"));
+                    state.addScene();
                   }}
                 >
                   {t("newSceneShort")}

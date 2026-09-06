@@ -3,6 +3,8 @@ import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { boardDisplayName } from "../lib/boardLabel";
 import { defaultBoardTitle } from "../i18n/localeDefaults";
+import { getActiveScene } from "../models/scene";
+import { SceneThumb } from "./SceneThumb";
 
 type Props = {
   open: boolean;
@@ -49,6 +51,7 @@ export function BoardLimitDialog({
               defaultBoardTitle(i + 1, state.locale),
             );
             const isActive = b.id === state.board?.id;
+            const activeScene = getActiveScene(b);
             return (
               <li key={b.id}>
                 <button
@@ -56,12 +59,20 @@ export function BoardLimitDialog({
                   className="board-limit-dialog__pick"
                   onClick={() => onReplace(b.id)}
                 >
-                  <span className="board-limit-dialog__name">{name}</span>
-                  {isActive && (
-                    <span className="board-limit-dialog__tag">
-                      {t("boardLimitCurrent")}
-                    </span>
-                  )}
+                  <SceneThumb
+                    board={b}
+                    scene={activeScene}
+                    width={140}
+                    className="board-limit-dialog__thumb"
+                  />
+                  <span className="board-limit-dialog__meta">
+                    <span className="board-limit-dialog__name">{name}</span>
+                    {isActive && (
+                      <span className="board-limit-dialog__tag">
+                        {t("boardLimitCurrent")}
+                      </span>
+                    )}
+                  </span>
                 </button>
               </li>
             );

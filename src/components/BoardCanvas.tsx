@@ -334,13 +334,15 @@ export function BoardCanvas({
   useEffect(() => {
     if (!board) return;
     let cancelled = false;
-    loadBallImage(board.sport).then((img) => {
+    const look =
+      board.sport === "soccer" ? board.soccerBallLook : "classic";
+    loadBallImage(board.sport, look).then((img) => {
       if (!cancelled) setBallImage(img);
     });
     return () => {
       cancelled = true;
     };
-  }, [board?.sport]);
+  }, [board?.sport, board?.soccerBallLook]);
 
   useEffect(() => {
     const url = state.captureImport?.image?.url ?? null;

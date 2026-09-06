@@ -27,13 +27,13 @@ import {
 } from "./pieceInk";
 import {
   grassHaloWidth,
-  HALO_INK_GRASS,
   lineColorForBoard,
   linkColorForBoard,
   LINK_SHADOW_GRASS,
   penColorForBoard,
+  pitchHaloInk,
   textColorForBoard,
-  usesGrassInk,
+  usesDarkPitchInk,
   zoneColorsForBoard,
 } from "./drawingInk";
 import {
@@ -1113,7 +1113,7 @@ function drawObject(
     // 芝の白ハローは不要（白インク自体が読める。ハローは太く見えてホバーっぽい）
     const lw = penStrokeWidth(pitch, board, obj.strokeWidth);
     const ink = penColorForBoard(board);
-    if (selected && !usesGrassInk(board)) {
+    if (selected && !usesDarkPitchInk(board)) {
       strokePenPath(ctx, board, pitch, obj.points, lw + 4, selectionColor, 0.35);
     }
     strokePenPath(ctx, board, pitch, obj.points, lw, ink, 1, false);
@@ -1125,7 +1125,7 @@ function drawObject(
     if (pts.length < 2) return;
     const lw = linkStrokeWidth(pitch, board, obj.strokeWidth);
     const ink = linkColorForBoard(board);
-    if (selected && !usesGrassInk(board)) {
+    if (selected && !usesDarkPitchInk(board)) {
       strokeStraightWorldPath(
         ctx,
         board,
@@ -1159,7 +1159,7 @@ function drawObject(
     }
     const ink = obj.color || textColorForBoard(board);
     const needsShadow =
-      usesGrassInk(board) && ink.toLowerCase() !== "#111111";
+      usesDarkPitchInk(board) && ink.toLowerCase() !== "#111111";
     if (needsShadow) {
       ctx.shadowColor = "rgba(0,0,0,0.55)";
       ctx.shadowBlur = Math.max(2, size * 0.08);
@@ -1254,7 +1254,7 @@ function drawZonePreview(
   if (showShape) {
     const dotR = Math.max(3.5, lw * 0.75);
     ctx.save();
-    if (usesGrassInk(board)) {
+    if (usesDarkPitchInk(board)) {
       ctx.shadowColor = "rgba(0,0,0,0.42)";
       ctx.shadowBlur = Math.max(1.5, lw * 0.55);
     }
@@ -1262,7 +1262,7 @@ function drawZonePreview(
     ctx.arc(p0.x, p0.y, dotR, 0, Math.PI * 2);
     ctx.fillStyle = stroke;
     ctx.fill();
-    ctx.strokeStyle = usesGrassInk(board) ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.6)";
+    ctx.strokeStyle = usesDarkPitchInk(board) ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.6)";
     ctx.lineWidth = 1.25;
     ctx.stroke();
     ctx.restore();
@@ -1275,7 +1275,7 @@ function drawZonePreview(
     ctx.arc(p1.x, p1.y, handleR * 0.85, 0, Math.PI * 2);
     ctx.fillStyle = stroke;
     ctx.fill();
-    ctx.strokeStyle = usesGrassInk(board) ? "rgba(0,0,0,0.55)" : "#fff";
+    ctx.strokeStyle = usesDarkPitchInk(board) ? "rgba(0,0,0,0.55)" : "#fff";
     ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.restore();
@@ -1298,7 +1298,7 @@ function drawPenPreview(
     const p = fromNorm(m.x, m.y, pitch);
     const dotR = Math.max(3.5, lw * 0.75);
     ctx.save();
-    if (usesGrassInk(board)) {
+    if (usesDarkPitchInk(board)) {
       ctx.shadowColor = "rgba(0,0,0,0.42)";
       ctx.shadowBlur = Math.max(1.5, lw * 0.55);
     }
@@ -1306,7 +1306,7 @@ function drawPenPreview(
     ctx.arc(p.x, p.y, dotR, 0, Math.PI * 2);
     ctx.fillStyle = ink;
     ctx.fill();
-    ctx.strokeStyle = usesGrassInk(board) ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.6)";
+    ctx.strokeStyle = usesDarkPitchInk(board) ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.6)";
     ctx.lineWidth = 1.25;
     ctx.stroke();
     ctx.restore();
@@ -1361,7 +1361,7 @@ function strokeLineByKind(
 
   // Run の黄は芝と十分差がある。白ハローはステッカーに見えるので付けない。
   // パス／ドリブルと同じ薄い影だけ残す。
-  if (usesGrassInk(board) && kind === "run") {
+  if (usesDarkPitchInk(board) && kind === "run") {
     ctx.save();
     ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
     ctx.shadowBlur = Math.max(1.5, lw * 0.55);
@@ -1369,8 +1369,9 @@ function strokeLineByKind(
     ctx.restore();
     return;
   }
-  if (usesGrassInk(board)) {
-    draw(HALO_INK_GRASS, grassHaloWidth(lw));
+  if (usesDarkPitchInk(board)) {
+    const halo = pitchHaloInk(board);
+    if (halo) draw(halo, grassHaloWidth(lw));
   }
   draw(ink, lw);
 }
@@ -1394,7 +1395,7 @@ function strokePassLine(
   ctx.strokeStyle = ink;
   ctx.lineWidth = lw;
   if (opts?.alpha != null) ctx.globalAlpha = opts.alpha;
-  if (usesGrassInk(board)) {
+  if (usesDarkPitchInk(board)) {
     ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
     ctx.shadowBlur = Math.max(1.5, lw * 0.55);
   }
@@ -1421,7 +1422,7 @@ function strokeDribbleLine(
   ctx.strokeStyle = ink;
   ctx.lineWidth = lw;
 
-  if (usesGrassInk(board)) {
+  if (usesDarkPitchInk(board)) {
     ctx.save();
     ctx.shadowColor = "rgba(0, 0, 0, 0.42)";
     ctx.shadowBlur = Math.max(1.5, lw * 0.55);
@@ -1467,7 +1468,8 @@ function strokePenPath(
   };
 
   if (withHalo) {
-    apply(HALO_INK_GRASS, grassHaloWidth(lw));
+    const halo = pitchHaloInk(board);
+    if (halo) apply(halo, grassHaloWidth(lw));
   }
   apply(color, lw);
 }
@@ -1522,7 +1524,7 @@ function strokeLinkWorldPath(
   color: string,
   alpha = 1,
 ) {
-  if (!usesGrassInk(board)) {
+  if (!usesDarkPitchInk(board)) {
     strokeStraightWorldPath(ctx, board, pitch, points, lw, color, alpha);
     return;
   }

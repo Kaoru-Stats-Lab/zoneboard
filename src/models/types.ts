@@ -373,11 +373,19 @@ export interface BoardDocument {
   showSlotLines: boolean;
   /** バスケ: 木目コート面（白面の代わり） */
   showWoodCourt: boolean;
-  /** サッカー: 芝生テクスチャ（白面の代わり） */
-  showGrassPitch: boolean;
+  /**
+   * Soccer pitch face only (paper / grass / slate). Other sports ignore.
+   * Replaces legacy `showGrassPitch` boolean.
+   */
+  soccerPitchSurface: SoccerPitchSurface;
   /** 芝上スターターに名前ピル（暗チップ）を出す。控えは常にチップ。新規 false · migrate 欠落 true */
   showPlayerNames: boolean;
   pieceScale: number;
+  /**
+   * Soccer match-ball look. Classic Telstar vs CL-night starball pictogram.
+   * Other sports ignore this (always their single ball).
+   */
+  soccerBallLook: SoccerBallLook;
   /** 控え人数（片チーム）。大会カテゴリではなく人数そのもの */
   benchCount: number;
   scenes: Scene[];
@@ -492,6 +500,23 @@ export const PIECE_SCALE = {
   balanced: 1,
   position: 0.65,
 } as const;
+
+/** Soccer only — classic Telstar vs CL-night starball (no brand logos). */
+export type SoccerBallLook = "classic" | "starball";
+
+/** Soccer-only pitch face. Other sports ignore. */
+export type SoccerPitchSurface = "paper" | "grass" | "slate";
+
+export const SOCCER_PITCH_SURFACES: readonly SoccerPitchSurface[] = [
+  "paper",
+  "grass",
+  "slate",
+] as const;
+
+export const SOCCER_BALL_LOOKS: readonly SoccerBallLook[] = [
+  "classic",
+  "starball",
+] as const;
 
 export const UI_FONT_STACK =
   '"Segoe UI", "Yu Gothic UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif';

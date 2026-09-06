@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import type { Locale } from "../i18n/messages";
-import { messages } from "../i18n/messages";
-import { hreflangLinks, landingUrl, LOCALE_META } from "../site/localeNav.ts";
+import { lpDocumentMeta } from "../site/localeDocumentMeta";
 
 type Props = {
   locale: Locale;
@@ -10,13 +9,11 @@ type Props = {
 /** Sets document lang, canonical, hreflang, and OG locale for locale LPs. */
 export function LocaleDocumentHead({ locale }: Props) {
   useEffect(() => {
-    const meta = LOCALE_META[locale];
-    const m = messages[locale];
-    const title = `${m.brand} — ${m.lpHeadline1}`;
-    const description = `${m.lpLede} ${m.lpPayoff}`.trim();
+    const origin = window.location.origin;
+    const doc = lpDocumentMeta(locale, origin);
 
-    document.documentElement.lang = meta.bcp47;
-    document.title = title;
+    document.documentElement.lang = doc.lang;
+    document.title = doc.title;
 
     const setMeta = (selector: string, content: string, attr = "content") => {
       let el = document.querySelector<HTMLMetaElement>(selector);
@@ -35,28 +32,39 @@ export function LocaleDocumentHead({ locale }: Props) {
       el.setAttribute(attr, content);
     };
 
-    setMeta('meta[name="description"]', description);
-    setMeta('meta[property="og:title"]', title);
-    setMeta('meta[property="og:description"]', description);
-    setMeta('meta[property="og:locale"]', meta.ogLocale);
-    setMeta('meta[name="twitter:title"]', title);
-    setMeta('meta[name="twitter:description"]', description);
+    setMeta('meta[name="description"]', doc.description);
+    setMeta('meta[property="og:title"]', doc.title);
+    setMeta('meta[property="og:description"]', doc.description);
+    setMeta('meta[property="og:locale"]', doc.ogLocale);
+    setMeta('meta[property="og:url"]', doc.canonical);
+    setMeta('meta[name="twitter:title"]', doc.title);
+    setMeta('meta[name="twitter:description"]', doc.description);
 
-    const canonical = landingUrl(locale, window.location.origin);
-    setMeta('meta[property="og:url"]', canonical);
-    let linkCanon = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    document
+      .querySelectorAll('meta[property="og:locale:alternate"]')
+      .forEach((node) => node.remove());
+    for (const alt of doc.ogLocaleAlternates) {
+      const el = document.createElement("meta");
+      el.setAttribute("property", "og:locale:alternate");
+      el.setAttribute("content", alt);
+      document.head.appendChild(el);
+    }
+
+    let linkCanon = document.querySelector<HTMLLinkElement>(
+      'link[rel="canonical"]',
+    );
     if (!linkCanon) {
       linkCanon = document.createElement("link");
       linkCanon.rel = "canonical";
       document.head.appendChild(linkCanon);
     }
-    linkCanon.href = canonical;
+    linkCanon.href = doc.canonical;
 
     document
       .querySelectorAll('link[rel="alternate"][data-zb-hreflang]')
       .forEach((node) => node.remove());
     const wrapper = document.createElement("div");
-    wrapper.innerHTML = hreflangLinks(window.location.origin);
+    wrapper.innerHTML = doc.hreflangHtml;
     wrapper.querySelectorAll("link").forEach((link) => {
       link.setAttribute("data-zb-hreflang", "1");
       document.head.appendChild(link);
@@ -65,6 +73,9 @@ export function LocaleDocumentHead({ locale }: Props) {
     return () => {
       document
         .querySelectorAll('link[rel="alternate"][data-zb-hreflang]')
+        .forEach((node) => node.remove());
+      document
+        .querySelectorAll('meta[property="og:locale:alternate"]')
         .forEach((node) => node.remove());
     };
   }, [locale]);

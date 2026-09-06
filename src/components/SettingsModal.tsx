@@ -136,7 +136,12 @@ export function SettingsModal({
 
   const onExport = async () => {
     if (!state.board) return;
-    const ballImg = await loadBallImage(state.board.sport);
+    const ballImg = await loadBallImage(
+      state.board.sport,
+      state.board.sport === "soccer"
+        ? state.board.soccerBallLook
+        : "classic",
+    );
     const blob = await exportBoardPng(
       state.board,
       state.watermark,
@@ -429,21 +434,45 @@ export function SettingsModal({
               <div className="preset-row pitch-surface-row">
                 <button
                   type="button"
-                  className={!state.board.showGrassPitch ? "active" : ""}
+                  className={
+                    state.board.soccerPitchSurface === "paper" ? "active" : ""
+                  }
                   onClick={() =>
-                    state.updateBoard((b) => ({ ...b, showGrassPitch: false }), false)
+                    state.updateBoard(
+                      (b) => ({ ...b, soccerPitchSurface: "paper" }),
+                      false,
+                    )
                   }
                 >
                   {t("pitchSurfaceWhite")}
                 </button>
                 <button
                   type="button"
-                  className={state.board.showGrassPitch ? "active" : ""}
+                  className={
+                    state.board.soccerPitchSurface === "grass" ? "active" : ""
+                  }
                   onClick={() =>
-                    state.updateBoard((b) => ({ ...b, showGrassPitch: true }), false)
+                    state.updateBoard(
+                      (b) => ({ ...b, soccerPitchSurface: "grass" }),
+                      false,
+                    )
                   }
                 >
                   {t("pitchSurfaceGrass")}
+                </button>
+                <button
+                  type="button"
+                  className={
+                    state.board.soccerPitchSurface === "slate" ? "active" : ""
+                  }
+                  onClick={() =>
+                    state.updateBoard(
+                      (b) => ({ ...b, soccerPitchSurface: "slate" }),
+                      false,
+                    )
+                  }
+                >
+                  {t("pitchSurfaceSlate")}
                 </button>
               </div>
               <p className="hint-muted">{t("grassPitchHint")}</p>

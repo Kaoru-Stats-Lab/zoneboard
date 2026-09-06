@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Flat CL-night starball pictogram. No brand logos. docs/BALL_DESIGN.md -->
+<svg xmlns="http://www.w3.org/2000/svg" width="194" height="194" viewBox="0 0 194 194" version="1.1">
+  <defs>
+    <clipPath id="disc">
+      <circle cx="97" cy="97" r="97"/>
+    </clipPath>
+  </defs>
+  <circle cx="97" cy="97" r="97" fill="#F7F8FC"/>
+  <g clip-path="url(#disc)" fill="#0B1D4A">
+    <!-- Center star panel -->
+    <path d="M97 52 L108 78 L136 82 L116 102 L121 130 L97 116 L73 130 L78 102 L58 82 L86 78 Z"/>
+    <!-- Upper-left -->
+    <path d="M42 38 L52 58 L74 60 L58 74 L62 96 L42 84 L22 96 L26 74 L10 60 L32 58 Z"/>
+    <!-- Upper-right -->
+    <path d="M152 38 L162 58 L184 60 L168 74 L172 96 L152 84 L132 96 L136 74 L120 60 L142 58 Z"/>
+    <!-- Lower-left -->
+    <path d="M36 118 L46 138 L68 140 L52 154 L56 176 L36 164 L16 176 L20 154 L4 140 L26 138 Z"/>
+    <!-- Lower-right -->
+    <path d="M158 118 L168 138 L190 140 L174 154 L178 176 L158 164 L138 176 L142 154 L126 140 L148 138 Z"/>
+    <!-- Mid-left tip -->
+    <path d="M18 78 L26 94 L44 96 L32 108 L35 126 L18 116 L1 126 L4 108 L-8 96 L10 94 Z"/>
+    <!-- Mid-right tip -->
+    <path d="M176 78 L184 94 L202 96 L190 108 L193 126 L176 116 L159 126 L162 108 L150 96 L168 94 Z"/>
+  </g>
+  <circle cx="97" cy="97" r="95.5" fill="none" stroke="#0B1D4A" stroke-width="3"/>
+</svg>

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { usesGrassInk, textColorForBoard } from "../canvas/drawingInk";
+import { usesDarkPitchInk, textColorForBoard } from "../canvas/drawingInk";
 import { textFontStack } from "../presets/textStyle";
 import type { BoardDocument, TextFontId } from "../models/types";
 
@@ -33,7 +33,7 @@ export function CanvasTextEditor({
 }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const valueRef = useRef(value);
-  const grass = usesGrassInk(board);
+  const grass = usesDarkPitchInk(board);
   const ink = color ?? textColorForBoard(board);
   const stack = textFontStack(fontFamily);
 

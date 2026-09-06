@@ -7,6 +7,7 @@ import type {
   LineObject,
   PitchOrientation,
   Scene,
+  SoccerPitchSurface,
   SportId,
   WatermarkSettings,
 } from "./types";
@@ -16,6 +17,7 @@ import {
   HOME_COLOR,
   HOME_GK_COLOR,
   PIECE_SCALE,
+  SOCCER_PITCH_SURFACES,
 } from "./types";
 import { uid } from "./id";
 import {
@@ -133,9 +135,10 @@ export function createBoard(
     showMiddleLine: false,
     showSlotLines: false,
     showWoodCourt: false,
-    showGrassPitch: sport === "soccer",
+    soccerPitchSurface: sport === "soccer" ? "grass" : "paper",
     showPlayerNames: false,
     pieceScale: PIECE_SCALE.balanced,
+    soccerBallLook: "classic",
     benchCount,
     scenes: [scene],
     activeSceneId: scene.id,
@@ -174,6 +177,20 @@ type LegacyBoard = Omit<BoardDocument, "benchCount" | "scenes" | "activeSceneId"
   benchCount?: number;
   benchLevel?: BenchLevel;
 };
+
+/** Legacy `showGrassPitch` → `soccerPitchSurface`. Missing field → paper (old migrate default). */
+function migrateSoccerPitchSurface(raw: LegacyBoard): SoccerPitchSurface {
+  const next = (raw as { soccerPitchSurface?: unknown }).soccerPitchSurface;
+  if (
+    typeof next === "string" &&
+    (SOCCER_PITCH_SURFACES as readonly string[]).includes(next)
+  ) {
+    return next as SoccerPitchSurface;
+  }
+  const legacy = (raw as { showGrassPitch?: boolean }).showGrassPitch;
+  if (legacy === true) return "grass";
+  return "paper";
+}
 
 /** 旧データ互換: トップレベル pieces をシーンへ昇格 */
 export function migrateBoard(raw: LegacyBoard): BoardDocument {
@@ -307,11 +324,15 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
       (raw as { showSlotLines?: boolean }).showSlotLines ?? false,
     showWoodCourt:
       (raw as { showWoodCourt?: boolean }).showWoodCourt ?? false,
-    showGrassPitch:
-      (raw as { showGrassPitch?: boolean }).showGrassPitch ?? false,
+    soccerPitchSurface: migrateSoccerPitchSurface(raw),
     showPlayerNames:
       (raw as { showPlayerNames?: boolean }).showPlayerNames ?? true,
     pieceScale: raw.pieceScale ?? PIECE_SCALE.balanced,
+    soccerBallLook:
+      (raw as { soccerBallLook?: BoardDocument["soccerBallLook"] })
+        .soccerBallLook === "starball"
+        ? "starball"
+        : "classic",
     benchCount,
     scenes,
     activeSceneId: activeSceneId!,

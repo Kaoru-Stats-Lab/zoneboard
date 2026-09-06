@@ -30,6 +30,7 @@ import { boardToSoccerPitchLookPreset } from "../presets/pitchLook";
 import { ViewportPresetGrid } from "./ViewportPresetGrid";
 import { LiveMatchControls } from "./LiveMatchControls";
 import { BoardLimitDialog } from "./BoardLimitDialog";
+import { SceneThumb } from "./SceneThumb";
 import { useNewBoardFlow } from "./BoardSwitcher";
 
 function startersPlaceholder(sport: SportId): string {
@@ -93,6 +94,12 @@ export function Drawer({ state, t }: Props) {
   const [cardMinute, setCardMinute] = useState("");
   const [cardKind, setCardKind] = useState<CardKind>("YC");
   const [captureApplyNewScene, setCaptureApplyNewScene] = useState(false);
+  const [scenesNotice, setScenesNotice] = useState<string | null>(null);
+  const [captureNotice, setCaptureNotice] = useState<string | null>(null);
+  const [rosterNotice, setRosterNotice] = useState<{
+    level: "error" | "warn";
+    text: string;
+  } | null>(null);
 
   const newBoardFlow = useNewBoardFlow(state);
 
@@ -120,6 +127,15 @@ export function Drawer({ state, t }: Props) {
       setCaptureApplyNewScene(false);
     }
   }, [state.captureImport?.phase]);
+
+  useEffect(() => {
+    setRosterNotice(null);
+  }, [teamSide]);
+
+  useEffect(() => {
+    setScenesNotice(null);
+    setCaptureNotice(null);
+  }, [state.scene?.id, state.captureImport?.phase]);
 
   if (!state.drawerOpen || state.broadcast || !state.board || !state.scene)
     return null;
@@ -225,21 +241,33 @@ export function Drawer({ state, t }: Props) {
             <div className="scene-chips">
               {board.scenes.map((s, i) => {
                 const hasNotes = Boolean(s.notes?.trim());
+                const label = s.label?.trim() ?? "";
+                const titleParts = [
+                  `#${i + 1}`,
+                  label || null,
+                  hasNotes ? s.notes!.trim() : null,
+                ].filter(Boolean);
                 return (
                   <button
                     key={s.id}
                     type="button"
                     className={[
+                      "scene-chip",
                       s.id === scene.id ? "active" : "",
                       hasNotes ? "has-notes" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")}
-                    title={hasNotes ? s.notes!.trim() : undefined}
+                    title={titleParts.join(" — ")}
                     onClick={() => state.setActiveScene(s.id)}
                   >
-                    {i + 1}
-                    {s.label ? ` · ${s.label}` : ""}
+                    <SceneThumb board={board} scene={s} width={40} />
+                    <span className="scene-chip__body">
+                      <span className="scene-chip__num">{i + 1}</span>
+                      {label ? (
+                        <span className="scene-chip__label">{label}</span>
+                      ) : null}
+                    </span>
                   </button>
                 );
               })}
@@ -249,9 +277,10 @@ export function Drawer({ state, t }: Props) {
                 type="button"
                 className="drawer-chrome-label"
                 disabled={sceneLimit}
-                title={t("newScene")}
+                title={sceneLimit ? t("sceneLimit") : t("newScene")}
                 onClick={() => {
-                  if (!state.addScene()) window.alert(t("sceneLimit"));
+                  if (!state.addScene()) setScenesNotice(t("sceneLimit"));
+                  else setScenesNotice(null);
                 }}
               >
                 {t("newSceneShort")}
@@ -263,7 +292,8 @@ export function Drawer({ state, t }: Props) {
                   title={t("captureImport")}
                   onClick={() => {
                     const err = state.startCaptureImport();
-                    if (err) window.alert(t(err));
+                    if (err) setScenesNotice(t(err));
+                    else setScenesNotice(null);
                   }}
                 >
                   {t("captureImportShort")}
@@ -275,13 +305,15 @@ export function Drawer({ state, t }: Props) {
                   <select
                     value=""
                     disabled={sceneLimit}
-                    title={t("fromPreset")}
+                    title={sceneLimit ? t("sceneLimit") : t("fromPreset")}
                     aria-label={t("fromPreset")}
                     onChange={(e) => {
                       const id = e.target.value;
                       if (!id) return;
                       if (!state.addSceneFromPreset(id as ScenePresetId)) {
-                        window.alert(t("sceneLimit"));
+                        setScenesNotice(t("sceneLimit"));
+                      } else {
+                        setScenesNotice(null);
                       }
                       e.target.value = "";
                     }}
@@ -305,6 +337,11 @@ export function Drawer({ state, t }: Props) {
                 {t("deleteSceneShort")}
               </button>
             </div>
+            {scenesNotice && (
+              <p className="drawer-inline-error" role="alert">
+                {scenesNotice}
+              </p>
+            )}
             {captureImportEnabled && state.captureImport && (
               <div className="capture-import-status">
                 <p className="hint-muted">
@@ -384,12 +421,19 @@ export function Drawer({ state, t }: Props) {
                       <button
                         type="button"
                         className="drawer-chrome-label"
-                        title={t("captureApplyToScene")}
+                        title={
+                          captureApplyNewScene && sceneLimit
+                            ? t("sceneLimit")
+                            : t("captureApplyToScene")
+                        }
+                        disabled={captureApplyNewScene && sceneLimit}
                         onClick={() => {
                           if (
                             !state.applyCaptureToScene(captureApplyNewScene)
                           ) {
-                            window.alert(t("sceneLimit"));
+                            setCaptureNotice(t("sceneLimit"));
+                          } else {
+                            setCaptureNotice(null);
                           }
                         }}
                       >
@@ -406,6 +450,11 @@ export function Drawer({ state, t }: Props) {
                     </div>
                   </>
                 )}
+                {captureNotice && (
+                  <p className="drawer-inline-error" role="alert">
+                    {captureNotice}
+                  </p>
+                )}
                 <button
                   type="button"
                   className="drawer-chrome-label"
@@ -417,7 +466,7 @@ export function Drawer({ state, t }: Props) {
               </div>
             )}
             <p className="hint-muted">{t("newSceneHint")}</p>
-            <label>
+            <label className="scene-label-field">
               {t("sceneLabel")}
               <input
                 value={scene.label}
@@ -661,6 +710,7 @@ export function Drawer({ state, t }: Props) {
                 value={rosterText[teamSide]}
                 onChange={(e) => {
                   setRosterDirty((d) => ({ ...d, [teamSide]: true }));
+                  setRosterNotice(null);
                   setRosterText((prev) => ({
                     ...prev,
                     [teamSide]: e.target.value,
@@ -681,8 +731,12 @@ export function Drawer({ state, t }: Props) {
               type="button"
               onClick={() => {
                 if (!state.importRoster(teamSide, rosterText[teamSide])) {
-                  window.alert(t("rosterParseFail"));
+                  setRosterNotice({
+                    level: "error",
+                    text: t("rosterParseFail"),
+                  });
                 } else {
+                  setRosterNotice(null);
                   setRosterDirty((d) => ({ ...d, [teamSide]: false }));
                 }
               }}
@@ -773,12 +827,13 @@ export function Drawer({ state, t }: Props) {
                 {t("startersXi")}
                 <input
                   value={xiText[teamSide]}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    setRosterNotice(null);
                     setXiText((prev) => ({
                       ...prev,
                       [teamSide]: e.target.value,
-                    }))
-                  }
+                    }));
+                  }}
                   placeholder={startersPlaceholder(board.sport)}
                 />
               </label>
@@ -791,13 +846,22 @@ export function Drawer({ state, t }: Props) {
                     xiText[teamSide],
                   );
                   if (result === false) {
-                    window.alert(t("xiParseFail"));
+                    setRosterNotice({
+                      level: "error",
+                      text: t("xiParseFail"),
+                    });
                     return;
                   }
                   if (result.length > 0) {
-                    window.alert(
-                      t("xiMissing").replace("{nums}", result.join(", ")),
-                    );
+                    setRosterNotice({
+                      level: "warn",
+                      text: t("xiMissing").replace(
+                        "{nums}",
+                        result.join(", "),
+                      ),
+                    });
+                  } else {
+                    setRosterNotice(null);
                   }
                 }}
               >
@@ -808,12 +872,41 @@ export function Drawer({ state, t }: Props) {
 
             <button
               type="button"
+              disabled={
+                board.roster.home.players.length === 0 &&
+                board.roster.away.players.length === 0
+              }
+              title={
+                board.roster.home.players.length === 0 &&
+                board.roster.away.players.length === 0
+                  ? t("lineupFail")
+                  : undefined
+              }
               onClick={() => {
-                if (!state.applyLineup()) window.alert(t("lineupFail"));
+                if (!state.applyLineup()) {
+                  setRosterNotice({
+                    level: "error",
+                    text: t("lineupFail"),
+                  });
+                } else {
+                  setRosterNotice(null);
+                }
               }}
             >
               {t("applyLineup")}
             </button>
+            {rosterNotice && (
+              <p
+                className={
+                  rosterNotice.level === "warn"
+                    ? "drawer-inline-warn"
+                    : "drawer-inline-error"
+                }
+                role="alert"
+              >
+                {rosterNotice.text}
+              </p>
+            )}
             <p className="hint-muted">{t("applyLineupHint")}</p>
           </section>
         )}
@@ -1373,6 +1466,43 @@ export function Drawer({ state, t }: Props) {
                 }
               />
             </label>
+            {board.sport === "soccer" && (
+              <div className="piece-scale-presets" role="group" aria-label={t("ballLook")}>
+                <button
+                  type="button"
+                  className={
+                    board.soccerBallLook === "classic" ? "active" : undefined
+                  }
+                  title={t("ballLookClassic")}
+                  onClick={() =>
+                    state.updateBoard(
+                      (b) => ({ ...b, soccerBallLook: "classic" }),
+                      false,
+                    )
+                  }
+                >
+                  {t("ballLookClassicShort")}
+                </button>
+                <button
+                  type="button"
+                  className={
+                    board.soccerBallLook === "starball" ? "active" : undefined
+                  }
+                  title={t("ballLookStarball")}
+                  onClick={() =>
+                    state.updateBoard(
+                      (b) => ({ ...b, soccerBallLook: "starball" }),
+                      false,
+                    )
+                  }
+                >
+                  {t("ballLookStarballShort")}
+                </button>
+              </div>
+            )}
+            {board.sport === "soccer" && (
+              <p className="hint-muted">{t("ballLookHint")}</p>
+            )}
             <div className="piece-scale-presets" role="group" aria-label={t("pieceSize")}>
               <button
                 type="button"
