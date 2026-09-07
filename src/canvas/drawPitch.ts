@@ -102,39 +102,22 @@ export function drawPitchSurface(
   } else if (usesGrassPitch(board)) {
     drawGrassSurface(ctx, pitch, board);
   } else if (usesSlatePitch(board)) {
-    drawSlateSurface(ctx, pitch);
+    drawSlateSurface(ctx, pitch, board);
+  } else if (board?.sport === "soccer") {
+    drawPaperSurface(ctx, pitch, board);
   } else {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(x, y, w, h);
   }
 }
 
-/** スレート（マットなダークグレー。緑縞なし · 微細ノイズのみ） */
-function drawSlateSurface(ctx: CanvasRenderingContext2D, pitch: PitchRect) {
-  const { x, y, w, h } = pitch;
-  ctx.fillStyle = SLATE_FILL;
-  ctx.fillRect(x, y, w, h);
-
-  const grains = Math.min(700, Math.floor((w * h) / 720));
-  for (let i = 0; i < grains; i++) {
-    const gx = x + (((i * 7919) % 997) / 997) * w;
-    const gy = y + (((i * 6271) % 991) / 991) * h;
-    ctx.fillStyle =
-      i % 3 === 0 ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.035)";
-    ctx.fillRect(gx, gy, 1.1, 1.1);
-  }
-}
-
-/** サッカー芝（UEFA 刈り込み縞＋微細ノイズ。配信向け） */
-function drawGrassSurface(
+/** UEFA 刈り込み縞（芝目）。面色に依存しない同一帯幅・同一濃度。 */
+function drawMowingStripes(
   ctx: CanvasRenderingContext2D,
   pitch: PitchRect,
   board?: BoardDocument,
 ) {
   const { x, y, w, h } = pitch;
-  ctx.fillStyle = "#2f6e38";
-  ctx.fillRect(x, y, w, h);
-
   const view = board?.pitchView === "half" ? "half" : "full";
   const widthsM = soccerMowingStripeWidthsM(view);
   const lengthM =
@@ -165,7 +148,11 @@ function drawGrassSurface(
       ctx.fillRect(sx, y, bandW, h);
     }
   }
+}
 
+/** Grass と同じ微細ノイズ（面色の上に載せる） */
+function drawPitchGrain(ctx: CanvasRenderingContext2D, pitch: PitchRect) {
+  const { x, y, w, h } = pitch;
   const grains = Math.min(900, Math.floor((w * h) / 620));
   for (let i = 0; i < grains; i++) {
     const gx = x + (((i * 7919) % 997) / 997) * w;
@@ -173,6 +160,45 @@ function drawGrassSurface(
     ctx.fillStyle = i % 3 === 0 ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.04)";
     ctx.fillRect(gx, gy, 1.1, 1.1);
   }
+}
+
+/** 白紙 + Grass と同芝目 */
+function drawPaperSurface(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  board?: BoardDocument,
+) {
+  const { x, y, w, h } = pitch;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(x, y, w, h);
+  drawMowingStripes(ctx, pitch, board);
+  drawPitchGrain(ctx, pitch);
+}
+
+/** スレート + Grass と同芝目 */
+function drawSlateSurface(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  board?: BoardDocument,
+) {
+  const { x, y, w, h } = pitch;
+  ctx.fillStyle = SLATE_FILL;
+  ctx.fillRect(x, y, w, h);
+  drawMowingStripes(ctx, pitch, board);
+  drawPitchGrain(ctx, pitch);
+}
+
+/** サッカー芝（UEFA 刈り込み縞＋微細ノイズ。配信向け） */
+function drawGrassSurface(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  board?: BoardDocument,
+) {
+  const { x, y, w, h } = pitch;
+  ctx.fillStyle = "#2f6e38";
+  ctx.fillRect(x, y, w, h);
+  drawMowingStripes(ctx, pitch, board);
+  drawPitchGrain(ctx, pitch);
 }
 
 /** バスケ木目（FastDraw 系。配信でも黒線が読める程度の地味さ） */
