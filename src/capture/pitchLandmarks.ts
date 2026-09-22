@@ -268,6 +268,15 @@ export function resolveCalibLandmarkIds(
   return ids ?? [...PRESET_FULL_CORNERS];
 }
 
+/** Pitch-relative side for UI subtitle (not screen top/bot). */
+export type LandmarkPitchSide = "goalLine" | "field" | null;
+
+export function landmarkPitchSide(id: LandmarkId): LandmarkPitchSide {
+  if (id.includes("_near_")) return "goalLine";
+  if (id.includes("_far_") || id.includes("arc_apex")) return "field";
+  return null;
+}
+
 /**
  * Initial handle positions: small cross near image centre.
  * Optional light bias toward the selected goal half — not line snap.

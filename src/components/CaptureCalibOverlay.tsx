@@ -7,7 +7,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
   type CSSProperties,
-  type ChangeEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
@@ -18,6 +18,8 @@ import {
 import {
   LANDMARK_IDS,
   landmarkMsgBase,
+  landmarkNorm,
+  landmarkPitchSide,
   landmarkPresetNeedsGoalSide,
   suggestedLandmarkIds,
   type CalibGoalSide,
@@ -27,6 +29,9 @@ import {
 
 const HANDLE_LABELS = ["①", "②", "③", "④"] as const;
 const HANDLE_COLORS = ["#f87171", "#4ade80", "#60a5fa", "#fbbf24"];
+
+/** Mini-pitch SVG viewBox → landmarkNorm mapping. */
+const MP_VB = { w: 120, h: 68, padX: 2, padY: 2, innerW: 116, innerH: 64 };
 
 const PRESETS: {
   id: CalibLandmarkPreset;
@@ -63,14 +68,24 @@ type Props = {
 function MiniPitchGoalPicker({
   selected,
   needsPick,
+  focusLandmarkId,
   onPick,
   t,
 }: {
   selected: CalibGoalSide | null;
   needsPick: boolean;
+  focusLandmarkId: LandmarkId | null;
   onPick: (side: CalibGoalSide) => void;
   t: (k: MessageKey) => string;
 }) {
+  const pin = focusLandmarkId ? landmarkNorm(focusLandmarkId) : null;
+  const pinCx = pin
+    ? MP_VB.padX + pin.x * MP_VB.innerW
+    : null;
+  const pinCy = pin
+    ? MP_VB.padY + pin.y * MP_VB.innerH
+    : null;
+
   return (
     <div
       className={`capture-calib-minipitch${needsPick ? " needs-pick" : ""}`}
@@ -83,7 +98,7 @@ function MiniPitchGoalPicker({
       <div className="capture-calib-minipitch-frame">
         <svg
           className="capture-calib-minipitch-svg"
-          viewBox="0 0 120 68"
+          viewBox={`0 0 ${MP_VB.w} ${MP_VB.h}`}
           aria-hidden="true"
         >
           <rect
@@ -98,6 +113,14 @@ function MiniPitchGoalPicker({
           <circle cx="60" cy="34" r="8" className="mp-mid" fill="none" />
           <rect x="2" y="22" width="10" height="24" className="mp-box" />
           <rect x="108" y="22" width="10" height="24" className="mp-box" />
+          {pinCx != null && pinCy != null && (
+            <circle
+              className="mp-landmark-pin"
+              cx={pinCx}
+              cy={pinCy}
+              r="3.5"
+            />
+          )}
         </svg>
         <button
           type="button"
@@ -130,10 +153,13 @@ export function CaptureCalibOverlay({ state, t }: Props) {
   const focusIndex = session?.calibFocusIndex ?? 0;
 
   const stageRef = useRef<HTMLDivElement>(null);
+  const changePanelRef = useRef<HTMLDivElement>(null);
   const [stageSize, setStageSize] = useState({ w: 0, h: 0 });
   const [computing, setComputing] = useState(false);
   const [failKey, setFailKey] = useState<MessageKey | null>(null);
-  const [showAllLandmarks, setShowAllLandmarks] = useState(false);
+  /** Row index whose change panel is open; null = closed */
+  const [changeRow, setChangeRow] = useState<number | null>(null);
+  const [showAllInPanel, setShowAllInPanel] = useState(false);
   const dragRef = useRef<{
     index: number;
     pointerId: number;
@@ -177,6 +203,24 @@ export function CaptureCalibOverlay({ state, t }: Props) {
     setFailKey(null);
   }, [points, landmarkIds]);
 
+  useEffect(() => {
+    setChangeRow(null);
+    setShowAllInPanel(false);
+  }, [preset, goalSide]);
+
+  useEffect(() => {
+    if (changeRow == null) return;
+    const onDoc = (e: MouseEvent) => {
+      const panel = changePanelRef.current;
+      if (panel && !panel.contains(e.target as Node)) {
+        setChangeRow(null);
+        setShowAllInPanel(false);
+      }
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [changeRow]);
+
   const onHandlePointerMove = useCallback(
     (e: ReactPointerEvent<HTMLButtonElement>) => {
       const drag = dragRef.current;
@@ -210,6 +254,10 @@ export function CaptureCalibOverlay({ state, t }: Props) {
   const srcMoved = !!session.calibSrcMoved;
   const setupReady = !!(landmarkIds && points && points.length === 4);
   const ready = setupReady && srcMoved;
+  const focusLandmarkId =
+    setupReady && landmarkIds
+      ? (landmarkIds[focusIndex] ?? null)
+      : null;
 
   const onApply = async () => {
     if (!setupReady) {
@@ -247,19 +295,63 @@ export function CaptureCalibOverlay({ state, t }: Props) {
     e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
-  const onListLandmarkChange = (
-    index: number,
-    e: ChangeEvent<HTMLSelectElement>,
-  ) => {
-    state.setCaptureCalibLandmark(index, e.target.value as LandmarkId);
-  };
-
   const lmLabel = (id: LandmarkId) => {
     const base = landmarkMsgBase(id);
     return {
       short: t(`${base}Short` as MessageKey),
       full: t(base as MessageKey),
     };
+  };
+
+  const sideSubtitle = (id: LandmarkId): string | null => {
+    const side = landmarkPitchSide(id);
+    if (side === "goalLine") return t("captureCalibSideGoalLine");
+    if (side === "field") return t("captureCalibSideField");
+    return null;
+  };
+
+  const openChange = (index: number) => {
+    state.setCaptureCalibFocus(index);
+    setShowAllInPanel(false);
+    setChangeRow((prev) => (prev === index ? null : index));
+  };
+
+  const pickLandmark = (index: number, id: LandmarkId) => {
+    state.setCaptureCalibLandmark(index, id);
+    setChangeRow(null);
+    setShowAllInPanel(false);
+  };
+
+  const onPanelKeyDown = (e: ReactKeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      setChangeRow(null);
+      setShowAllInPanel(false);
+    }
+  };
+
+  const renderCandidate = (
+    rowIndex: number,
+    sid: LandmarkId,
+    current: LandmarkId,
+  ) => {
+    const lab = lmLabel(sid);
+    const sub = sideSubtitle(sid);
+    const selected = sid === current;
+    return (
+      <button
+        key={sid}
+        type="button"
+        role="option"
+        className={`capture-calib-pick${selected ? " selected" : ""}`}
+        aria-selected={selected}
+        title={lab.full}
+        onClick={() => pickLandmark(rowIndex, sid)}
+      >
+        <span className="capture-calib-pick-main">{lab.short}</span>
+        {sub && <span className="capture-calib-pick-sub">{sub}</span>}
+      </button>
+    );
   };
 
   return (
@@ -332,6 +424,7 @@ export function CaptureCalibOverlay({ state, t }: Props) {
         <MiniPitchGoalPicker
           selected={goalSide}
           needsPick={needsGoal}
+          focusLandmarkId={focusLandmarkId}
           onPick={(side) => state.setCaptureCalibGoalSide(side)}
           t={t}
         />
@@ -396,19 +489,16 @@ export function CaptureCalibOverlay({ state, t }: Props) {
         <div className="capture-calib-list">
           <div className="capture-calib-list-head">
             <span>{t("captureCalibPointList")}</span>
-            <button
-              type="button"
-              className="capture-calib-list-more"
-              onClick={() => setShowAllLandmarks((v) => !v)}
-            >
-              {showAllLandmarks
-                ? t("captureCalibLessLandmarks")
-                : t("captureCalibMoreLandmarks")}
-            </button>
           </div>
           <ul className="capture-calib-list-rows">
             {landmarkIds.map((id, i) => {
               const { short, full } = lmLabel(id);
+              const sub = sideSubtitle(id);
+              const panelOpen = changeRow === i;
+              const panelIds =
+                showAllInPanel || otherIds.includes(id)
+                  ? [...suggested, ...otherIds]
+                  : suggested;
               return (
                 <li
                   key={i}
@@ -421,52 +511,59 @@ export function CaptureCalibOverlay({ state, t }: Props) {
                   >
                     {HANDLE_LABELS[i]}
                   </button>
-                  <label className="capture-calib-list-select">
-                    <span className="sr-only">{full}</span>
-                    <select
-                      value={id}
-                      title={full}
-                      aria-label={`${HANDLE_LABELS[i]} ${full}`}
+                  <div className="capture-calib-list-body">
+                    <span className="capture-calib-list-main" title={full}>
+                      {short}
+                    </span>
+                    {sub && (
+                      <span className="capture-calib-list-sub">{sub}</span>
+                    )}
+                  </div>
+                  <div
+                    className="capture-calib-list-change-wrap"
+                    ref={panelOpen ? changePanelRef : undefined}
+                  >
+                    <button
+                      type="button"
+                      className="capture-calib-list-change"
+                      title={t("captureCalibChange")}
+                      aria-label={`${HANDLE_LABELS[i]} ${t("captureCalibChange")}`}
+                      aria-expanded={panelOpen}
+                      aria-haspopup="listbox"
                       disabled={computing}
-                      onChange={(e) => onListLandmarkChange(i, e)}
-                      onFocus={() => state.setCaptureCalibFocus(i)}
+                      onClick={() => openChange(i)}
                     >
-                      <optgroup label={t("captureCalibSuggestedGroup")}>
-                        {suggested.map((sid) => {
-                          const lab = lmLabel(sid);
-                          return (
-                            <option
-                              key={sid}
-                              value={sid}
-                              title={lab.full}
-                            >
-                              {lab.short}
-                            </option>
-                          );
-                        })}
-                      </optgroup>
-                      {(showAllLandmarks ||
-                        otherIds.includes(id)) && (
-                        <optgroup label={t("captureCalibOtherGroup")}>
-                          {otherIds.map((sid) => {
-                            const lab = lmLabel(sid);
-                            return (
-                              <option
-                                key={sid}
-                                value={sid}
-                                title={lab.full}
-                              >
-                                {lab.short}
-                              </option>
-                            );
-                          })}
-                        </optgroup>
-                      )}
-                    </select>
-                  </label>
-                  <span className="capture-calib-list-short" title={full}>
-                    {short}
-                  </span>
+                      {t("captureCalibChangeShort")}
+                    </button>
+                    {panelOpen && (
+                      <div
+                        className="capture-calib-change-panel"
+                        role="listbox"
+                        aria-label={t("captureCalibChange")}
+                        onKeyDown={onPanelKeyDown}
+                      >
+                        <div className="capture-calib-change-panel-head">
+                          <span>{t("captureCalibSuggestedGroup")}</span>
+                          <button
+                            type="button"
+                            className="capture-calib-list-more"
+                            onClick={() =>
+                              setShowAllInPanel((v) => !v)
+                            }
+                          >
+                            {showAllInPanel
+                              ? t("captureCalibLessLandmarks")
+                              : t("captureCalibMoreLandmarks")}
+                          </button>
+                        </div>
+                        <div className="capture-calib-change-panel-opts">
+                          {panelIds.map((sid) =>
+                            renderCandidate(i, sid, id),
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </li>
               );
             })}

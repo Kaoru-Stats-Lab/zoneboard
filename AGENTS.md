@@ -11,7 +11,9 @@
 | 5 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | 未着手 · §1-1 境界要約 |
 | 6 | [`docs/UI_UX.md`](docs/UI_UX.md) | chrome / パネル |
 | — | [`docs/CAPTURE_IMPORT_P1_REQUIREMENTS.md`](docs/CAPTURE_IMPORT_P1_REQUIREMENTS.md) | B-070 Phase 1 要件 |
-| — | [`docs/CAPTURE_IMPORT_CALIB_UX_SPEC.md`](docs/CAPTURE_IMPORT_CALIB_UX_SPEC.md) | **キャリブ UX 仕様（W09）** |
+| — | [`docs/CAPTURE_IMPORT_CALIB_UX_SPEC.md`](docs/CAPTURE_IMPORT_CALIB_UX_SPEC.md) | キャリブ UX 骨格（W09） |
+| — | [`docs/CAPTURE_IMPORT_CALIB_UX_W10_SPEC.md`](docs/CAPTURE_IMPORT_CALIB_UX_W10_SPEC.md) | **キャリブ HCI · 一覧/ラベル（W10 · UI勝ち）** |
+| — | [`docs/AGENT_PROMPT_CAPTURE_IMPORT_W10_CALIB_LIST.md`](docs/AGENT_PROMPT_CAPTURE_IMPORT_W10_CALIB_LIST.md) | W10 実装プロンプト |
 
 **一言:** ZoneBoard = **Explain the idea**（Explanation Canvas）。Metrica 型 = **Analyze the game**（やらない）。OBS の中のピッチ。
 

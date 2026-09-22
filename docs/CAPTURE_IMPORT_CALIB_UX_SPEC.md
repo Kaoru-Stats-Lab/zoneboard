@@ -4,9 +4,10 @@
 **Backlog:** B-070 · Phase 1.5 UX  
 **実装プロンプト:** [`AGENT_PROMPT_CAPTURE_IMPORT_W09_CALIB_UX.md`](AGENT_PROMPT_CAPTURE_IMPORT_W09_CALIB_UX.md)  
 **境界:** [`AGENT_PROMPT_PRODUCT_BOUNDARY.md`](AGENT_PROMPT_PRODUCT_BOUNDARY.md) · PRODUCT_NOTE 2026-09-22  
-**前段:** W08（ランドマーク dst）はエンジンとして残す。本仕様は **UI / コピー / フロー** の作り替え。
+**前段:** W08（ランドマーク dst）はエンジンとして残す。本仕様は **UI / コピー / フロー** の作り替え。  
+**後続（HCI）:** 一覧・ラベル・select 廃止は [`CAPTURE_IMPORT_CALIB_UX_W10_SPEC.md`](CAPTURE_IMPORT_CALIB_UX_W10_SPEC.md) が勝ち。
 
-矛盾したら **本ファイル＋PRODUCT_NOTE** を勝ちにする。
+矛盾したら **本ファイル＋PRODUCT_NOTE** を勝ちにする。ただし **下部リスト / ユーザー向けラベル / ミニ俯瞰の L-R 文言** は W10 を勝ちにする。
 
 ---
 
