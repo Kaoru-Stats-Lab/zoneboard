@@ -34,6 +34,7 @@ import type { Locale } from "../i18n/messages";
 import {
   applyGkColorsOnMigrate,
   defaultKitPalette,
+  optionalAccentColor,
   tagKeepers,
 } from "./kits";
 import { roleFromPosition } from "./pieceRole";
@@ -246,6 +247,12 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     (raw as { homeGkColor?: string }).homeGkColor ?? HOME_GK_COLOR;
   const awayGkColor =
     (raw as { awayGkColor?: string }).awayGkColor ?? AWAY_GK_COLOR;
+  const homeAccentColor = optionalAccentColor(
+    (raw as { homeAccentColor?: string }).homeAccentColor,
+  );
+  const awayAccentColor = optionalAccentColor(
+    (raw as { awayAccentColor?: string }).awayAccentColor,
+  );
   const kits = {
     home: homeColor,
     away: awayColor,
@@ -279,6 +286,8 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
     awayColor,
     homeGkColor,
     awayGkColor,
+    ...(homeAccentColor ? { homeAccentColor } : {}),
+    ...(awayAccentColor ? { awayAccentColor } : {}),
     goals: ((raw as { goals?: GoalEntry[] }).goals ?? []).map((g) => ({
       ...g,
       kind: g.kind === "penalty" ? "penalty" : "normal",

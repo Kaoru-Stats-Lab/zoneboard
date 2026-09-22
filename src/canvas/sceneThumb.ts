@@ -24,6 +24,8 @@ export function sceneThumbRevision(board: BoardDocument, scene: Scene): string {
     board.pieceScale ?? 1,
     board.homeColor ?? "",
     board.awayColor ?? "",
+    board.homeAccentColor ?? "",
+    board.awayAccentColor ?? "",
     scene.hideHalf,
     scene.teamFocus ?? "",
     scene.objects.length,

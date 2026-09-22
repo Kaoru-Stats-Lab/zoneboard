@@ -63,6 +63,7 @@ const CHROME_SHORT_PAIRS: [string, string][] = [
   ["captureCalibPresetGoal", "captureCalibPresetGoalShort"],
   ["captureCalibPresetMixed", "captureCalibPresetMixedShort"],
   ["captureCalibChange", "captureCalibChangeShort"],
+  ["kitAccent", "kitAccentShort"],
   ["captureUnderlayOpacity", "captureUnderlayOpacityShort"],
   ["captureBackToCalib", "captureBackToCalibShort"],
   ["captureApplyToScene", "captureApplyToSceneShort"],

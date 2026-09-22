@@ -7,13 +7,25 @@ type Props = {
   hexLabel: string;
   value: string;
   onChange: (color: string) => void;
+  /** Optional clear → onChange("") for accent-none */
+  allowClear?: boolean;
+  clearLabel?: string;
+  title?: string;
 };
 
 /**
  * Compact swatch in the roster row. HEX lives in the popover — not inline —
  * so the prep drawer never grows a horizontal scrollbar.
  */
-export function KitColorField({ label, hexLabel, value, onChange }: Props) {
+export function KitColorField({
+  label,
+  hexLabel,
+  value,
+  onChange,
+  allowClear = false,
+  clearLabel,
+  title,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(value);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
@@ -22,6 +34,7 @@ export function KitColorField({ label, hexLabel, value, onChange }: Props) {
   const popRef = useRef<HTMLDivElement>(null);
   const hexRef = useRef<HTMLInputElement>(null);
   const panelId = useId();
+  const empty = !value.trim();
 
   const placePop = () => {
     const btn = btnRef.current;
@@ -32,7 +45,7 @@ export function KitColorField({ label, hexLabel, value, onChange }: Props) {
       Math.max(8, r.left),
       window.innerWidth - width - 8,
     );
-    const top = Math.min(r.bottom + 6, window.innerHeight - 160);
+    const top = Math.min(r.bottom + 6, window.innerHeight - 180);
     setPos({ top, left });
   };
 
@@ -78,7 +91,12 @@ export function KitColorField({ label, hexLabel, value, onChange }: Props) {
   }, [open]);
 
   const commitHex = () => {
-    const next = normalizePieceColor(draft, value);
+    if (allowClear && !draft.trim()) {
+      onChange("");
+      setDraft("");
+      return;
+    }
+    const next = normalizePieceColor(draft, value || "#808080");
     onChange(next);
     setDraft(next);
   };
@@ -89,12 +107,12 @@ export function KitColorField({ label, hexLabel, value, onChange }: Props) {
       <button
         ref={btnRef}
         type="button"
-        className="kit-swatch__btn"
-        style={{ background: value }}
+        className={`kit-swatch__btn${empty ? " is-empty" : ""}`}
+        style={empty ? undefined : { background: value }}
         aria-label={label}
         aria-expanded={open}
         aria-controls={panelId}
-        title={value}
+        title={title ?? (empty ? label : value)}
         onClick={() => setOpen((v) => !v)}
       />
       {open &&
@@ -112,7 +130,7 @@ export function KitColorField({ label, hexLabel, value, onChange }: Props) {
               <span className="zb-feedback-sr">{label}</span>
               <input
                 type="color"
-                value={value}
+                value={empty ? "#808080" : value}
                 onChange={(e) => {
                   onChange(e.target.value);
                   setDraft(e.target.value);
@@ -129,6 +147,7 @@ export function KitColorField({ label, hexLabel, value, onChange }: Props) {
                 autoComplete="off"
                 spellCheck={false}
                 value={draft}
+                placeholder={allowClear ? "#rrggbb" : undefined}
                 onChange={(e) => setDraft(e.target.value)}
                 onBlur={commitHex}
                 onKeyDown={(e) => {
@@ -140,6 +159,19 @@ export function KitColorField({ label, hexLabel, value, onChange }: Props) {
                 }}
               />
             </label>
+            {allowClear && (
+              <button
+                type="button"
+                className="kit-color-pop__clear"
+                onClick={() => {
+                  onChange("");
+                  setDraft("");
+                  setOpen(false);
+                }}
+              >
+                {clearLabel ?? "—"}
+              </button>
+            )}
           </div>,
           document.body,
         )}

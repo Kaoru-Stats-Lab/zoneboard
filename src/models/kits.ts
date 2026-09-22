@@ -17,6 +17,9 @@ export type KitPalette = {
   away: string;
   homeGk: string;
   awayGk: string;
+  /** Outfield accent ring; undefined = no ring */
+  homeAccent?: string;
+  awayAccent?: string;
 };
 
 export function sportHasGk(sport: SportId): boolean {
@@ -32,6 +35,14 @@ export function defaultKitPalette(): KitPalette {
   };
 }
 
+/** Empty / whitespace → undefined (no accent ring). */
+export function optionalAccentColor(
+  raw: string | undefined | null,
+): string | undefined {
+  if (raw == null || !String(raw).trim()) return undefined;
+  return normalizePieceColor(String(raw), HOME_COLOR);
+}
+
 export function kitsFromBoard(board: BoardDocument): KitPalette {
   const d = defaultKitPalette();
   return {
@@ -39,6 +50,8 @@ export function kitsFromBoard(board: BoardDocument): KitPalette {
     away: normalizePieceColor(board.awayColor ?? d.away, d.away),
     homeGk: normalizePieceColor(board.homeGkColor ?? d.homeGk, d.homeGk),
     awayGk: normalizePieceColor(board.awayGkColor ?? d.awayGk, d.awayGk),
+    homeAccent: optionalAccentColor(board.homeAccentColor),
+    awayAccent: optionalAccentColor(board.awayAccentColor),
   };
 }
 
@@ -53,6 +66,20 @@ export function colorForKit(
 ): string {
   if (team === "home") return kit === "gk" ? kits.homeGk : kits.home;
   return kit === "gk" ? kits.awayGk : kits.away;
+}
+
+/** Accent ring colour for an outfield piece, or null if none / same as primary / GK. */
+export function accentForPiece(
+  board: BoardDocument,
+  piece: Piece,
+): string | null {
+  if (kitOf(piece) === "gk") return null;
+  const kits = kitsFromBoard(board);
+  const accent = piece.team === "home" ? kits.homeAccent : kits.awayAccent;
+  if (!accent) return null;
+  const primary = colorForKit(kits, piece.team, "outfield");
+  if (accent.toLowerCase() === primary.toLowerCase()) return null;
+  return accent;
 }
 
 export function paintPiecesWithKits(pieces: Piece[], kits: KitPalette): Piece[] {

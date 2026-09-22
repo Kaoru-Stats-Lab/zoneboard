@@ -1411,6 +1411,26 @@ export function useAppState() {
     [updateBoard],
   );
 
+  /** Outfield accent ring only — does not repaint piece.color. */
+  const setKitAccent = useCallback(
+    (team: "home" | "away", color: string | null) => {
+      updateBoard((b) => {
+        const next: BoardDocument = { ...b };
+        if (color == null || !color.trim()) {
+          if (team === "home") delete next.homeAccentColor;
+          else delete next.awayAccentColor;
+          return next;
+        }
+        const primary = team === "home" ? b.homeColor : b.awayColor;
+        const n = normalizePieceColor(color, primary);
+        if (team === "home") next.homeAccentColor = n;
+        else next.awayAccentColor = n;
+        return next;
+      });
+    },
+    [updateBoard],
+  );
+
   const addLine = useCallback(
     (kind: LineKind, points: { x: number; y: number }[]) => {
       if (points.length < 2) return;
@@ -2544,6 +2564,7 @@ export function useAppState() {
     patchPiece,
     captureUndo,
     setKitColor,
+    setKitAccent,
     addLine,
     addZone,
     addPen,

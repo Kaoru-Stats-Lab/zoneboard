@@ -662,15 +662,28 @@ export function Drawer({ state, t }: Props) {
                       state.setKitColor("home", "outfield", c)
                     }
                   />
-                  {sportHasGk(board.sport) && (
+                  <KitColorField
+                    label={t("kitAccentShort")}
+                    hexLabel={t("kitHexLabel")}
+                    title={t("kitAccentHint")}
+                    value={kits.homeAccent ?? ""}
+                    allowClear
+                    clearLabel={t("kitAccentClear")}
+                    onChange={(c) =>
+                      state.setKitAccent("home", c.trim() ? c : null)
+                    }
+                  />
+                </div>
+                {sportHasGk(board.sport) && (
+                  <div className="kit-colors-swatches">
                     <KitColorField
                       label={t("kitGk")}
                       hexLabel={t("kitHexLabel")}
                       value={kits.homeGk}
                       onChange={(c) => state.setKitColor("home", "gk", c)}
                     />
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
               <div className="kit-colors-block">
                 <span className="kit-colors-team">{t("awayTeam")}</span>
@@ -685,15 +698,28 @@ export function Drawer({ state, t }: Props) {
                       state.setKitColor("away", "outfield", c)
                     }
                   />
-                  {sportHasGk(board.sport) && (
+                  <KitColorField
+                    label={t("kitAccentShort")}
+                    hexLabel={t("kitHexLabel")}
+                    title={t("kitAccentHint")}
+                    value={kits.awayAccent ?? ""}
+                    allowClear
+                    clearLabel={t("kitAccentClear")}
+                    onChange={(c) =>
+                      state.setKitAccent("away", c.trim() ? c : null)
+                    }
+                  />
+                </div>
+                {sportHasGk(board.sport) && (
+                  <div className="kit-colors-swatches">
                     <KitColorField
                       label={t("kitGk")}
                       hexLabel={t("kitHexLabel")}
                       value={kits.awayGk}
                       onChange={(c) => state.setKitColor("away", "gk", c)}
                     />
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
               {!teamPairOk(kits.home, kits.away) && (
                 <p className="hint-muted kit-pair-warn">{t("kitPairWarn")}</p>

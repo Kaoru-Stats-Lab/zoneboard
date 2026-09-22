@@ -328,6 +328,12 @@ export interface BoardDocument {
   /** フィールドユニ。未保存データは HOME_COLOR / AWAY_COLOR */
   homeColor: string;
   awayColor: string;
+  /**
+   * フィールドユニのアクセント（セカンドリング）。未設定・空ならリングなし。
+   * GK には使わない。駒 color には焼き込まない。
+   */
+  homeAccentColor?: string;
+  awayAccentColor?: string;
   /** GKユニ。サカ系のみUI表示。PL配信でもキーパーは別色が必須 */
   homeGkColor: string;
   awayGkColor: string;

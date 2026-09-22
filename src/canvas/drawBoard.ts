@@ -25,6 +25,7 @@ import {
   pieceFillColor,
   relativeLuminance,
 } from "./pieceInk";
+import { accentForPiece } from "../models/kits";
 import {
   grassHaloWidth,
   lineColorForBoard,
@@ -766,7 +767,7 @@ function drawPiece(
     ctx.globalAlpha = 0.45;
   }
 
-  // 1) シルエット（ノーズ含む一体）→ 2) キット円（番号の座）→ 3) 外枠1回
+  // 1) シルエット塗り → 2) キット円 → 3) アクセント環（任意）→ 4) 外枠
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
   tracePieceSilhouette(ctx, x, y, r, nose);
@@ -777,6 +778,17 @@ function drawPiece(
   ctx.arc(x, y, fillR, 0, Math.PI * 2);
   ctx.fillStyle = fillColor;
   ctx.fill();
+
+  const accent = accentForPiece(board, piece);
+  if (accent) {
+    const ringW = Math.max(1.25, edgeW * 0.9);
+    const ringR = Math.max(1, fillR - edgeW * 0.25);
+    ctx.beginPath();
+    ctx.arc(x, y, ringR, 0, Math.PI * 2);
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = ringW;
+    ctx.stroke();
+  }
 
   tracePieceSilhouette(ctx, x, y, r, nose);
   if (selected || dragging) {
