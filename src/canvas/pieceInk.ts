@@ -36,7 +36,7 @@ const NAMED_COLORS: Record<string, string> = {
   purple: "#800080",
 };
 
-const NUMBER_MAX_LEN = 4;
+const NUMBER_MAX_LEN = 5;
 
 function srgbChannelToLinear(c: number): number {
   const v = c / 255;
@@ -122,7 +122,7 @@ export function numberHalo(bg: string): "#fff" | "#111" {
   return numberFill(bg) === "#fff" ? "#111" : "#fff";
 }
 
-/** Trim, NFKC, digits + one optional letter; max 4 chars. Empty allowed. */
+/** Trim, NFKC, digits + letters; max 5 chars. Empty allowed. */
 export function normalizePieceNumber(raw: string): string {
   let s = raw.normalize("NFKC").trim();
   s = s.replace(/[^\dA-Za-z]/g, "");
@@ -181,6 +181,9 @@ export function pieceInkSelfTest(): void {
   );
   assert(normalizePieceNumber("１０") === "10", "fullwidth digits");
   assert(normalizePieceNumber("  7  ") === "7", "trim");
-  assert(normalizePieceNumber("10001").length === 4, "max len 4");
+  assert(normalizePieceNumber("99") === "99", "jersey digits");
+  assert(normalizePieceNumber("10001").length === 5, "max len 5");
+  assert(normalizePieceNumber("PIVOT") === "PIVOT", "5-char mark");
+  assert(normalizePieceNumber("LIBERO") === "LIBER", "6→5 truncate");
   assert(teamPairOk(HOME_COLOR, AWAY_COLOR), "default pair ok");
 }
