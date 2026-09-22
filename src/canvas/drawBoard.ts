@@ -277,7 +277,8 @@ function pieceRadius(
   board: BoardDocument,
   role: "starter" | "bench" = "starter",
 ): number {
-  const scale = board.pieceScale ?? 1;
+  // Piece size is for XI only — bench roster stays readable when scale is tiny.
+  const scale = role === "bench" ? 1 : (board.pieceScale ?? 1);
   const base =
     (Math.min(pitch.w, pitch.h) * 0.028 * scale) / densityZoom(board);
   return role === "bench" ? base * 0.48 : base;
