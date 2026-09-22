@@ -154,7 +154,11 @@ export function fitPitch(
   return fitField(canvasW, canvasH, board, pad).pitch;
 }
 
-/** バッファ内も許可。ズーム後の pitch 矩形基準 */
+/**
+ * バッファ内も許可。ズーム後の pitch 矩形基準。
+ * pitch は clientWidth/Height（CSS px）基準。描画も setTransform(dpr) で CSS px。
+ * canvas.width（デバイス px）で割ると HiDPI / 小数 DPR でマーキーが右下にずれる。
+ */
 export function toNorm(
   clientX: number,
   clientY: number,
@@ -162,8 +166,11 @@ export function toNorm(
   pitch: PitchRect,
 ): { x: number; y: number } | null {
   const rect = canvas.getBoundingClientRect();
-  const sx = canvas.width / rect.width;
-  const sy = canvas.height / rect.height;
+  const cssW = canvas.clientWidth || rect.width;
+  const cssH = canvas.clientHeight || rect.height;
+  if (cssW <= 0 || cssH <= 0 || rect.width <= 0 || rect.height <= 0) return null;
+  const sx = cssW / rect.width;
+  const sy = cssH / rect.height;
   const px = (clientX - rect.left) * sx;
   const py = (clientY - rect.top) * sy;
   const x = (px - pitch.x) / pitch.w;

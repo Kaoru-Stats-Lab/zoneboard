@@ -5,6 +5,11 @@
 
 **前提:** 縦ピッチ · Pitch View · ツールモード · 画角プリセットは **実装済み**。触らない。
 
+**境界（必須・先に読ませる）:** [`AGENT_PROMPT_PRODUCT_BOUNDARY.md`](AGENT_PROMPT_PRODUCT_BOUNDARY.md) · PRODUCT_NOTE **2026-09-22**。局面取込は **Explanation Canvas のコア**（4点 Calibration → 配置）。Player Tracking / AI Analysis / Timeline を足して完成させない。
+
+**別 Agent への要件・仕様・手順（CPO/CMO/CTO 合議正本）:**  
+[`CAPTURE_IMPORT_P1_REQUIREMENTS.md`](CAPTURE_IMPORT_P1_REQUIREMENTS.md) — **新規実装より監査・ギャップ埋め・受け入れ**。この索引は Wave 詳細用。
+
 仕様正本: [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 決定ログ「Broadcast Capture Import（2026-08-30）」· [`BROADCAST_CAPTURE_IMPORT_RESEARCH.md`](BROADCAST_CAPTURE_IMPORT_RESEARCH.md)。矛盾したら **PRODUCT_NOTE** を勝ちにする。
 
 日本語で報告する。**コミットはユーザが頼むまでしない。**
@@ -89,9 +94,10 @@ export function isCaptureImportEnabled(search = window.location.search): boolean
 | W03 | [`W03_CALIB`](AGENT_PROMPT_CAPTURE_IMPORT_W03_CALIB.md) | **✅** |
 | W04 | [`W04_UNDERLAY`](AGENT_PROMPT_CAPTURE_IMPORT_W04_UNDERLAY.md) | **✅** |
 | W05 | [`W05_PLACEMENT`](AGENT_PROMPT_CAPTURE_IMPORT_W05_PLACEMENT.md) | **✅**（コード map 記載） |
-| **W07** | [**`W07_GATE`**](AGENT_PROMPT_CAPTURE_IMPORT_W07_GATE.md) | **Deploy 前必須** — gate 未実装なら最優先 |
-| W06 | [`W06_FRAME`](AGENT_PROMPT_CAPTURE_IMPORT_W06_FRAME.md) | 任意 · W07 後 |
-| UAT | [`P1_UAT`](AGENT_PROMPT_CAPTURE_IMPORT_P1_UAT.md) | W07 merge 後 · 本番手動 |
+| **W07** | [**`W07_GATE`**](AGENT_PROMPT_CAPTURE_IMPORT_W07_GATE.md) | **✅** ゲート実装済 |
+| **W08** | [**`W08_LANDMARK_CALIB`**](AGENT_PROMPT_CAPTURE_IMPORT_W08_LANDMARK_CALIB.md) | **次** — 可視ランドマークキャリブ（四隅固定の欠陥修正 · Phase 1.5） |
+| W06 | [`W06_FRAME`](AGENT_PROMPT_CAPTURE_IMPORT_W06_FRAME.md) | 任意 · W08 後でも可 |
+| UAT | [`P1_UAT`](AGENT_PROMPT_CAPTURE_IMPORT_P1_UAT.md) | W08 後に片側ペナ素材を追加推奨 |
 
 **推奨 Deploy 順:** W05 merge → **W07 merge & deploy** → 本番 UAT →（必要なら）W06 → Phase 2 設計
 

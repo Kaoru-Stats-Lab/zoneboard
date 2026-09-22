@@ -1,11 +1,13 @@
 # ZoneBoard — プロダクトメモ
 
-**更新:** 2026-07-04  
+**更新:** 2026-09-22  
 **リポジトリ:** `C:\asl_dev\zoneboard`  
 **ステータス:** 方針メモ済 · **仕様（SPEC）ドラフト承認待ち（市場調査反映済）** · 実装未着手  
 **SUGUDASU台帳ポインタ:** `C:\asl_dev\sugudasu\docs\notes\PRODUCT_IDEA_JUDGMENT_LEDGER.md` §16  
 **ブランド:** **ZoneBoard**  
-**ドメイン:** **`zoneboard.app`**（本拠）。`zoneboard.com` はプレミアム約63.6万円 → **不取得**
+**ドメイン:** **`zoneboard.app`**（本拠）。`zoneboard.com` はプレミアム約63.6万円 → **不取得**  
+**プロダクト境界の正本:** 下記 **決定ログ — Explanation Canvas / プロダクト境界（2026-09-22）**  
+**Agent 導線:** [`AGENTS.md`](../AGENTS.md) · [`.cursor/rules/product-boundary.mdc`](../.cursor/rules/product-boundary.mdc) · [`AGENT_PROMPT_PRODUCT_BOUNDARY.md`](AGENT_PROMPT_PRODUCT_BOUNDARY.md)
 
 ---
 
@@ -14,6 +16,16 @@
 ワールドカップ解説など YouTube で、戦術説明を **Googleスライドの図形いじり**でやっているのを見た。サッカー・バレー・バスケなど **俯瞰して戦術を指示する**用途なら長時間使う。Privnote型（浅いPV）と単位経済が違う。
 
 **参考UI:** TacticsLista 等の既存Web戦術ボード（ピッチ俯瞰・選手円・フォーメーション・描画）。機能の方向性は近いが、**配信時にピッチが小さすぎる**のが不満。運営ロゴ透かしではなく **自分のロゴ**にしたい。
+
+### 一言の境界（常に維持）
+
+| 相手 / 文脈 | ZoneBoard の立ち位置 |
+|-------------|----------------------|
+| **Metrica Nexus 等** | **Analyze the game.**（Analysis Workstation）≠ ZB |
+| **ZoneBoard** | **Explain the idea.**（Explanation Canvas） |
+| **OBS** | **The pitch inside the broadcast.** |
+
+ZB は Analysis Workstation の簡略版ではない。人間がすでに持っている Football のアイデアを、ピッチ上に置いて説明するための **軽量ブラウザ・キャンバス**。詳細・判断手順・優先順位は **2026-09-22 決定ログ**。
 
 ---
 
@@ -117,13 +129,92 @@
 7. 配信モード（v1 必須）
 8. 手順再生は v1.1
 
-**やらない（v1）:** 選手DB、**予想スタメン専用機能**（名簿＋配置で足りる。独自色はロゴ・解説側）、**試合全体の動画解析・連続トラッキング**、スクレイピング、SNS投稿、重いアニメ、ボード内Webcam、運営ロゴ強制。**サカ/バス/バレ以外の競技**（ラグビー・アメフト・野球・eSports 等は Later）。**運営カタログのフォーメプリセット**（4-4-2 等を商品として並べない。下記決定ログ）。**視野角の扇形**（概念は知っている。出さない。下記決定ログ）。
+**やらない（v1）:** 選手DB、**予想スタメン専用機能**（名簿＋配置で足りる。独自色はロゴ・解説側）、**試合全体の動画解析・連続トラッキング**、スクレイピング、SNS投稿、重いアニメ、ボード内Webcam、運営ロゴ強制。**サカ/バス/バレ以外の競技**（ラグビー・アメフト・野球・eSports 等は Later）。**運営カタログのフォーメプリセット**（4-4-2 等を商品として並べない。下記決定ログ）。**視野角の扇形**（概念は知っている。出さない。下記決定ログ）。Analysis Workstation 化・Player Tracking・Timeline / Keyframe Editor は **プロダクト境界として原則やらない**（2026-09-22）。
 
-※ **局面取込（Broadcast Capture Import）** は上記「動画解析」とは別。1枚／1フレーム → scene ドラフトは Later 大型候補（下記決定ログ · B-070）。
+※ **局面取込（Broadcast Capture Import）** は上記「動画解析」とは別。1枚／1フレーム → scene ドラフトは **コア方針として確定**（下記境界ログ · B-070）。連続トラッキングや AI 戦術推定は境界外。
+
+### 決定ログ — Explanation Canvas / プロダクト境界（2026-09-22）
+
+**旧 `ZoneBoardBorderLine.md` を本メモへ統合。今後の機能開発・外部事例への反応のガードレール。実装指示ではない。**
+
+#### 定義
+
+| 用語 | 意味 |
+|------|------|
+| **Explanation Canvas** | 人間のアイデア → ピッチ → 視覚説明。ZB の製品定義 |
+| **Analysis Workstation** | Game / Video → Analysis → Tracking → Visualization → Presentation。Metrica Nexus 等の席 |
+| **基本フロー（ZB）** | **Human Idea → Pitch → Visual Explanation** |
+| **原則** | **人間が決める。ZoneBoard は可視化と面倒な座標・操作だけを減らす。** 戦術の正誤や「誰がどこにいるべきか」は判断しない |
+
+特に Streamer / Watchalong / Football Creator が「この場面をちょっとピッチで説明したい」と思ったときにすぐ使えること。分析結果を作ることではない。
+
+#### 確定コア（将来検討ではない）
+
+| コア | 内容 |
+|------|------|
+| **Pitch-first** | ピッチが主役。UI を見せる製品ではない |
+| **OBS / Broadcast-first** | OBS の中の説明用ピッチ。配信者が話しながら駒・状態・空間を動かす |
+| **手動コマ配置** | 選手自動認識・ポジション推定・戦術／フォーメ自動判断はしない |
+| **画像4点 Calibration → コマ配置** | **開発対象として確定**（B-070 Phase 1 と同思想）。詳細は下記局面取込ログ |
+
+**4点 Calibration の思想:** ユーザが「この4点がピッチだ」と指定する。ZB は座標変換を肩代わりする。**Human decides → ZoneBoard calculates coordinates。** 画像分析・Player Recognition / Tracking / Tactical Recognition / Formation Recognition / AI Analysis は必要としない。目的は「画像を分析すること」ではなく「画像上のピッチを説明空間へ素早く持ち込むこと」。
+
+#### Metrica Nexus 等との境界
+
+| 領域 | ZoneBoard | Metrica Nexus 型 |
+|------|:---------:|:----------------:|
+| Football / Video / Tactical Analysis | × | ◎ |
+| Game Coding / Tagging · Event Detection | × | ◎ |
+| Player / Automatic / Field Tracking | × | ◎ |
+| AI による分析 · 高度な Telestration | × | ◎ / ○ |
+| Custom Visualization | 限定的 | ◎ |
+| **画像4点 Calibration · ピッチ座標への変換** | **◎** | ― |
+| コマの手動配置 · Live Explanation · Streamer / OBS | **◎** | △ / ― |
+| 即席の戦術説明 | **◎** | △ |
+| 動画編集 · Timeline · Keyframe · 本格 Animation · 4K Production | × | ◎ |
+
+「―」は価値否定ではなく、製品の中心領域が異なることを示す。**ZB は Metrica の競合ではない。** 競争軸を「高機能か／分析できるか／綺麗な動画か」に置かない。狙うのは **「今この瞬間、Football のアイデアをピッチに出して説明する」**。
+
+#### 明確にやらないこと（境界）
+
+| カテゴリ | やらない |
+|----------|----------|
+| **Analysis** | 試合／Video Analysis · Coding / Tagging · Event Detection · Tactical / AI Tactical Analysis · 戦術・フォーメの自動判断 |
+| **Tracking** | Player / Automatic Player / Field Tracking · Full Clip Tracking · 選手自動認識 |
+| **Production** | 本格動画編集 · 高度な Telestration · Timeline / Keyframe Editor · FPS / Easing 付き Animation Editor · 高度な Motion Graphics · 本格 GIF/MP4 制作環境 · 4K ワークステーション |
+| **変質** | Analysis / Production Workstation 化 · Metrica の機能縮小版 |
+
+#### 将来検討（実装未決）とガードレール
+
+**「動き」は Discovery 対象になりうる。** Static な図 A/B だけでなく A→B の変化を見せる価値は、Reece Edwards 等の事例から仮説として残す。ただし **Movement が見える → Animation Editor を作る** とはしない。
+
+| 優先 | 内容 | 状態 |
+|------|------|------|
+| **P0 Core** | Pitch-first · OBS · Lightweight · Browser · No account · Local · Manual pieces · Immediate manipulation · Human decides · **Image 4-point Calibration → Piece Placement** | **確定** |
+| **P1 Discovery** | Scene A → State Transition → Scene B · Play · 複数 State · Live Explanation 用の最小 Movement | **実装を決定しない。** 仮説検証のみ |
+| **P2 需要確認後** | GIF / MP4 Export · Shareable Visual · Static / Animated Output | 必要性が確認された場合のみ。Export 中心化で Content Production Tool へ重心が移るリスクあり。まず OBS · Screen Capture · Live Explanation で不足するか検証 |
+| **P3 原則やらない** | 上表 Analysis / Tracking / Production · Metrica 縮小版 | 境界 |
+
+P1 の Scene A→B は、動画制作ではなく **Live Explanation のための状態変化の可視化**（「ここではこう → この選手がここへ動くと……」）。既存決定「局面複製にクロスフェード等のトランジションは付けない」（2026-08-28）は **現状 UX として維持**。P1 はそれとは別の軽量仮説であり、Timeline / Keyframe / Easing / 音声同期 / Premiere 的 UI には進まない。
+
+**Animation を仮に実装する場合の上限:** 説明のために状態を変化させる機能まで。Animation を作るためのツールにしない。
+
+#### 新機能を思いついたときの判断順
+
+1. **Human Idea → Visual Explanation** を速くするか？  
+2. それとも **Game → Analysis** か？ → 後者なら基本的に ZB の領域外  
+3. Streamer の **「今、説明したい」** 瞬間の摩擦を減らすか？  
+4. Explanation Canvas から **Analysis / Production Workstation** へ変質しないか？
+
+#### Discovery で検証すべきこと（実装前）
+
+「Animation 機能が欲しいですか？」とは聞かない。Workflow（工程・ツール・Analysis と Production の切れ目・最も時間が食う箇所）、Movement（必要なケース / Static 2枚で足りる比率 / 変化を伝えることが本質か）、Publishing（配信先・Export vs Screen Capture）、ZB 接点（Explanation だけの場面・画像からピッチ再現の手間・4点 Calibration の効き）を確認する。
+
+---
 
 ### 決定ログ — Broadcast Capture Import / 局面取込（2026-08-30）
 
-**次の大型アップデートの芯: 配信メディア → 局面ドラフト。Deep Research により Go。**
+**次の大型アップデートの芯: 配信メディア → 局面ドラフト。Deep Research により Go。** 境界定義上は **Explanation Canvas のコア**（画像4点 Calibration → コマ配置）。Analysis Workstation 化ではない（2026-09-22）。
 
 根拠: [`BROADCAST_CAPTURE_IMPORT_RESEARCH.md`](BROADCAST_CAPTURE_IMPORT_RESEARCH.md)。
 
@@ -450,8 +541,9 @@ CK 角の旧値はコーナー弧だけ入りゴールが外れ、サッカー�
 | Googleスライド | 最初から戦術ボード |
 | TacticalPad 等 | 配信モードでキャンバス最大化 |
 | TacticsLista 等 | ピッチ大 + **自分のロゴ透かし**（運営ロゴではない） |
+| **Metrica Nexus 等 Analysis Workstation** | **競合にしない。** ZB = Explanation Canvas（Explain the idea）。分析・Tracking・Timeline 制作の席ではない。境界正本: **2026-09-22 決定ログ** |
 
-横並びの機能表・LP 用の短い言い方・Export 比率ズーム判定: [`COMPETITIVE_LP.md`](COMPETITIVE_LP.md)（2026-08-26）。LP 本体に比較表は載せない（[`LP_STRUCTURE.md`](LP_STRUCTURE.md)）。
+横並びの機能表・LP 用の短い言い方・Export 比率ズーム判定: [`COMPETITIVE_LP.md`](COMPETITIVE_LP.md)（2026-08-26）。LP 本体に比較表は載せない（[`LP_STRUCTURE.md`](LP_STRUCTURE.md)）。外部の Football Creator / 分析サービスを見て機能を足す前に、境界ログの判断順（Idea→Explanation か / Game→Analysis か）を通す。
 
 ### 決定ログ — Export 画角に比率連動ズームは付けない（2026-08-26）
 
@@ -691,7 +783,7 @@ FanCommunity はプロダクト機能ではなく、**フォーマットが揃�
 | **案内** | Scenes ヒント・How-to で「動かす前に複製 → 元は `[` `]`」を教える |
 | **配信中複製** | 配信 chrome（局面切替の隣）から `addScene` を露出。B 解除不要 |
 | **シームレス** | クロスフェード等のアニメは付けない。瞬時切替＋コピー側に留まる（既存 `addScene`） |
-| **やらない** | 初期配置リセット · 局面間トランジション · 確認ダイアログ（非破壊） |
+| **やらない** | 初期配置リセット · **現状 UX としての局面間トランジション（クロスフェード等）** · 確認ダイアログ（非破壊）。軽量 Scene A→B は **P1 Discovery のみ**（2026-09-22 · 実装未決） |
 
 - **意図:** ライブで1パターン試して元の図に戻す。About の「duplicate the scene」をボード内で発見可能にする
 - **Pro Library の配置スナップショット**（Later）とは別 — 局面内のライブフォークは無料コア

@@ -1,20 +1,25 @@
 # 引き継ぎ — ZoneBoard（別 Agent 用）
 
 **作成:** 2026-07-04  
+**更新:** 2026-09-22（プロダクト境界の仕組み化）  
 **理由:** SUGUDASU セッションが長く、戦術ボードは別プロダクトとして切り出した。別 Agent / 別チャットで仕様から再開する。  
-**ワークスペース:** `C:\asl_dev\zoneboard`（**sugudasu リポジトリではない**）
+**ワークスペース:** `C:\asl_dev\zoneboard`（**sugudasu リポジトリではない**）  
+**Agent 入口:** リポジトリ直下 [`AGENTS.md`](../AGENTS.md)
 
 ---
 
 ## 0. 次 Agent への指示（最短）
 
-1. 本ファイルと [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md)、chrome は [`UI_UX.md`](UI_UX.md)、未着手は [`BACKLOG.md`](BACKLOG.md) を読む。
-2. **[`TOKEN_ECONOMY.md`](TOKEN_ECONOMY.md) を読み、RTK · CodeGraph を導入する**（未導入なら着手前にセットアップ）。思想: **トークンは通貨**。
-3. **次の成果物は `docs/SPEC.md`（実装可能な仕様）**。コード実装・デプロイは SPEC 承認後。
-4. SUGUDASU（`C:\asl_dev\sugudasu`）の本線タスク（Schedule / Sync / SHIFT-METER 等）には手を出さない。
-5. ユーザー向け返答は日本語。
+1. **必ず** [`AGENTS.md`](../AGENTS.md) → [`.cursor/rules/product-boundary.mdc`](../.cursor/rules/product-boundary.mdc) → [`AGENT_PROMPT_PRODUCT_BOUNDARY.md`](AGENT_PROMPT_PRODUCT_BOUNDARY.md) を読む（Explanation Canvas 境界）。
+2. 本ファイルと [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md)（**決定ログ 2026-09-22** 含む）、chrome は [`UI_UX.md`](UI_UX.md)、未着手は [`BACKLOG.md`](BACKLOG.md) を読む。
+3. **[`TOKEN_ECONOMY.md`](TOKEN_ECONOMY.md) を読み、RTK · CodeGraph を導入する**（未導入なら着手前にセットアップ）。思想: **トークンは通貨**。
+4. 新機能・リサーチの前に境界ゲート（Idea→Explanation か / Game→Analysis か）を **チャットに4行で書く**。P3 なら実装しない。
+5. SUGUDASU（`C:\asl_dev\sugudasu`）の本線タスク（Schedule / Sync / SHIFT-METER 等）には手を出さない。
+6. ユーザー向け返答は日本語。**コミットはユーザが頼むまでしない。**
 
-**今やることの答え:** はい、**仕様を決めることから進める**。PRODUCT_NOTE は方針メモであり、画面・データモデル・非機能・受け入れ条件までは落ちていない。並行して Token 経済圏ツールを入れる。
+**製品の一言:** ZoneBoard = **Explain the idea**（Explanation Canvas）。Metrica 型 Analysis Workstation の競合・縮小版にしない。OBS の中のピッチ。
+
+**今やることの答え:** 方針正本は PRODUCT_NOTE。境界を変えるなら決定ログ更新が先。機能実装は BACKLOG / 個別 AGENT_PROMPT に従う。
 
 ### 0-1. Token 経済圏（必須）
 
@@ -85,14 +90,15 @@ SUGUDASU 側の Sync 楔（SHIFT-METER / INV-ARCHIVE / EVENT-ROOM）とは **無
 
 ## 3. プロダクト要約（1分）
 
-**ZoneBoard** = 競技コート俯瞰の戦術ボードWebアプリ。
+**ZoneBoard** = 競技コート俯瞰の **Explanation Canvas**（戦術ボード Web）。
 
-- 駒・矢印・フォーメ・タイトル帯・**自分のロゴ透かし**
-- **配信モード**でツールバーを消し、ピッチを最大化
-- 登録不要・ローカル保存を初期方針（クラウド同期は後続可）
-- 対象: 解説 YouTuber、部活・アマ監督、多競技（サカ/バス/バレ）
+- **Explain the idea** — Human Idea → Pitch → Visual Explanation。Analysis Workstation ではない
+- 駒・矢印・ゾーン・タイトル帯・**自分のロゴ透かし**
+- **配信モード**でツールバーを消し、ピッチを最大化（OBS の中のピッチ）
+- 登録不要・ローカル保存。画像 **4点 Calibration → コマ配置**はコア（B-070 · 分析ではない）
+- 対象: 解説 YouTuber / Streamer、部活・アマ監督、多競技（サカ/バス/バレ）
 
-正本の詳細: [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) · UI/UX: [`UI_UX.md`](UI_UX.md)
+正本: [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) · 境界: [`AGENT_PROMPT_PRODUCT_BOUNDARY.md`](AGENT_PROMPT_PRODUCT_BOUNDARY.md) · UI/UX: [`UI_UX.md`](UI_UX.md)
 
 ---
 

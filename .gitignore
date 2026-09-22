@@ -31,6 +31,7 @@ npm-debug.log*
 
 # Local scratch (e.g. cloned Pixel2Motion scripts)
 .tmp/
+.tmp-uat/
 
 # Brand motion render staging + PNG sequences (regenerate: npm run brand:motion)
 public/brand/motion/exports/_staging/
@@ -42,3 +43,5 @@ public/brand/motion/_word_d.txt
 # Python
 __pycache__/
 *.pyc
+
+.wrangler/

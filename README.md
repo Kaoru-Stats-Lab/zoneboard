@@ -39,8 +39,10 @@ npm run dev
 
 | パス | 内容 |
 |------|------|
+| [`AGENTS.md`](AGENTS.md) | **別 Agent 入口**（プロダクト境界 → HANDOFF） |
+| [`docs/PRODUCT_NOTE.md`](docs/PRODUCT_NOTE.md) | プロダクト方針 · **Explanation Canvas 境界** |
+| [`docs/AGENT_PROMPT_PRODUCT_BOUNDARY.md`](docs/AGENT_PROMPT_PRODUCT_BOUNDARY.md) | 境界ゲート（Agent に渡す） |
 | [`docs/SPEC.md`](docs/SPEC.md) | 実装仕様 |
-| [`docs/PRODUCT_NOTE.md`](docs/PRODUCT_NOTE.md) | プロダクト方針 |
 | [`docs/TOKEN_ECONOMY.md`](docs/TOKEN_ECONOMY.md) | RTK · CodeGraph |
 | [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md) | Agent 引き継ぎ |
 | [`docs/OSS_SURVEY.md`](docs/OSS_SURVEY.md) | GitHub OSS 調査（流用候補なし） |

@@ -29,8 +29,12 @@
 
 ### 1-1. プロダクト境界
 
+- **Explanation Canvas**（Explain the idea）。Analysis Workstation（Metrica 等）の競合・縮小版にしない
+- **正本:** [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) **決定ログ 2026-09-22**
+- **Agent 導線:** [`AGENTS.md`](../AGENTS.md) · [`.cursor/rules/product-boundary.mdc`](../.cursor/rules/product-boundary.mdc) · [`AGENT_PROMPT_PRODUCT_BOUNDARY.md`](AGENT_PROMPT_PRODUCT_BOUNDARY.md)
 - 戦術ボード（空間＋駒＋動き）。選手 DB・スクレイピング・**試合全体の動画解析／連続トラッキング**はしない
-- **局面取込（Broadcast Capture Import）** — **Go · Later 大型**（B-070）。P1 下敷き+Homography → P2 自動駒ドラフト。連続トラッキングではない
+- **局面取込（Broadcast Capture Import）** — **コア確定 · Later 大型**（B-070）。画像4点 Calibration → コマ配置。P1 下敷き+Homography → P2 自動駒ドラフト。連続トラッキング・AI 戦術推定ではない
+- Scene A→B / GIF·MP4 Export は Discovery / 需要確認後（P1–P2）。Timeline / Keyframe / Tracking は原則やらない（P3）
 - 配信モードでピッチ最大化。運営ロゴではなく **ユーザロゴ**
 - OBS がアバター・スコア・チャットを担う（ボード内に持たない）
 - v1 競技: サッカー / バスケ / バレー。フットサル・ビーチは v1.1（サッカー派生ピッチ）
@@ -190,7 +194,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-067 | **PNG Export 契約（帯・キャプション）** | **済 2026-08-28** — 試合帯は PNG に非焼き。`bakeCaption` 既定 OFF。プレビュー WYSIWYG。[`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) 2026-08-28 |
 | B-068 | **Pro: Export Post framing ゲート** | Later — Full / FT / 保存テンプレ Export を Pro 時短。Current + 比率は無料固定。B-023 と同時 |
 | B-069 | **スカッド板モード（移籍窗向け）** | **Later · 2027夏マーケ本番想定。** 配信モードと分離。**縦横選択** · 監督フォーメ · 名簿→チップ（**利き足** チップ可 · **身長等** セットのみ · **クリック吹き出し** peek · Export 非焼き · B-032）· 空枠可視化 · Export 9:16/4:5/16:9。ジョブ: 「スカッドは足りるか」（[`OUTREACH_JP_CREATORS.md`](OUTREACH_JP_CREATORS.md) §4）。2026冬は検証のみ可 |
-| B-070 | **Broadcast Capture Import / 局面取込** | **Go · Later 大型。** 本線=VODシーク→複数枚→HT。優先ソース **DAZN · Abema(DAZN) · SPOTV NOW(YT) · U-NEXT(YT)**。ゴチャつき全画面貼付は ROI 想定。P1手動4点 · P2自動駒+身元ピック。ジュニアコートは次期。ゴールド=複数フレーム。帯B |
+| B-070 | **Broadcast Capture Import / 局面取込** | **Go · Later 大型。** 要件正本 [`CAPTURE_IMPORT_P1_REQUIREMENTS.md`](CAPTURE_IMPORT_P1_REQUIREMENTS.md)。本線=VODシーク→複数枚→HT。優先ソース **DAZN · Abema(DAZN) · SPOTV NOW(YT) · U-NEXT(YT)**。P1手動4点 · P2自動駒+身元ピック。W01–W05+W07 実装済·隠し。ゴールド=複数フレーム。帯B |
 | B-071 | **配信者 PC / モニター分布調査** | **Web 調査済 2026-08-30。** [`STREAMER_RIG_RESEARCH.md`](STREAMER_RIG_RESEARCH.md)。帯 A=Pro / B=Standard標的 / C=Budget。％は proxy。一次ヒアリングは任意。プロンプト: [`AGENT_PROMPT_STREAMER_RIG_RESEARCH.md`](AGENT_PROMPT_STREAMER_RIG_RESEARCH.md) |
 | B-072 | **縦ピッチ（別データ）** | **Later · やる。** 正本 [`VERTICAL_PITCH.md`](VERTICAL_PITCH.md) · UI [`AGENT_PROMPT_PITCH_VIEW_UI.md`](AGENT_PROMPT_PITCH_VIEW_UI.md) · 描画 [`AGENT_PROMPT_VERTICAL_PITCH.md`](AGENT_PROMPT_VERTICAL_PITCH.md) |
 | B-073 | **名前ピル（ボード単位）** | **実装済。** `showPlayerNames` · 新規 OFF · migrate true。[`AGENT_PROMPT_PLAYER_NAME_PILL.md`](AGENT_PROMPT_PLAYER_NAME_PILL.md) |

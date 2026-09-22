@@ -90,13 +90,25 @@ function zoneNormBounds(zone: {
   };
 }
 
-/** AABB に内接する軸平行楕円（描画・ヒット共通） */
+/** 斜線ハッチ角（ラジアン）。芝の縦縞と直交しやすく競合しにくい −45° */
+const ZONE_HATCH_ANGLE = -Math.PI / 4;
+/** ピッチ短辺に対するハッチ間隔比（低密度） */
+const ZONE_HATCH_SPACING_RATIO = 0.03;
+/** 狭い楕円でも密にならない最低間隔（CSS px） */
+const ZONE_HATCH_SPACING_MIN = 7;
+
+/**
+ * AABB 内接の軸平行楕円: 淡フィル + 楕円クリップ内の平行ハッチ + ストローク。
+ * ハッチはクロスしない単一方向のみ。
+ */
 function fillStrokeZoneEllipse(
   ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
   x: number,
   y: number,
   w: number,
   h: number,
+  hatchColor: string,
   fill: boolean,
   stroke: boolean,
 ) {
@@ -105,10 +117,66 @@ function fillStrokeZoneEllipse(
   if (rx < 0.5 || ry < 0.5) return;
   const cx = x + w / 2;
   const cy = y + h / 2;
+  const left = cx - rx;
+  const top = cy - ry;
+
   ctx.beginPath();
   ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-  if (fill) ctx.fill();
+
+  if (fill || hatchColor) {
+    ctx.save();
+    ctx.clip();
+    if (fill) ctx.fill();
+    // プレビューの破線ストロークがハッチに乗らないようにする
+    ctx.setLineDash([]);
+    drawZoneHatchLines(ctx, pitch, left, top, rx * 2, ry * 2, hatchColor);
+    ctx.restore();
+    // clip 後にパスが消えるのでストローク用に再構築
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  }
+
   if (stroke) ctx.stroke();
+}
+
+/** 楕円 AABB を覆う平行斜線（呼び出し側で clip 済み想定） */
+function drawZoneHatchLines(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+  hatchColor: string,
+) {
+  const spacing = Math.max(
+    ZONE_HATCH_SPACING_MIN,
+    Math.min(pitch.w, pitch.h) * ZONE_HATCH_SPACING_RATIO,
+  );
+  const lw = Math.max(1, lwOnPitch(pitch, 1));
+  const cos = Math.cos(ZONE_HATCH_ANGLE);
+  const sin = Math.sin(ZONE_HATCH_ANGLE);
+  // 線に垂直な単位ベクトル（間隔方向）
+  const nx = -sin;
+  const ny = cos;
+  const diag = Math.hypot(width, height);
+  const ext = diag + spacing;
+  const cx = left + width / 2;
+  const cy = top + height / 2;
+  // 中心から垂直方向に ±(diag/2) をカバーする本数
+  const halfCount = Math.ceil(diag / (2 * spacing)) + 1;
+
+  ctx.strokeStyle = hatchColor;
+  ctx.lineWidth = lw;
+  ctx.lineCap = "butt";
+  ctx.beginPath();
+  for (let i = -halfCount; i <= halfCount; i++) {
+    const ox = cx + nx * i * spacing;
+    const oy = cy + ny * i * spacing;
+    ctx.moveTo(ox - cos * ext, oy - sin * ext);
+    ctx.lineTo(ox + cos * ext, oy + sin * ext);
+  }
+  ctx.stroke();
 }
 
 function normPointInZoneEllipse(
@@ -307,6 +375,7 @@ export function drawBoard(
     draftPieces?: Piece[];
     draftBall?: { x: number; y: number } | null;
     selectedDraftPieceId?: string | null;
+    selectedDraftBall?: boolean;
     draftDragPieceId?: string | null;
     draftDragBall?: boolean;
   } = {},
@@ -474,7 +543,7 @@ export function drawBoard(
       board,
       opts.draftBall,
       ballRadius(pitch, board) * boost,
-      false,
+      !!opts.selectedDraftBall || dragging,
       dragging,
       opts.ballImage ?? null,
     );
@@ -1125,7 +1194,17 @@ function drawObject(
     ctx.fillStyle = zoneInk.fill;
     ctx.strokeStyle = selected ? selectionColor : zoneInk.stroke;
     ctx.lineWidth = selected ? 3 : Math.max(1.5, lwOnPitch(pitch, 1.5));
-    fillStrokeZoneEllipse(ctx, x, y, w, h, true, true);
+    fillStrokeZoneEllipse(
+      ctx,
+      pitch,
+      x,
+      y,
+      w,
+      h,
+      zoneInk.hatch,
+      true,
+      true,
+    );
     return;
   }
 
@@ -1255,17 +1334,29 @@ function drawZonePreview(
   if (showShape) {
     fillStrokeZoneEllipse(
       ctx,
+      pitch,
       x,
       y,
       Math.max(w, 1),
       Math.max(h, 1),
+      ink.hatch,
       true,
       true,
     );
   } else {
     const seed = Math.max(18, scale * 0.04);
     ctx.globalAlpha = 0.85;
-    fillStrokeZoneEllipse(ctx, p0.x - seed / 2, p0.y - seed / 2, seed, seed, true, true);
+    fillStrokeZoneEllipse(
+      ctx,
+      pitch,
+      p0.x - seed / 2,
+      p0.y - seed / 2,
+      seed,
+      seed,
+      ink.hatch,
+      true,
+      true,
+    );
     ctx.globalAlpha = 1;
   }
   ctx.setLineDash([]);

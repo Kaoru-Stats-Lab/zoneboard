@@ -2167,13 +2167,21 @@ button:disabled {
 
 .capture-calib-bar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
   flex-shrink: 0;
   padding: 0.45rem 0.65rem;
   border-bottom: 1px solid var(--zb-border);
   background: var(--zb-ground);
+}
+
+.capture-calib-bar-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
 }
 
 .capture-calib-title {
@@ -2185,16 +2193,47 @@ button:disabled {
   white-space: nowrap;
 }
 
+.capture-calib-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.25rem;
+  max-width: 22rem;
+}
+
+.capture-calib-presets button {
+  margin: 0;
+  font-size: 0.72rem;
+  padding: 0.28rem 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.capture-calib-presets button.active {
+  outline: 2px solid var(--zb-aogai);
+  outline-offset: -1px;
+}
+
 .capture-calib-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .capture-calib-actions button {
   margin: 0;
   font-size: 0.78rem;
+}
+
+.capture-calib-hint {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
+  color: var(--zb-muted, #a3a3a3);
+  border-bottom: 1px solid var(--zb-border);
 }
 
 .capture-calib-error {
@@ -2227,11 +2266,20 @@ button:disabled {
   user-select: none;
 }
 
-.capture-calib-handle {
+.capture-calib-handle-wrap {
   position: absolute;
-  width: 22px;
-  height: 22px;
-  margin: -11px 0 0 -11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.capture-calib-handle {
+  width: 26px;
+  height: 26px;
+  margin: 0;
   padding: 0;
   border: 2px solid #fff;
   border-radius: 50%;
@@ -2239,10 +2287,30 @@ button:disabled {
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
   cursor: grab;
   touch-action: none;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #111;
+  line-height: 1;
 }
 
 .capture-calib-handle:active {
   cursor: grabbing;
+}
+
+.capture-calib-lm {
+  display: block;
+  max-width: 5.5rem;
+}
+
+.capture-calib-lm select {
+  width: 100%;
+  max-width: 5.5rem;
+  font-size: 0.65rem;
+  padding: 0.12rem 0.15rem;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(12, 13, 14, 0.88);
+  color: #f3f3f1;
 }
 
 .view-preset-grid {

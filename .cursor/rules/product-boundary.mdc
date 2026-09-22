@@ -1,0 +1,59 @@
+---
+description: ZoneBoard product boundary — Explanation Canvas vs Analysis Workstation; gate new features
+alwaysApply: true
+---
+
+# Product boundary (ZoneBoard)
+
+**正本:** [`docs/PRODUCT_NOTE.md`](docs/PRODUCT_NOTE.md) — 決定ログ **Explanation Canvas / プロダクト境界（2026-09-22）**  
+**要約:** [`docs/BACKLOG.md`](docs/BACKLOG.md) §1-1 · 引き継ぎ [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md)  
+**別 Agent 用全文プロンプト:** [`docs/AGENT_PROMPT_PRODUCT_BOUNDARY.md`](docs/AGENT_PROMPT_PRODUCT_BOUNDARY.md)
+
+矛盾したら **PRODUCT_NOTE を勝ち**にする。実装指示ではないが、機能提案・設計・実装前に必ず通す。
+
+## 一言（常に維持）
+
+| 文脈 | 立ち位置 |
+|------|----------|
+| Metrica Nexus 等 | **Analyze the game.**（Analysis Workstation）≠ ZB |
+| ZoneBoard | **Explain the idea.**（Explanation Canvas） |
+| OBS | **The pitch inside the broadcast.** |
+
+ZB = 人間の Football アイデアをピッチに置いて説明する **軽量ブラウザ・キャンバス**。Analysis Workstation の簡略版・競合ではない。
+
+**フロー:** Human Idea → Pitch → Visual Explanation  
+**原則:** 人間が決める。ZB は可視化と面倒な座標・操作だけ減らす。戦術の正誤や配置の「べき」は判断しない。
+
+## 新機能を足す前の判断順（必須）
+
+1. **Human Idea → Visual Explanation** を速くするか？
+2. それとも **Game → Analysis** か？ → 後者なら **やらない**（境界外）
+3. Streamer の **「今、説明したい」** 摩擦を減らすか？
+4. Explanation Canvas から **Analysis / Production Workstation** へ変質しないか？
+
+外部の Football Creator / 分析サービスを見て機能を思いついても、この順を飛ばして実装しない。
+
+## P0 Core（確定・壊さない）
+
+Pitch-first · OBS / Broadcast · Lightweight · Browser · No account · Local · Manual pieces · Immediate manipulation · Human decides · **画像4点 Calibration → コマ配置**（B-070 · Analysis ではない）
+
+## 原則やらない（P3）
+
+- 試合／Video / Tactical / AI Analysis · Coding / Tagging · Event Detection
+- Player / Automatic / Field Tracking · 選手自動認識 · フォーメ／戦術の自動推定
+- Timeline / Keyframe Editor · FPS / Easing Animation Editor · 本格動画編集 · 4K Production Workstation
+- Metrica 等の機能縮小版としての追随
+
+## Discovery のみ（実装を勝手に決めない）
+
+- **P1:** Scene A → B · 軽量 State Transition / Play（Live Explanation 用）。Timeline 化しない。既存「局面複製にクロスフェードなし」は維持
+- **P2:** GIF / MP4 Export 等 — 需要確認後のみ。Content Production Tool へ重心を移さない
+
+「Animation が欲しいか？」とは聞かない。Workflow / Movement の本質 / Export vs Capture を検証する（PRODUCT_NOTE 2026-09-22）。
+
+## Agent の振る舞い
+
+- 機能・リサーチ・AGENT_PROMPT 作成時は上記境界に触れること
+- 境界を変える提案は **PRODUCT_NOTE 決定ログ更新**を先に（ユーザ確認）。コードだけで境界を変えない
+- コミットはユーザが頼むまでしない（既存慣例）
+- ユーザー向け返答は日本語

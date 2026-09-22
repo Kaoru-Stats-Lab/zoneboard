@@ -1,4 +1,5 @@
 import type { HomographyMatrix, Point } from "./homography";
+import type { LandmarkQuad } from "./pitchLandmarks";
 import type { BallState, Piece, ToolId } from "../models/types";
 
 /** W02–W05 capture-import flow (React state only — never persisted). */
@@ -19,8 +20,10 @@ export type CaptureImportSession = {
   phase: CaptureImportPhase;
   /** object URL — revoked on clear / tab close */
   image: CaptureImportImage | null;
-  /** W03+ image pixels TL,TR,BR,BL */
+  /** W03+ image pixels (order matches calibLandmarkIds) */
   calibSrc4: Point[] | null;
+  /** W08 — dst landmarks; null = full corners */
+  calibLandmarkIds: LandmarkQuad | null;
   /** W03+ */
   homography: HomographyMatrix | null;
   /** W05 — 確定まで scene.pieces と別配列 */
@@ -29,6 +32,8 @@ export type CaptureImportSession = {
   draftBall: BallState | null;
   /** W05 */
   selectedDraftPieceId: string | null;
+  /** W05 — ドラフトボール選択（Delete 用） */
+  selectedDraftBall: boolean;
   /** W05 — place 突入前の tool（終了時に復帰） */
   toolBeforePlace: ToolId | null;
   /** W04 session-only underlay strength */
@@ -42,10 +47,12 @@ export function emptyCaptureImportSession(
     phase,
     image: null,
     calibSrc4: null,
+    calibLandmarkIds: null,
     homography: null,
     draftPieces: [],
     draftBall: null,
     selectedDraftPieceId: null,
+    selectedDraftBall: false,
     toolBeforePlace: null,
     underlayOpacity: 0.55,
   };

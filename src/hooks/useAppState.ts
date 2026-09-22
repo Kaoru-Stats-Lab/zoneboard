@@ -148,6 +148,16 @@ import {
   emptyCaptureImportSession,
   type CaptureImportSession,
 } from "../capture/session";
+import {
+  dst4FromLandmarkIds,
+  hasDuplicateLandmarkIds,
+  isLandmarkDstDegenerate,
+  landmarkPresetIds,
+  resolveCalibLandmarkIds,
+  type CalibLandmarkPreset,
+  type LandmarkId,
+  type LandmarkQuad,
+} from "../capture/pitchLandmarks";
 
 function touch(board: BoardDocument): BoardDocument {
   return { ...board, updatedAt: new Date().toISOString() };
@@ -1982,9 +1992,14 @@ export function useAppState() {
     if (!isCaptureImportEnabled()) return null;
     const block = captureImportEligibility(board);
     if (block) return captureImportBlockKey(block);
+    const cur = captureImportRef.current;
+    if (cur && !cur.image && (cur.phase === "idle" || cur.phase === "image")) {
+      return null;
+    }
+    clearCaptureImport();
     setCaptureImport(emptyCaptureImportSession("idle"));
     return null;
-  }, [board]);
+  }, [board, clearCaptureImport]);
 
   const setCaptureImageFromBlob = useCallback(
     async (blob: Blob): Promise<MessageKey | null> => {
@@ -2001,10 +2016,12 @@ export function useAppState() {
         phase: "image",
         image,
         calibSrc4: null,
+        calibLandmarkIds: null,
         homography: null,
         draftPieces: [],
         draftBall: null,
         selectedDraftPieceId: null,
+        selectedDraftBall: false,
         toolBeforePlace: null,
         underlayOpacity: DEFAULT_UNDERLAY_OPACITY,
       });
@@ -2029,10 +2046,12 @@ export function useAppState() {
       const calibSrc4 =
         prev.calibSrc4 ??
         defaultCalibPoints(prev.image.width, prev.image.height);
+      const calibLandmarkIds = resolveCalibLandmarkIds(prev.calibLandmarkIds);
       return {
         ...prev,
         phase: "calib",
         calibSrc4,
+        calibLandmarkIds,
         homography: null,
       };
     });
@@ -2050,6 +2069,32 @@ export function useAppState() {
     },
     [],
   );
+
+  const setCaptureCalibLandmark = useCallback(
+    (index: number, id: LandmarkId) => {
+      setCaptureImport((prev) => {
+        if (!prev || index < 0 || index > 3) return prev;
+        const base = resolveCalibLandmarkIds(prev.calibLandmarkIds);
+        const calibLandmarkIds = base.map((v, i) =>
+          i === index ? id : v,
+        ) as LandmarkQuad;
+        return { ...prev, calibLandmarkIds };
+      });
+    },
+    [],
+  );
+
+  const setCaptureCalibPreset = useCallback((preset: CalibLandmarkPreset) => {
+    setCaptureImport((prev) => {
+      if (!prev?.image) return prev;
+      return {
+        ...prev,
+        calibLandmarkIds: landmarkPresetIds(preset),
+        calibSrc4: defaultCalibPoints(prev.image.width, prev.image.height),
+        homography: null,
+      };
+    });
+  }, []);
 
   const resetCaptureCalibPoints = useCallback(() => {
     setCaptureImport((prev) => {
@@ -2077,6 +2122,8 @@ export function useAppState() {
             draftPieces: [],
             draftBall: null,
             selectedDraftPieceId: null,
+            selectedDraftBall: false,
+            calibLandmarkIds: resolveCalibLandmarkIds(prev.calibLandmarkIds),
           }
         : prev,
     );
@@ -2090,10 +2137,17 @@ export function useAppState() {
     );
   }, []);
 
-  const applyCaptureHomography = useCallback(async (): Promise<boolean> => {
-    const src4 = captureImportRef.current?.calibSrc4;
+  const applyCaptureHomography = useCallback(async (): Promise<
+    boolean | "dup" | "degenerate"
+  > => {
+    const cap = captureImportRef.current;
+    const src4 = cap?.calibSrc4;
     if (!src4 || src4.length !== 4) return false;
-    const H = await computeHomographyAsync(src4);
+    const ids = resolveCalibLandmarkIds(cap?.calibLandmarkIds);
+    if (hasDuplicateLandmarkIds(ids)) return "dup";
+    if (isLandmarkDstDegenerate(ids)) return "degenerate";
+    const dst4 = dst4FromLandmarkIds(ids);
+    const H = await computeHomographyAsync(src4, dst4);
     if (!H) return false;
     const savedTool = toolRef.current;
     setCaptureImport((prev) =>
@@ -2103,9 +2157,11 @@ export function useAppState() {
             homography: H,
             phase: "place",
             calibSrc4: src4,
+            calibLandmarkIds: ids,
             draftPieces: [],
             draftBall: null,
             selectedDraftPieceId: null,
+            selectedDraftBall: false,
             toolBeforePlace: savedTool,
           }
         : prev,
@@ -2136,6 +2192,7 @@ export function useAppState() {
           ...prev,
           draftPieces: [...prev.draftPieces, piece],
           selectedDraftPieceId: piece.id,
+          selectedDraftBall: false,
         };
       });
       setSelectedPieceId(null);
@@ -2170,6 +2227,7 @@ export function useAppState() {
         ...prev,
         draftBall: { x, y, attachedTo: null },
         selectedDraftPieceId: null,
+        selectedDraftBall: true,
       };
     });
     setSelectedPieceId(null);
@@ -2178,7 +2236,9 @@ export function useAppState() {
 
   const selectCaptureDraftPiece = useCallback((id: string | null) => {
     setCaptureImport((prev) =>
-      prev ? { ...prev, selectedDraftPieceId: id } : prev,
+      prev
+        ? { ...prev, selectedDraftPieceId: id, selectedDraftBall: false }
+        : prev,
     );
     if (id) {
       setSelectedPieceId(null);
@@ -2187,15 +2247,36 @@ export function useAppState() {
     }
   }, [setSelectedPieceId]);
 
+  const selectCaptureDraftBall = useCallback(() => {
+    setCaptureImport((prev) =>
+      prev
+        ? { ...prev, selectedDraftPieceId: null, selectedDraftBall: true }
+        : prev,
+    );
+    setSelectedPieceId(null);
+    setSelectedBall(false);
+    setSelectedObjectId(null);
+  }, [setSelectedPieceId]);
+
   const deleteCaptureDraftSelected = useCallback(() => {
     setCaptureImport((prev) => {
-      if (!prev?.selectedDraftPieceId) return prev;
-      const drop = prev.selectedDraftPieceId;
-      return {
-        ...prev,
-        draftPieces: prev.draftPieces.filter((p) => p.id !== drop),
-        selectedDraftPieceId: null,
-      };
+      if (!prev || prev.phase !== "place") return prev;
+      if (prev.selectedDraftPieceId) {
+        const drop = prev.selectedDraftPieceId;
+        return {
+          ...prev,
+          draftPieces: prev.draftPieces.filter((p) => p.id !== drop),
+          selectedDraftPieceId: null,
+        };
+      }
+      if (prev.selectedDraftBall && prev.draftBall) {
+        return {
+          ...prev,
+          draftBall: null,
+          selectedDraftBall: false,
+        };
+      }
+      return prev;
     });
   }, []);
 
@@ -2312,6 +2393,8 @@ export function useAppState() {
     ingestCaptureImportDataTransfer,
     beginCaptureCalib,
     setCaptureCalibPoint,
+    setCaptureCalibLandmark,
+    setCaptureCalibPreset,
     resetCaptureCalibPoints,
     backCaptureCalib,
     reopenCaptureCalib,
@@ -2321,6 +2404,7 @@ export function useAppState() {
     moveCaptureDraftPiece,
     setCaptureDraftBall,
     selectCaptureDraftPiece,
+    selectCaptureDraftBall,
     deleteCaptureDraftSelected,
     applyCaptureToScene,
     drawerOpen,

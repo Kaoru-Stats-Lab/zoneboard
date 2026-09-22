@@ -1,6 +1,7 @@
 /**
  * Homography compute off main thread (W03).
  * Falls back to sync computeHomography if Worker unavailable.
+ * W08: dst4 is caller-supplied (landmarks), not fixed corners.
  */
 import {
   computeHomography,
@@ -31,10 +32,11 @@ function getWorker(): Worker | null {
 
 export function computeHomographyAsync(
   src4: Point[],
+  dst4: Point[] = PITCH_CORNERS_NORM,
 ): Promise<HomographyMatrix | null> {
   const w = getWorker();
   if (!w) {
-    return Promise.resolve(computeHomography(src4, PITCH_CORNERS_NORM));
+    return Promise.resolve(computeHomography(src4, dst4));
   }
 
   return new Promise((resolve) => {
@@ -46,10 +48,10 @@ export function computeHomographyAsync(
     const onError = () => {
       w.removeEventListener("message", onMessage);
       w.removeEventListener("error", onError);
-      resolve(computeHomography(src4, PITCH_CORNERS_NORM));
+      resolve(computeHomography(src4, dst4));
     };
     w.addEventListener("message", onMessage);
     w.addEventListener("error", onError);
-    w.postMessage({ src4 });
+    w.postMessage({ src4, dst4 });
   });
 }

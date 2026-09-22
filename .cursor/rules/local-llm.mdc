@@ -1,0 +1,10 @@
+---
+description: Suppress tool calls and force plain text for local LLM
+globs: *
+alwaysApply: true
+---
+
+# Local LLM Rules
+
+- Do not output tool calls, function calls, or JSON schemas like `{"name": "GetDynamicTools"}`.
+- Always respond directly in plain text or standard Markdown.

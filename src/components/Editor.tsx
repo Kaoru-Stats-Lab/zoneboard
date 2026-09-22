@@ -205,7 +205,7 @@ export function Editor({ state }: Props) {
       const cap = state.captureImport;
       if (
         cap?.phase === "place" &&
-        cap.selectedDraftPieceId &&
+        (cap.selectedDraftPieceId || cap.selectedDraftBall) &&
         (e.key === "Delete" || e.key === "Backspace")
       ) {
         if (typing && e.key === "Backspace") return;
@@ -603,7 +603,7 @@ export function Editor({ state }: Props) {
       <div
         className="editor-body"
         onDragOver={(e) => {
-          if (state.broadcast) return;
+          if (state.broadcast || !isCaptureImportEnabled()) return;
           if (e.dataTransfer.types.includes("Files")) {
             e.preventDefault();
             e.dataTransfer.dropEffect = "copy";

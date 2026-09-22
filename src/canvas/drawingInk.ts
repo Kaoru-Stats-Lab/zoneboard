@@ -47,8 +47,11 @@ export const LINE_COLORS_GRASS = {
 } as const;
 
 export const ZONE_COLORS_GRASS = {
-  fill: "rgba(147, 197, 253, 0.38)",
+  /** ごく薄い楕円フィル（ハッチが主役 · 芝目を殺さない） */
+  fill: "rgba(147, 197, 253, 0.10)",
   stroke: "#f0f9ff",
+  /** 斜線ハッチ（stroke 同系・低α · 芝縞より目立たせない） */
+  hatch: "rgba(240, 249, 255, 0.28)",
 } as const;
 
 export const PEN_INK_GRASS = "#ffffff";

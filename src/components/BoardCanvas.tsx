@@ -643,6 +643,8 @@ export function BoardCanvas({
       draftBall: cap?.phase === "place" ? cap.draftBall : undefined,
       selectedDraftPieceId:
         cap?.phase === "place" ? cap.selectedDraftPieceId : undefined,
+      selectedDraftBall:
+        cap?.phase === "place" ? cap.selectedDraftBall : undefined,
       draftDragPieceId:
         d?.mode === "capture-draft-piece" ? d.id : undefined,
       draftDragBall: d?.mode === "capture-draft-ball",
@@ -922,7 +924,7 @@ export function BoardCanvas({
         cap.draftBall &&
         hitTestBall(board, draftScene, pitch, norm.x, norm.y)
       ) {
-        state.selectCaptureDraftPiece(null);
+        state.selectCaptureDraftBall();
         drag.current = { mode: "capture-draft-ball", boost: 1.2 };
         canvas.setPointerCapture(e.pointerId);
         paint();

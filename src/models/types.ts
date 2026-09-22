@@ -469,8 +469,11 @@ export function lineToolMovesPiece(kind: LineKind): boolean {
 }
 
 export const ZONE_COLORS = {
-  fill: "rgba(14, 165, 233, 0.22)",
+  /** ごく薄い楕円フィル（ハッチが主役） */
+  fill: "rgba(14, 165, 233, 0.08)",
   stroke: "#0284c7",
+  /** 斜線ハッチ（stroke 同系・低α） */
+  hatch: "rgba(2, 132, 199, 0.35)",
 } as const;
 
 export const TOOL_COLORS: Record<ToolId, string> = {
