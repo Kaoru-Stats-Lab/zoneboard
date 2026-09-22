@@ -2195,9 +2195,9 @@ button:disabled {
 
 .capture-calib-presets {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.25rem;
-  max-width: 22rem;
+  max-width: 28rem;
 }
 
 .capture-calib-presets button {
@@ -2227,13 +2227,99 @@ button:disabled {
   font-size: 0.78rem;
 }
 
-.capture-calib-hint {
+.capture-calib-setup {
   flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.65rem;
+  border-bottom: 1px solid var(--zb-border);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.capture-calib-hint {
+  flex: 1;
+  min-width: 12rem;
   margin: 0;
-  padding: 0.3rem 0.65rem;
   font-size: 0.75rem;
   color: var(--zb-muted, #a3a3a3);
-  border-bottom: 1px solid var(--zb-border);
+}
+
+.capture-calib-minipitch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 9rem;
+}
+
+.capture-calib-minipitch.needs-pick {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+  border-radius: 4px;
+  padding: 0.2rem;
+}
+
+.capture-calib-minipitch-label {
+  font-size: 0.68rem;
+  color: var(--zb-muted, #a3a3a3);
+}
+
+.capture-calib-minipitch-frame {
+  position: relative;
+  width: 9.5rem;
+  height: 5.4rem;
+}
+
+.capture-calib-minipitch-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.capture-calib-minipitch-svg .mp-outline {
+  fill: rgba(34, 80, 48, 0.55);
+  stroke: rgba(243, 243, 241, 0.7);
+  stroke-width: 1.2;
+}
+
+.capture-calib-minipitch-svg .mp-mid {
+  stroke: rgba(243, 243, 241, 0.45);
+  stroke-width: 1;
+}
+
+.capture-calib-minipitch-svg .mp-box {
+  fill: rgba(243, 243, 241, 0.2);
+  stroke: rgba(243, 243, 241, 0.65);
+  stroke-width: 1;
+}
+
+.mp-goal-hit {
+  position: absolute;
+  top: 12%;
+  width: 28%;
+  height: 76%;
+  margin: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: rgba(251, 191, 36, 0.12);
+  cursor: pointer;
+}
+
+.mp-goal-hit.mp-goal-x0 {
+  left: 1%;
+}
+
+.mp-goal-hit.mp-goal-x1 {
+  right: 1%;
+  left: auto;
+}
+
+.mp-goal-hit.active,
+.mp-goal-hit:hover {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.28);
 }
 
 .capture-calib-error {
@@ -2266,51 +2352,130 @@ button:disabled {
   user-select: none;
 }
 
-.capture-calib-handle-wrap {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.2rem;
-  transform: translate(-50%, -50%);
-  z-index: 2;
+.capture-calib-stage-prompt {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  background: rgba(12, 13, 14, 0.78);
+  color: #f3f3f1;
+  font-size: 0.85rem;
+  text-align: center;
+  max-width: 18rem;
 }
 
 .capture-calib-handle {
-  width: 26px;
-  height: 26px;
+  position: absolute;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
   margin: 0;
   padding: 0;
+  transform: translate(-50%, -50%);
   border: 2px solid #fff;
   border-radius: 50%;
   background: var(--handle-color, var(--zb-aogai));
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
   cursor: grab;
   touch-action: none;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #111;
   line-height: 1;
+}
+
+.capture-calib-handle.focused {
+  box-shadow: 0 0 0 3px #fef08a, 0 0 0 5px rgba(0, 0, 0, 0.4);
 }
 
 .capture-calib-handle:active {
   cursor: grabbing;
 }
 
-.capture-calib-lm {
-  display: block;
-  max-width: 5.5rem;
+.capture-calib-list {
+  flex-shrink: 0;
+  max-height: 11rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0.4rem 0.65rem 0.55rem;
+  border-top: 1px solid var(--zb-border);
+  background: var(--zb-ground);
 }
 
-.capture-calib-lm select {
+.capture-calib-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--zb-muted, #a3a3a3);
+}
+
+.capture-calib-list-more {
+  margin: 0;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+}
+
+.capture-calib-list-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.capture-calib-list-rows li {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.15rem 0.2rem;
+  border-radius: 4px;
+}
+
+.capture-calib-list-rows li.focused {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.capture-calib-list-num {
+  margin: 0;
+  padding: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f3f3f1;
+}
+
+.capture-calib-list-select {
+  min-width: 0;
+}
+
+.capture-calib-list-select select {
   width: 100%;
-  max-width: 5.5rem;
-  font-size: 0.65rem;
-  padding: 0.12rem 0.15rem;
+  max-width: 100%;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.25rem;
   border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   background: rgba(12, 13, 14, 0.88);
   color: #f3f3f1;
+}
+
+.capture-calib-list-short {
+  font-size: 0.68rem;
+  color: var(--zb-muted, #a3a3a3);
+  max-width: 6.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .view-preset-grid {

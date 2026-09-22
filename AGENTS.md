@@ -10,7 +10,8 @@
 | 4 | [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md) | 引き継ぎ · 作業の進め方 |
 | 5 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | 未着手 · §1-1 境界要約 |
 | 6 | [`docs/UI_UX.md`](docs/UI_UX.md) | chrome / パネル |
-| — | [`docs/CAPTURE_IMPORT_P1_REQUIREMENTS.md`](docs/CAPTURE_IMPORT_P1_REQUIREMENTS.md) | **B-070 局面取込**（4点→配置）要件·仕様·手順 |
+| — | [`docs/CAPTURE_IMPORT_P1_REQUIREMENTS.md`](docs/CAPTURE_IMPORT_P1_REQUIREMENTS.md) | B-070 Phase 1 要件 |
+| — | [`docs/CAPTURE_IMPORT_CALIB_UX_SPEC.md`](docs/CAPTURE_IMPORT_CALIB_UX_SPEC.md) | **キャリブ UX 仕様（W09）** |
 
 **一言:** ZoneBoard = **Explain the idea**（Explanation Canvas）。Metrica 型 = **Analyze the game**（やらない）。OBS の中のピッチ。
 

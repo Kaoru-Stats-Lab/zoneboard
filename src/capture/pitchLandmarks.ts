@@ -1,5 +1,5 @@
 /**
- * Pitch landmarks for capture-import calib (W08).
+ * Pitch landmarks for capture-import calib (W08 engine · W09 presets/UX).
  * dst points are FIFA pitch-norm from SOCCER_PITCH_M / SOCCER_NORM — never invent numbers.
  */
 import { SOCCER_NORM, SOCCER_PITCH_M } from "../presets/soccerPitch";
@@ -47,7 +47,11 @@ export const LANDMARK_IDS = [
 
 export type LandmarkId = (typeof LANDMARK_IDS)[number];
 
-export type CalibLandmarkPreset = "full" | "left" | "right";
+/** Landmark set presets (camera-agnostic). */
+export type CalibLandmarkPreset = "full" | "penalty" | "goal" | "mixed";
+
+/** Canonical pitch: x=0 left goal · x=1 right goal (not screen / attack). */
+export type CalibGoalSide = "x0" | "x1";
 
 export type LandmarkQuad = [LandmarkId, LandmarkId, LandmarkId, LandmarkId];
 
@@ -68,7 +72,7 @@ const LANDMARK_NORM: Record<LandmarkId, Point> = {
   corner_br: PITCH_CORNERS_NORM[2]!,
   corner_bl: PITCH_CORNERS_NORM[3]!,
 
-  // Left goal (x=0): near = goal line, far = 18-yard line
+  // x=0 goal: near = goal line, far = penalty-area field edge
   pen_l_near_t: { x: 0, y: 0.5 - penHalfH },
   pen_l_near_b: { x: 0, y: 0.5 + penHalfH },
   pen_l_far_t: { x: penDepth, y: 0.5 - penHalfH },
@@ -110,7 +114,7 @@ export function dst4FromLandmarkIds(ids: readonly LandmarkId[]): Point[] {
   return ids.map(landmarkNorm);
 }
 
-/** Full pitch corners — regression / default. */
+/** Full pitch corners — regression. */
 export const PRESET_FULL_CORNERS: LandmarkQuad = [
   "corner_tl",
   "corner_tr",
@@ -118,29 +122,128 @@ export const PRESET_FULL_CORNERS: LandmarkQuad = [
   "corner_bl",
 ];
 
-/**
- * Left-goal tight shot: goal-line pen corners + 18yd top + arc apex
- * (non-collinear · good area).
- */
-export const PRESET_LEFT_GOAL: LandmarkQuad = [
+/** Penalty-area view · Canonical x=0 goal. */
+export const PRESET_PENALTY_X0: LandmarkQuad = [
   "pen_l_near_t",
-  "pen_l_near_b",
-  "pen_l_far_t",
-  "pen_arc_apex_l",
+  "pen_l_far_b",
+  "goal_l_far_t",
+  "pen_spot_l",
 ];
 
-/** Right-goal mirror of left. */
-export const PRESET_RIGHT_GOAL: LandmarkQuad = [
+export const PRESET_PENALTY_X1: LandmarkQuad = [
   "pen_r_near_t",
-  "pen_r_near_b",
-  "pen_r_far_t",
-  "pen_arc_apex_r",
+  "pen_r_far_b",
+  "goal_r_far_t",
+  "pen_spot_r",
 ];
 
-export function landmarkPresetIds(preset: CalibLandmarkPreset): LandmarkQuad {
-  if (preset === "left") return [...PRESET_LEFT_GOAL];
-  if (preset === "right") return [...PRESET_RIGHT_GOAL];
-  return [...PRESET_FULL_CORNERS];
+/** Tight goal-area view · x=0. */
+export const PRESET_GOAL_X0: LandmarkQuad = [
+  "goal_l_near_t",
+  "goal_l_far_b",
+  "post_l_b",
+  "pen_spot_l",
+];
+
+export const PRESET_GOAL_X1: LandmarkQuad = [
+  "goal_r_near_t",
+  "goal_r_far_b",
+  "post_r_b",
+  "pen_spot_r",
+];
+
+/** Suggested broadcast default · x=0. */
+export const PRESET_MIXED_X0: LandmarkQuad = [
+  "pen_l_near_t",
+  "pen_l_far_t",
+  "goal_l_far_b",
+  "pen_spot_l",
+];
+
+export const PRESET_MIXED_X1: LandmarkQuad = [
+  "pen_r_near_t",
+  "pen_r_far_t",
+  "goal_r_far_b",
+  "pen_spot_r",
+];
+
+export function landmarkPresetNeedsGoalSide(
+  preset: CalibLandmarkPreset,
+): boolean {
+  return preset !== "full";
+}
+
+export function landmarkPresetIds(
+  preset: CalibLandmarkPreset,
+  goalSide: CalibGoalSide | null = null,
+): LandmarkQuad | null {
+  if (preset === "full") return [...PRESET_FULL_CORNERS];
+  if (!goalSide) return null;
+  if (preset === "penalty") {
+    return goalSide === "x0"
+      ? [...PRESET_PENALTY_X0]
+      : [...PRESET_PENALTY_X1];
+  }
+  if (preset === "goal") {
+    return goalSide === "x0" ? [...PRESET_GOAL_X0] : [...PRESET_GOAL_X1];
+  }
+  return goalSide === "x0" ? [...PRESET_MIXED_X0] : [...PRESET_MIXED_X1];
+}
+
+/** Context suggestions (6–8) for bottom-list “recommended” group. */
+export function suggestedLandmarkIds(
+  preset: CalibLandmarkPreset,
+  goalSide: CalibGoalSide | null,
+): LandmarkId[] {
+  if (preset === "full" || !goalSide) {
+    return [...PRESET_FULL_CORNERS];
+  }
+  if (goalSide === "x0") {
+    if (preset === "goal") {
+      return [
+        "goal_l_near_t",
+        "goal_l_near_b",
+        "goal_l_far_t",
+        "goal_l_far_b",
+        "post_l_t",
+        "post_l_b",
+        "pen_spot_l",
+        "pen_l_far_t",
+      ];
+    }
+    return [
+      "pen_l_near_t",
+      "pen_l_near_b",
+      "pen_l_far_t",
+      "pen_l_far_b",
+      "goal_l_far_t",
+      "goal_l_far_b",
+      "pen_spot_l",
+      "pen_arc_apex_l",
+    ];
+  }
+  if (preset === "goal") {
+    return [
+      "goal_r_near_t",
+      "goal_r_near_b",
+      "goal_r_far_t",
+      "goal_r_far_b",
+      "post_r_t",
+      "post_r_b",
+      "pen_spot_r",
+      "pen_r_far_t",
+    ];
+  }
+  return [
+    "pen_r_near_t",
+    "pen_r_near_b",
+    "pen_r_far_t",
+    "pen_r_far_b",
+    "goal_r_far_t",
+    "goal_r_far_b",
+    "pen_spot_r",
+    "pen_arc_apex_r",
+  ];
 }
 
 export function hasDuplicateLandmarkIds(
@@ -163,4 +266,31 @@ export function resolveCalibLandmarkIds(
   ids: LandmarkQuad | null | undefined,
 ): LandmarkQuad {
   return ids ?? [...PRESET_FULL_CORNERS];
+}
+
+/**
+ * Initial handle positions: small cross near image centre.
+ * Optional light bias toward the selected goal half — not line snap.
+ */
+export function initialCalibSrcPoints(
+  width: number,
+  height: number,
+  goalSide: CalibGoalSide | null = null,
+): Point[] {
+  const cx = width * 0.5;
+  const cy = height * 0.5;
+  let ox = 0;
+  if (goalSide === "x0") ox = -width * 0.12;
+  if (goalSide === "x1") ox = width * 0.12;
+  const s = Math.min(width, height) * 0.08;
+  const clamp = (p: Point): Point => ({
+    x: Math.min(width, Math.max(0, p.x)),
+    y: Math.min(height, Math.max(0, p.y)),
+  });
+  return [
+    clamp({ x: cx + ox, y: cy - s }),
+    clamp({ x: cx + ox + s, y: cy }),
+    clamp({ x: cx + ox, y: cy + s }),
+    clamp({ x: cx + ox - s, y: cy }),
+  ];
 }

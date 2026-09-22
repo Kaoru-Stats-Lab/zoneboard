@@ -137,7 +137,6 @@ import {
 } from "../capture/eligibility";
 import { isCaptureImportEnabled } from "../lib/captureImportGate";
 import { imageBlobFromDataTransfer, loadCaptureImage } from "../capture/imageLoad";
-import { defaultCalibPoints } from "../capture/calibPoints";
 import {
   clampUnderlayOpacity,
   DEFAULT_UNDERLAY_OPACITY,
@@ -151,9 +150,12 @@ import {
 import {
   dst4FromLandmarkIds,
   hasDuplicateLandmarkIds,
+  initialCalibSrcPoints,
   isLandmarkDstDegenerate,
   landmarkPresetIds,
+  landmarkPresetNeedsGoalSide,
   resolveCalibLandmarkIds,
+  type CalibGoalSide,
   type CalibLandmarkPreset,
   type LandmarkId,
   type LandmarkQuad,
@@ -2016,7 +2018,11 @@ export function useAppState() {
         phase: "image",
         image,
         calibSrc4: null,
+        calibSrcMoved: false,
         calibLandmarkIds: null,
+        calibGoalSide: null,
+        calibPreset: null,
+        calibFocusIndex: null,
         homography: null,
         draftPieces: [],
         draftBall: null,
@@ -2043,15 +2049,15 @@ export function useAppState() {
   const beginCaptureCalib = useCallback(() => {
     setCaptureImport((prev) => {
       if (!prev?.image) return prev;
-      const calibSrc4 =
-        prev.calibSrc4 ??
-        defaultCalibPoints(prev.image.width, prev.image.height);
-      const calibLandmarkIds = resolveCalibLandmarkIds(prev.calibLandmarkIds);
       return {
         ...prev,
         phase: "calib",
-        calibSrc4,
-        calibLandmarkIds,
+        calibSrc4: null,
+        calibSrcMoved: false,
+        calibLandmarkIds: null,
+        calibGoalSide: null,
+        calibPreset: null,
+        calibFocusIndex: null,
         homography: null,
       };
     });
@@ -2064,7 +2070,12 @@ export function useAppState() {
         const calibSrc4 = prev.calibSrc4.map((p, i) =>
           i === index ? point : p,
         );
-        return { ...prev, calibSrc4 };
+        return {
+          ...prev,
+          calibSrc4,
+          calibSrcMoved: true,
+          calibFocusIndex: index,
+        };
       });
     },
     [],
@@ -2078,21 +2089,70 @@ export function useAppState() {
         const calibLandmarkIds = base.map((v, i) =>
           i === index ? id : v,
         ) as LandmarkQuad;
-        return { ...prev, calibLandmarkIds };
+        return { ...prev, calibLandmarkIds, calibFocusIndex: index };
       });
     },
     [],
   );
 
+  const setCaptureCalibFocus = useCallback((index: number | null) => {
+    setCaptureImport((prev) =>
+      prev ? { ...prev, calibFocusIndex: index } : prev,
+    );
+  }, []);
+
+  const applyCalibPresetState = (
+    prev: CaptureImportSession,
+    preset: CalibLandmarkPreset,
+    goalSide: CalibGoalSide | null,
+  ): CaptureImportSession => {
+    if (!prev.image) return prev;
+    const side =
+      landmarkPresetNeedsGoalSide(preset) ? goalSide : null;
+    const ids = landmarkPresetIds(preset, side);
+    if (!ids) {
+      return {
+        ...prev,
+        calibPreset: preset,
+        calibGoalSide: side,
+        calibLandmarkIds: null,
+        calibSrc4: null,
+        calibSrcMoved: false,
+        calibFocusIndex: null,
+        homography: null,
+      };
+    }
+    return {
+      ...prev,
+      calibPreset: preset,
+      calibGoalSide: side,
+      calibLandmarkIds: ids,
+      calibSrc4: initialCalibSrcPoints(
+        prev.image.width,
+        prev.image.height,
+        side,
+      ),
+      calibSrcMoved: false,
+      calibFocusIndex: 0,
+      homography: null,
+    };
+  };
+
   const setCaptureCalibPreset = useCallback((preset: CalibLandmarkPreset) => {
     setCaptureImport((prev) => {
       if (!prev?.image) return prev;
-      return {
-        ...prev,
-        calibLandmarkIds: landmarkPresetIds(preset),
-        calibSrc4: defaultCalibPoints(prev.image.width, prev.image.height),
-        homography: null,
-      };
+      const side = landmarkPresetNeedsGoalSide(preset)
+        ? prev.calibGoalSide
+        : null;
+      return applyCalibPresetState(prev, preset, side);
+    });
+  }, []);
+
+  const setCaptureCalibGoalSide = useCallback((side: CalibGoalSide) => {
+    setCaptureImport((prev) => {
+      if (!prev?.image) return prev;
+      const preset = prev.calibPreset ?? "mixed";
+      return applyCalibPresetState(prev, preset, side);
     });
   }, []);
 
@@ -2101,14 +2161,31 @@ export function useAppState() {
       if (!prev?.image) return prev;
       return {
         ...prev,
-        calibSrc4: defaultCalibPoints(prev.image.width, prev.image.height),
+        calibSrc4: initialCalibSrcPoints(
+          prev.image.width,
+          prev.image.height,
+          prev.calibGoalSide,
+        ),
+        calibSrcMoved: false,
       };
     });
   }, []);
 
   const backCaptureCalib = useCallback(() => {
     setCaptureImport((prev) =>
-      prev ? { ...prev, phase: "image", homography: null } : prev,
+      prev
+        ? {
+            ...prev,
+            phase: "image",
+            homography: null,
+            calibSrc4: null,
+            calibSrcMoved: false,
+            calibLandmarkIds: null,
+            calibPreset: null,
+            calibGoalSide: null,
+            calibFocusIndex: null,
+          }
+        : prev,
     );
   }, []);
 
@@ -2123,7 +2200,17 @@ export function useAppState() {
             draftBall: null,
             selectedDraftPieceId: null,
             selectedDraftBall: false,
+            calibFocusIndex: 0,
+            calibSrc4: prev.image
+              ? initialCalibSrcPoints(
+                  prev.image.width,
+                  prev.image.height,
+                  prev.calibGoalSide,
+                )
+              : null,
+            calibSrcMoved: false,
             calibLandmarkIds: resolveCalibLandmarkIds(prev.calibLandmarkIds),
+            calibPreset: prev.calibPreset ?? "full",
           }
         : prev,
     );
@@ -2138,12 +2225,13 @@ export function useAppState() {
   }, []);
 
   const applyCaptureHomography = useCallback(async (): Promise<
-    boolean | "dup" | "degenerate"
+    boolean | "dup" | "degenerate" | "undragged"
   > => {
     const cap = captureImportRef.current;
     const src4 = cap?.calibSrc4;
-    if (!src4 || src4.length !== 4) return false;
-    const ids = resolveCalibLandmarkIds(cap?.calibLandmarkIds);
+    if (!src4 || src4.length !== 4 || !cap?.calibLandmarkIds) return false;
+    if (!cap.calibSrcMoved) return "undragged";
+    const ids = resolveCalibLandmarkIds(cap.calibLandmarkIds);
     if (hasDuplicateLandmarkIds(ids)) return "dup";
     if (isLandmarkDstDegenerate(ids)) return "degenerate";
     const dst4 = dst4FromLandmarkIds(ids);
@@ -2395,6 +2483,8 @@ export function useAppState() {
     setCaptureCalibPoint,
     setCaptureCalibLandmark,
     setCaptureCalibPreset,
+    setCaptureCalibGoalSide,
+    setCaptureCalibFocus,
     resetCaptureCalibPoints,
     backCaptureCalib,
     reopenCaptureCalib,

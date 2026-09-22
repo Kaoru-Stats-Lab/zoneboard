@@ -95,9 +95,10 @@ export function isCaptureImportEnabled(search = window.location.search): boolean
 | W04 | [`W04_UNDERLAY`](AGENT_PROMPT_CAPTURE_IMPORT_W04_UNDERLAY.md) | **✅** |
 | W05 | [`W05_PLACEMENT`](AGENT_PROMPT_CAPTURE_IMPORT_W05_PLACEMENT.md) | **✅**（コード map 記載） |
 | **W07** | [**`W07_GATE`**](AGENT_PROMPT_CAPTURE_IMPORT_W07_GATE.md) | **✅** ゲート実装済 |
-| **W08** | [**`W08_LANDMARK_CALIB`**](AGENT_PROMPT_CAPTURE_IMPORT_W08_LANDMARK_CALIB.md) | **次** — 可視ランドマークキャリブ（四隅固定の欠陥修正 · Phase 1.5） |
-| W06 | [`W06_FRAME`](AGENT_PROMPT_CAPTURE_IMPORT_W06_FRAME.md) | 任意 · W08 後でも可 |
-| UAT | [`P1_UAT`](AGENT_PROMPT_CAPTURE_IMPORT_P1_UAT.md) | W08 後に片側ペナ素材を追加推奨 |
+| **W08** | [`W08_LANDMARK_CALIB`](AGENT_PROMPT_CAPTURE_IMPORT_W08_LANDMARK_CALIB.md) | **✅** dst エンジン（内部 landmark id） |
+| **W09** | [**`W09_CALIB_UX`**](AGENT_PROMPT_CAPTURE_IMPORT_W09_CALIB_UX.md) | **次** — キャリブ UX 作り替え。仕様 [`CAPTURE_IMPORT_CALIB_UX_SPEC.md`](CAPTURE_IMPORT_CALIB_UX_SPEC.md) |
+| W06 | [`W06_FRAME`](AGENT_PROMPT_CAPTURE_IMPORT_W06_FRAME.md) | 任意 · W09 後でも可 |
+| UAT | [`P1_UAT`](AGENT_PROMPT_CAPTURE_IMPORT_P1_UAT.md) | W09 後 · 片側ペナ必須 |
 
 **推奨 Deploy 順:** W05 merge → **W07 merge & deploy** → 本番 UAT →（必要なら）W06 → Phase 2 設計
 

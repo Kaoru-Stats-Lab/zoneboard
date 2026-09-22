@@ -1,15 +1,18 @@
 /**
- * W08 landmark dst checks.
+ * W08/W09 landmark dst + preset checks.
  * Run: npx --yes tsx scripts/landmark-check.ts
  */
 import {
   dst4FromLandmarkIds,
+  initialCalibSrcPoints,
   isLandmarkDstDegenerate,
   landmarkNorm,
   landmarkPresetIds,
   PRESET_FULL_CORNERS,
-  PRESET_LEFT_GOAL,
-  PRESET_RIGHT_GOAL,
+  PRESET_MIXED_X0,
+  PRESET_MIXED_X1,
+  PRESET_PENALTY_X0,
+  PRESET_PENALTY_X1,
 } from "../src/capture/pitchLandmarks.ts";
 import {
   computeHomography,
@@ -33,7 +36,6 @@ function near(a: number, b: number, eps = 1e-9) {
   return Math.abs(a - b) < eps;
 }
 
-// Full corners match PITCH_CORNERS_NORM
 {
   const dst = dst4FromLandmarkIds(PRESET_FULL_CORNERS);
   let ok = true;
@@ -49,7 +51,6 @@ function near(a: number, b: number, eps = 1e-9) {
   else fail("full corners mismatch");
 }
 
-// Pen depth from SOCCER_NORM
 {
   const p = landmarkNorm("pen_l_far_t");
   if (near(p.x, SOCCER_NORM.penDepth) && near(p.y, 0.5 - SOCCER_NORM.penHalfH)) {
@@ -57,7 +58,6 @@ function near(a: number, b: number, eps = 1e-9) {
   } else fail(`pen_l_far_t got ${JSON.stringify(p)}`);
 }
 
-// Arc apex uses length-normalized radius
 {
   const arcR = SOCCER_PITCH_M.centerCircleR / SOCCER_PITCH_M.length;
   const p = landmarkNorm("pen_arc_apex_l");
@@ -66,27 +66,43 @@ function near(a: number, b: number, eps = 1e-9) {
   } else fail(`pen_arc_apex_l got ${JSON.stringify(p)}`);
 }
 
-// Presets non-degenerate
-for (const preset of ["full", "left", "right"] as const) {
-  const ids = landmarkPresetIds(preset);
-  if (isLandmarkDstDegenerate(ids)) fail(`preset ${preset} degenerate`);
-  else pass(`preset ${preset} non-degenerate`);
+for (const [name, ids] of [
+  ["full", landmarkPresetIds("full")],
+  ["penalty_x0", landmarkPresetIds("penalty", "x0")],
+  ["penalty_x1", landmarkPresetIds("penalty", "x1")],
+  ["goal_x0", landmarkPresetIds("goal", "x0")],
+  ["goal_x1", landmarkPresetIds("goal", "x1")],
+  ["mixed_x0", landmarkPresetIds("mixed", "x0")],
+  ["mixed_x1", landmarkPresetIds("mixed", "x1")],
+] as const) {
+  if (!ids) fail(`preset ${name} null`);
+  else if (isLandmarkDstDegenerate(ids)) fail(`preset ${name} degenerate`);
+  else pass(`preset ${name} non-degenerate`);
 }
 
-// Left/right mirror on x
+{
+  if (landmarkPresetIds("penalty", null) !== null) {
+    fail("penalty without goalSide should be null");
+  } else pass("penalty without goalSide is null");
+}
+
 {
   for (let i = 0; i < 4; i++) {
-    const L = landmarkNorm(PRESET_LEFT_GOAL[i]!);
-    const R = landmarkNorm(PRESET_RIGHT_GOAL[i]!);
+    const L = landmarkNorm(PRESET_PENALTY_X0[i]!);
+    const R = landmarkNorm(PRESET_PENALTY_X1[i]!);
     if (!near(L.x + R.x, 1) || !near(L.y, R.y)) {
-      fail(`mirror ${PRESET_LEFT_GOAL[i]} ↔ ${PRESET_RIGHT_GOAL[i]}`);
-    } else {
-      pass(`mirror ${i}`);
-    }
+      fail(`penalty mirror ${i}`);
+    } else pass(`penalty mirror ${i}`);
+  }
+  for (let i = 0; i < 4; i++) {
+    const L = landmarkNorm(PRESET_MIXED_X0[i]!);
+    const R = landmarkNorm(PRESET_MIXED_X1[i]!);
+    if (!near(L.x + R.x, 1) || !near(L.y, R.y)) {
+      fail(`mixed mirror ${i}`);
+    } else pass(`mixed mirror ${i}`);
   }
 }
 
-// Regression: full corners H still works
 {
   const src = [
     { x: 0, y: 0 },
@@ -104,24 +120,17 @@ for (const preset of ["full", "left", "right"] as const) {
   }
 }
 
-// Left-goal landmark H: map image quad → landmark dst
 {
-  const ids = PRESET_LEFT_GOAL;
-  const dst = dst4FromLandmarkIds(ids);
-  const src = dst.map((p) => ({ x: p.x * 400 + 50, y: p.y * 300 + 20 }));
-  const H = computeHomography(src, dst);
-  if (!H) fail("left-goal H");
-  else {
-    let ok = true;
-    for (let i = 0; i < 4; i++) {
-      const t = transformPoint(H, src[i]!.x, src[i]!.y);
-      if (Math.abs(t.px - dst[i]!.x) > 1e-4 || Math.abs(t.py - dst[i]!.y) > 1e-4) {
-        ok = false;
-      }
-    }
-    if (ok) pass("left-goal landmark H round-trip");
-    else fail("left-goal landmark H round-trip");
-  }
+  const pts = initialCalibSrcPoints(800, 450, "x0");
+  const insetCornerish = pts.every(
+    (p) =>
+      (p.x < 80 || p.x > 720) && (p.y < 45 || p.y > 405),
+  );
+  if (insetCornerish) fail("initial src still corner-inset-like");
+  else pass("initial src centred (not corner inset)");
+  const meanX = pts.reduce((s, p) => s + p.x, 0) / 4;
+  if (meanX < 400) pass("initial src biased toward x0 half");
+  else fail(`initial src meanX ${meanX}`);
 }
 
 if (failed) {

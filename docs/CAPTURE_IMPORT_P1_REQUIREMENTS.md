@@ -2,7 +2,7 @@
 
 **英名:** Broadcast Capture Import · Image 4-point Calibration → Piece Placement  
 **Backlog:** B-070  
-**ステータス（2026-09-22）:** W01–W05 コア実装済 · W07 ゲート実装済 · **ギャップ埋め済**（object URL revoke · dragOver ゲート · draft ball Delete · i18n「W03」除去）· **一般公開前** · **次 = カオル本番 UAT**（[`P1_UAT`](AGENT_PROMPT_CAPTURE_IMPORT_P1_UAT.md)）  
+**ステータス（2026-09-22）:** W01–W05 · W07 · W08（dst）実装済 · **次 = W09 キャリブ UX**（[`CAPTURE_IMPORT_CALIB_UX_SPEC.md`](CAPTURE_IMPORT_CALIB_UX_SPEC.md) · [`AGENT_PROMPT_CAPTURE_IMPORT_W09_CALIB_UX.md`](AGENT_PROMPT_CAPTURE_IMPORT_W09_CALIB_UX.md)）· 一般公開前  
 **正本矛盾時の勝ち:** [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md)（境界 2026-09-22 · 局面取込 2026-08-30）  
 **境界:** [`AGENT_PROMPT_PRODUCT_BOUNDARY.md`](AGENT_PROMPT_PRODUCT_BOUNDARY.md)  
 **Wave 索引:** [`AGENT_PROMPT_CAPTURE_IMPORT.md`](AGENT_PROMPT_CAPTURE_IMPORT.md)

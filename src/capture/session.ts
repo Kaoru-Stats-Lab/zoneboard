@@ -1,5 +1,9 @@
 import type { HomographyMatrix, Point } from "./homography";
-import type { LandmarkQuad } from "./pitchLandmarks";
+import type {
+  CalibGoalSide,
+  CalibLandmarkPreset,
+  LandmarkQuad,
+} from "./pitchLandmarks";
 import type { BallState, Piece, ToolId } from "../models/types";
 
 /** W02–W05 capture-import flow (React state only — never persisted). */
@@ -20,11 +24,22 @@ export type CaptureImportSession = {
   phase: CaptureImportPhase;
   /** object URL — revoked on clear / tab close */
   image: CaptureImportImage | null;
-  /** W03+ image pixels (order matches calibLandmarkIds) */
+  /** Image pixels (order matches calibLandmarkIds) */
   calibSrc4: Point[] | null;
-  /** W08 — dst landmarks; null = full corners */
+  /**
+   * True after the user drags at least one handle away from the initial cross.
+   * Apply stays blocked until this is true (avoids wild H from undragged seed).
+   */
+  calibSrcMoved: boolean;
+  /** W08/W09 — dst landmarks; null until preset applied */
   calibLandmarkIds: LandmarkQuad | null;
-  /** W03+ */
+  /** W09 — Canonical goal (x=0 / x=1); null until picked or full */
+  calibGoalSide: CalibGoalSide | null;
+  /** W09 — landmark-set preset */
+  calibPreset: CalibLandmarkPreset | null;
+  /** W09 — which of ①–④ is focused in the bottom list */
+  calibFocusIndex: number | null;
+  /** Homography after apply */
   homography: HomographyMatrix | null;
   /** W05 — 確定まで scene.pieces と別配列 */
   draftPieces: Piece[];
@@ -47,7 +62,11 @@ export function emptyCaptureImportSession(
     phase,
     image: null,
     calibSrc4: null,
+    calibSrcMoved: false,
     calibLandmarkIds: null,
+    calibGoalSide: null,
+    calibPreset: null,
+    calibFocusIndex: null,
     homography: null,
     draftPieces: [],
     draftBall: null,
