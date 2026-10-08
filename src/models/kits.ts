@@ -40,7 +40,8 @@ export function optionalAccentColor(
   raw: string | undefined | null,
 ): string | undefined {
   if (raw == null || !String(raw).trim()) return undefined;
-  return normalizePieceColor(String(raw), HOME_COLOR);
+  // Neutral fallback — do not coerce garbage to HOME_COLOR (club red).
+  return normalizePieceColor(String(raw), "#808080");
 }
 
 export function kitsFromBoard(board: BoardDocument): KitPalette {

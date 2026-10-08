@@ -636,6 +636,27 @@ function pieceIdleEdgeWidth(r: number, darkFill: boolean): number {
   return Math.min(3.25, Math.max(floor, r * 0.07));
 }
 
+/**
+ * Accent band width (~14% of r, benchmark-ish).
+ * Caps so the primary number seat stays ≥ ~58% of r.
+ */
+function pieceAccentBandWidth(r: number, edgeW: number): number {
+  const outerR = Math.max(1, r - edgeW * 0.5);
+  const seatMin = r * 0.58;
+  const maxBand = Math.max(0, outerR - seatMin);
+  const target = r * 0.14;
+  const minPx = 2.5;
+  if (maxBand < minPx) return maxBand;
+  return Math.min(Math.max(minPx, target), maxBand, r * 0.18);
+}
+
+/** True when accent would fuse with silhouette ink (e.g. white accent on grass). */
+function accentNearSilhouetteInk(accent: string, silInk: string): boolean {
+  return (
+    Math.abs(relativeLuminance(accent) - relativeLuminance(silInk)) < 0.18
+  );
+}
+
 function pieceSelectionRingRadius(r: number, tipLen: number): number {
   const tipReach = r + tipLen;
   return Math.max(r * 1.72, tipReach + Math.max(3, r * 0.12));
@@ -767,27 +788,45 @@ function drawPiece(
     ctx.globalAlpha = 0.45;
   }
 
-  // 1) シルエット塗り → 2) キット円 → 3) アクセント環（任意）→ 4) 外枠
+  // 1) シルエット塗り（向きノーズ含む）
+  // 2) 差し色帯（任意・円のみ）+ メイン塗り（番号座）
+  // 3) 必要なら逆色ヘアライン（差し色≈silInk の膨張防止）
+  // 4) シルエット外枠（ピッチコントラスト・向き）
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
   tracePieceSilhouette(ctx, x, y, r, nose);
   ctx.fillStyle = silInk;
   ctx.fill();
 
-  ctx.beginPath();
-  ctx.arc(x, y, fillR, 0, Math.PI * 2);
-  ctx.fillStyle = fillColor;
-  ctx.fill();
-
   const accent = accentForPiece(board, piece);
-  if (accent) {
-    const ringW = Math.max(1.25, edgeW * 0.9);
-    const ringR = Math.max(1, fillR - edgeW * 0.25);
+  const bandW = accent ? pieceAccentBandWidth(r, edgeW) : 0;
+  const coreR =
+    accent && bandW >= 1.5
+      ? Math.max(r * 0.55, fillR - bandW)
+      : fillR;
+
+  if (accent && bandW >= 1.5 && coreR < fillR - 0.5) {
     ctx.beginPath();
-    ctx.arc(x, y, ringR, 0, Math.PI * 2);
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = ringW;
-    ctx.stroke();
+    ctx.arc(x, y, fillR, 0, Math.PI * 2);
+    ctx.fillStyle = accent;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, coreR, 0, Math.PI * 2);
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    if (accentNearSilhouetteInk(accent, silInk)) {
+      const sep = darkPitch ? "#111111" : "#ffffff";
+      ctx.beginPath();
+      ctx.arc(x, y, fillR, 0, Math.PI * 2);
+      ctx.strokeStyle = sep;
+      ctx.lineWidth = Math.max(1.15, edgeW * 0.35);
+      ctx.stroke();
+    }
+  } else {
+    ctx.beginPath();
+    ctx.arc(x, y, fillR, 0, Math.PI * 2);
+    ctx.fillStyle = fillColor;
+    ctx.fill();
   }
 
   tracePieceSilhouette(ctx, x, y, r, nose);
@@ -844,7 +883,8 @@ function drawPiece(
 
   const displayNumber = normalizePieceNumber(piece.number);
   if (displayNumber) {
-    drawPieceNumberLabel(ctx, x, y, displayNumber, fillColor, r);
+    // Fit mark to the primary seat (inside accent band when present).
+    drawPieceNumberLabel(ctx, x, y, displayNumber, fillColor, coreR);
   }
 
   if (piece.role === "bench" || board.showPlayerNames) {
