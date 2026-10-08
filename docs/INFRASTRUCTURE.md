@@ -80,14 +80,14 @@ Preview: Cloudflare Pages の Preview deployments（Git branch）。専用 wrang
 | コマンド | 内容 |
 |----------|------|
 | `npm run dev` | Vite dev |
-| `npm run build` | `site:football` → `tsc --noEmit` → `vite build` → `dist/` · **`site:pages` は回さない** |
+| `npm run build` | `tsc --noEmit` → `vite build`（`footballPagesPlugin` が `dist/**/football/**` を生成）· **`site:pages` は回さない** |
 | `npm run site:pages` | [`scripts/write-site-pages.ts`](../scripts/write-site-pages.ts) → `public/**/index.html` · sitemap · robots |
-| `npm run site:football` | [`scripts/write-football-pages.ts`](../scripts/write-football-pages.ts) → `public/**/football/**` · `sitemap-football.xml`（gitignore） |
+| `npm run site:football` | ローカル用 · `public/**/football/**`（gitignore）。本番経路は Vite プラグイン |
 | `npm run preview` | `vite preview` |
 
 **既存読み物（About/Guide 等）:** ローカルで `npm run site:pages` → 生成物を同じ PR / コミットに含める（[`CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md) と同型）。
 
-**Football（B-080 · FINAL ADOPT）:** 生成は **`npm run build` 内**。MD 正本のみ commit。不正 frontmatter は generator が **exit 1**（deploy 阻止）。正本: [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)。
+**Football（B-080 · FINAL ADOPT）:** 生成は **Vite `closeBundle` → `dist/`**（CF Pages が `strip-types` 無しで通る）。MD 正本のみ commit。不正 frontmatter は build 失敗。正本: [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)。
 
 ### Vite プラグイン（リポ直下）
 

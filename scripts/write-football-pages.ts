@@ -8,15 +8,16 @@
  */
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { PUBLISHER, SITE_NAV } from "../src/site/publisher.ts";
-import { consentFor } from "../src/site/consentCopy.ts";
-import { LP_LOCALES, LOCALE_META } from "../src/site/localeNav.ts";
+import { fileURLToPath } from "node:url";
+import { PUBLISHER, SITE_NAV } from "../src/site/publisher";
+import { consentFor } from "../src/site/consentCopy";
+import { LP_LOCALES, LOCALE_META } from "../src/site/localeNav";
 import {
   SITE_META,
   absoluteUrl,
   documentTitle,
-} from "../src/site/siteMeta.ts";
-import type { Locale } from "../src/i18n/messages.ts";
+} from "../src/site/siteMeta";
+import type { Locale } from "../src/i18n/messages";
 import {
   FootballContentError,
   editionPath,
@@ -24,11 +25,16 @@ import {
   markdownToHtml,
   parseFootballMarkdown,
   type ParsedFootballFile,
-} from "./lib/football-md.ts";
+} from "./lib/football-md";
 
-const root = path.resolve(import.meta.dirname, "..");
-const contentRoot = path.join(root, "content", "football");
-const publicDir = path.join(root, "public");
+export { FootballContentError };
+
+export type GenerateFootballOptions = {
+  /** Repo root. Default: cwd parent of scripts/. */
+  projectRoot?: string;
+  /** HTML output root. Default: public/ (local). Vite plugin uses dist/. */
+  outDir?: string;
+};
 
 function esc(text: string): string {
   return text
@@ -360,19 +366,20 @@ ${editions.length === 0 ? "<p>No editions published yet.</p>" : `<ul class="foot
 `;
 }
 
-async function cleanGeneratedFootball(): Promise<void> {
-  await rm(path.join(publicDir, "football"), { recursive: true, force: true });
+async function cleanGeneratedFootball(outRoot: string): Promise<void> {
+  await rm(path.join(outRoot, "football"), { recursive: true, force: true });
   for (const locale of LP_LOCALES) {
     if (locale === "en") continue;
-    await rm(path.join(publicDir, locale, "football"), {
+    await rm(path.join(outRoot, locale, "football"), {
       recursive: true,
       force: true,
     });
   }
-  await rm(path.join(publicDir, "sitemap-football.xml"), { force: true });
+  await rm(path.join(outRoot, "sitemap-football.xml"), { force: true });
 }
 
-async function loadEditions(): Promise<EditionRecord[]> {
+async function loadEditions(projectRoot: string): Promise<EditionRecord[]> {
+  const contentRoot = path.join(projectRoot, "content", "football");
   let groupDirs: string[] = [];
   try {
     const entries = await readdir(contentRoot, { withFileTypes: true });
@@ -406,7 +413,7 @@ async function loadEditions(): Promise<EditionRecord[]> {
       const raw = await readFile(filePath, "utf8");
       const parsed = parseFootballMarkdown(
         raw,
-        path.relative(root, filePath).replaceAll("\\", "/"),
+        path.relative(projectRoot, filePath).replaceAll("\\", "/"),
         folderGroup,
         fileLocale,
       );
@@ -432,9 +439,16 @@ async function loadEditions(): Promise<EditionRecord[]> {
   return editions;
 }
 
-async function main(): Promise<void> {
-  await cleanGeneratedFootball();
-  const editions = await loadEditions();
+/** Generate Football HTML into outDir. Throws FootballContentError on bad MD. */
+export async function generateFootballPages(
+  options: GenerateFootballOptions = {},
+): Promise<void> {
+  const projectRoot =
+    options.projectRoot ?? path.resolve(import.meta.dirname, "..");
+  const outRoot = options.outDir ?? path.join(projectRoot, "public");
+
+  await cleanGeneratedFootball(outRoot);
+  const editions = await loadEditions(projectRoot);
 
   const byGroup = new Map<string, EditionRecord[]>();
   for (const ed of editions) {
@@ -450,17 +464,17 @@ async function main(): Promise<void> {
       ed.frontmatter.locale,
       ed.frontmatter.slug,
     );
-    const outDir = path.join(publicDir, relDir);
-    await mkdir(outDir, { recursive: true });
+    const articleDir = path.join(outRoot, relDir);
+    await mkdir(articleDir, { recursive: true });
     await writeFile(
-      path.join(outDir, "index.html"),
+      path.join(articleDir, "index.html"),
       articleDocument(ed, group),
       "utf8",
     );
     console.log(`football: ${ed.path}`);
   }
 
-  const hubDir = path.join(publicDir, "football");
+  const hubDir = path.join(outRoot, "football");
   await mkdir(hubDir, { recursive: true });
   await writeFile(path.join(hubDir, "index.html"), hubDocument(editions), "utf8");
   console.log("football: /football/");
@@ -477,16 +491,24 @@ async function main(): Promise<void> {
 ${sitemapUrls.join("\n")}
 </urlset>
 `;
-  await writeFile(path.join(publicDir, "sitemap-football.xml"), sitemap, "utf8");
-  console.log(`football: wrote ${editions.length} edition(s) + hub`);
+  await writeFile(path.join(outRoot, "sitemap-football.xml"), sitemap, "utf8");
+  console.log(`football: wrote ${editions.length} edition(s) + hub → ${outRoot}`);
 }
 
-try {
-  await main();
-} catch (err) {
-  if (err instanceof FootballContentError) {
-    console.error(`\nFootball content error (build aborted):\n  ${err.message}\n`);
-    process.exit(1);
+const isCli =
+  process.argv[1] !== undefined &&
+  path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+
+if (isCli) {
+  try {
+    await generateFootballPages();
+  } catch (err) {
+    if (err instanceof FootballContentError) {
+      console.error(
+        `\nFootball content error (build aborted):\n  ${err.message}\n`,
+      );
+      process.exit(1);
+    }
+    throw err;
   }
-  throw err;
 }

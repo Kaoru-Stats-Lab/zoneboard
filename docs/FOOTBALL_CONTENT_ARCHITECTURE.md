@@ -75,7 +75,7 @@ content/football/{translationGroup}/{locale}.md
 
 | # | 問い | 答え |
 |---|------|------|
-| 1 | build に生成を組み込めるか | **済** · `build`: `site:football && tsc && vite build` |
+| 1 | build に生成を組み込めるか | **済** · `vite build` の `footballPagesPlugin`（`closeBundle` → `dist/`）。CF は Node 20 でも Vite 経由で動く |
 | 2 | 生成 HTML を Git 管理するか | **しない** |
 | 3 | Pages 設定だけで完結するか | **する**（Dashboard は `npm run build` のまま） |
 | 4 | 追加 CI が必要か | **不要** |

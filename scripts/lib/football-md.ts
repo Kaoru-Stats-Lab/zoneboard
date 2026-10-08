@@ -3,8 +3,8 @@
  * Zero npm deps. Invalid editions throw (build quality gate).
  */
 
-import type { Locale } from "../../src/i18n/messages.ts";
-import { isLocale } from "../../src/i18n/locale.ts";
+import type { Locale } from "../../src/i18n/messages";
+import { isLocale } from "../../src/i18n/locale";
 
 export const FOOTBALL_REQUIRED_KEYS = [
   "translationGroup",
