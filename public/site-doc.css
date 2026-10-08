@@ -537,6 +537,35 @@ body.has-consent {
   color: var(--zb-ink);
 }
 
+.football-article .football-meta,
+.football-article .football-source,
+.football-hub__langs {
+  color: var(--zb-muted);
+  font-size: 0.92rem;
+}
+
+.football-langs {
+  margin: 0.75rem 0 1.25rem;
+  font-size: 0.92rem;
+}
+
+.football-hub__list {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.football-hub__item {
+  padding: 1rem 0;
+  border-top: 1px solid var(--zb-line);
+}
+
+.football-hub__item h2 {
+  margin: 0 0 0.4rem;
+  font-family: var(--zb-display);
+  font-size: 1.25rem;
+}
+
 @media (max-width: 40rem) {
   .site-head,
   .site-foot,

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "site:pages": "node --experimental-strip-types scripts/write-site-pages.ts",
-    "build": "tsc --noEmit && vite build",
+    "site:football": "node --experimental-strip-types scripts/write-football-pages.ts",
+    "build": "npm run site:football && tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:ink": "npx --yes tsx scripts/pieceInk-check.ts",
     "test:i18n-chrome": "npx --yes tsx scripts/i18n-chrome-check.ts",

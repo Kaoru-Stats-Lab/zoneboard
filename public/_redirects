@@ -52,6 +52,7 @@
 /terms    /terms/    301
 /cookies  /cookies/  301
 /contact  /contact/  301
+/football /football/ 301
 /about/   /about/index.html    200
 /guide/   /guide/index.html    200
 /faq/     /faq/index.html      200
@@ -62,6 +63,7 @@
 /terms/   /terms/index.html    200
 /cookies/ /cookies/index.html  200
 /contact/ /contact/index.html  200
+/football/ /football/index.html  200
 # Prefer a real board/index.html (copied at build) so hard links work.
 # Rewriting /board → /index.html alone was 308'ing to / on Cloudflare Pages.
 /board    /board/index.html    200

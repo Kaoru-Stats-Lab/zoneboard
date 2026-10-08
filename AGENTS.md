@@ -17,7 +17,7 @@
 | — | [`docs/STRIPE_PRO_ARCHITECTURE.md`](docs/STRIPE_PRO_ARCHITECTURE.md) | **Stripe / Pro** 正本（Local Library · Purchase Identity · Export 無料楔） |
 | — | [`docs/AGENT_PROMPT_STRIPE_PRO.md`](docs/AGENT_PROMPT_STRIPE_PRO.md) | B-023 実装プロンプト |
 | — | [`docs/INFRASTRUCTURE.md`](docs/INFRASTRUCTURE.md) | **本番インフラ正本**（Cloudflare Pages · Vite · 二層ルーティング · env） |
-| — | [`docs/FOOTBALL_CONTENT_ARCHITECTURE.md`](docs/FOOTBALL_CONTENT_ARCHITECTURE.md) | 多言語 Football 読み物 · **CONDITIONAL ADOPT** · B-080 |
+| — | [`docs/FOOTBALL_CONTENT_ARCHITECTURE.md`](docs/FOOTBALL_CONTENT_ARCHITECTURE.md) | 多言語 Football 読み物 · **FINAL ADOPT** · B-080 · push-only build |
 
 **一言:** ZoneBoard = **Explain the idea**（Explanation Canvas）。Metrica 型 = **Analyze the game**（やらない）。OBS の中のピッチ。
 

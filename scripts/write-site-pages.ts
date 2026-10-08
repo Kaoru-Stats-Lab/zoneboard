@@ -471,6 +471,7 @@ await writeFile(
 Allow: /
 
 Sitemap: ${PUBLISHER.siteUrl}/sitemap.xml
+Sitemap: ${PUBLISHER.siteUrl}/sitemap-football.xml
 `,
 );
 

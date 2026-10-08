@@ -11,6 +11,11 @@ dist/
 *.local
 *.tsbuildinfo
 
+# Football Content — generated at build (source: content/football/)
+public/football/
+public/*/football/
+public/sitemap-football.xml
+
 # Env / secrets
 .env
 .env.*

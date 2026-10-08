@@ -1,130 +1,98 @@
 # ZoneBoard — Football Content Layer アーキテクチャ
 
 **更新:** 2026-10-08  
-**ステータス:** アーキテクチャ判断 · **CONDITIONAL ADOPT** · **実装未着手**  
-**親インフラ:** [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)（必読）  
+**ステータス:** **FINAL ADOPT** · 実装あり（生成は `npm run build` / `site:football`）  
+**親インフラ:** [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)  
 **Backlog:** B-080  
 **境界:** Explanation Canvas を CMS/SaaS 化しない。Board データと混ぜない。
 
 ---
 
-## 0. 一言
+## 0. 最終形（採用）
 
-> Substack = 英語 editorial / discovery  
-> zoneboard.app = 多言語 evergreen Football 読み物 → Product 入口  
-> 実装は **既存の静的読み物パイプライン（`site:pages` 型）を拡張**する。React SPA・CMS・別プロジェクト・Astro 前提にしない。
+Football Content Layer は、**既存 Cloudflare Pages プロジェクト内の静的生成レイヤー**として実装する。
 
-**Executive Judgment:** CONDITIONAL ADOPT
+- Markdown（`content/football/`）が **唯一の正本**
+- 生成 HTML は **Git 管理しない**（`public/**/football/` · `sitemap-football.xml` は gitignore）
+- `npm run build` が Football 生成 → `tsc` → Vite を一貫実行
+- **GitHub への push だけで** Cloudflare Pages が本番公開
+- **追加 CI · CMS · DB · Astro · 別 Pages プロジェクトは導入しない**
+
+```text
+Cursor を閉じる
+  → content/football/**/*.md を commit / push
+  → Cloudflare Pages: npm run build
+       → site:football（不正 MD なら exit 1 → deploy されない）
+       → vite build → dist/
+  → zoneboard.app に公開
+```
+
+Cursor Token は開発に使い、公開は Git / Cloudflare の既存パイプラインに任せる。
 
 ---
 
-## 1. 役割分担（壊すな）
+## 0-1. Build 品質ゲート（必須）
+
+| 入力 | 結果 |
+|------|------|
+| 正常な MD（必須 frontmatter 完備） | build 成功 → deploy |
+| 必須項目欠落 / 不正 locale·slug·日付 | **Football generator がエラー終了** → build 失敗 → **deploy されない** |
+
+必須 frontmatter: `translationGroup` · `locale` · `title` · `description` · `slug` · `publishedAt` · `updatedAt`  
+加えて: folder 名 = `translationGroup`、ファイル名 `{locale}.md` = `locale`、slug/group は kebab-case、日付は `YYYY-MM-DD`。
+
+実装: [`scripts/lib/football-md.ts`](../scripts/lib/football-md.ts) · [`scripts/write-football-pages.ts`](../scripts/write-football-pages.ts)
+
+---
+
+## 1. 役割分担
 
 | 面 | 役割 |
 |----|------|
-| [Substack `@zoneboard`](https://substack.com/@zoneboard) | 英語原著 · 連載 · community / discovery |
-| `zoneboard.app/.../football/...` | localized edition · 検索 evergreen · Board への導線 |
+| [Substack `@zoneboard`](https://substack.com/@zoneboard) | 英語原著 · editorial / discovery |
+| `zoneboard.app/.../football/...` | localized evergreen · product entry |
 | `/board` | 製品。広告なし |
 
-- zoneboard.app に英語全文を **丸ごとミラーしない**
-- 機械翻訳パイプラインを入れない（localized edition = 手書き）
+英語全文ミラー禁止。機械翻訳パイプライン禁止。
 
 ---
 
-## 2. 推奨構成（v1）
-
-| 項目 | 決定 |
-|------|------|
-| リポジトリ | **同一** zoneboard リポ |
-| ホスト | **同一** Cloudflare Pages プロジェクト |
-| 記事ソース | **Markdown + Git**（`content/football/`） |
-| 配信物 | **静的 HTML** → `public/{locale}/football/...`（Board JS を載せない） |
-| 生成 | `npm run site:football`（新）または `site:pages` 拡張 · 生成物は現行 docs と同様 commit |
-| CMS / D1 / R2 / Workers | **不要** |
-| Astro / 別 content プロジェクト | **v1 非採用**（記事量・著者が増えたら再検討） |
-
-### URL
+## 2. URL / ソース
 
 ```text
-/football/                              # EN hub（索引・Substack 導線。全文ミラーではない）
-/pl/football/{slug}/
-/it/football/{slug}/
-/de/football/{slug}/
+content/football/{translationGroup}/{locale}.md
+
+/football/                         # hub（build 生成）
+/{locale}/football/{slug}/         # localized edition
+/football/{slug}/                  # locale=en のときのみ
 ```
 
-- **`/en/football/` は作らない**（既存 `/en` → `/` と衝突）
-- slug は translationGroup 間で揃えるのが運用簡単
-- Board CTA: `/board?lang=pl` 等（既存 deep link）
-
-### コンテンツ配置
-
-```text
-content/football/{translationGroup}/
-  pl.md
-  it.md          # ある言語だけ置く（疎でよい。PL 優先）
-  de.md
-```
-
-### Frontmatter（最小）
-
-必須: `translationGroup` · `locale` · `title` · `description` · `slug` · `publishedAt` · `updatedAt`  
-推奨: `series` · `originalLocale` · `sourceUrl`（Substack）· `ogImage`（任意）
-
-### SEO
-
-- 各 edition: **自己 canonical**
-- hreflang: **存在する edition のみ** + 英語は `sourceUrl`（Substack）を `hreflang="en"` / `x-default` 候補
-- **既存 `hreflangLinks()`（LP 用）を記事に流用しない**
-- sitemap に localized URL を追加
-- JSON-LD `Article` は Football から導入してよい（現状サイト全体には無い）
-
-### AdSense
-
-- Football 読み物 = 既存「informational pages only」の延長で可（consent 後）
-- Board / Broadcast / pitch = **禁止**（変更しない）
+`/en/football/` は作らない。
 
 ---
 
-## 3. 棄却・後回し
+## 3. Deploy 5問（確定）
 
-### 絶対に入れない（v1）
-
-- WordPress / Firebase / Supabase / Mongo / full CMS / D1 記事 DB
-- 読者アカウント · コメント · ソーシャル
-- Board クラウド保存 · 記事と Board JSON の混在
-- React SPA 内クライアントのみの記事レンダリング
-- 英語 Substack の丸ごとミラー
-- 自動 AI 翻訳パイプライン
-- 不要な Workers / R2 / サイト内検索エンジン
-
-### 後回し
-
-- 全 9 言語同時展開（PL 等を疎に）
-- Decap 等 Git-based CMS UI
-- Astro 分離 · 別 Pages プロジェクト
-- シリーズ taxonomy の本格 DB 化
-- AdSense 実装そのもの（ポリシーは既存）
+| # | 問い | 答え |
+|---|------|------|
+| 1 | build に生成を組み込めるか | **済** · `build`: `site:football && tsc && vite build` |
+| 2 | 生成 HTML を Git 管理するか | **しない** |
+| 3 | Pages 設定だけで完結するか | **する**（Dashboard は `npm run build` のまま） |
+| 4 | 追加 CI が必要か | **不要** |
+| 5 | 人間の npm は何回か | **公開経路は 0**（MD → commit → push） |
 
 ---
 
-## 4. 比較要約
+## 4. やらないこと
 
-| 案 | 判断 |
-|----|------|
-| 同一 app + 静的生成拡張 | **Adopt（推奨）** |
-| Football だけ Astro | 後で再検討 · 今は過剰 |
-| 別 content プロジェクト | 今は No（二重デプロイ） |
-| Headless / DB CMS | No |
-| SPA に MDX ルート | No（bundle / SEO / Broadcast） |
-
-詳細調査メモはチャット履歴（2026-10-08）に残る。運用の正本は本ファイル + [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)。
+WordPress / Firebase / Supabase / Mongo / full CMS / D1 · 読者アカウント · コメント · Board クラウド · SPA 内記事レンダリング · Substack 丸ごとミラー · AI 翻訳パイプライン · 不要な Workers/R2 · GitHub Actions 追加
 
 ---
 
-## 5. 実装に入るとき（未着手チェック）
+## 5. ローカル
 
-1. [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) の二層モデルを壊していないか
-2. `_redirects` に football trailing-slash を足すか
-3. `sitemap.xml` 生成を更新するか
-4. React `App.tsx` に記事ルートを **足していない**か
-5. PRODUCT_NOTE 境界（Analysis / CMS 化）を跨いでいないか
+| コマンド | 用途 |
+|----------|------|
+| `npm run site:football` | 生成のみ（preview 用） |
+| `npm run build` | 本番と同じゲート付きビルド |
+| `npm run preview` | `dist/` 確認 |

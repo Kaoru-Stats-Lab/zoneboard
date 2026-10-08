@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://zoneboard.app/sitemap.xml
+Sitemap: https://zoneboard.app/sitemap-football.xml

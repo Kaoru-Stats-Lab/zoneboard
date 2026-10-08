@@ -6,6 +6,8 @@ import { SITE_NAV } from "./src/site/publisher";
  * (and siblings). Production uses `_redirects` 200 rewrites; this mirrors
  * that in `vite` / `vite preview` so How-to → public guide works locally.
  */
+const LOCALE_PREFIX = "ja|es|pt|pl|de|fr|tr|it";
+
 function rewriteSiteDocUrl(url: string | undefined): string | undefined {
   if (!url) return url;
   const q = url.indexOf("?");
@@ -15,6 +17,20 @@ function rewriteSiteDocUrl(url: string | undefined): string | undefined {
     if (path === `/${slug}` || path === `/${slug}/`) {
       return `/${slug}/index.html${search}`;
     }
+  }
+  // Football hub + localized editions (SPA fallback would otherwise win)
+  if (path === "/football" || path === "/football/") {
+    return `/football/index.html${search}`;
+  }
+  const enArticle = path.match(/^\/football\/([^/]+)\/?$/);
+  if (enArticle) {
+    return `/football/${enArticle[1]}/index.html${search}`;
+  }
+  const locArticle = path.match(
+    new RegExp(`^/(${LOCALE_PREFIX})/football/([^/]+)/?$`),
+  );
+  if (locArticle) {
+    return `/${locArticle[1]}/football/${locArticle[2]}/index.html${search}`;
   }
   return url;
 }

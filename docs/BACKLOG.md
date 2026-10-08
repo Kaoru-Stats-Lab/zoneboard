@@ -21,7 +21,7 @@
 | フットサル・ビーチ（別競技ページ） | v1.1 最小構成。リサーチは [`FUTSAL_BEACH_RESEARCH.md`](FUTSAL_BEACH_RESEARCH.md) |
 | 本番ホスト | **Cloudflare Pages** · [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) |
 | Pro / 選手セット / 課金 | 未実装 · 方針正本 [`STRIPE_PRO_ARCHITECTURE.md`](STRIPE_PRO_ARCHITECTURE.md) |
-| Football 多言語読み物 | 方針のみ · [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md) · B-080 |
+| Football 多言語読み物 | **v1 実装済** · [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md) · B-080 |
 | GitHub 専用リポ | https://github.com/Kaoru-Stats-Lab/zoneboard |
 
 ---
@@ -117,13 +117,14 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 - `/en/` は使わない（`/` が英語）。汎用 SPA catch-all は無い
 - 広告: 読み物のみ可 · ピッチ / Broadcast 禁止（議論で戻さない · §3）
 
-### 1-10. Football Content Layer（2026-10-08 · 実装未）
+### 1-10. Football Content Layer（2026-10-08 · FINAL ADOPT）
 
-正本: [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md) · **CONDITIONAL ADOPT** · Backlog **B-080**。
+正本: [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md) · **FINAL ADOPT** · **B-080**。
 
 - Substack = 英語原著 / discovery。zoneboard.app = 多言語 evergreen（丸ごとミラーしない）
-- Markdown + Git + 静的 HTML。React bundle / CMS / D1 / 別プロジェクトは v1 非採用
+- Markdown + Git + 静的 HTML（`npm run build` 内生成）。生成物は gitignore
 - URL: `/{locale}/football/{slug}/` · EN hub `/football/` · `/en/football/` は作らない
+- **Deploy DoD:** MD push → Pages build → 公開。不正 MD は build 失敗。追加 CI / CMS / Cursor 必須手順なし
 
 ---
 
@@ -221,7 +222,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-071 | **配信者 PC / モニター分布調査** | **Web 調査済 2026-08-30。** [`STREAMER_RIG_RESEARCH.md`](STREAMER_RIG_RESEARCH.md)。帯 A=Pro / B=Standard標的 / C=Budget。％は proxy。一次ヒアリングは任意。プロンプト: [`AGENT_PROMPT_STREAMER_RIG_RESEARCH.md`](AGENT_PROMPT_STREAMER_RIG_RESEARCH.md) |
 | B-072 | **縦ピッチ（別データ）** | **Later · やる。** 正本 [`VERTICAL_PITCH.md`](VERTICAL_PITCH.md) · UI [`AGENT_PROMPT_PITCH_VIEW_UI.md`](AGENT_PROMPT_PITCH_VIEW_UI.md) · 描画 [`AGENT_PROMPT_VERTICAL_PITCH.md`](AGENT_PROMPT_VERTICAL_PITCH.md) |
 | B-073 | **名前ピル（ボード単位）** | **実装済。** `showPlayerNames` · 新規 OFF · migrate true。[`AGENT_PROMPT_PLAYER_NAME_PILL.md`](AGENT_PROMPT_PLAYER_NAME_PILL.md) |
-| B-080 | **Football Content Layer（多言語読み物）** | **CONDITIONAL ADOPT · 実装未。** 正本 [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)。静的 MD→HTML · SPA/CMS/ミラー禁止。PL 優先 |
+| B-080 | **Football Content Layer（多言語読み物）** | **FINAL ADOPT · 実装済（v1）。** [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)。`site:football` in build · 不正 MD で fail · 生成物 gitignore · push-only |
 
 ---
 

@@ -1,9 +1,9 @@
 # ZoneBoard — インフラ / デプロイ正本
 
-**更新:** 2026-10-08  
+**更新:** 2026-10-08（Football deploy DoD 注記）  
 **役割:** 別 Agent が **実装を触る前に**読む本番・ビルド・ルーティングの事実一覧  
 **調査根拠:** リポジトリ実装（`package.json` · `vite.config.ts` · `public/_redirects` · `functions/` · `scripts/write-site-pages.ts` 等）  
-**関連:** [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)（多言語 Football 読み物 · CONDITIONAL ADOPT） · [`SPEC.md`](SPEC.md) §10 · [`BACKLOG.md`](BACKLOG.md) §1-9 · B-080
+**関連:** [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)（多言語 Football 読み物 · CONDITIONAL ADOPT · **push-only DoD**） · [`SPEC.md`](SPEC.md) §10 · [`BACKLOG.md`](BACKLOG.md) §1-9 · B-080
 
 矛盾したら **本ファイルの事実** を勝ちにする（SPEC / HANDOFF の古い「未確定」メモより優先）。
 
@@ -80,11 +80,14 @@ Preview: Cloudflare Pages の Preview deployments（Git branch）。専用 wrang
 | コマンド | 内容 |
 |----------|------|
 | `npm run dev` | Vite dev |
-| `npm run build` | `tsc --noEmit` + `vite build` → `dist/` · **`site:pages` は回さない** |
+| `npm run build` | `site:football` → `tsc --noEmit` → `vite build` → `dist/` · **`site:pages` は回さない** |
 | `npm run site:pages` | [`scripts/write-site-pages.ts`](../scripts/write-site-pages.ts) → `public/**/index.html` · sitemap · robots |
+| `npm run site:football` | [`scripts/write-football-pages.ts`](../scripts/write-football-pages.ts) → `public/**/football/**` · `sitemap-football.xml`（gitignore） |
 | `npm run preview` | `vite preview` |
 
-読み物 HTML を直したら **ローカルで `npm run site:pages`** → 生成物を同じ PR / コミットに含める（[`CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md) と同型）。
+**既存読み物（About/Guide 等）:** ローカルで `npm run site:pages` → 生成物を同じ PR / コミットに含める（[`CHANGELOG_PUBLIC.md`](CHANGELOG_PUBLIC.md) と同型）。
+
+**Football（B-080 · FINAL ADOPT）:** 生成は **`npm run build` 内**。MD 正本のみ commit。不正 frontmatter は generator が **exit 1**（deploy 阻止）。正本: [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)。
 
 ### Vite プラグイン（リポ直下）
 

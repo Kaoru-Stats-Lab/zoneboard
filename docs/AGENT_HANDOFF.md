@@ -159,7 +159,7 @@ ZoneBoard の文書更新は **`C:\asl_dev\zoneboard`** のみ。SUGUDASU ポイ
 | 二層 | React SPA（LP + Board）＋ 静的読み物（`npm run site:pages`） |
 | Functions | `POST /api/feedback` のみ |
 | `.app` | HTTPS 必須（HSTS）。ローカルは `localhost` |
-| Football 読み物 | 方針のみ [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md) · B-080 · 実装未 |
+| Football 読み物 | **FINAL ADOPT** [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md) · B-080 · MD push → build 生成 · 不正 MD は fail |
 
 Git: 専用リポ `Kaoru-Stats-Lab/zoneboard`。SUGUDASU remote に載せない。
 

@@ -17,7 +17,8 @@ npm run dev
 | コマンド | 内容 |
 |----------|------|
 | `npm run dev` | 開発サーバ |
-| `npm run build` | 本番ビルド（`dist/`） |
+| `npm run build` | 本番ビルド（Football 生成 → `dist/`）。不正 MD は失敗 |
+| `npm run site:football` | Football MD→HTML のみ（生成物は gitignore） |
 | `npm run preview` | ビルド結果のプレビュー |
 
 ## 本番（Cloudflare Pages）
