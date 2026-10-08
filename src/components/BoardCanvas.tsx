@@ -14,7 +14,6 @@ import {
   hitTestPiece,
   hitTestPieceForSwap,
   hitTestPiecePointer,
-  hitTestWatermark,
   pitchToWorld,
 } from "../canvas/drawBoard";
 import { outerFillForBoard } from "../canvas/drawPitch";
@@ -184,7 +183,6 @@ type DragState =
       recorded: boolean;
     }
   | { mode: "ball"; recorded: boolean; boost: number }
-  | { mode: "watermark"; recorded: boolean }
   | {
       mode: "pan";
       lastClientX: number;
@@ -968,7 +966,7 @@ export function BoardCanvas({
     }
 
     if (state.tool === "select") {
-      // ボール → 駒 → 描画（パス等）→ ロゴ
+      // ボール → 駒 → 描画。ロゴ透かしは描画のみ（位置は Settings）
       if (hitTestBall(board, scene, pitch, norm.x, norm.y)) {
         state.captureUndo();
         state.setSelectedBall(true);
@@ -1073,16 +1071,6 @@ export function BoardCanvas({
           canvas.setPointerCapture(e.pointerId);
           bumpDragVisual();
         }
-        return;
-      }
-      if (
-        hitTestWatermark(pitch, state.watermark, norm.x, norm.y, watermarkImage)
-      ) {
-        state.setSelectedBall(false);
-        state.setSelectedPieceId(null);
-        state.setSelectedObjectId(null);
-        drag.current = { mode: "watermark", recorded: false };
-        canvas.setPointerCapture(e.pointerId);
         return;
       }
       drag.current = {
@@ -1324,15 +1312,6 @@ export function BoardCanvas({
       }
       state.moveCaptureDraftPiece(d.id, world.x, world.y, facing);
       bumpDragVisual();
-      return;
-    }
-
-    if (d.mode === "watermark") {
-      state.updateWatermark({
-        ...state.watermark,
-        x: Math.min(1, Math.max(0, hit.norm.x)),
-        y: Math.min(1, Math.max(0, hit.norm.y)),
-      });
       return;
     }
 

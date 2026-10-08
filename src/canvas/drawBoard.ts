@@ -1991,9 +1991,8 @@ function drawScreenBar(
   ctx.stroke();
 }
 
-/** 白背景 PNG の白を透過扱いにしたキャンバス／画素をキャッシュ */
+/** 白背景 PNG の白を透過扱いにしたキャンバスをキャッシュ（描画専用 · ヒット対象にしない） */
 const knockoutCache = new WeakMap<HTMLImageElement, HTMLCanvasElement>();
-const knockoutPixels = new WeakMap<HTMLImageElement, ImageData>();
 
 function knockoutWhiteCanvas(img: HTMLImageElement): HTMLCanvasElement {
   const cached = knockoutCache.get(img);
@@ -2014,7 +2013,6 @@ function knockoutWhiteCanvas(img: HTMLImageElement): HTMLCanvasElement {
   }
   ictx.putImageData(data, 0, 0);
   knockoutCache.set(img, c);
-  knockoutPixels.set(img, data);
   return c;
 }
 
@@ -2215,35 +2213,3 @@ export function hitTestBall(
   return Math.hypot(m.x - normX, m.y - normY) <= rn;
 }
 
-export function hitTestWatermark(
-  pitch: PitchRect,
-  wm: WatermarkSettings,
-  normX: number,
-  normY: number,
-  img: HTMLImageElement | null,
-): boolean {
-  if (!wm.enabled || !wm.imageDataUrl || !img) return false;
-  const size = (Math.min(pitch.w, pitch.h) * wm.sizePercent) / 100;
-  const src = knockoutWhiteCanvas(img);
-  const aspect = (src.width || 1) / (src.height || 1);
-  const nw = (size * aspect) / pitch.w;
-  const nh = size / pitch.h;
-  const left = wm.x - nw / 2;
-  const top = wm.y - nh / 2;
-  if (normX < left || normX > left + nw || normY < top || normY > top + nh) {
-    return false;
-  }
-  // 透明部分はクリック透過（大きなロゴでも駒を掴める）
-  const pixels = knockoutPixels.get(img);
-  if (!pixels || src.width === 0 || src.height === 0) return true;
-  const px = Math.min(
-    src.width - 1,
-    Math.max(0, Math.floor(((normX - left) / nw) * src.width)),
-  );
-  const py = Math.min(
-    src.height - 1,
-    Math.max(0, Math.floor(((normY - top) / nh) * src.height)),
-  );
-  const alpha = pixels.data[(py * src.width + px) * 4 + 3];
-  return alpha > 16;
-}
