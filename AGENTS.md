@@ -14,6 +14,10 @@
 | — | [`docs/CAPTURE_IMPORT_CALIB_UX_SPEC.md`](docs/CAPTURE_IMPORT_CALIB_UX_SPEC.md) | キャリブ UX 骨格（W09） |
 | — | [`docs/CAPTURE_IMPORT_CALIB_UX_W10_SPEC.md`](docs/CAPTURE_IMPORT_CALIB_UX_W10_SPEC.md) | **キャリブ HCI · 一覧/ラベル（W10 · UI勝ち）** |
 | — | [`docs/AGENT_PROMPT_CAPTURE_IMPORT_W10_CALIB_LIST.md`](docs/AGENT_PROMPT_CAPTURE_IMPORT_W10_CALIB_LIST.md) | W10 実装プロンプト |
+| — | [`docs/STRIPE_PRO_ARCHITECTURE.md`](docs/STRIPE_PRO_ARCHITECTURE.md) | **Stripe / Pro** 正本（Local Library · Purchase Identity · Export 無料楔） |
+| — | [`docs/AGENT_PROMPT_STRIPE_PRO.md`](docs/AGENT_PROMPT_STRIPE_PRO.md) | B-023 実装プロンプト |
+| — | [`docs/INFRASTRUCTURE.md`](docs/INFRASTRUCTURE.md) | **本番インフラ正本**（Cloudflare Pages · Vite · 二層ルーティング · env） |
+| — | [`docs/FOOTBALL_CONTENT_ARCHITECTURE.md`](docs/FOOTBALL_CONTENT_ARCHITECTURE.md) | 多言語 Football 読み物 · **CONDITIONAL ADOPT** · B-080 |
 
 **一言:** ZoneBoard = **Explain the idea**（Explanation Canvas）。Metrica 型 = **Analyze the game**（やらない）。OBS の中のピッチ。
 

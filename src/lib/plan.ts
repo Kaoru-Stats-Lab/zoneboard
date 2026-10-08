@@ -1,11 +1,15 @@
 /**
  * Free / Pro plan foundation (no checkout yet).
  *
- * Product contract: docs/PRODUCT_NOTE.md §6 (2026-08-27).
- * Pro = Local Library Entitlement — NOT ZoneBoard-hosted Online Storage.
+ * Product contract:
+ * - docs/PRODUCT_NOTE.md §6 (2026-08-27 Local Library · 2026-10-08 Stripe second opinion)
+ * - docs/STRIPE_PRO_ARCHITECTURE.md (CONDITIONAL ADOPT)
+ *
+ * Pro = Local Library Entitlement + BYO portability — NOT ZB-hosted Online Storage.
+ * Board JSON Export stays free (backup wedge / Storage-full Recovery primary).
  * Multi-device = BYO file (user's Drive etc.), not our vault.
- * No ZB user-id login for Pro. Optional zero-knowledge self-hosted sync = Later / non-core.
- * Wedge stays free (draw, Broadcast, logo). Price unset until streamer interviews.
+ * No User Account. Purchase Identity (Checkout email + signed license + Restore) when billing ships.
+ * Wedge stays free (draw, Broadcast, logo, PNG, Board JSON Export). Annual / one-time preferred over monthly as main price.
  *
  * Do not add paywall UI or Stripe here. Flip entitlements only via activePlan().
  */

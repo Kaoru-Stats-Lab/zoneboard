@@ -1,8 +1,9 @@
 # ZoneBoard — Backlog
 
-**更新:** 2026-08-30  
+**更新:** 2026-10-08  
 **リポジトリ:** 本リポ専用（SUGUDASU / 他 GitHub プロジェクトとは分離）  
-**正本の方針:** [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) · [`UI_UX.md`](UI_UX.md) · [`SPEC.md`](SPEC.md)
+**正本の方針:** [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) · [`UI_UX.md`](UI_UX.md) · [`SPEC.md`](SPEC.md)  
+**本番インフラ:** [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)（Cloudflare Pages · ビルド · 二層ルーティング）
 
 未着手・Later・方針メモをここに集約する。実装済みの詳細はコードと各 docs を正とする。
 
@@ -18,7 +19,9 @@
 | 試合帯（スコア・得点者・配信表示） | **済** サッカー試合タブ |
 | 駒カード（トリプルクリック / 右クリック） | 実装あり |
 | フットサル・ビーチ（別競技ページ） | v1.1 最小構成。リサーチは [`FUTSAL_BEACH_RESEARCH.md`](FUTSAL_BEACH_RESEARCH.md) |
-| Pro / 選手セット / 課金 | 未実装（方針のみ） |
+| 本番ホスト | **Cloudflare Pages** · [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) |
+| Pro / 選手セット / 課金 | 未実装 · 方針正本 [`STRIPE_PRO_ARCHITECTURE.md`](STRIPE_PRO_ARCHITECTURE.md) |
+| Football 多言語読み物 | 方針のみ · [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md) · B-080 |
 | GitHub 専用リポ | https://github.com/Kaoru-Stats-Lab/zoneboard |
 
 ---
@@ -58,7 +61,9 @@
 
 ### 1-4. Pro / 流通（Later）
 
-- Pro 核: 名前付き選手セットの複数保有
+- Pro 核: **Local Library**（名前付き選手セット・画角テンプレ・上限緩和）＋ BYO Portability（手段）
+- **Board JSON Export は無料楔**（人質課金にしない）。正本: [`STRIPE_PRO_ARCHITECTURE.md`](STRIPE_PRO_ARCHITECTURE.md)
+- Purchase Identity（Checkout email + Restore）。User Account / Board クラウドは作らない
 - 流通は自ドメイン外。FAQ＋既存 SNS への軽い種まき。Reddit は EN 向けのみ
 - FanCommunity は運営ホストしない
 
@@ -102,6 +107,24 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 - **pl 翻訳正本は en のみ**（ja/es/pt 参照禁止）— [`AGENT_PROMPT_I18N_PL.md`](AGENT_PROMPT_I18N_PL.md)
 - `messages.it` **出荷済** `/it/` · 3バック preset は B 層 Later
 
+### 1-9. インフラ / デプロイ（2026-10-08）
+
+正本: [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)。
+
+- ホスト: **Cloudflare Pages**（`npm run build` → `dist` · Git `main` 自動）
+- 二層: **React SPA**（LP + `/board`）＋ **静的読み物**（`npm run site:pages` → `public/` · build では回さない）
+- Functions: `POST /api/feedback` のみ。Board クラウド API は無い
+- `/en/` は使わない（`/` が英語）。汎用 SPA catch-all は無い
+- 広告: 読み物のみ可 · ピッチ / Broadcast 禁止（議論で戻さない · §3）
+
+### 1-10. Football Content Layer（2026-10-08 · 実装未）
+
+正本: [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md) · **CONDITIONAL ADOPT** · Backlog **B-080**。
+
+- Substack = 英語原著 / discovery。zoneboard.app = 多言語 evergreen（丸ごとミラーしない）
+- Markdown + Git + 静的 HTML。React bundle / CMS / D1 / 別プロジェクトは v1 非採用
+- URL: `/{locale}/football/{slug}/` · EN hub `/football/` · `/en/football/` は作らない
+
 ---
 
 ## 2. アクティブ Backlog（近い順の目安）
@@ -113,7 +136,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | ID | 項目 | メモ |
 |----|------|------|
 | B-001 | SPEC 未決事項 U1–U7 の承認 | [`SPEC.md`](SPEC.md) |
-| B-002 | `zoneboard.app` DNS / 公開確認 | **取得済** · CF Pages 接続待ち |
+| B-002 | `zoneboard.app` DNS / 公開確認 | **取得済 · 公開運用中** · 正本 [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md) |
 | B-003 | 配信モードの最終確認（ピッチ≥80%） | PRODUCT_NOTE §2 |
 
 ### P1 — コア磨き
@@ -149,7 +172,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-020 | 選手セット CRUD（ローカル） | `PlayerSet` 型は定義済み |
 | B-021 | セットの import / export 形式公開 | コミュニティ流通の前提 |
 | B-022 | FAQ「共有のしかた」 | 自ドメインにマーケットは置かない |
-| B-023 | 課金・Pro ゲート | 相場メモのみ。実装未 |
+| B-023 | 課金・Pro ゲート | **方針正本** [`STRIPE_PRO_ARCHITECTURE.md`](STRIPE_PRO_ARCHITECTURE.md)（2026-10-08 CONDITIONAL ADOPT）。Local Library + BYO · Purchase Identity · Board JSON Export は無料楔。実装未 |
 | B-024 | PL 外部データセット調査 | 下記 §6。FPL は背番号欠落・データ権利に注意 |
 
 ### P3 — 競技拡張（v1.1+）
@@ -198,6 +221,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 | B-071 | **配信者 PC / モニター分布調査** | **Web 調査済 2026-08-30。** [`STREAMER_RIG_RESEARCH.md`](STREAMER_RIG_RESEARCH.md)。帯 A=Pro / B=Standard標的 / C=Budget。％は proxy。一次ヒアリングは任意。プロンプト: [`AGENT_PROMPT_STREAMER_RIG_RESEARCH.md`](AGENT_PROMPT_STREAMER_RIG_RESEARCH.md) |
 | B-072 | **縦ピッチ（別データ）** | **Later · やる。** 正本 [`VERTICAL_PITCH.md`](VERTICAL_PITCH.md) · UI [`AGENT_PROMPT_PITCH_VIEW_UI.md`](AGENT_PROMPT_PITCH_VIEW_UI.md) · 描画 [`AGENT_PROMPT_VERTICAL_PITCH.md`](AGENT_PROMPT_VERTICAL_PITCH.md) |
 | B-073 | **名前ピル（ボード単位）** | **実装済。** `showPlayerNames` · 新規 OFF · migrate true。[`AGENT_PROMPT_PLAYER_NAME_PILL.md`](AGENT_PROMPT_PLAYER_NAME_PILL.md) |
+| B-080 | **Football Content Layer（多言語読み物）** | **CONDITIONAL ADOPT · 実装未。** 正本 [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)。静的 MD→HTML · SPA/CMS/ミラー禁止。PL 優先 |
 
 ---
 
@@ -216,6 +240,7 @@ Pen は解説用インクであり、液タブ＋描画アプリの域には合�
 - **ブロック専用ツール**（「ブロックを敷く」は Pen。面の塗りが要るなら B-046）
 - **ピッチ／配信モードの広告**（2026-08-24。運営・ユーザ設定とも禁止。議論で戻さない）
 - **視野角の扇形**（2026-08-25。Football の視線／視界は概念として認識。`facing` 一本で足りる。議論で戻さない）
+- **Football 記事のための CMS/SaaS 化・Board クラウド・英語 Substack 全文ミラー**（2026-10-08。B-080 正本。議論で戻さない）
 
 ---
 

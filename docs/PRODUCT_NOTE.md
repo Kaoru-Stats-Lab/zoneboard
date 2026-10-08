@@ -1,12 +1,13 @@
 # ZoneBoard — プロダクトメモ
 
-**更新:** 2026-09-22  
+**更新:** 2026-10-08  
 **リポジトリ:** `C:\asl_dev\zoneboard`  
 **ステータス:** 方針メモ済 · **仕様（SPEC）ドラフト承認待ち（市場調査反映済）** · 実装未着手  
 **SUGUDASU台帳ポインタ:** `C:\asl_dev\sugudasu\docs\notes\PRODUCT_IDEA_JUDGMENT_LEDGER.md` §16  
 **ブランド:** **ZoneBoard**  
 **ドメイン:** **`zoneboard.app`**（本拠）。`zoneboard.com` はプレミアム約63.6万円 → **不取得**  
 **プロダクト境界の正本:** 下記 **決定ログ — Explanation Canvas / プロダクト境界（2026-09-22）**  
+**課金 / Stripe 正本:** [`STRIPE_PRO_ARCHITECTURE.md`](STRIPE_PRO_ARCHITECTURE.md)（2026-10-08 · CONDITIONAL ADOPT）  
 **Agent 導線:** [`AGENTS.md`](../AGENTS.md) · [`.cursor/rules/product-boundary.mdc`](../.cursor/rules/product-boundary.mdc) · [`AGENT_PROMPT_PRODUCT_BOUNDARY.md`](AGENT_PROMPT_PRODUCT_BOUNDARY.md)
 
 ---
@@ -579,6 +580,26 @@ CK 角の旧値はコーナー弧だけ入りゴールが外れ、サッカー�
 
 **JSON backup:** ブラウザキャッシュ消失リスクへの逃げ道。export は楔として **無料でも出せる方向**を優先し、Pro は「複数ライブラリに取り込む／名前付きセットを保有する」側に寄せる（細部は実装時）。
 
+### 決定ログ — Stripe / Pro セカンドオピニオン（2026-10-08）
+
+**正本仕様:** [`STRIPE_PRO_ARCHITECTURE.md`](STRIPE_PRO_ARCHITECTURE.md)（CONDITIONAL ADOPT）
+
+2026-08-27 を維持したまま、Stripe 導入検討ドラフトに対する判定。
+
+| 判定 | 内容 |
+|------|------|
+| **採用** | Stripe-first ≠ SaaS-first。薄い entitlement backend。Checkout / Customer Portal。Board データ非送信。解約後も Board を消さない。Board 切替 UI は Free/Pro 共通。Recovery State（Error Page 量産しない） |
+| **採用（価値）** | **Pro = Local Library（引き出し）＋ BYO Portability（封筒）**。Portability は核ではなく手段 |
+| **採用（identity）** | User Account は作らない。**Purchase Identity**（Checkout email → entitlement → signed device license → Restore Pro）。UI で Login と呼ばない |
+| **棄却** | **Pro = Board Portability のみ** |
+| **棄却** | **Free で Board JSON Export / Import 全面不可**（local-first の人質化 · Storage full Recovery と矛盾） |
+| **棄却** | 月額 Subscription を価格本線にする（年額 or 一回買いを本線。Stripe 月額は補助可） |
+| **棄却** | Google Login · 自前 User DB · Board クラウド · `/library` 第一ホーム · Pitch/Broadcast 上の常時 Upgrade |
+
+**固定契約:** Storage full 等の Recovery Primary Action は Board JSON Export である → **Export を Pro ゲートにしない。**
+
+**Board Library（切替面）** と **Preset Library（選手セット・画角）** を混同しない。前者は全員の標準 UI、後者の複数保有が Pro。
+
 #### Library 一覧 UI（2026-08-27）
 
 Pro の「引き出し」には **一覧面が必要**（探す・改名・削除・適用・書き出し）。ただし第二ホーム／ダッシュボードにはしない。
@@ -647,13 +668,19 @@ Gross margin は静的配信 + MoR 前提で高く語れる。転換率・価格
 
 ### 無料 / Pro（方針・未実装）
 
+詳細・Purchase Identity · Recovery · What NOT to Build: [`STRIPE_PRO_ARCHITECTURE.md`](STRIPE_PRO_ARCHITECTURE.md)。
+
 | | **無料** | **Pro** |
 |--|----------|---------|
-| コア（配信・描画・ロゴ・ズーム） | 全部使える | 同じ（楔は削らない） |
+| コア（配信・描画・ロゴ・ズーム · PNG Export） | 全部使える | 同じ（楔は削らない） |
 | 試合ボード / 局面 | 上限あり（3 / 8） | 緩和（`PLAN_LIMITS.pro`） |
+| Board 切替 UI（Board Library） | ○（標準。ダッシュボード化しない） | 同じ |
 | **選手セット** | いまの試合ボードに紐づく名簿のみ | **名前付きセットを複数保有（ローカル）** |
 | **画角** | 組み込みプリセット・**局面ごとの記憶**（`scene.viewport`）・Export＝いまの画角 | **名前付き画角テンプレ**（試合をまたぐローカルライブラリ） |
-| **持ち運び** | JSON export（逃げ道・共有・BYO の種） | import → ライブラリ反映、上限緩和。保管庫はユーザ側（BYO） |
+| **Board JSON Export** | **○（逃げ道・楔・Recovery Primary）** | 同じ |
+| **Board JSON Import（単発）** | ○（1 枚取込／置換） | 同じ＋ Library 資産の本格持ち運び |
+| **持ち運び（BYO）** | Export でファイルを手元に | Import → ライブラリ反映、上限緩和。保管庫はユーザ側（BYO） |
+| 解約後 | — | Board は残す。新規作成のみ Free 上限。Export は無料のまま |
 
 **画角の無料 / Pro 切り分け（2026-08-25）:**
 

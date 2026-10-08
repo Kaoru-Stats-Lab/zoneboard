@@ -63,7 +63,7 @@ PRODUCT_NOTE と矛盾する場合は本ファイルで「変更提案」と明�
 | 動画解析・Webcam・運営ロゴ | Avoid | Avoid | Avoid | **Avoid** |
 | es UI | — | — | Should | **Later（v1.1）** v1 は ja/en |
 
-収益メモ（**v1 では未実装**）: Pro = **Local Library Entitlement**（選手セット・画角テンプレ・上限緩和・JSON）。マルチデバイスは **BYO**（ユーザの Online Storage を指す）。ZB 預かりクラウド／ユーザ ID ログインは本線にしない。価格未公開。詳細は [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) §6。無料でコア体験（描画・Broadcast・ロゴ）。
+収益メモ（**v1 では未実装**）: Pro = **Local Library Entitlement**（選手セット・画角テンプレ・上限緩和）＋ BYO Portability。**Board JSON Export は無料楔**（Storage full Recovery の Primary）。マルチデバイスは **BYO**（ユーザの Online Storage を指す）。ZB 預かりクラウド／ User Account ログインは本線にしない（Purchase Identity = Checkout email + Restore）。価格は年額 or 一回買いを本線仮説。詳細は [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md) §6 · [`STRIPE_PRO_ARCHITECTURE.md`](STRIPE_PRO_ARCHITECTURE.md)。無料でコア体験（描画・Broadcast・ロゴ・PNG）。
 
 - **カラムは先に固定:** `number`（必須）· `label` · `preferredFoot` · セットの `defaultColor`
 - **中身の作成はユーザ任せ**（貼り付け・手入力・ボードから保存）
@@ -491,11 +491,14 @@ interface WatermarkSettings {
 | 層 | 選択 |
 |----|------|
 | ビルド | **Vite** |
-| UI | **React 18 + TypeScript** |
+| UI | **React + TypeScript**（現行は React 19） |
 | キャンバス | **HTML Canvas 2D**（薄い自前レイヤ） |
-| ルーティング | **react-router**（`/ja` `/en`） |
+| ルーティング | **react-router**（英語=`/` · 他=`/{locale}/` · `/en` は `/` へ。Board は `/board`） |
 | 永続化 | localStorage（将来 IndexedDB 移行可。v1 は localStorage で足りる） |
 | ホスト | **Cloudflare Pages**（SUGUDASU と別プロジェクト） |
+
+**デプロイ・env・二層ルーティング・Functions の正本:** [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)（本表より詳細・新しい）。  
+Football 多言語読み物（未実装）: [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)。
 
 見送り: Next.js、Konva/Fabric、バックエンド。
 

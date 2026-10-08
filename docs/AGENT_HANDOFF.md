@@ -1,7 +1,7 @@
 # 引き継ぎ — ZoneBoard（別 Agent 用）
 
 **作成:** 2026-07-04  
-**更新:** 2026-09-22（プロダクト境界の仕組み化）  
+**更新:** 2026-10-08（インフラ正本 [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)）  
 **理由:** SUGUDASU セッションが長く、戦術ボードは別プロダクトとして切り出した。別 Agent / 別チャットで仕様から再開する。  
 **ワークスペース:** `C:\asl_dev\zoneboard`（**sugudasu リポジトリではない**）  
 **Agent 入口:** リポジトリ直下 [`AGENTS.md`](../AGENTS.md)
@@ -12,10 +12,11 @@
 
 1. **必ず** [`AGENTS.md`](../AGENTS.md) → [`.cursor/rules/product-boundary.mdc`](../.cursor/rules/product-boundary.mdc) → [`AGENT_PROMPT_PRODUCT_BOUNDARY.md`](AGENT_PROMPT_PRODUCT_BOUNDARY.md) を読む（Explanation Canvas 境界）。
 2. 本ファイルと [`PRODUCT_NOTE.md`](PRODUCT_NOTE.md)（**決定ログ 2026-09-22** 含む）、chrome は [`UI_UX.md`](UI_UX.md)、未着手は [`BACKLOG.md`](BACKLOG.md) を読む。
-3. **[`TOKEN_ECONOMY.md`](TOKEN_ECONOMY.md) を読み、RTK · CodeGraph を導入する**（未導入なら着手前にセットアップ）。思想: **トークンは通貨**。
-4. 新機能・リサーチの前に境界ゲート（Idea→Explanation か / Game→Analysis か）を **チャットに4行で書く**。P3 なら実装しない。
-5. SUGUDASU（`C:\asl_dev\sugudasu`）の本線タスク（Schedule / Sync / SHIFT-METER 等）には手を出さない。
-6. ユーザー向け返答は日本語。**コミットはユーザが頼むまでしない。**
+3. デプロイ・ルーティング・静的ページ・env・Cloudflare に触るなら **先に** [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)。Football 読み物なら [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md)（B-080）。
+4. **[`TOKEN_ECONOMY.md`](TOKEN_ECONOMY.md) を読み、RTK · CodeGraph を導入する**（未導入なら着手前にセットアップ）。思想: **トークンは通貨**。
+5. 新機能・リサーチの前に境界ゲート（Idea→Explanation か / Game→Analysis か）を **チャットに4行で書く**。P3 なら実装しない。
+6. SUGUDASU（`C:\asl_dev\sugudasu`）の本線タスク（Schedule / Sync / SHIFT-METER 等）には手を出さない。
+7. ユーザー向け返答は日本語。**コミットはユーザが頼むまでしない。**
 
 **製品の一言:** ZoneBoard = **Explain the idea**（Explanation Canvas）。Metrica 型 Analysis Workstation の競合・縮小版にしない。OBS の中のピッチ。
 
@@ -146,12 +147,21 @@ ZoneBoard の文書更新は **`C:\asl_dev\zoneboard`** のみ。SUGUDASU ポイ
 
 ---
 
-## 7. 技術・インフラメモ（未確定）
+## 7. 技術・インフラ（確定 · 正本へ）
 
-- ホスト候補: Cloudflare Pages 等（SUGUDASU と同系統は可だが **別プロジェクト**）
-- DNS: `zoneboard.app` 取得済み/取得中想定。未接続でよい
-- `.app` は **HTTPS必須**（HSTS）。ローカル開発は `localhost` 例外に注意
-- Git: 未初期化なら SPEC 後でも可。SUGUDASU の remote に載せない
+**正本:** [`INFRASTRUCTURE.md`](INFRASTRUCTURE.md)（この節より優先）。
+
+| 項目 | 現状 |
+|------|------|
+| ホスト | **Cloudflare Pages**（SUGUDASU と別プロジェクト） |
+| ドメイン | **`zoneboard.app`** 公開運用中 |
+| ビルド | `npm run build` → `dist` · Git `main` 自動デプロイ |
+| 二層 | React SPA（LP + Board）＋ 静的読み物（`npm run site:pages`） |
+| Functions | `POST /api/feedback` のみ |
+| `.app` | HTTPS 必須（HSTS）。ローカルは `localhost` |
+| Football 読み物 | 方針のみ [`FOOTBALL_CONTENT_ARCHITECTURE.md`](FOOTBALL_CONTENT_ARCHITECTURE.md) · B-080 · 実装未 |
+
+Git: 専用リポ `Kaoru-Stats-Lab/zoneboard`。SUGUDASU remote に載せない。
 
 ---
 
