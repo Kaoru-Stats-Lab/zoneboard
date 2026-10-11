@@ -8,4 +8,4 @@ description: Temporary test article for E2C119 CMS lifecycle validation. CMS
 publishedAt: 2026-10-11
 updatedAt: 2026-10-11
 ---
-This is a temporary test article created during E2C122 lifecycle testing.
+This is a temporary test article created during E2C122 lifecycle testing.CMS edit verification — revision 2.
