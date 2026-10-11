@@ -1,7 +1,7 @@
 ---
 translationGroup: cms-production-test
 locale: en
-slug: CMS Production Test
+slug: cms-production-test
 title: CMS Production Test
 description: CMS Production Test
 publishedAt: 2026-10-11
