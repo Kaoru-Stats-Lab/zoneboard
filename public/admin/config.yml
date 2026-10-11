@@ -1,3 +1,4 @@
+
 backend:
   name: github
   repo: Kaoru-Stats-Lab/zoneboard
@@ -8,8 +9,6 @@ backend:
 local_backend: false
 publish_mode: editorial_workflow
 
-# Align CMS uploads with Content Layer media contract:
-# /media/football-articles/{translationGroup}/{filename}
 media_folder: "public/media/football-articles/{{translationGroup}}"
 public_folder: "/media/football-articles/{{translationGroup}}"
 
@@ -21,85 +20,99 @@ collections:
     label: "Football Articles"
     label_singularity: "Football Article"
     folder: "content/football"
-    # Candidate 2 (E2C082): nested content/football/<group>/<locale>.md
-    slug: "{{translationGroup}}/{{locale}}"
-    path: "{{slug}}"
     create: true
+    slug: "{{fields.slug}}"
+    path: "{{fields.translationGroup}}/{{fields.locale}}"
 
     fields:
-      - {
-          label: "Translation Group",
-          name: "translationGroup",
-          widget: "string",
-          hint: "Directory name (e.g. what-players-saw-milan-liverpool)",
-        }
-      - {
-          label: "Locale",
-          name: "locale",
-          widget: "select",
-          options: ["en", "ja", "pl", "de", "es", "fr", "it", "pt", "tr"],
-          hint: "Filename locale (e.g. pl)",
-        }
-      - {
-          label: "URL Slug",
-          name: "slug",
-          widget: "string",
-          hint: "Per-locale public URL slug",
-        }
-      - { label: "Title", name: "title", widget: "string" }
-      - {
-          label: "Description",
-          name: "description",
-          widget: "text",
-          hint: "Article summary (multi-line)",
-        }
-      - {
-          label: "Published At",
-          name: "publishedAt",
-          widget: "datetime",
-          format: "YYYY-MM-DD",
-          dateFormat: "YYYY-MM-DD",
-          timeFormat: false,
-        }
-      - {
-          label: "Updated At",
-          name: "updatedAt",
-          widget: "datetime",
-          format: "YYYY-MM-DD",
-          dateFormat: "YYYY-MM-DD",
-          timeFormat: false,
-        }
-      - {
-          label: "Original Locale",
-          name: "originalLocale",
-          widget: "string",
-          required: false,
-        }
-      - {
-          label: "Substack Source URL",
-          name: "sourceUrl",
-          widget: "string",
-          required: false,
-        }
-      - {
-          label: "OG Image URL",
-          name: "ogImage",
-          widget: "string",
-          required: false,
-        }
-      - { label: "Series", name: "series", widget: "list", required: false }
-      - {
-          label: "Competitions",
-          name: "competitions",
-          widget: "list",
-          required: false,
-        }
-      - { label: "People", name: "people", widget: "list", required: false }
-      - { label: "Tags", name: "tags", widget: "list", required: false }
-      - {
-          label: "Related Articles",
-          name: "related",
-          widget: "list",
-          required: false,
-        }
-      - { label: "Body", name: "body", widget: "markdown" }
+      - label: "Translation Group"
+        name: "translationGroup"
+        widget: "string"
+        hint: "Directory name (e.g. what-players-saw-milan-liverpool)"
+
+      - label: "Locale"
+        name: "locale"
+        widget: "select"
+        options:
+          - "en"
+          - "ja"
+          - "pl"
+          - "de"
+          - "es"
+          - "fr"
+          - "it"
+          - "pt"
+          - "tr"
+        hint: "Filename locale (e.g. pl)"
+
+      - label: "URL Slug"
+        name: "slug"
+        widget: "string"
+        hint: "Per-locale public URL slug"
+
+      - label: "Title"
+        name: "title"
+        widget: "string"
+
+      - label: "Description"
+        name: "description"
+        widget: "text"
+        hint: "Article summary (multi-line)"
+
+      - label: "Published At"
+        name: "publishedAt"
+        widget: "datetime"
+        format: "YYYY-MM-DD"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+
+      - label: "Updated At"
+        name: "updatedAt"
+        widget: "datetime"
+        format: "YYYY-MM-DD"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+
+      - label: "Original Locale"
+        name: "originalLocale"
+        widget: "string"
+        required: false
+
+      - label: "Substack Source URL"
+        name: "sourceUrl"
+        widget: "string"
+        required: false
+
+      - label: "OG Image URL"
+        name: "ogImage"
+        widget: "string"
+        required: false
+
+      - label: "Series"
+        name: "series"
+        widget: "list"
+        required: false
+
+      - label: "Competitions"
+        name: "competitions"
+        widget: "list"
+        required: false
+
+      - label: "People"
+        name: "people"
+        widget: "list"
+        required: false
+
+      - label: "Tags"
+        name: "tags"
+        widget: "list"
+        required: false
+
+      - label: "Related Articles"
+        name: "related"
+        widget: "list"
+        required: false
+
+      - label: "Body"
+        name: "body"
+        widget: "markdown"
