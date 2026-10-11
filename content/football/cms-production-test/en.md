@@ -1,5 +1,5 @@
 ---
-translationGroup: CMS Production Test
+translationGroup: cms-production-test
 locale: en
 slug: CMS Production Test
 title: CMS Production Test
