@@ -3,7 +3,8 @@ translationGroup: zb-e2c122-lifecycle-probe
 locale: en
 slug: zb-e2c122-lifecycle-probe-en
 title: E2C122 Lifecycle Test Article
-description: Temporary test article for E2C119 CMS lifecycle validation.
+description: Temporary test article for E2C119 CMS lifecycle validation. CMS
+  edit verification — revision 2.
 publishedAt: 2026-10-11
 updatedAt: 2026-10-11
 ---
