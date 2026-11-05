@@ -24,6 +24,13 @@ export const CHANGELOG = {
     "Shipped changes only, in past tense. Upcoming work stays off this page.",
   entries: [
     {
+      id: "pitch-direction-protect-20261106",
+      date: "2026-11-06",
+      type: "improve",
+      title: "Pitch Direction: Protecting Your Scene Content",
+      body: "Changing a pitch from landscape to portrait, or vice versa, previously cleared the players and drawings across all scenes. This no longer happens without warning: ZoneBoard now prevents direction changes that would remove existing content. When creating a new board, you can choose Landscape (with a sample tactical scene) or Portrait (with an empty pitch). This works for both Working boards and Local files. You can still switch between full-pitch and half-pitch views in the same direction without removing your scene content.",
+    },
+    {
       id: "local-board-files-20261106",
       date: "2026-11-06",
       type: "feature",

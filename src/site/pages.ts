@@ -134,11 +134,13 @@ export const SITE_PAGES: SitePage[] = [
         headingJa: "キックオフ前: 置く",
         en: [
           "Open the board from the homepage. You do not create an account. Pick the football pitch if it is not already selected. Paste or type a roster if you have numbers ready. A line with a number is enough. A name and a preferred foot are optional. ZoneBoard will not invent a squad for you, and it will not scrape a league site.",
+          "To create a portrait board, select New board → Portrait. Once you've added players or drawings, you cannot change the pitch direction without starting a new board. You can still switch between full-pitch and half-pitch views in the same direction.",
           "Put the starting eleven on the grass. The number on the piece is the number viewers can read from a distance. If you know a name, add it under the piece. If you do not, leave it. Plenty of regional matches are number-first. That is a product choice, not a missing feature.",
           "Use scenes when the first picture is not the only picture. A corner from the right, a corner from the left, and a rest-defence shape can live as three scenes instead of one crowded drawing. Switch with `[` `]` or the scene list. Before you move pieces, duplicate the scene — the original stays and you can switch back. During the stream, Duplicate is in the bottom-right corner.",
         ],
         ja: [
           "ホームページからボードを開きます。アカウントは作りません。サッカーのピッチを選びます。番号が手元にあれば名簿を貼るか入力します。番号だけの行で足ります。名前と利き足は任意です。ZoneBoard がスタメンを代行作成することはなく、リーグサイトを取りに行くこともありません。",
+          "縦向きのボードを作るには、新規ボード → 縦向き を選びます。選手や図を置いたあとは、新しいボードを作り直さない限り向きは変えられません。同じ向きのまま、全面／ハーフの切替はできます。",
           "芝の上にスタメンを置きます。駒の番号は、離れて見ても読める番号です。名前が分かるなら駒の下に足します。分からなければ空です。地方の試合は番号が先、ということがよくあります。欠けではなく、製品の選択です。",
           "最初の絵が唯一の絵でないなら局面を使います。右CK、左CK、レストディフェンスは、一枚に全部重ねず三局面に分けられます。`[` `]` または局面リストで切り替えます。駒を動かす前に局面を複製してください。元は残り、戻せます。配信中は右下の複製ボタンからも同じ操作ができます。",
         ],
@@ -609,9 +611,9 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Updates",
     titleJa: "更新履歴",
     descriptionEn:
-      "Shipped ZoneBoard changes: local board JSON files, Shape tools, multi-ball, document header, broadcast, and PNG — past tense only.",
+      "Shipped ZoneBoard changes: pitch direction protection, local board JSON files, Shape tools, multi-ball, document header, broadcast, and PNG — past tense only.",
     descriptionJa:
-      "本番に入った ZoneBoard の変更。ローカル JSON、Shape、複数ボール、ドキュメントヘッダー、配信、PNG。過去形のみ。",
+      "本番に入った ZoneBoard の変更。ピッチ向きの保護、ローカル JSON、Shape、複数ボール、ドキュメントヘッダー、配信、PNG。過去形のみ。",
     ledeEn:
       "This page lists changes that are already live. It is not a roadmap. Upcoming work stays elsewhere. Feedback still goes through Contact or the in-app form. How to keep files: https://zoneboard.app/guide/#local-files",
     ledeJa:
