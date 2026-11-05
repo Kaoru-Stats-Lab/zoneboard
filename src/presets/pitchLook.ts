@@ -1,4 +1,10 @@
-import type { BoardDocument, PitchOrientation, PitchView } from "../models/types";
+import type {
+  BallObject,
+  BoardDocument,
+  PitchOrientation,
+  PitchView,
+  Viewport,
+} from "../models/types";
 import { effectivePitchOrientation } from "./sports";
 import { DEFAULT_VIEWPORT } from "./viewport";
 
@@ -62,7 +68,59 @@ export function soccerPitchOrientationChanges(
   return cur !== next;
 }
 
-/** 向き変更時: 全局面を空シード（createBoard portrait と同思想） */
+function viewportIsPristine(vp: Viewport | undefined): boolean {
+  if (!vp) return true;
+  return (
+    vp.zoom === DEFAULT_VIEWPORT.zoom &&
+    vp.cx === DEFAULT_VIEWPORT.cx &&
+    vp.cy === DEFAULT_VIEWPORT.cy
+  );
+}
+
+/** Initial empty-board ball: single centre ball, no attachment. */
+function ballsArePristineForOrientationReset(balls: BallObject[]): boolean {
+  if (balls.length === 0) return true;
+  if (balls.length !== 1) return false;
+  const b = balls[0]!;
+  if (b.x !== 0.5 || b.y !== 0.5) return false;
+  if (typeof b.attachedTo === "string" && b.attachedTo.length > 0) return false;
+  return true;
+}
+
+/**
+ * True when orientation reset would destroy or overwrite user content.
+ * Fail closed: any pieces/objects, non-pristine balls, or non-default viewports.
+ * Inspects every scene (not only the active one).
+ */
+export function boardHasContentBlockingOrientationChange(
+  board: BoardDocument,
+): boolean {
+  if (!viewportIsPristine(board.viewport)) return true;
+  for (const s of board.scenes) {
+    if (s.pieces.length > 0) return true;
+    if (s.objects.length > 0) return true;
+    if (!ballsArePristineForOrientationReset(s.balls)) return true;
+    if (!viewportIsPristine(s.viewport)) return true;
+  }
+  return false;
+}
+
+/**
+ * Whether applySoccerPitchLook may change orientation (landscape ↔ portrait).
+ * Same-orientation presets are always allowed at this layer.
+ */
+export function canChangeSoccerPitchOrientation(
+  board: BoardDocument,
+  preset: SoccerPitchLookPreset,
+): boolean {
+  if (!soccerPitchOrientationChanges(board, preset)) return true;
+  return !boardHasContentBlockingOrientationChange(board);
+}
+
+/**
+ * 向き変更時: 全局面を空シード（createBoard portrait と同思想）。
+ * Call only after canChangeSoccerPitchOrientation === true (empty board).
+ */
 export function resetAllScenesForOrientationChange(
   board: BoardDocument,
   fields: ReturnType<typeof soccerPitchLookPresetToBoardFields>,
@@ -86,4 +144,30 @@ export function resetAllScenesForOrientationChange(
       viewport: { ...emptyViewport },
     })),
   };
+}
+
+export type ApplySoccerPitchLookPlan =
+  | { action: "noop" }
+  | { action: "fields"; fields: ReturnType<typeof soccerPitchLookPresetToBoardFields> }
+  | {
+      action: "orientation_reset";
+      fields: ReturnType<typeof soccerPitchLookPresetToBoardFields>;
+    }
+  | { action: "blocked_orientation" };
+
+/** Pure plan for pitch look apply — shared by state + tests. */
+export function planSoccerPitchLookApply(
+  board: BoardDocument,
+  preset: SoccerPitchLookPreset,
+): ApplySoccerPitchLookPlan {
+  const current = boardToSoccerPitchLookPreset(board);
+  if (current === preset) return { action: "noop" };
+  const fields = soccerPitchLookPresetToBoardFields(preset);
+  if (!soccerPitchOrientationChanges(board, preset)) {
+    return { action: "fields", fields };
+  }
+  if (boardHasContentBlockingOrientationChange(board)) {
+    return { action: "blocked_orientation" };
+  }
+  return { action: "orientation_reset", fields };
 }

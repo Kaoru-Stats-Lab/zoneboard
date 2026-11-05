@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
+import type { PitchOrientation } from "../models/types";
 import { boardDisplayName } from "../lib/boardLabel";
 import { defaultBoardTitle } from "../i18n/localeDefaults";
 import { maxBoards } from "../lib/plan";
 import { BoardLimitDialog } from "./BoardLimitDialog";
+import { NewBoardOrientationMenu } from "./NewBoardOrientationMenu";
 
 type Props = {
   state: AppState;
@@ -13,7 +15,11 @@ type Props = {
 
 export function BoardSwitcher({ state, t }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [orientOpen, setOrientOpen] = useState(false);
   const [limitOpen, setLimitOpen] = useState(false);
+  const [pendingOrient, setPendingOrient] = useState<PitchOrientation | null>(
+    null,
+  );
   const rootRef = useRef<HTMLDivElement>(null);
   const atLimit = state.store.boards.length >= maxBoards();
 
@@ -44,28 +50,36 @@ export function BoardSwitcher({ state, t }: Props) {
       if (!leaveFileSessionIfNeeded()) return;
       state.setActiveBoard(id);
       setMenuOpen(false);
+      setOrientOpen(false);
     },
     [leaveFileSessionIfNeeded, state],
   );
 
-  const requestNew = useCallback(() => {
-    if (!leaveFileSessionIfNeeded()) return;
-    if (!atLimit) {
-      state.addBoard();
+  const createWithOrientation = useCallback(
+    (orientation: PitchOrientation) => {
+      setOrientOpen(false);
       setMenuOpen(false);
-      return;
-    }
-    setMenuOpen(false);
-    setLimitOpen(true);
-  }, [atLimit, leaveFileSessionIfNeeded, state]);
+      if (!leaveFileSessionIfNeeded()) return;
+      if (!atLimit) {
+        state.addBoard({ pitchOrientation: orientation });
+        return;
+      }
+      setPendingOrient(orientation);
+      setLimitOpen(true);
+    },
+    [atLimit, leaveFileSessionIfNeeded, state],
+  );
 
   const confirmReplace = useCallback(
     (replaceId: string) => {
       if (!leaveFileSessionIfNeeded()) return;
-      state.addBoardReplacing(replaceId);
+      state.addBoardReplacing(replaceId, {
+        pitchOrientation: pendingOrient ?? undefined,
+      });
+      setPendingOrient(null);
       setLimitOpen(false);
     },
-    [leaveFileSessionIfNeeded, state],
+    [leaveFileSessionIfNeeded, pendingOrient, state],
   );
 
   // Always available (Store list), including during File Session.
@@ -80,7 +94,10 @@ export function BoardSwitcher({ state, t }: Props) {
           aria-expanded={menuOpen}
           aria-haspopup="listbox"
           title={t("boardSwitcherLabel")}
-          onClick={() => setMenuOpen((v) => !v)}
+          onClick={() => {
+            setOrientOpen(false);
+            setMenuOpen((v) => !v);
+          }}
         >
           {/* Fixed label — do not repeat the current board name here. */}
           <span className="board-switcher__label">{t("boardsMenuShort")}</span>
@@ -112,54 +129,90 @@ export function BoardSwitcher({ state, t }: Props) {
             })}
           </ul>
         )}
-        <button
-          type="button"
-          className="board-switcher__new"
-          title={atLimit ? t("boardLimit") : t("newBoard")}
-          onClick={requestNew}
-        >
-          {t("newBoardShort")}
-        </button>
+        <div className="board-switcher__new-wrap">
+          <button
+            type="button"
+            className="board-switcher__new"
+            title={atLimit ? t("boardLimit") : t("newBoard")}
+            aria-expanded={orientOpen}
+            aria-haspopup="menu"
+            aria-controls="board-switcher-orient-menu"
+            onClick={() => {
+              setMenuOpen(false);
+              setOrientOpen((v) => !v);
+            }}
+          >
+            {t("newBoardShort")}
+          </button>
+          <NewBoardOrientationMenu
+            id="board-switcher-orient-menu"
+            open={orientOpen}
+            t={t}
+            onClose={() => setOrientOpen(false)}
+            onPick={createWithOrientation}
+          />
+        </div>
       </div>
       <BoardLimitDialog
         open={limitOpen}
         state={state}
         t={t}
-        onClose={() => setLimitOpen(false)}
+        onClose={() => {
+          setLimitOpen(false);
+          setPendingOrient(null);
+        }}
         onReplace={confirmReplace}
       />
     </>
   );
 }
 
-/** Drawer 等から共有: 新規ボード（上限時はダイアログ）。 */
+/** Drawer 等から共有: 新規ボード（上限時はダイアログ）。Orientation は呼び出し側で選ぶ。 */
 export function useNewBoardFlow(state: AppState) {
   const [limitOpen, setLimitOpen] = useState(false);
+  const [pendingOrient, setPendingOrient] = useState<PitchOrientation | null>(
+    null,
+  );
   const atLimit = state.store.boards.length >= maxBoards();
 
-  const requestNew = useCallback(() => {
-    if (state.isFileSession) return false;
-    if (!atLimit) {
-      state.addBoard();
-      return true;
-    }
-    setLimitOpen(true);
-    return false;
-  }, [atLimit, state]);
+  const requestNew = useCallback(
+    (orientation: PitchOrientation = "landscape") => {
+      if (state.isFileSession) return false;
+      if (!atLimit) {
+        state.addBoard({ pitchOrientation: orientation });
+        return true;
+      }
+      setPendingOrient(orientation);
+      setLimitOpen(true);
+      return false;
+    },
+    [atLimit, state],
+  );
 
   const confirmReplace = useCallback(
     (replaceId: string) => {
-      state.addBoardReplacing(replaceId);
+      state.addBoardReplacing(replaceId, {
+        pitchOrientation: pendingOrient ?? undefined,
+      });
+      setPendingOrient(null);
       setLimitOpen(false);
     },
-    [state],
+    [pendingOrient, state],
   );
+
+  const closeLimit = useCallback(() => {
+    setLimitOpen(false);
+    setPendingOrient(null);
+  }, []);
 
   return {
     limitOpen,
     setLimitOpen,
+    closeLimit,
     requestNew,
     confirmReplace,
     atLimit,
+    pendingOrient,
+    setPendingOrient,
   };
 }

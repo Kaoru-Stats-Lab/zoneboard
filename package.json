@@ -12,6 +12,8 @@
     "preview": "vite preview",
     "test:ink": "npx --yes tsx scripts/pieceInk-check.ts",
     "test:i18n-chrome": "npx --yes tsx scripts/i18n-chrome-check.ts",
+    "test:pitch-orientation-lock": "npx --yes tsx scripts/pitch-orientation-lock-check.ts",
+    "test:new-board-orientation": "npx --yes tsx scripts/new-board-orientation-check.ts",
     "test:file-session": "npx --yes tsx scripts/file-session-check.ts",
     "test:file-library": "npx --yes tsx scripts/file-library-check.ts",
     "test:file-preview": "npx --yes tsx scripts/file-preview-check.ts",

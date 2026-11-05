@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { PortableImportErrorCode } from "../boardio";
 import { useAppStateContext } from "../hooks/AppStateContext";
@@ -9,11 +9,13 @@ import {
 } from "../hooks/FileLibraryContext";
 import { isDirectoryModeAvailable } from "../lib/fileSystemAccess";
 import { messages, type Locale, type MessageKey } from "../i18n/messages";
+import type { PitchOrientation } from "../models/types";
 import { buildDirectorySourceForOpen } from "../storage/fileLibrarySource";
 import { BrandLockup } from "./BrandMark";
 import { FileLibraryThumb } from "./FileLibraryThumb";
 import { FilePreviewModal } from "./FilePreviewModal";
 import { FilesFindHelp } from "./FilesFindHelp";
+import { NewBoardOrientationMenu } from "./NewBoardOrientationMenu";
 
 function errorMessageKey(code: PortableImportErrorCode): MessageKey {
   switch (code) {
@@ -185,13 +187,15 @@ export function FilesDashboard() {
     navigate("/board");
   };
 
-  const onNewLocalBoard = () => {
+  const createLocalWithOrientation = (orientation: PitchOrientation) => {
     if (
       !state.confirmDiscardFileSessionIfNeeded(t("fileSessionLeaveConfirm"))
     ) {
       return;
     }
-    if (!state.createNewLocalBoardFileSession()) return;
+    if (!state.createNewLocalBoardFileSession({ pitchOrientation: orientation })) {
+      return;
+    }
     navigate("/board");
   };
 
@@ -220,14 +224,11 @@ export function FilesDashboard() {
           )}
         </div>
         <div className="files-dash-actions">
-          <button
-            type="button"
-            className="files-dash-btn files-dash-btn--primary"
-            title={t("filesNewBoardHint")}
-            onClick={onNewLocalBoard}
-          >
-            {t("filesNewBoardShort")}
-          </button>
+          <FilesNewBoardControl
+            t={t}
+            primary
+            onPick={createLocalWithOrientation}
+          />
           {dirAvailable && (
             <button
               type="button"
@@ -333,14 +334,7 @@ export function FilesDashboard() {
                 ? t("filesFolderLoadingShort")
                 : t("filesChooseFolderShort")}
             </button>
-            <button
-              type="button"
-              className="files-dash-btn"
-              title={t("filesNewBoardHint")}
-              onClick={onNewLocalBoard}
-            >
-              {t("filesNewBoardShort")}
-            </button>
+            <FilesNewBoardControl t={t} onPick={createLocalWithOrientation} />
             <button
               type="button"
               className="files-dash-btn"
@@ -392,14 +386,11 @@ export function FilesDashboard() {
         <div className="files-dash-empty">
           <p>{showFolderEmpty ? t("filesFolderEmpty") : t("filesEmpty")}</p>
           <div className="files-dash-empty-actions">
-            <button
-              type="button"
-              className="files-dash-btn files-dash-btn--primary"
-              title={t("filesNewBoardHint")}
-              onClick={onNewLocalBoard}
-            >
-              {t("filesNewBoardShort")}
-            </button>
+            <FilesNewBoardControl
+              t={t}
+              primary
+              onPick={createLocalWithOrientation}
+            />
             {dirAvailable && (
               <button
                 type="button"
@@ -433,14 +424,11 @@ export function FilesDashboard() {
             <div className="files-dash-folder-empty-hint" role="status">
               <p>{t("filesFolderEmpty")}</p>
               <div className="files-dash-empty-actions">
-                <button
-                  type="button"
-                  className="files-dash-btn files-dash-btn--primary"
-                  title={t("filesNewBoardHint")}
-                  onClick={onNewLocalBoard}
-                >
-                  {t("filesNewBoardShort")}
-                </button>
+                <FilesNewBoardControl
+                  t={t}
+                  primary
+                  onPick={createLocalWithOrientation}
+                />
               </div>
               <FilesFindHelp t={t} context="folder" />
             </div>
@@ -644,5 +632,47 @@ function FileLibraryCard({
         </button>
       </div>
     </li>
+  );
+}
+
+function FilesNewBoardControl({
+  t,
+  onPick,
+  primary = false,
+}: {
+  t: (k: MessageKey) => string;
+  onPick: (orientation: PitchOrientation) => void;
+  primary?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const menuId = useId();
+  return (
+    <div className="files-dash-new-wrap">
+      <button
+        type="button"
+        className={
+          primary
+            ? "files-dash-btn files-dash-btn--primary"
+            : "files-dash-btn"
+        }
+        title={t("filesNewBoardHint")}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-controls={menuId}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {t("filesNewBoardShort")}
+      </button>
+      <NewBoardOrientationMenu
+        id={menuId}
+        open={open}
+        t={t}
+        onClose={() => setOpen(false)}
+        onPick={(orientation) => {
+          setOpen(false);
+          onPick(orientation);
+        }}
+      />
+    </div>
   );
 }

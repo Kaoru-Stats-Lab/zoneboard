@@ -28,12 +28,16 @@ import { maxScenes } from "../lib/plan";
 import { isCaptureImportEnabled } from "../lib/captureImportGate";
 import { activeViewport } from "../models/scene";
 import { PitchLookPicker } from "./PitchLookPicker";
-import { boardToSoccerPitchLookPreset } from "../presets/pitchLook";
+import {
+  boardToSoccerPitchLookPreset,
+  soccerPitchLookPresetToBoardFields,
+} from "../presets/pitchLook";
 import { ViewportPresetGrid } from "./ViewportPresetGrid";
 import { LiveMatchControls } from "./LiveMatchControls";
 import { BoardLimitDialog } from "./BoardLimitDialog";
 import { SceneThumb } from "./SceneThumb";
 import { useNewBoardFlow } from "./BoardSwitcher";
+import { NewBoardOrientationMenu } from "./NewBoardOrientationMenu";
 
 function startersPlaceholder(sport: SportId): string {
   const n = STARTER_COUNT[sport];
@@ -132,6 +136,8 @@ export function Drawer({ state, t, sceneRevealToken = 0 }: Props) {
     level: "ok" | "error";
     text: string;
   } | null>(null);
+  const [pitchNotice, setPitchNotice] = useState<string | null>(null);
+  const [matchNewOrientOpen, setMatchNewOrientOpen] = useState(false);
   const importJsonInputRef = useRef<HTMLInputElement>(null);
 
   const newBoardFlow = useNewBoardFlow(state);
@@ -274,7 +280,7 @@ export function Drawer({ state, t, sceneRevealToken = 0 }: Props) {
         open={newBoardFlow.limitOpen}
         state={state}
         t={t}
-        onClose={() => newBoardFlow.setLimitOpen(false)}
+        onClose={newBoardFlow.closeLimit}
         onReplace={newBoardFlow.confirmReplace}
       />
       <div className="drawer-phase-bar">
@@ -1058,17 +1064,29 @@ export function Drawer({ state, t, sceneRevealToken = 0 }: Props) {
             <div className="drawer-stack-actions">
               {!state.isFileSession && (
                 <>
-                  <button
-                    type="button"
-                    className="drawer-chrome-label"
-                    disabled={atLimit}
-                    title={atLimit ? t("boardLimit") : t("newBoard")}
-                    onClick={() => {
-                      newBoardFlow.requestNew();
-                    }}
-                  >
-                    {t("newBoardShort")}
-                  </button>
+                  <div className="drawer-new-board-wrap">
+                    <button
+                      type="button"
+                      className="drawer-chrome-label"
+                      title={atLimit ? t("boardLimit") : t("newBoard")}
+                      aria-expanded={matchNewOrientOpen}
+                      aria-haspopup="menu"
+                      aria-controls="drawer-match-orient-menu"
+                      onClick={() => setMatchNewOrientOpen((v) => !v)}
+                    >
+                      {t("newBoardShort")}
+                    </button>
+                    <NewBoardOrientationMenu
+                      id="drawer-match-orient-menu"
+                      open={matchNewOrientOpen}
+                      t={t}
+                      onClose={() => setMatchNewOrientOpen(false)}
+                      onPick={(orientation) => {
+                        setMatchNewOrientOpen(false);
+                        newBoardFlow.requestNew(orientation);
+                      }}
+                    />
+                  </div>
                   <button
                     type="button"
                     className="drawer-chrome-label"
@@ -1405,28 +1423,54 @@ export function Drawer({ state, t, sceneRevealToken = 0 }: Props) {
             </label>
 
             {board.sport === "soccer" && (
-              <PitchLookPicker
-                mode="soccerPitchView"
-                preset={boardToSoccerPitchLookPreset(board)}
-                onPreset={(p) => state.applySoccerPitchLook(p)}
-                showLanes5={board.showLanes5}
-                onLanes5={(on) =>
-                  state.updateBoard((b) => ({ ...b, showLanes5: on }), false)
-                }
-                labels={{
-                  pitchView: t("pitchView"),
-                  lanes5: t("lanes5"),
-                  lanesOff: t("lanesOff"),
-                  lanesOffShort: t("lanesOffShort"),
-                  lanesOnShort: t("lanesOnShort"),
-                  lanes5Hint: t("lanes5Hint"),
-                  pitchLookLandscapeFull: t("pitchLookLandscapeFull"),
-                  pitchLookPortraitFull: t("pitchLookPortraitFull"),
-                  pitchLookPortraitHalfBottom: t("pitchLookPortraitHalfBottom"),
-                  pitchLookLandscapeHalfRight: t("pitchLookLandscapeHalfRight"),
-                  pitchLookPortraitHalfTop: t("pitchLookPortraitHalfTop"),
-                }}
-              />
+              <>
+                <PitchLookPicker
+                  mode="soccerPitchView"
+                  preset={boardToSoccerPitchLookPreset(board)}
+                  onPreset={(p) => {
+                    const result = state.applySoccerPitchLook(p);
+                    if (result === "blocked_orientation") {
+                      const next =
+                        soccerPitchLookPresetToBoardFields(p).pitchOrientation;
+                      setPitchNotice(
+                        t(
+                          next === "portrait"
+                            ? "pitchOrientationLockedPortrait"
+                            : "pitchOrientationLockedLandscape",
+                        ),
+                      );
+                    } else if (result === "applied") {
+                      setPitchNotice(null);
+                    }
+                  }}
+                  showLanes5={board.showLanes5}
+                  onLanes5={(on) =>
+                    state.updateBoard((b) => ({ ...b, showLanes5: on }), false)
+                  }
+                  labels={{
+                    pitchView: t("pitchView"),
+                    lanes5: t("lanes5"),
+                    lanesOff: t("lanesOff"),
+                    lanesOffShort: t("lanesOffShort"),
+                    lanesOnShort: t("lanesOnShort"),
+                    lanes5Hint: t("lanes5Hint"),
+                    pitchLookLandscapeFull: t("pitchLookLandscapeFull"),
+                    pitchLookPortraitFull: t("pitchLookPortraitFull"),
+                    pitchLookPortraitHalfBottom: t(
+                      "pitchLookPortraitHalfBottom",
+                    ),
+                    pitchLookLandscapeHalfRight: t(
+                      "pitchLookLandscapeHalfRight",
+                    ),
+                    pitchLookPortraitHalfTop: t("pitchLookPortraitHalfTop"),
+                  }}
+                />
+                {pitchNotice && (
+                  <p className="drawer-inline-error" role="status">
+                    {pitchNotice}
+                  </p>
+                )}
+              </>
             )}
 
             {board.sport === "futsal" && (
