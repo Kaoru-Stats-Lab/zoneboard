@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Frequently asked questions — ZoneBoard</title>
-    <meta name="description" content="FAQ: no account, local save, OBS window capture, sports, ads on info pages only, and how to contact the ZoneBoard operator." />
+    <meta name="description" content="FAQ: no account, working boards vs local JSON files, OBS window capture, sports, ads on info pages only, and how to contact the ZoneBoard operator." />
     <link rel="canonical" href="https://zoneboard.app/faq/" />
     <link rel="alternate" hreflang="en" href="https://zoneboard.app/" />
     <link rel="alternate" hreflang="de" href="https://zoneboard.app/de/" />
@@ -19,7 +19,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ZoneBoard" />
     <meta property="og:title" content="Frequently asked questions — ZoneBoard" />
-    <meta property="og:description" content="FAQ: no account, local save, OBS window capture, sports, ads on info pages only, and how to contact the ZoneBoard operator." />
+    <meta property="og:description" content="FAQ: no account, working boards vs local JSON files, OBS window capture, sports, ads on info pages only, and how to contact the ZoneBoard operator." />
     <meta property="og:url" content="https://zoneboard.app/faq/" />
     <meta property="og:locale" content="en_GB" />
     <meta property="og:image" content="https://zoneboard.app/brand/lockup-og.png" />
@@ -29,7 +29,7 @@
     <meta property="og:image:alt" content="ZoneBoard — football tactics board" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Frequently asked questions — ZoneBoard" />
-    <meta name="twitter:description" content="FAQ: no account, local save, OBS window capture, sports, ads on info pages only, and how to contact the ZoneBoard operator." />
+    <meta name="twitter:description" content="FAQ: no account, working boards vs local JSON files, OBS window capture, sports, ads on info pages only, and how to contact the ZoneBoard operator." />
     <meta name="twitter:image" content="https://zoneboard.app/brand/lockup-og.png" />
     <meta name="twitter:image:alt" content="ZoneBoard — football tactics board" />
     <meta name="theme-color" content="#0c0d0e" />
@@ -67,7 +67,9 @@
 
 
 <h2 id="account">Do I need an account?</h2>
-<p>No. ZoneBoard does not create logins. The board you build stays in the browser you built it in, using local storage. If you clear site data, the board goes with it. Export a picture when you need a copy that survives a clear.</p>
+<p>No. ZoneBoard does not create logins. Working boards stay in this browser. For a file you control, use Local Files (/files/) and keep a .zoneboard.json on your device. Clearing site data can wipe working boards and session drafts; files you saved to disk stay unless you delete them yourself. Longer steps: /guide/#local-files.</p>
+<h2 id="local-files-faq">What is the difference between Working boards and Local files?</h2>
+<p>Working boards auto-save in this browser and use Store slots (three on Free). Local files are JSON you open or import from Local Files. Open = temporary File Session (not added to the list). Import = copy into Working boards. Save / Save as / Download are explained in /guide/#save-save-as-download.</p>
 <h2 id="free">Is it free?</h2>
 <p>Yes. The board is free. No account, no card. If a paid plan appears later, it will be for named squads you reuse across matches — not for drawing, broadcast, or your logo. Details stay on the pricing page. There is no checkout today.</p>
 <h2 id="blank-encoder">Why is the pitch blank in my encoder?</h2>
@@ -81,7 +83,7 @@
 <h2 id="contact">How do I contact you?</h2>
 <p>Use the contact page or email contact@zoneboard.app. There is also a feedback control on the landing page and in the editor. We read product notes. We do not run a live chat.</p>
 <h2 id="share-link">Can I share a link to the board I just built?</h2>
-<p>Not as a live cloud document. There is no account and no server copy of your scenes. What you can share is a picture you export, or the same setup rebuilt on another machine. A shareable link would mean we hosted your diagram. We do not do that in this version, on purpose: the stream capture is a window, not a URL.</p>
+<p>Not as a live cloud document. There is no account and no server copy of your scenes. You can share a PNG you export, hand someone a .zoneboard.json from Local Files, or rebuild the setup on another machine. A shareable live link would mean we hosted your diagram. We do not do that in this version: the stream capture is a window, not a URL.</p>
 <h2 id="tablet">Does it work on a tablet?</h2>
 <p>Yes. Place and drag with one finger. Pinch to zoom. Two-finger pan. Hotkeys are a PC extra, not a requirement. If a control is too small to hit, that is a product defect worth reporting. We are not shipping a separate app store package.</p>
 <h2 id="word-tools">Why are the tools words instead of icons?</h2>
@@ -125,7 +127,7 @@
 </aside>
 <script>
 (function () {
-  var map = {"en":{"policyHref":"/cookies/","title":"Privacy choices","copy":"Analytics and ads stay off until you choose. The board stays on this device.","reject":"Reject optional","analytics":"Allow analytics","ads":"Allow advertising","policyLabel":"Cookie policy","choices":"Cookie choices"},"de":{"policyHref":"/cookies/","title":"Datenschutz-Auswahl","copy":"Analyse und Werbung bleiben aus, bis du wählst. Das Board bleibt auf diesem Gerät.","reject":"Optional ablehnen","analytics":"Analyse erlauben","ads":"Werbung erlauben","policyLabel":"Cookie-Richtlinie","choices":"Cookie-Auswahl"},"es":{"policyHref":"/cookies/","title":"Opciones de privacidad","copy":"Análisis y anuncios permanecen desactivados hasta que elijas. El tablero se queda en este dispositivo.","reject":"Rechazar opcionales","analytics":"Permitir analítica","ads":"Permitir publicidad","policyLabel":"Política de cookies","choices":"Opciones de cookies"},"fr":{"policyHref":"/cookies/","title":"Choix de confidentialité","copy":"Analyses et publicités restent désactivées jusqu'à ton choix. Le tableau reste sur cet appareil.","reject":"Refuser l'optionnel","analytics":"Autoriser l'analyse","ads":"Autoriser la pub","policyLabel":"Politique cookies","choices":"Choix des cookies"},"it":{"policyHref":"/cookies/","title":"Scelte privacy","copy":"Analitica e annunci restano off finché non scegli. La lavagna resta su questo dispositivo.","reject":"Rifiuta opzionali","analytics":"Consenti analitica","ads":"Consenti pubblicità","policyLabel":"Policy cookie","choices":"Scelta cookie"},"pl":{"policyHref":"/cookies/","title":"Wybór prywatności","copy":"Analityka i reklamy są wyłączone, dopóki nie wybierzesz. Plansza zostaje na tym urządzeniu.","reject":"Odrzuć opcjonalne","analytics":"Zezwól na analitykę","ads":"Zezwól na reklamy","policyLabel":"Polityka cookies","choices":"Ustawienia cookies"},"pt":{"policyHref":"/cookies/","title":"Opções de privacidade","copy":"Análise e anúncios ficam desligados até você escolher. O quadro permanece neste dispositivo.","reject":"Rejeitar opcionais","analytics":"Permitir análise","ads":"Permitir publicidade","policyLabel":"Política de cookies","choices":"Opções de cookies"},"tr":{"policyHref":"/cookies/","title":"Gizlilik tercihleri","copy":"Analitik ve reklamlar seçene kadar kapalıdır. Tahta bu cihazda kalır.","reject":"İsteğe bağlıyı reddet","analytics":"Analitiğe izin ver","ads":"Reklama izin ver","policyLabel":"Çerez politikası","choices":"Çerez tercihleri"},"ja":{"policyHref":"/cookies/","title":"プライバシーの選択","copy":"計測と広告は、選ぶまでオフです。ボードはこの端末に残ります。","reject":"任意を拒否","analytics":"計測を許可","ads":"広告を許可","policyLabel":"Cookie ポリシー","choices":"Cookie の選択"}};
+  var map = {"en":{"policyHref":"/cookies/","title":"Privacy choices","copy":"Analytics and ads stay off until you choose. The board stays on this device.","reject":"Reject optional","analytics":"Allow analytics","ads":"Allow advertising","policyLabel":"Cookie policy","choices":"Cookie choices"},"de":{"policyHref":"/cookies/","title":"Datenschutz-Auswahl","copy":"Analyse und Werbung bleiben aus, bis du wählst. Das Board bleibt auf diesem Gerät.","reject":"Optional ablehnen","analytics":"Analyse erlauben","ads":"Werbung erlauben","policyLabel":"Cookie-Richtlinie","choices":"Cookie-Auswahl"},"es":{"policyHref":"/cookies/","title":"Opciones de privacidad","copy":"Análisis y anuncios permanecen desactivados hasta que elijas. El tablero se queda en este dispositivo.","reject":"Rechazar opcionales","analytics":"Permitir analítica","ads":"Permitir publicidad","policyLabel":"Política de cookies","choices":"Opciones de cookies"},"fr":{"policyHref":"/cookies/","title":"Choix de confidentialité","copy":"Analyses et publicités restent désactivées jusqu'à ton choix. Le tableau reste sur cet appareil.","reject":"Refuser l'optionnel","analytics":"Autoriser l'analyse","ads":"Autoriser la pub","policyLabel":"Politique cookies","choices":"Choix des cookies"},"it":{"policyHref":"/cookies/","title":"Scelte privacy","copy":"Analitica e annunci restano off finché non scegli. La lavagna resta su questo dispositivo.","reject":"Rifiuta opzionali","analytics":"Consenti analitica","ads":"Consenti pubblicità","policyLabel":"Policy cookie","choices":"Scelta cookie"},"pl":{"policyHref":"/cookies/","title":"Wybór prywatności","copy":"Analityka i reklamy są wyłączone, dopóki nie wybierzesz. Plansza zostaje na tym urządzeniu.","reject":"Odrzuć opcjonalne","analytics":"Zezwól na analitykę","ads":"Zezwól na reklamy","policyLabel":"Polityka cookies","choices":"Ustawienia cookies"},"pt":{"policyHref":"/cookies/","title":"Opções de privacidade","copy":"Análise e anúncios ficam desligados até você escolher. O quadro permanece neste dispositivo.","reject":"Rejeitar opcionais","analytics":"Permitir análise","ads":"Permitir publicidade","policyLabel":"Política de cookies","choices":"Opções de cookies"},"tr":{"policyHref":"/cookies/","title":"Gizlilik tercihleri","copy":"Analitik ve reklamlar seçene kadar kapalıdır. Tahta bu cihazda kalır.","reject":"İsteğe bağlıyı reddet","analytics":"Analitiğe izin ver","ads":"Reklama izin ver","policyLabel":"Çerez politikası","choices":"Çerez tercihleri"},"ja":{"policyHref":"/cookies/","title":"プライバシーの選択","copy":"計測と広告は、選ぶまでオフです。ボードはこの端末に残ります。","reject":"任意の Cookie を拒否","analytics":"計測を許可","ads":"広告を許可","policyLabel":"Cookie ポリシー","choices":"Cookie の選択"}};
   var pick = "en";
   var langs = navigator.languages || [navigator.language || "en"];
   for (var i = 0; i < langs.length; i++) {

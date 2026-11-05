@@ -2,9 +2,46 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createBoard } from "../models/defaults";
 import { uid } from "../models/id";
 import {
-  ballAfterDrop,
-  ballFollowingPiece,
-} from "../models/ballAttach";
+  displayNameFromZoneboardFile,
+  exportBoardJsonDownload,
+  parsePortableBoardJson,
+  parsePortableBoardJsonForOpen,
+  PortableImportError,
+  portableBoardFilename,
+  portableToJsonString,
+  serializeBoardToPortable,
+  type PortableImportErrorCode,
+} from "../boardio";
+import {
+  boardContentFingerprint,
+  clearFileSessionDraft,
+  isFileSessionContentDirty,
+  readFileSessionDraft,
+  writeFileSessionDraft,
+} from "../storage/fileSessionDraft";
+import type { FileMetaSnapshot } from "../lib/fileSystemAccess";
+import {
+  detectSaveConflict,
+  readFileSnapshot,
+  writeBoardToFileHandle,
+  type SaveToSourceResult,
+} from "../storage/directorySave";
+import {
+  normalizeSaveAsFileName,
+  saveBoardAsNewInDirectory,
+  type SaveAsPhase,
+  type SaveAsToFolderResult,
+} from "../storage/directorySaveAs";
+import { boardDisplayName } from "../lib/boardLabel";
+import { ballAfterDrop } from "../models/ballAttach";
+import {
+  ballsAfterPieceDelete,
+  ballsFollowingMovedPieces,
+  createBallObject,
+  normalizeSceneBalls,
+  offsetBallCopy,
+} from "../models/ballSanitize";
+import type { BallObject } from "../models/types";
 import { roleFromPosition } from "../models/pieceRole";
 import {
   defaultFacingForTeam,
@@ -41,12 +78,26 @@ import type {
   CardKind,
   GoalKind,
   ScenePhase,
+  ShapeKind,
+  ShapeObject,
   SportId,
   TextFontId,
   ToolId,
   Viewport,
   WatermarkSettings,
 } from "../models/types";
+import {
+  arrangeDrawObject,
+  type ShapeArrangeOp,
+} from "../canvas/shapeArrange";
+import {
+  SHAPE_DEFAULT_FILL_COLOR,
+  SHAPE_DEFAULT_FILL_OPACITY,
+  clampShapeFillOpacity,
+  createShapeObject,
+  sanitizeShapeFillColor,
+  sanitizeShapeObject,
+} from "../models/shapeSanitize";
 import {
   AWAY_COLOR,
   DEFAULT_SELECTION_COLOR,
@@ -187,6 +238,29 @@ export function useAppState() {
   const setTool = useCallback((id: ToolId) => {
     setToolState(id);
   }, []);
+  /** Shape create kind for the Zone→Shape tool (circle / rect / triangle). Session-sticky. */
+  const [shapeKind, setShapeKind] = useState<ShapeKind>("rect");
+  /**
+   * Rectangle 1:1 lock for touch/pen (OR with Shift). Circle/Triangle ignore —
+   * they stay equilateral / circular in geometry.
+   */
+  const [shapeAspectLock, setShapeAspectLock] = useState(false);
+  /** In-app Shape clipboard (session only — not OS clipboard / not persisted). */
+  const shapeClipboardRef = useRef<ShapeObject | null>(null);
+  /**
+   * Last Shape appearance applied in this session — reused by addShape so
+   * consecutive creates inherit color / opacity / outline without touching
+   * other existing shapes. Not persisted.
+   */
+  const shapeCreateStyleRef = useRef<{
+    fillColor: string;
+    fillOpacity: number;
+    strokeEnabled: boolean;
+  }>({
+    fillColor: SHAPE_DEFAULT_FILL_COLOR,
+    fillOpacity: SHAPE_DEFAULT_FILL_OPACITY,
+    strokeEnabled: true,
+  });
   const [selectedPieceIds, setSelectedPieceIds] = useState<string[]>([]);
   const selectedPieceId =
     selectedPieceIds[selectedPieceIds.length - 1] ?? null;
@@ -211,7 +285,23 @@ export function useAppState() {
     setPieceInspectorId(null);
   }, []);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
-  const [selectedBall, setSelectedBall] = useState(false);
+  /** Inspector / touch: BoardCanvas opens inline edit when this id is set. */
+  const [textEditRequestId, setTextEditRequestId] = useState<string | null>(
+    null,
+  );
+  const requestTextEdit = useCallback((id: string) => {
+    setTextEditRequestId(id);
+  }, []);
+  const clearTextEditRequest = useCallback(() => {
+    setTextEditRequestId(null);
+  }, []);
+  const [selectedBallId, setSelectedBallId] = useState<string | null>(null);
+  const selectedBall = selectedBallId != null;
+  const setSelectedBall = useCallback((on: boolean) => {
+    if (!on) setSelectedBallId(null);
+  }, []);
+  /** Session clipboard for ball copy/paste (not OS clipboard). */
+  const ballClipboardRef = useRef<BallObject | null>(null);
   const [selectionColor, setSelectionColorState] = useState(
     () => loadPrefs().selectionColor ?? DEFAULT_SELECTION_COLOR,
   );
@@ -236,30 +326,121 @@ export function useAppState() {
   const history = useRef<BoardDocument[]>([]);
   const future = useRef<BoardDocument[]>([]);
   const saveTimer = useRef<number | null>(null);
+  const fileSessionDraftTimer = useRef<number | null>(null);
+
+  /**
+   * Local-file editing session — in-memory only. Never written to BoardStore /
+   * `zoneboard:v1:store`. Optional sessionStorage draft is a separate key.
+   */
+  type FileSessionDirectorySource = {
+    fileHandle: FileSystemFileHandle;
+    directorySessionId: string;
+    /** File Library entry id (cacheScope / Dashboard patch target). */
+    libraryEntryId: string;
+    openSnapshot: FileMetaSnapshot;
+  };
+
+  type FileSessionSaveUi =
+    | "idle"
+    | "saving"
+    | "saved"
+    | "failed"
+    | "conflict"
+    | "permission_denied"
+    | "missing"
+    | "no_handle";
+
+  type FileSessionState = {
+    board: BoardDocument;
+    sourceName: string;
+    openedAt: number;
+    baselineFinger: string;
+    dirty: boolean;
+    /**
+     * New local board that has never been written to a file.
+     * Stays dirty until first successful Directory Save / Save As.
+     * Download alone does not clear this.
+     */
+    neverSavedToFile: boolean;
+    draftSaveOk: boolean;
+    /**
+     * Blob download was requested (not proof the OS saved the file).
+     * Does not clear dirty. Directory Save uses markFileSessionSavedToSource.
+     */
+    lastDownloadRequestedAt: number | null;
+    /** Present only for Directory mode Open. Never persisted. */
+    directorySource: FileSessionDirectorySource | null;
+    saveUi: FileSessionSaveUi;
+    /** Last conflict snapshot for UI (memory only). */
+    saveConflictCurrent: FileMetaSnapshot | null;
+  };
+  const [fileSession, setFileSession] = useState<FileSessionState | null>(
+    null,
+  );
+  const fileSessionRef = useRef<FileSessionState | null>(null);
+  fileSessionRef.current = fileSession;
+  /** Boot-time draft awaiting user confirm (does not auto-open). */
+  const [pendingFileSessionRestore, setPendingFileSessionRestore] = useState<
+    | {
+        sourceName: string;
+        openedAt: number;
+        baselineFinger: string;
+        board: BoardDocument;
+        neverSavedToFile: boolean;
+      }
+    | null
+  >(null);
 
   const board = useMemo(() => {
+    if (fileSession) return fileSession.board;
     return (
       store.boards.find((b) => b.id === store.activeBoardId) ??
       store.boards[0] ??
       null
     );
-  }, [store]);
+  }, [fileSession, store]);
 
   const scene = useMemo(
     () => (board ? getActiveScene(board) : null),
     [board],
   );
 
+  const isFileSession = fileSession != null;
+
   const persist = useCallback((next: BoardStore) => {
+    // File Session must never redirect Store writes — callers should not
+    // mutate store while in File Session; this is a hard guard.
+    if (fileSessionRef.current) return;
     setStore(next);
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => saveStore(next), 300);
   }, []);
 
   const flushSave = useCallback(() => {
+    if (fileSessionRef.current) return;
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveStore(store);
   }, [store]);
+
+  const scheduleFileSessionDraft = useCallback((fs: FileSessionState) => {
+    if (fileSessionDraftTimer.current) {
+      window.clearTimeout(fileSessionDraftTimer.current);
+    }
+    fileSessionDraftTimer.current = window.setTimeout(() => {
+      const ok = writeFileSessionDraft({
+        sourceName: fs.sourceName,
+        openedAt: fs.openedAt,
+        baselineFinger: fs.baselineFinger,
+        board: fs.board,
+        neverSavedToFile: fs.neverSavedToFile,
+      });
+      setFileSession((cur) =>
+        cur && cur.openedAt === fs.openedAt
+          ? { ...cur, draftSaveOk: ok }
+          : cur,
+      );
+    }, 400);
+  }, []);
 
   const pushHistory = useCallback((prev: BoardDocument) => {
     history.current.push(structuredClone(prev));
@@ -271,8 +452,34 @@ export function useAppState() {
     if (board) pushHistory(board);
   }, [board, pushHistory]);
 
+  const applyFileSessionBoard = useCallback(
+    (nextBoard: BoardDocument, fs: FileSessionState) => {
+      const nextFs: FileSessionState = {
+        ...fs,
+        board: nextBoard,
+        dirty: isFileSessionContentDirty(
+          nextBoard,
+          fs.baselineFinger,
+          fs.neverSavedToFile,
+        ),
+      };
+      fileSessionRef.current = nextFs;
+      setFileSession(nextFs);
+      scheduleFileSessionDraft(nextFs);
+    },
+    [scheduleFileSessionDraft],
+  );
+
   const updateBoard = useCallback(
     (updater: (b: BoardDocument) => BoardDocument, record = true) => {
+      const fs = fileSessionRef.current;
+      if (fs) {
+        const current = fs.board;
+        if (record) pushHistory(current);
+        const nextBoard = touch(updater(current));
+        applyFileSessionBoard(nextBoard, fs);
+        return;
+      }
       setStore((prev) => {
         const current =
           prev.boards.find((b) => b.id === prev.activeBoardId) ??
@@ -289,7 +496,7 @@ export function useAppState() {
         return next;
       });
     },
-    [pushHistory],
+    [applyFileSessionBoard, pushHistory],
   );
 
   const updateScene = useCallback(
@@ -308,28 +515,60 @@ export function useAppState() {
     const prev = history.current.pop();
     if (!prev || !board) return;
     future.current.push(structuredClone(board));
+    const fs = fileSessionRef.current;
+    if (fs) {
+      applyFileSessionBoard(prev, fs);
+      return;
+    }
     setStore((s) => {
       const boards = s.boards.map((b) => (b.id === prev.id ? prev : b));
       const next = { ...s, boards };
       saveStore(next);
       return next;
     });
-  }, [board]);
+  }, [applyFileSessionBoard, board]);
+
+  /**
+   * Cancel a drag that already recorded history: restore the pushed snapshot
+   * without adding a redo entry (unlike undo()).
+   */
+  const rollbackLastHistory = useCallback(() => {
+    const prev = history.current.pop();
+    if (!prev) return false;
+    const fs = fileSessionRef.current;
+    if (fs) {
+      applyFileSessionBoard(prev, fs);
+      return true;
+    }
+    setStore((s) => {
+      const boards = s.boards.map((b) => (b.id === prev.id ? prev : b));
+      const next = { ...s, boards };
+      saveStore(next);
+      return next;
+    });
+    return true;
+  }, [applyFileSessionBoard]);
 
   const redo = useCallback(() => {
     const nextB = future.current.pop();
     if (!nextB || !board) return;
     history.current.push(structuredClone(board));
+    const fs = fileSessionRef.current;
+    if (fs) {
+      applyFileSessionBoard(nextB, fs);
+      return;
+    }
     setStore((s) => {
       const boards = s.boards.map((b) => (b.id === nextB.id ? nextB : b));
       const next = { ...s, boards };
       saveStore(next);
       return next;
     });
-  }, [board]);
+  }, [applyFileSessionBoard, board]);
 
   const setActiveBoard = useCallback(
     (id: string) => {
+      if (fileSessionRef.current) return;
       history.current = [];
       future.current = [];
       setSelectedPieceId(null);
@@ -342,6 +581,7 @@ export function useAppState() {
   );
 
   const addBoard = useCallback(() => {
+    if (fileSessionRef.current) return false;
     if (store.boards.length >= maxBoards()) return false;
     const b = createBoard(
       board?.sport ?? "soccer",
@@ -359,6 +599,7 @@ export function useAppState() {
 
   const addBoardReplacing = useCallback(
     (replaceId: string) => {
+      if (fileSessionRef.current) return false;
       const remaining = store.boards.filter((b) => b.id !== replaceId);
       if (remaining.length !== store.boards.length - 1) return false;
       const b = createBoard(
@@ -420,6 +661,7 @@ export function useAppState() {
 
   const deleteBoard = useCallback(
     (id: string) => {
+      if (fileSessionRef.current) return;
       let boards = store.boards.filter((b) => b.id !== id);
       if (boards.length === 0) {
         const b = createBoard("soccer", defaultBoardTitle(1, locale), locale);
@@ -432,6 +674,71 @@ export function useAppState() {
       persist({ boards, activeBoardId: active });
     },
     [locale, persist, store],
+  );
+
+  /** Download current board as portable JSON. Does not mutate board / undo. */
+  const exportBoardJson = useCallback((): boolean => {
+    const fs = fileSessionRef.current;
+    if (fs) {
+      try {
+        exportBoardJsonDownload(fs.board, {
+          fallbackTitle:
+            fs.sourceName.replace(/\.zoneboard\.json$/i, "") || "ZoneBoard",
+        });
+        // Download ≠ confirmed save — keep dirty / draft / baseline.
+        const nextFs = {
+          ...fs,
+          lastDownloadRequestedAt: Date.now(),
+        };
+        fileSessionRef.current = nextFs;
+        setFileSession(nextFs);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    if (!board) return false;
+    try {
+      exportBoardJsonDownload(board, { fallbackTitle: defaultBoardTitle(1, locale) });
+      return true;
+    } catch {
+      return false;
+    }
+  }, [board, locale]);
+
+  /**
+   * Parse portable JSON text and append as a new board (never overwrite).
+   * Returns null on success, or an error code. Does not touch store until valid.
+   */
+  const importBoardJsonText = useCallback(
+    (text: string, byteLength?: number): PortableImportErrorCode | null => {
+      if (fileSessionRef.current) return "unknown";
+      if (store.boards.length >= maxBoards()) return "limit";
+      let nextBoard: BoardDocument;
+      try {
+        nextBoard = parsePortableBoardJson(text, byteLength);
+      } catch (e) {
+        if (e instanceof PortableImportError) return e.code;
+        return "unknown";
+      }
+      const nextStore: BoardStore = {
+        boards: [...store.boards, nextBoard],
+        activeBoardId: nextBoard.id,
+      };
+      try {
+        saveStore(nextStore);
+      } catch {
+        return "quota";
+      }
+      history.current = [];
+      future.current = [];
+      setSelectedPieceId(null);
+      setSelectedObjectId(null);
+      setSelectedBall(false);
+      setStore(nextStore);
+      return null;
+    },
+    [store.boards, setSelectedPieceId],
   );
 
   const setActiveScene = useCallback(
@@ -454,7 +761,7 @@ export function useAppState() {
         phase,
         {
           pieces: scene.pieces,
-          ball: scene.ball,
+          balls: scene.balls,
           objects: scene.objects,
           viewport: { ...activeViewport(board) },
         },
@@ -581,7 +888,7 @@ export function useAppState() {
               s.pieces,
             ),
             objects: [],
-            ball: { x: 0.5, y: 0.5 },
+            balls: [createBallObject()],
           }),
         );
       });
@@ -908,10 +1215,15 @@ export function useAppState() {
   }, []);
 
   const moveBall = useCallback(
-    (x: number, y: number, record: boolean) => {
+    (ballId: string, x: number, y: number, record: boolean) => {
       // ドラッグ中は吸着解除（ボールだけ動かす）
       updateScene(
-        (s) => ({ ...s, ball: { x, y, attachedTo: null } }),
+        (s) => ({
+          ...s,
+          balls: s.balls.map((b) =>
+            b.id === ballId ? { ...b, x, y, attachedTo: null } : b,
+          ),
+        }),
         record,
       );
     },
@@ -920,10 +1232,14 @@ export function useAppState() {
 
   /** ボールを離したとき、近くの駒にくっつける */
   const dropBall = useCallback(
-    (x: number, y: number) => {
+    (ballId: string, x: number, y: number) => {
       updateScene((s) => ({
         ...s,
-        ball: ballAfterDrop(s.pieces, x, y),
+        balls: s.balls.map((b) => {
+          if (b.id !== ballId) return b;
+          const drop = ballAfterDrop(s.pieces, x, y);
+          return { ...b, ...drop };
+        }),
       }));
     },
     [updateScene],
@@ -975,13 +1291,12 @@ export function useAppState() {
               ? { ...p, x, y, role, facing: facing ?? p.facing }
               : p,
           );
-          const piece = pieces.find((p) => p.id === id);
-          let ball = s.ball;
-          if (piece) {
-            const followed = ballFollowingPiece(ball, piece);
-            if (followed) ball = followed;
-          }
-          return { ...s, pieces, ball };
+          const balls = ballsFollowingMovedPieces(
+            s.balls,
+            pieces,
+            new Set([id]),
+          );
+          return { ...s, pieces, balls };
         },
         record,
       );
@@ -1015,15 +1330,8 @@ export function useAppState() {
               p.id === facingId && facing !== undefined ? facing : p.facing,
           };
         });
-        let ball = s.ball;
-        if (ball.attachedTo && idSet.has(ball.attachedTo)) {
-          const host = pieces.find((p) => p.id === ball.attachedTo);
-          if (host) {
-            const followed = ballFollowingPiece(ball, host);
-            if (followed) ball = followed;
-          }
-        }
-        return { ...s, pieces, ball };
+        const balls = ballsFollowingMovedPieces(s.balls, pieces, idSet);
+        return { ...s, pieces, balls };
       }, record);
     },
     [updateScene],
@@ -1051,15 +1359,8 @@ export function useAppState() {
           role: roleFromPosition(p.x, p.y),
         }));
         const pieces = mergePieces(s.pieces, nextGroup);
-        let ball = s.ball;
-        if (ball.attachedTo && idSet.has(ball.attachedTo)) {
-          const host = pieces.find((p) => p.id === ball.attachedTo);
-          if (host) {
-            const followed = ballFollowingPiece(ball, host);
-            if (followed) ball = followed;
-          }
-        }
-        return { ...s, pieces, ball };
+        const balls = ballsFollowingMovedPieces(s.balls, pieces, idSet);
+        return { ...s, pieces, balls };
       }, record);
     },
     [selectedPieceIds, updateScene],
@@ -1117,21 +1418,145 @@ export function useAppState() {
     [applyToSelectedPieces],
   );
 
+  /** World-norm nudge ≈ small CSS offset; zoom-stable (not DPR-dependent). */
+  const SHAPE_DUP_OFFSET = 0.018;
+
+  const insertShapeCopy = useCallback(
+    (source: ShapeObject, afterId: string | null): ShapeObject | null => {
+      const copy = sanitizeShapeObject({
+        ...source,
+        id: uid(),
+        x: source.x + SHAPE_DUP_OFFSET,
+        y: source.y + SHAPE_DUP_OFFSET,
+      });
+      if (!copy) return null;
+      updateScene((s) => {
+        const objects = [...s.objects];
+        const at = afterId
+          ? objects.findIndex((o) => o.id === afterId)
+          : -1;
+        if (at >= 0) objects.splice(at + 1, 0, copy);
+        else objects.push(copy);
+        return { ...s, objects };
+      });
+      setSelectedObjectId(copy.id);
+      setSelectedPieceId(null);
+      setSelectedBall(false);
+      setPieceInspectorId(null);
+      return copy;
+    },
+    [updateScene],
+  );
+
+  const insertBallCopy = useCallback(
+    (source: BallObject): BallObject | null => {
+      const copy = offsetBallCopy(source);
+      updateScene((s) => ({
+        ...s,
+        balls: [...s.balls, copy],
+      }));
+      setSelectedBallId(copy.id);
+      setSelectedPieceId(null);
+      setSelectedObjectId(null);
+      setPieceInspectorId(null);
+      return copy;
+    },
+    [updateScene, setSelectedPieceId],
+  );
+
   const duplicateSelected = useCallback(() => {
-    if (selectedPieceIds.length === 0 || !scene) return;
-    const idSet = new Set(selectedPieceIds);
-    const group = scene.pieces.filter((p) => idSet.has(p.id));
-    if (group.length === 0) return;
-    const copies = duplicatePieces(group).map((p) => ({
-      ...p,
-      role: roleFromPosition(p.x, p.y),
-    }));
-    updateScene((s) => ({ ...s, pieces: [...s.pieces, ...copies] }));
-    setSelectedPieceIds(copies.map((p) => p.id));
-    setPieceInspectorId(null);
-    setSelectedObjectId(null);
-    setSelectedBall(false);
-  }, [scene, selectedPieceIds, updateScene]);
+    if (!scene) return;
+    if (selectedPieceIds.length > 0) {
+      const idSet = new Set(selectedPieceIds);
+      const group = scene.pieces.filter((p) => idSet.has(p.id));
+      if (group.length === 0) return;
+      const copies = duplicatePieces(group).map((p) => ({
+        ...p,
+        role: roleFromPosition(p.x, p.y),
+      }));
+      updateScene((s) => ({ ...s, pieces: [...s.pieces, ...copies] }));
+      setSelectedPieceIds(copies.map((p) => p.id));
+      setPieceInspectorId(null);
+      setSelectedObjectId(null);
+      setSelectedBallId(null);
+      return;
+    }
+    if (selectedBallId) {
+      const src = scene.balls.find((b) => b.id === selectedBallId);
+      if (!src) return;
+      insertBallCopy(src);
+      return;
+    }
+    if (!selectedObjectId) return;
+    const obj = scene.objects.find((o) => o.id === selectedObjectId);
+    if (!obj || obj.type !== "shape") return;
+    insertShapeCopy(obj, obj.id);
+  }, [
+    scene,
+    selectedPieceIds,
+    selectedBallId,
+    selectedObjectId,
+    updateScene,
+    insertShapeCopy,
+    insertBallCopy,
+  ]);
+
+  const copySelectedShape = useCallback(() => {
+    if (!scene || !selectedObjectId) return false;
+    const obj = scene.objects.find((o) => o.id === selectedObjectId);
+    if (!obj || obj.type !== "shape") return false;
+    const snap = sanitizeShapeObject({ ...obj, id: obj.id });
+    if (!snap) return false;
+    shapeClipboardRef.current = structuredClone(snap);
+    return true;
+  }, [scene, selectedObjectId]);
+
+  const pasteShape = useCallback(() => {
+    const src = shapeClipboardRef.current;
+    if (!src || !scene) return false;
+    // Clipboard already holds a clone from copy/last paste time.
+    const base = sanitizeShapeObject({ ...src, id: src.id });
+    if (!base) return false;
+    const placed = insertShapeCopy(base, selectedObjectId);
+    if (!placed) return false;
+    // Cascade subsequent pastes from the newly placed shape.
+    shapeClipboardRef.current = structuredClone(placed);
+    return true;
+  }, [scene, selectedObjectId, insertShapeCopy]);
+
+  const hasShapeClipboard = useCallback(
+    () => shapeClipboardRef.current != null,
+    [],
+  );
+
+  const copySelectedBall = useCallback(() => {
+    if (!scene || !selectedBallId) return false;
+    const src = scene.balls.find((b) => b.id === selectedBallId);
+    if (!src) return false;
+    ballClipboardRef.current = structuredClone({
+      ...src,
+      attachedTo: null,
+    });
+    return true;
+  }, [scene, selectedBallId]);
+
+  const pasteBall = useCallback(() => {
+    const src = ballClipboardRef.current;
+    if (!src || !scene) return false;
+    const placed = insertBallCopy(src);
+    if (!placed) return false;
+    // Cascade subsequent pastes from the newly placed ball.
+    ballClipboardRef.current = structuredClone({
+      ...placed,
+      attachedTo: null,
+    });
+    return true;
+  }, [scene, insertBallCopy]);
+
+  const hasBallClipboard = useCallback(
+    () => ballClipboardRef.current != null,
+    [],
+  );
 
   const selectTeam = useCallback(
     (team: "home" | "away") => {
@@ -1235,20 +1660,17 @@ export function useAppState() {
             return { ...p, x: ax, y: ay, role: roleB, matchStatus: statusB };
           return p;
         });
-        let ball = scene.ball;
-        const movedA = pieces.find((p) => p.id === idA);
-        const movedB = pieces.find((p) => p.id === idB);
-        if (movedA && ball.attachedTo === idA) {
-          ball = { ...ball, x: movedA.x, y: movedA.y };
-        } else if (movedB && ball.attachedTo === idB) {
-          ball = { ...ball, x: movedB.x, y: movedB.y };
-        }
+        const balls = ballsFollowingMovedPieces(
+          scene.balls,
+          pieces,
+          new Set([idA, idB]),
+        );
         return {
           ...b,
           subs: nextSubs,
           maxSubs: b.maxSubs > 0 ? b.maxSubs : DEFAULT_MAX_SUBS,
           scenes: b.scenes.map((s) =>
-            s.id === scene.id ? { ...s, pieces, ball } : s,
+            s.id === scene.id ? { ...s, pieces, balls } : s,
           ),
         };
       });
@@ -1361,15 +1783,11 @@ export function useAppState() {
               }
               return p;
             });
-            let ball = s.ball;
-            if (s.id === b.activeSceneId) {
-              const piece = pieces.find((p) => p.id === id);
-              if (piece) {
-                const followed = ballFollowingPiece(ball, piece);
-                if (followed) ball = followed;
-              }
-            }
-            return { ...s, pieces, ball };
+            const balls =
+              s.id === b.activeSceneId
+                ? ballsFollowingMovedPieces(s.balls, pieces, new Set([id]))
+                : s.balls;
+            return { ...s, pieces, balls };
           }),
         };
       }, record);
@@ -1480,12 +1898,11 @@ export function useAppState() {
             ? { ...p, x, y, role, facing: facing ?? p.facing }
             : p,
         );
-        const piece = pieces.find((p) => p.id === id);
-        let ball = s.ball;
-        if (piece) {
-          const followed = ballFollowingPiece(ball, piece);
-          if (followed) ball = followed;
-        }
+        const balls = ballsFollowingMovedPieces(
+          s.balls,
+          pieces,
+          new Set([id]),
+        );
         const objects = trail
           ? [
               ...s.objects,
@@ -1499,7 +1916,7 @@ export function useAppState() {
               },
             ]
           : s.objects;
-        return { ...s, pieces, ball, objects };
+        return { ...s, pieces, balls, objects };
       });
     },
     [board, updateScene],
@@ -1571,20 +1988,33 @@ export function useAppState() {
   );
 
   const addText = useCallback(
-    (x: number, y: number, text: string) => {
+    (
+      x: number,
+      y: number,
+      text: string,
+      opts?: { width?: number; height?: number },
+    ) => {
       updateScene((s) => ({
         ...s,
         objects: [
           ...s.objects,
           {
             id: uid(),
-            type: "text",
+            type: "text" as const,
             x,
             y,
             text,
             color: textColorForBoard(board),
             fontSize: 0.035,
             fontFamily: defaultTextFont(),
+            ...(opts?.width != null && Number.isFinite(opts.width) && opts.width > 0
+              ? { width: opts.width }
+              : {}),
+            ...(opts?.height != null &&
+            Number.isFinite(opts.height) &&
+            opts.height > 0
+              ? { height: opts.height }
+              : {}),
           },
         ],
       }));
@@ -1594,7 +2024,8 @@ export function useAppState() {
 
   const updateText = useCallback(
     (id: string, text: string) => {
-      const trimmed = text.trim();
+      // Trim ends only — keep internal newlines for multiline wrap
+      const trimmed = text.replace(/^\s+|\s+$/g, "");
       updateScene((s) => {
         if (!trimmed) {
           return { ...s, objects: s.objects.filter((o) => o.id !== id) };
@@ -1632,20 +2063,764 @@ export function useAppState() {
         color?: string;
         fontFamily?: TextFontId;
         fontSize?: number;
+        x?: number;
+        y?: number;
+        width?: number;
+        height?: number;
+        align?: "left" | "center" | "right";
+        rotationDeg?: number;
       },
+      record = false,
     ) => {
       updateScene(
         (s) => ({
           ...s,
-          objects: s.objects.map((o) =>
-            o.id === id && o.type === "text" ? { ...o, ...patch } : o,
-          ),
+          objects: s.objects.map((o) => {
+            if (o.id !== id || o.type !== "text") return o;
+            const next = { ...o, ...patch };
+            if (patch.width !== undefined) {
+              if (
+                !Number.isFinite(patch.width) ||
+                patch.width <= 0
+              ) {
+                delete next.width;
+              }
+            }
+            if (patch.height !== undefined) {
+              if (
+                !Number.isFinite(patch.height) ||
+                patch.height <= 0
+              ) {
+                delete next.height;
+              }
+            }
+            if (patch.rotationDeg !== undefined) {
+              if (!Number.isFinite(patch.rotationDeg)) {
+                delete next.rotationDeg;
+              } else {
+                let d = patch.rotationDeg % 360;
+                if (d < 0) d += 360;
+                if (Math.abs(d) < 1e-9 || Math.abs(d - 360) < 1e-9) {
+                  delete next.rotationDeg;
+                } else {
+                  next.rotationDeg = d;
+                }
+              }
+            }
+            if (patch.align !== undefined) {
+              if (
+                patch.align !== "left" &&
+                patch.align !== "center" &&
+                patch.align !== "right"
+              ) {
+                delete next.align;
+              } else if (patch.align === "left") {
+                // Unspecified = left — omit to keep legacy rows lean
+                delete next.align;
+              } else {
+                next.align = patch.align;
+              }
+            }
+            if (patch.fontSize !== undefined) {
+              if (!Number.isFinite(patch.fontSize) || patch.fontSize <= 0) {
+                next.fontSize = 0.035;
+              } else {
+                // Clamp to UI bounds (0.012–0.072)
+                const ui = Math.round(patch.fontSize * 1000);
+                const clamped = Math.min(72, Math.max(12, ui));
+                next.fontSize = clamped / 1000;
+              }
+            }
+            return next;
+          }),
         }),
-        false,
+        record,
       );
     },
     [updateScene],
   );
+
+  /**
+   * Insert a shape behind other DrawObjects (array front = drawn first).
+   * Group 5 wires create-drag UI onto this API.
+   */
+  const addShape = useCallback(
+    (
+      kind: ShapeKind,
+      box: { x: number; y: number; w: number; h: number },
+      opts?: {
+        fillColor?: string;
+        fillOpacity?: number;
+        strokeEnabled?: boolean;
+        rotationDeg?: number;
+        select?: boolean;
+      },
+    ) => {
+      const style = shapeCreateStyleRef.current;
+      const shape = createShapeObject(kind, {
+        ...box,
+        fillColor: opts?.fillColor ?? style.fillColor,
+        fillOpacity: opts?.fillOpacity ?? style.fillOpacity,
+        strokeEnabled: opts?.strokeEnabled ?? style.strokeEnabled,
+        rotationDeg: opts?.rotationDeg,
+      });
+      updateScene((s) => ({
+        ...s,
+        objects: [shape, ...s.objects],
+      }));
+      if (opts?.select !== false) {
+        setSelectedObjectId(shape.id);
+        setSelectedPieceId(null);
+        setSelectedBall(false);
+      }
+      return shape.id;
+    },
+    [updateScene],
+  );
+
+  const moveShape = useCallback(
+    (id: string, x: number, y: number, record = false) => {
+      updateScene(
+        (s) => ({
+          ...s,
+          objects: s.objects.map((o) =>
+            o.id === id && o.type === "shape" ? { ...o, x, y } : o,
+          ),
+        }),
+        record,
+      );
+    },
+    [updateScene],
+  );
+
+  const patchShape = useCallback(
+    (
+      id: string,
+      patch: Partial<
+        Pick<
+          ShapeObject,
+          | "x"
+          | "y"
+          | "w"
+          | "h"
+          | "rotationDeg"
+          | "fillColor"
+          | "fillOpacity"
+          | "strokeEnabled"
+          | "kind"
+        >
+      >,
+      record = false,
+    ) => {
+      updateScene(
+        (s) => ({
+          ...s,
+          objects: s.objects.map((o) => {
+            if (o.id !== id || o.type !== "shape") return o;
+            const merged: ShapeObject = { ...o, ...patch };
+            // Prevent fully invisible unselectable shapes (opacity 0 + outline off).
+            const nextOpacity = clampShapeFillOpacity(
+              merged.fillOpacity ?? SHAPE_DEFAULT_FILL_OPACITY,
+            );
+            const nextStroke = merged.strokeEnabled !== false;
+            if (nextOpacity <= 0 && !nextStroke) {
+              if (patch.strokeEnabled === false) {
+                merged.fillOpacity = 0.05;
+                merged.strokeEnabled = false;
+              } else {
+                merged.fillOpacity = nextOpacity;
+                delete merged.strokeEnabled; // outline ON
+              }
+            }
+            const next = sanitizeShapeObject(merged);
+            if (!next) return o;
+            if (
+              patch.fillColor !== undefined ||
+              patch.fillOpacity !== undefined ||
+              patch.strokeEnabled !== undefined
+            ) {
+              shapeCreateStyleRef.current = {
+                fillColor: sanitizeShapeFillColor(next.fillColor),
+                fillOpacity: clampShapeFillOpacity(
+                  next.fillOpacity ?? SHAPE_DEFAULT_FILL_OPACITY,
+                ),
+                strokeEnabled: next.strokeEnabled !== false,
+              };
+            }
+            return next;
+          }),
+        }),
+        record,
+      );
+    },
+    [updateScene],
+  );
+
+  const arrangeSelectedShape = useCallback(
+    (op: ShapeArrangeOp) => {
+      if (!selectedObjectId || !board) return false;
+      const sc = getActiveScene(board);
+      if (!sc) return false;
+      const obj = sc.objects.find((o) => o.id === selectedObjectId);
+      if (!obj || obj.type !== "shape") return false;
+      const nextObjs = arrangeDrawObject(sc.objects, selectedObjectId, op);
+      if (!nextObjs) return false;
+      updateScene((s) => ({ ...s, objects: nextObjs }), true);
+      return true;
+    },
+    [board, selectedObjectId, updateScene],
+  );
+
+  /**
+   * Open a local Portable JSON as File Session (no BoardStore insert, no ID remap).
+   * Replaces any existing File Session. Caller should confirm if current is dirty.
+   * Directory mode may attach a FileHandle (memory only; never persisted).
+   */
+  const openFileSession = useCallback(
+    (
+      text: string,
+      sourceName: string,
+      byteLengthOrOpts?:
+        | number
+        | {
+            byteLength?: number;
+            directorySource?: FileSessionDirectorySource | null;
+          },
+    ): PortableImportErrorCode | null => {
+      const opts =
+        typeof byteLengthOrOpts === "number"
+          ? { byteLength: byteLengthOrOpts }
+          : byteLengthOrOpts ?? {};
+      let nextBoard: BoardDocument;
+      try {
+        nextBoard = parsePortableBoardJsonForOpen(text, opts.byteLength);
+      } catch (e) {
+        if (e instanceof PortableImportError) return e.code;
+        return "unknown";
+      }
+      history.current = [];
+      future.current = [];
+      setSelectedPieceId(null);
+      setSelectedObjectId(null);
+      setSelectedBall(false);
+      setLiveEventStack([]);
+      setPendingFileSessionRestore(null);
+      const openedAt = Date.now();
+      const baselineFinger = boardContentFingerprint(nextBoard);
+      const nextFs: FileSessionState = {
+        board: nextBoard,
+        sourceName: sourceName.trim() || "board.zoneboard.json",
+        openedAt,
+        baselineFinger,
+        dirty: false,
+        neverSavedToFile: false,
+        draftSaveOk: true,
+        lastDownloadRequestedAt: null,
+        directorySource: opts.directorySource ?? null,
+        saveUi: "idle",
+        saveConflictCurrent: null,
+      };
+      fileSessionRef.current = nextFs;
+      setFileSession(nextFs);
+      clearFileSessionDraft();
+      return null;
+    },
+    [],
+  );
+
+  /**
+   * Create a brand-new BoardDocument as File Session (not BoardStore).
+   * Starts never-saved / dirty. Does not consume Store slot limits.
+   * Caller must confirm discard of any existing dirty File Session first.
+   */
+  const createNewLocalBoardFileSession = useCallback((): boolean => {
+    const nextBoard = createBoard(
+      "soccer",
+      defaultBoardTitle(1, locale),
+      locale,
+    );
+    history.current = [];
+    future.current = [];
+    setSelectedPieceId(null);
+    setSelectedObjectId(null);
+    setSelectedBall(false);
+    setLiveEventStack([]);
+    setPendingFileSessionRestore(null);
+    const openedAt = Date.now();
+    const baselineFinger = boardContentFingerprint(nextBoard);
+    const nextFs: FileSessionState = {
+      board: nextBoard,
+      sourceName: "untitled.zoneboard.json",
+      openedAt,
+      baselineFinger,
+      dirty: true,
+      neverSavedToFile: true,
+      draftSaveOk: true,
+      lastDownloadRequestedAt: null,
+      directorySource: null,
+      saveUi: "idle",
+      saveConflictCurrent: null,
+    };
+    fileSessionRef.current = nextFs;
+    setFileSession(nextFs);
+    scheduleFileSessionDraft(nextFs);
+    return true;
+  }, [locale, scheduleFileSessionDraft]);
+
+  /** Discard File Session and return to Store Mode. Does not touch BoardStore. */
+  const closeFileSession = useCallback((opts?: { discardDraft?: boolean }) => {
+    if (fileSessionDraftTimer.current) {
+      window.clearTimeout(fileSessionDraftTimer.current);
+      fileSessionDraftTimer.current = null;
+    }
+    history.current = [];
+    future.current = [];
+    setSelectedPieceId(null);
+    setSelectedObjectId(null);
+    setSelectedBall(false);
+    setLiveEventStack([]);
+    fileSessionRef.current = null;
+    setFileSession(null);
+    if (opts?.discardDraft !== false) clearFileSessionDraft();
+  }, []);
+
+  /**
+   * Request Blob download (Save As). Does **not** mark clean — browsers cannot
+   * confirm the OS finished writing. Keeps dirty + draft intact.
+   */
+  const downloadFileSessionJson = useCallback((): boolean => {
+    const fs = fileSessionRef.current;
+    if (!fs) return false;
+    try {
+      exportBoardJsonDownload(fs.board, {
+        fallbackTitle: fs.sourceName.replace(/\.zoneboard\.json$/i, "") || "ZoneBoard",
+      });
+      const nextFs: FileSessionState = {
+        ...fs,
+        lastDownloadRequestedAt: Date.now(),
+      };
+      fileSessionRef.current = nextFs;
+      setFileSession(nextFs);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  /**
+   * Call only after a confirmed write+close to the source file.
+   * Blob download must never call this. If `expectedFinger` is provided and the
+   * live board has diverged (edits during Save), dirty stays true.
+   */
+  const markFileSessionSavedToSource = useCallback(
+    (opts?: {
+      expectedFinger?: string;
+      openSnapshot?: FileMetaSnapshot;
+    }) => {
+      const fs = fileSessionRef.current;
+      if (!fs) return;
+      const finger = boardContentFingerprint(fs.board);
+      const stillSame =
+        opts?.expectedFinger == null || opts.expectedFinger === finger;
+      const nextDir =
+        fs.directorySource && opts?.openSnapshot
+          ? { ...fs.directorySource, openSnapshot: opts.openSnapshot }
+          : fs.directorySource;
+      // If edits landed during Save, baseline becomes the written content;
+      // live board stays dirty until it matches that written finger.
+      const baselineFinger = stillSame
+        ? finger
+        : (opts?.expectedFinger ?? fs.baselineFinger);
+      const nextFs: FileSessionState = {
+        ...fs,
+        baselineFinger,
+        neverSavedToFile: false,
+        dirty: isFileSessionContentDirty(
+          fs.board,
+          baselineFinger,
+          false,
+        ),
+        draftSaveOk: true,
+        lastDownloadRequestedAt: null,
+        directorySource: nextDir,
+        saveUi: stillSame ? "saved" : "idle",
+        saveConflictCurrent: null,
+      };
+      fileSessionRef.current = nextFs;
+      setFileSession(nextFs);
+      if (!nextFs.dirty) clearFileSessionDraft();
+      else scheduleFileSessionDraft(nextFs);
+    },
+    [scheduleFileSessionDraft],
+  );
+
+  const saveBusyRef = useRef(false);
+
+  /**
+   * Directory Save: permission → conflict check → write → close → verify → clean.
+   * Returns structured result for UI (conflict dialog / errors).
+   */
+  const saveFileSessionToSource = useCallback(
+    async (opts?: {
+      allowOverwriteConflict?: boolean;
+    }): Promise<
+      SaveToSourceResult & {
+        libraryPatch?: {
+          entryId: string;
+          board: BoardDocument;
+          text: string;
+          byteSize: number;
+          openSnapshot: FileMetaSnapshot;
+          displayTitle: string;
+          sceneCount: number;
+          boardUpdatedAt: string | null;
+        };
+      }
+    > => {
+      const fs = fileSessionRef.current;
+      if (!fs) return { ok: false, reason: "no_handle" };
+      if (!fs.directorySource) {
+        const nextFs = { ...fs, saveUi: "no_handle" as const };
+        fileSessionRef.current = nextFs;
+        setFileSession(nextFs);
+        return { ok: false, reason: "no_handle" };
+      }
+      if (saveBusyRef.current) return { ok: false, reason: "busy" };
+      saveBusyRef.current = true;
+      // Freeze identity + board at Save start so a later session switch cannot
+      // mark a different File Session clean or patch the wrong library entry.
+      const saveTarget = {
+        fileHandle: fs.directorySource.fileHandle,
+        libraryEntryId: fs.directorySource.libraryEntryId,
+        openedSnapshot: fs.directorySource.openSnapshot,
+        board: structuredClone(fs.board),
+        expectedFinger: boardContentFingerprint(fs.board),
+      };
+      const savingFs = {
+        ...fs,
+        saveUi: "saving" as const,
+        saveConflictCurrent: null,
+      };
+      fileSessionRef.current = savingFs;
+      setFileSession(savingFs);
+
+      try {
+        const result = await writeBoardToFileHandle(
+          saveTarget.fileHandle,
+          saveTarget.board,
+          {
+            allowOverwriteConflict: opts?.allowOverwriteConflict,
+            openedSnapshot: saveTarget.openedSnapshot,
+          },
+        );
+
+        if (!result.ok) {
+          const ui: FileSessionSaveUi =
+            result.reason === "permission_denied"
+              ? "permission_denied"
+              : result.reason === "conflict"
+                ? "conflict"
+                : result.reason === "missing"
+                  ? "missing"
+                  : "failed";
+          const live = fileSessionRef.current;
+          // Only stamp failure UI onto the same Directory session that started Save.
+          if (
+            live?.directorySource?.libraryEntryId === saveTarget.libraryEntryId &&
+            live.directorySource.fileHandle === saveTarget.fileHandle
+          ) {
+            const nextFs: FileSessionState = {
+              ...live,
+              saveUi: ui,
+              saveConflictCurrent: result.current ?? null,
+            };
+            fileSessionRef.current = nextFs;
+            setFileSession(nextFs);
+          }
+          return result;
+        }
+
+        // Library reflects what was written (board at Save start), not later edits.
+        const writtenBoard = saveTarget.board;
+        const text = portableToJsonString(
+          serializeBoardToPortable(writtenBoard),
+        );
+        const live = fileSessionRef.current;
+        if (
+          live?.directorySource?.libraryEntryId === saveTarget.libraryEntryId &&
+          live.directorySource.fileHandle === saveTarget.fileHandle
+        ) {
+          markFileSessionSavedToSource({
+            expectedFinger: saveTarget.expectedFinger,
+            openSnapshot: result.snapshot,
+          });
+        }
+
+        return {
+          ok: true,
+          snapshot: result.snapshot,
+          libraryPatch: {
+            entryId: saveTarget.libraryEntryId,
+            board: structuredClone(writtenBoard),
+            text,
+            byteSize: new TextEncoder().encode(text).length,
+            openSnapshot: result.snapshot,
+            // Local Files Dashboard primary = file stem (not board.title).
+            displayTitle: displayNameFromZoneboardFile(
+              result.snapshot.name || fs.sourceName,
+            ),
+            sceneCount: writtenBoard.scenes.length,
+            boardUpdatedAt:
+              typeof writtenBoard.updatedAt === "string"
+                ? writtenBoard.updatedAt
+                : null,
+          },
+        };
+      } finally {
+        saveBusyRef.current = false;
+      }
+    },
+    [locale, markFileSessionSavedToSource],
+  );
+
+  const saveAsBusyRef = useRef(false);
+
+  /**
+   * Save As into a connected folder (new file; conflict → rename, no silent overwrite).
+   * Does not mutate board.title. Does not insert into BoardStore.
+   * On success for File Session, rebinds directorySource to the new file.
+   */
+  const saveBoardAsToFolder = useCallback(
+    async (opts: {
+      directoryHandle: FileSystemDirectoryHandle;
+      directorySessionId: string;
+      fileName: string;
+      allowOverwrite?: boolean;
+      onPhase?: (phase: SaveAsPhase) => void;
+    }): Promise<
+      SaveAsToFolderResult & {
+        libraryEntry?: {
+          id: string;
+          board: BoardDocument;
+          text: string;
+          byteSize: number;
+          openSnapshot: FileMetaSnapshot;
+          displayTitle: string;
+          sceneCount: number;
+          boardUpdatedAt: string | null;
+          fileName: string;
+          fileHandle: FileSystemFileHandle;
+          directorySessionId: string;
+        };
+      }
+    > => {
+      const fs = fileSessionRef.current;
+      const activeBoard = fs?.board ?? board;
+      if (!activeBoard) return { ok: false, reason: "no_directory" };
+      if (saveAsBusyRef.current || saveBusyRef.current) {
+        return { ok: false, reason: "write_failed" };
+      }
+
+      const normalized = normalizeSaveAsFileName(
+        opts.fileName,
+        boardDisplayName(activeBoard, defaultBoardTitle(1, locale)),
+        defaultBoardTitle(1, locale),
+      );
+      if (!normalized) return { ok: false, reason: "invalid_name" };
+
+      saveAsBusyRef.current = true;
+      try {
+        const result = await saveBoardAsNewInDirectory(
+          opts.directoryHandle,
+          activeBoard,
+          normalized,
+          {
+            allowOverwrite: opts.allowOverwrite,
+            onPhase: opts.onPhase,
+          },
+        );
+        if (!result.ok) return result;
+
+        // Keep board.title as authored — Save As only chooses the file name.
+        const writtenBoard = structuredClone(activeBoard);
+        const text = portableToJsonString(
+          serializeBoardToPortable(writtenBoard),
+        );
+        const entryId = uid();
+        const expectedFinger = boardContentFingerprint(writtenBoard);
+
+        if (fs) {
+          const nextDir = {
+            fileHandle: result.fileHandle,
+            directorySessionId: opts.directorySessionId,
+            libraryEntryId: entryId,
+            openSnapshot: result.snapshot,
+          };
+          const live = fileSessionRef.current;
+          if (live && live.openedAt === fs.openedAt) {
+            const nextFs: FileSessionState = {
+              ...live,
+              sourceName: result.fileName,
+              directorySource: nextDir,
+              baselineFinger: expectedFinger,
+              neverSavedToFile: false,
+              dirty: isFileSessionContentDirty(
+                live.board,
+                expectedFinger,
+                false,
+              ),
+              saveUi:
+                boardContentFingerprint(live.board) === expectedFinger
+                  ? "saved"
+                  : "idle",
+              saveConflictCurrent: null,
+              lastDownloadRequestedAt: null,
+              draftSaveOk: true,
+            };
+            fileSessionRef.current = nextFs;
+            setFileSession(nextFs);
+            if (!nextFs.dirty) clearFileSessionDraft();
+            else scheduleFileSessionDraft(nextFs);
+          }
+        }
+
+        return {
+          ok: true,
+          fileName: result.fileName,
+          fileHandle: result.fileHandle,
+          snapshot: result.snapshot,
+          overwritten: result.overwritten,
+          libraryEntry: {
+            id: entryId,
+            board: writtenBoard,
+            text,
+            byteSize: new TextEncoder().encode(text).length,
+            openSnapshot: result.snapshot,
+            displayTitle: displayNameFromZoneboardFile(result.fileName),
+            sceneCount: writtenBoard.scenes.length,
+            boardUpdatedAt:
+              typeof writtenBoard.updatedAt === "string"
+                ? writtenBoard.updatedAt
+                : null,
+            fileName: result.fileName,
+            fileHandle: result.fileHandle,
+            directorySessionId: opts.directorySessionId,
+          },
+        };
+      } finally {
+        opts.onPhase?.("idle");
+        saveAsBusyRef.current = false;
+      }
+    },
+    [board, locale, scheduleFileSessionDraft],
+  );
+
+  const suggestSaveAsFileName = useCallback((): string => {
+    const active = fileSessionRef.current?.board ?? board;
+    if (!active) return portableBoardFilename("ZoneBoard", "ZoneBoard");
+    const fs = fileSessionRef.current;
+    // New unsaved: suggest from board title (not placeholder untitled).
+    if (fs?.neverSavedToFile) {
+      return portableBoardFilename(
+        boardDisplayName(active, defaultBoardTitle(1, locale)),
+        defaultBoardTitle(1, locale),
+      );
+    }
+    if (fs?.sourceName && fs.sourceName !== "untitled.zoneboard.json") {
+      return portableBoardFilename(
+        displayNameFromZoneboardFile(fs.sourceName),
+        defaultBoardTitle(1, locale),
+      );
+    }
+    return portableBoardFilename(
+      boardDisplayName(active, defaultBoardTitle(1, locale)),
+      defaultBoardTitle(1, locale),
+    );
+  }, [board, locale]);
+
+  /** Pre-check conflict without writing (for UI). */
+  const checkFileSessionSaveConflict = useCallback(async (): Promise<{
+    kind: ReturnType<typeof detectSaveConflict>;
+    current: FileMetaSnapshot | null;
+  }> => {
+    const fs = fileSessionRef.current;
+    if (!fs?.directorySource) {
+      return { kind: "missing", current: null };
+    }
+    const current = await readFileSnapshot(fs.directorySource.fileHandle);
+    return {
+      kind: detectSaveConflict(fs.directorySource.openSnapshot, current),
+      current,
+    };
+  }, []);
+
+  /**
+   * If a dirty File Session is active, ask before discarding.
+   * Returns true when it is safe to proceed (no session, clean close, or user confirmed).
+   */
+  const confirmDiscardFileSessionIfNeeded = useCallback(
+    (message: string): boolean => {
+      const fs = fileSessionRef.current;
+      if (!fs) return true;
+      if (fs.dirty) {
+        const ok = window.confirm(message);
+        if (!ok) return false;
+      }
+      closeFileSession({ discardDraft: true });
+      return true;
+    },
+    [closeFileSession],
+  );
+
+  const acceptFileSessionRestore = useCallback(() => {
+    const pending = pendingFileSessionRestore;
+    if (!pending) return;
+    history.current = [];
+    future.current = [];
+    setSelectedPieceId(null);
+    setSelectedObjectId(null);
+    setSelectedBall(false);
+    setLiveEventStack([]);
+    const neverSaved = pending.neverSavedToFile;
+    const nextFs: FileSessionState = {
+      board: pending.board,
+      sourceName: pending.sourceName,
+      openedAt: pending.openedAt,
+      baselineFinger: pending.baselineFinger,
+      neverSavedToFile: neverSaved,
+      dirty: isFileSessionContentDirty(
+        pending.board,
+        pending.baselineFinger,
+        neverSaved,
+      ),
+      draftSaveOk: true,
+      lastDownloadRequestedAt: null,
+      directorySource: null,
+      saveUi: "no_handle",
+      saveConflictCurrent: null,
+    };
+    fileSessionRef.current = nextFs;
+    setFileSession(nextFs);
+    setPendingFileSessionRestore(null);
+  }, [pendingFileSessionRestore]);
+
+  const dismissFileSessionRestore = useCallback(() => {
+    setPendingFileSessionRestore(null);
+    clearFileSessionDraft();
+  }, []);
+
+  // Boot: detect sessionStorage draft (user must confirm — never auto-open).
+  useEffect(() => {
+    const draft = readFileSessionDraft();
+    if (!draft) return;
+    setPendingFileSessionRestore({
+      sourceName: draft.sourceName,
+      openedAt: draft.openedAt,
+      baselineFinger: draft.baselineFinger,
+      board: draft.board,
+      neverSavedToFile: draft.neverSavedToFile === true,
+    });
+  }, []);
 
   const deleteSelected = useCallback(() => {
     if (selectedPieceIds.length > 0) {
@@ -1654,10 +2829,7 @@ export function useAppState() {
         ...s,
         pieces: s.pieces.filter((p) => !drop.has(p.id)),
         objects: pruneLinkObjects(s.objects, drop),
-        ball:
-          s.ball.attachedTo && drop.has(s.ball.attachedTo)
-            ? { ...s.ball, attachedTo: null }
-            : s.ball,
+        balls: ballsAfterPieceDelete(s.balls, drop),
       }));
       setSelectedPieceId(null);
       return;
@@ -1670,17 +2842,22 @@ export function useAppState() {
       setSelectedObjectId(null);
       return;
     }
-    if (selectedBall) {
-      updateScene((s) => ({
-        ...s,
-        ball: { x: 0.5, y: 0.5, attachedTo: null },
-      }));
-      setSelectedBall(false);
+    if (selectedBallId) {
+      // Last ball is undeletable — no-op, no history.
+      if (!scene || scene.balls.length <= 1) return;
+      const id = selectedBallId;
+      updateScene((s) => {
+        if (s.balls.length <= 1) return s;
+        const next = s.balls.filter((b) => b.id !== id);
+        return next.length === 0 ? s : { ...s, balls: next };
+      });
+      setSelectedBallId(null);
     }
   }, [
     selectedPieceIds,
     selectedObjectId,
-    selectedBall,
+    selectedBallId,
+    scene,
     setSelectedPieceId,
     updateScene,
   ]);
@@ -2404,7 +3581,9 @@ export function useAppState() {
           "custom",
           {
             pieces: cap.draftPieces,
-            ball: cap.draftBall ?? scene.ball,
+            balls: cap.draftBall
+              ? normalizeSceneBalls(undefined, cap.draftBall)
+              : scene.balls,
             objects: [],
             viewport: { ...activeViewport(board) },
           },
@@ -2422,7 +3601,9 @@ export function useAppState() {
           (s) => ({
             ...s,
             pieces: cap.draftPieces,
-            ball: cap.draftBall ?? s.ball,
+            balls: cap.draftBall
+              ? normalizeSceneBalls(undefined, cap.draftBall)
+              : s.balls,
           }),
           false,
         );
@@ -2459,8 +3640,28 @@ export function useAppState() {
     scene,
     viewport,
     watermark,
+    /** True while editing a local JSON File Session (not in BoardStore). */
+    isFileSession,
+    fileSession,
+    pendingFileSessionRestore,
+    openFileSession,
+    createNewLocalBoardFileSession,
+    closeFileSession,
+    downloadFileSessionJson,
+    markFileSessionSavedToSource,
+    saveFileSessionToSource,
+    saveBoardAsToFolder,
+    suggestSaveAsFileName,
+    checkFileSessionSaveConflict,
+    confirmDiscardFileSessionIfNeeded,
+    acceptFileSessionRestore,
+    dismissFileSessionRestore,
     tool,
     setTool,
+    shapeKind,
+    setShapeKind,
+    shapeAspectLock,
+    setShapeAspectLock,
     selectedPieceId,
     selectedPieceIds,
     setSelectedPieceId,
@@ -2478,6 +3679,9 @@ export function useAppState() {
     alignSelected,
     distributeSelected,
     duplicateSelected,
+    copySelectedShape,
+    pasteShape,
+    hasShapeClipboard,
     selectTeam,
     selectPiecesInRect,
     pieceInspectorId,
@@ -2485,8 +3689,16 @@ export function useAppState() {
     closePieceInspector,
     selectedObjectId,
     setSelectedObjectId,
+    textEditRequestId,
+    requestTextEdit,
+    clearTextEditRequest,
     selectedBall,
+    selectedBallId,
     setSelectedBall,
+    setSelectedBallId,
+    copySelectedBall,
+    pasteBall,
+    hasBallClipboard,
     selectionColor,
     setSelectionColor,
     locale,
@@ -2528,11 +3740,14 @@ export function useAppState() {
     updateScene,
     undo,
     redo,
+    rollbackLastHistory,
     setActiveBoard,
     addBoard,
     addBoardReplacing,
     requestNewBoard,
     deleteBoard,
+    exportBoardJson,
+    importBoardJsonText,
     setActiveScene,
     addScene,
     addSceneFromPreset,
@@ -2573,6 +3788,10 @@ export function useAppState() {
     updateText,
     moveText,
     patchText,
+    addShape,
+    moveShape,
+    patchShape,
+    arrangeSelectedShape,
     deleteSelected,
     clearDrawings,
     wipeDrawing,

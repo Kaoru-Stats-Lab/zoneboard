@@ -150,6 +150,9 @@ function paintBoardSurface(
     outer,
     background: options.ground,
     selectionColor: options.selectionColor,
+    // Defense-in-depth: never emit editor handles / resize chrome in PNG
+    // (selection ids are already omitted; matches Broadcast interactiveChrome:false).
+    interactiveChrome: false,
     watermark: options.bakeWatermark ? options.watermark : null,
     watermarkImage: options.bakeWatermark ? options.watermarkImage : null,
     ballImage: options.ballImage,

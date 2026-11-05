@@ -21,6 +21,8 @@ export type SitePage = {
   ledeJa: string;
   sections: SiteSection[];
   showContactForm?: boolean;
+  /** Sitemap lastmod when this page’s main copy changed. Falls back to PUBLISHER.updatedIso. */
+  contentUpdatedIso?: string;
 };
 
 export const SITE_PAGES: SitePage[] = [
@@ -117,13 +119,14 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "How to show a move on stream",
     titleJa: "配信で動きを見せる",
     descriptionEn:
-      "How to use ZoneBoard on stream: place the XI, draw the pattern, press B to hide tools, and window-capture beside the camera you already use.",
+      "ZoneBoard guide: place an XI, draw the pattern, save local JSON boards, press B for broadcast, and window-capture beside the camera you already use. PC, laptop, and tablet.",
     descriptionJa:
-      "配信での使い方。スタメンを置き、パターンを描き、B でツールを消し、いつものカメラの横でウィンドウキャプチャする。",
+      "ZoneBoard の使い方。スタメンを置き、パターンを描き、ローカル JSON を保存し、B で配信、いつものカメラの横でウィンドウキャプチャ。PC・ノート・タブレット向け。",
     ledeEn:
-      "The board is not a second show. It is the pitch you add to a show you already run. This page is the long version of place, draw, and show.",
+      "The board is not a second show. It is the pitch you add to a show you already run. This page is the long version of place, draw, show, and keep a file you can reopen.",
     ledeJa:
-      "ボードは第二の番組ではありません。いま走っている番組に足すピッチです。このページは、置く・描く・出すの長い版です。",
+      "ボードは第二の番組ではありません。いま走っている番組に足すピッチです。このページは、置く・描く・出す、そしてあとから開けるファイルとして残す、の長い版です。",
+    contentUpdatedIso: "2026-11-06",
     sections: [
       {
         id: "place",
@@ -146,13 +149,15 @@ export const SITE_PAGES: SitePage[] = [
         headingJa: "型を見せるとき: 描く",
         en: [
           "Pass, Run, and Dribble are different lines because they mean different things on a football graphic. Pass is the ball path — pass, cross, or shot. Run is off-ball movement. Dribble is a carrier moving with the ball. If you use one colour for all three, the viewer has to guess. Use the labelled tools. Do not turn the pitch into a highlighter pack.",
-          "Zone is for space, not for decoration. A pressing trap, a box to attack, or a rest-defence block should be large enough to read and transparent enough that the grass and the numbers still show. If a zone hides a piece, the zone is wrong.",
-          "Pen is for the one mark that is not Pass or Run: a block line, a cover shadow, a defensive chain between pieces, or a channel edge. Hold Shift while dragging Pen for a straight segment — the same habit as Figma. Circles and freehand loops stay unmodified. Link connects pieces; the line follows when you move them. Text is for a short title on the picture, not for a paragraph. If you need a paragraph, say it with your voice. The board is the diagram.",
+          "Shape (Circle, Rectangle, Triangle) marks space — a pressing trap, a box to attack, or a rest-defence block. Make it large enough to read and transparent enough that grass and numbers still show. If a shape hides a piece, the shape is wrong. Lock aspect when you need a square.",
+          "Ball can place more than one ball on a scene. Copy and paste (Ctrl/Cmd+C / Ctrl/Cmd+V) or Duplicate (Ctrl/Cmd+D) on a selected ball when you need a second. Snap still sticks a ball to a player.",
+          "Pen is for the one mark that is not Pass or Run: a block line, a cover shadow, a defensive chain between pieces, or a channel edge. Hold Shift while dragging Pen for a straight segment — the same habit as Figma. Freehand loops stay unmodified. Link connects pieces; the line follows when you move them. Text is for a short title on the picture, not for a paragraph. If you need a paragraph, say it with your voice. The board is the diagram.",
         ],
         ja: [
           "Pass、Run、Dribble は線が違います。意味が違うからです。Pass はボールの道（パス・クロス・シュート）。Run は走る動き。Dribble は運ぶ動きです。三本を同じ色にすると、視聴者は推測します。名前のついたツールを使ってください。ピッチを蛍光ペンの束にしないでください。",
-          "Zone は空間用であり、飾りではありません。プレスの罠、攻める箱、レストディフェンスのブロックは、読める大きさで、芝と番号が残る透明度にします。Zone が駒を隠すなら、その Zone は失敗です。",
-          "Pen は Pass でも Run でもない一本です。ブロックの線、カバーシャドウ、駒どうしを結ぶ守備チェーン、チャネルの境界。Pen 使用中に Shift を押したままドラッグすると直線になります（Figma と同じ）。丸や囲みは Shift なしの自由描きです。Link は駒をクリックしてつなぎ、駒を動かしても線が追従します。文字は絵の短い題であり、段落ではありません。段落が必要なら声で言ってください。ボードは図です。",
+          "Shape（円・四角・三角）は空間用です。プレスの罠、攻める箱、レストディフェンスのブロックを、読める大きさで、芝と番号が残る透明度にします。図形が駒を隠すなら失敗です。正方形が必要ならアスペクト固定を使います。",
+          "Ball で局面に複数のボールを置けます。選んだボールを Ctrl/Cmd+C / Ctrl/Cmd+V、または Ctrl/Cmd+D で複製できます。選手への吸着はそのままです。",
+          "Pen は Pass でも Run でもない一本です。ブロックの線、カバーシャドウ、駒どうしを結ぶ守備チェーン、チャネルの境界。Pen 使用中に Shift を押したままドラッグすると直線になります（Figma と同じ）。囲みは Shift なしの自由描きです。Link は駒をクリックしてつなぎ、駒を動かしても線が追従します。文字は絵の短い題であり、段落ではありません。段落が必要なら声で言ってください。ボードは図です。",
         ],
       },
       {
@@ -201,6 +206,110 @@ export const SITE_PAGES: SitePage[] = [
         ],
       },
       {
+        id: "local-files",
+        headingEn: "Where your boards are stored",
+        headingJa: "ボードはどこに残るか",
+        en: [
+          "You want a tactics board you can reopen next week — not only tonight’s stream. ZoneBoard keeps two kinds of board.",
+          "Working boards live in this browser (BoardStore). They auto-save here. Free plans keep a small number of slots (three on Free). Clearing site data can wipe them. Nothing is uploaded to ZoneBoard’s cloud as a backup.",
+          "Local files are JSON you manage yourself (name ends with .zoneboard.json). They do not use Store slots. You save on purpose. No account and no cloud sync. Open Files in the editor header, or go to /files/.",
+        ],
+        ja: [
+          "来週も開ける戦術ボードが欲しい、という前提です。今夜の配信だけではありません。ZoneBoard には二種類のボードがあります。",
+          "作業ボード（Working boards）はこのブラウザ内（BoardStore）にあります。自動保存されます。Free では枠が少ないです（Free は3）。サイトデータを消すと消えることがあります。クラウドへの自動バックアップはありません。",
+          "ローカルファイルは、自分で管理する JSON です（拡張子は .zoneboard.json）。Store の枠は使いません。保存は明示操作です。アカウントもクラウド同期も不要です。エディタ上部の Files、または /files/ から開けます。",
+        ],
+      },
+      {
+        id: "create-local-board",
+        headingEn: "Create a local board",
+        headingJa: "ローカルボードを作る",
+        en: [
+          "Open Local Files → New board. Edit on the pitch. When a folder is connected, use Save to folder in the header. If not, use Download to start a JSON download (the browser starts the download; that is not a confirmed overwrite of an existing file).",
+          "Next time, Open the JSON from Local Files. You are back in a File Session — edits stay temporary until you Save or Download again.",
+        ],
+        ja: [
+          "Local Files を開き、New board。ピッチで編集します。フォルダ接続中ならヘッダーの Save to folder。なければ Download で JSON のダウンロードを開始します（開始であり、既存ファイルへの上書き完了ではありません）。",
+          "次回は Local Files から JSON を Open。File Session で開きます。Save または Download するまで、変更は一時編集です。",
+        ],
+      },
+      {
+        id: "open-vs-import",
+        headingEn: "Open vs Import",
+        headingJa: "開くと取り込む",
+        en: [
+          "Open starts a File Session: you edit the file temporarily. It is not copied into Working boards.",
+          "Import copies into Working boards (new IDs). The original file on disk is not updated by later Store edits.",
+        ],
+        ja: [
+          "Open（開く）は File Session です。一時編集であり、作業ボード一覧には足しません。",
+          "Import（取り込む）は作業ボードへコピーします（ID を採番し直します）。その後の Store 編集は、元のディスク上のファイルを更新しません。",
+        ],
+      },
+      {
+        id: "save-save-as-download",
+        headingEn: "Save, Save as, and Download",
+        headingJa: "保存・名前を付けて保存・ダウンロード",
+        en: [
+          "Directory mode (folder connected, file opened from that folder): Save writes back to the same file after permission and conflict checks. Save as (under More) creates another file in the folder; after a successful Save as from a File Session, that new file becomes the next Save target. The board’s inner title is not renamed by Save as — only the file name stem changes.",
+          "Store mode (working board): Save as into a connected folder creates a new JSON. The working board in this browser stays. You did not replace the Store board with the file.",
+          "File mode without folder write: Download starts a JSON download so you can keep a copy. It is not a silent overwrite of the file you originally picked. The toast says download started — not that the OS finished writing.",
+        ],
+        ja: [
+          "Directory mode（フォルダ接続かつそのフォルダから開いたファイル）: Save は権限・競合確認のうえ、同じファイルへ書き戻します。More 内の Save as は別ファイルを作ります。File Session で Save as が成功すると、以後の Save 先はその新ファイルです。ボード内部のタイトルは Save as では変わりません。変わるのはファイル名の stem です。",
+          "Store mode（作業ボード）: 接続フォルダへの Save as は新しい JSON を作ります。このブラウザの作業ボードは残ります。Store のボードがファイルに置き換わるわけではありません。",
+          "フォルダへ書けない File mode: Download は JSON ダウンロードを開始し、コピーを手元に残せます。最初に選んだファイルへの黙った上書きではありません。トーストはダウンロード開始であり、OS 上の書き込み完了ではありません。",
+        ],
+      },
+      {
+        id: "browsers-folder-access",
+        headingEn: "Browsers and folder access",
+        headingJa: "ブラウザとフォルダアクセス",
+        en: [
+          "Folder connect uses the browser’s directory picker when available (secure context + showDirectoryPicker). Chromium-based desktop browsers usually offer it. Safari and Firefox often do not — then use Select JSON, Open / Import, and Download instead. ZoneBoard detects the API; it does not hard-code a browser brand list.",
+          "The OS may ask for permission. If you refuse, editing stays; use Download to keep a copy. Folder access is for this tab session — reconnect after a full reload when Save to the original file is needed again. If a file does not appear in the list, check the name ends with .zoneboard.json and that you chose the folder that contains it.",
+        ],
+        ja: [
+          "フォルダ接続は、使えるときディレクトリ選択 API を使います（セキュアな文脈かつ showDirectoryPicker）。Chromium 系のデスクトップでは使えることが多いです。Safari や Firefox では出ないことが多く、そのときは JSON 選択 → Open / Import、および Download を使います。ZoneBoard は API の有無で判定し、ブラウザ名の固定リストでは切り替えません。",
+          "OS が権限を尋ねることがあります。拒否しても編集は残ります。退避は Download です。フォルダ接続はこのタブのあいだです。再読込のあと元ファイルへ Save するなら、もう一度フォルダを選んでください。一覧に出ないときは、名前が .zoneboard.json で終わるか、そのファイルがあるフォルダを選んだかを確認してください。",
+        ],
+      },
+      {
+        id: "recover-unsaved",
+        headingEn: "Recover unsaved work",
+        headingJa: "未保存の作業を取り戻す",
+        en: [
+          "Leaving a dirty File Session (Boards, Files, or closing the local file) asks you to confirm. Cancel keeps the session and your edits.",
+          "A short session draft can restore recent File Session edits in the same browser after a refresh. Folder handles are not restored — reconnect the folder or Download / Save as again. The draft is not long-term backup.",
+        ],
+        ja: [
+          "未保存の File Session を離れるとき（Boards、Files、ローカルを閉じる）は確認が出ます。Cancel ならセッションと編集が残ります。",
+          "同じブラウザなら、短いセッション Draft で最近の File Session 編集を復元できることがあります。フォルダの Handle は戻りません。フォルダを再接続するか、Download / Save as してください。Draft は長期バックアップではありません。",
+        ],
+      },
+      {
+        id: "filename-board-name",
+        headingEn: "Filename and board name",
+        headingJa: "ファイル名とボード名",
+        en: [
+          "Saved files always use the .zoneboard.json extension. You edit the stem only in Save as. The file name on disk can differ from the board title inside the JSON. Local Files cards prefer the file stem. If a name is taken, Save as asks for another name and suggests a free one — it does not overwrite quietly.",
+        ],
+        ja: [
+          "保存ファイルの拡張子は常に .zoneboard.json です。Save as では stem だけ編集します。ディスク上のファイル名と、JSON 内のボードタイトルは別物です。Local Files のカードはファイルの stem を優先表示します。同名があるときは別名を求め、空いている名前を提案します。黙って上書きしません。",
+        ],
+      },
+      {
+        id: "document-header",
+        headingEn: "The document header",
+        headingJa: "ドキュメントヘッダー",
+        en: [
+          "The top bar is document-first: board name, location (In this browser or Local file), and save status (Unsaved changes, No changes, Save failed, and similar). Boards opens working boards. Files opens Local Files. The scene chip opens the Scenes panel. Broadcast stays on the right. Printable keys: /materials/shortcut-sheet/. Product notes: /updates/.",
+        ],
+        ja: [
+          "上部バーはドキュメント優先です。ボード名、場所（このブラウザ / ローカルファイル）、保存状態（未保存の変更、変更なし、Save failed など）。Boards は作業ボード一覧。Files は Local Files。局面チップは Scenes パネル。Broadcast は右。印刷用キー一覧は /materials/shortcut-sheet/。製品の更新は /updates/。",
+        ],
+      },
+      {
         id: "limits",
         headingEn: "What this guide will not promise",
         headingJa: "このガイドが約束しないこと",
@@ -220,23 +329,35 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Frequently asked questions",
     titleJa: "よくある質問",
     descriptionEn:
-      "FAQ: no account, local save, OBS window capture, sports, ads on info pages only, and how to contact the ZoneBoard operator.",
+      "FAQ: no account, working boards vs local JSON files, OBS window capture, sports, ads on info pages only, and how to contact the ZoneBoard operator.",
     descriptionJa:
-      "FAQ。アカウントなし、端末内保存、OBS ウィンドウキャプチャ、競技、読み物ページのみの広告、運営への連絡方法。",
+      "FAQ。アカウントなし、作業ボードとローカル JSON、OBS ウィンドウキャプチャ、競技、読み物ページのみの広告、運営への連絡方法。",
     ledeEn:
       "Short answers. If yours is missing, the contact page reaches the operator. Do not paste a full board into the form.",
     ledeJa:
       "短い回答です。ここに無いことは連絡先ページから運営へ。フォームにボード全体を貼らないでください。",
+    contentUpdatedIso: "2026-11-06",
     sections: [
       {
         id: "account",
         headingEn: "Do I need an account?",
         headingJa: "アカウントは必要か",
         en: [
-          "No. ZoneBoard does not create logins. The board you build stays in the browser you built it in, using local storage. If you clear site data, the board goes with it. Export a picture when you need a copy that survives a clear.",
+          "No. ZoneBoard does not create logins. Working boards stay in this browser. For a file you control, use Local Files (/files/) and keep a .zoneboard.json on your device. Clearing site data can wipe working boards and session drafts; files you saved to disk stay unless you delete them yourself. Longer steps: /guide/#local-files.",
         ],
         ja: [
-          "不要です。ZoneBoard はログインを作りません。作ったボードは、作ったブラウザのローカル保存に残ります。サイトデータを消すとボードも消えます。残したいコピーが必要なら、絵を書き出してください。",
+          "不要です。ZoneBoard はログインを作りません。作業ボードはこのブラウザに残ります。自分で管理するファイルなら Local Files（/files/）で .zoneboard.json を端末に残してください。サイトデータを消すと作業ボードとセッション Draft は消えることがあります。ディスクへ保存したファイルは、自分で消さない限り残ります。手順の長い版は /guide/#local-files。",
+        ],
+      },
+      {
+        id: "local-files-faq",
+        headingEn: "What is the difference between Working boards and Local files?",
+        headingJa: "作業ボードとローカルファイルの違いは",
+        en: [
+          "Working boards auto-save in this browser and use Store slots (three on Free). Local files are JSON you open or import from Local Files. Open = temporary File Session (not added to the list). Import = copy into Working boards. Save / Save as / Download are explained in /guide/#save-save-as-download.",
+        ],
+        ja: [
+          "作業ボードはこのブラウザに自動保存され、Store の枠を使います（Free は3）。ローカルファイルは Local Files から Open または Import する JSON です。Open は一時の File Session（一覧に足さない）。Import は作業ボードへコピー。Save / Save as / Download は /guide/#save-save-as-download。",
         ],
       },
       {
@@ -310,10 +431,10 @@ export const SITE_PAGES: SitePage[] = [
         headingEn: "Can I share a link to the board I just built?",
         headingJa: "いま組んだボードを URL で共有できるか",
         en: [
-          "Not as a live cloud document. There is no account and no server copy of your scenes. What you can share is a picture you export, or the same setup rebuilt on another machine. A shareable link would mean we hosted your diagram. We do not do that in this version, on purpose: the stream capture is a window, not a URL.",
+          "Not as a live cloud document. There is no account and no server copy of your scenes. You can share a PNG you export, hand someone a .zoneboard.json from Local Files, or rebuild the setup on another machine. A shareable live link would mean we hosted your diagram. We do not do that in this version: the stream capture is a window, not a URL.",
         ],
         ja: [
-          "クラウドのライブ文書としてはできません。アカウントも、局面のサーバコピーもありません。共有できるのは書き出した絵か、別の端末で同じ配置を組み直すことです。共有リンクは図をこちらが預かる、ということです。この版ではしません。配信キャプチャは URL ではなく窓です。",
+          "クラウドのライブ文書としてはできません。アカウントも、局面のサーバコピーもありません。共有できるのは書き出した PNG、Local Files の .zoneboard.json、または別端末で同じ配置を組み直すことです。共有のライブリンクは図をこちらが預かる、ということです。この版ではしません。配信キャプチャは URL ではなく窓です。",
         ],
       },
       {
@@ -488,13 +609,14 @@ export const SITE_PAGES: SitePage[] = [
     titleEn: "Updates",
     titleJa: "更新履歴",
     descriptionEn:
-      "Shipped ZoneBoard changes in past tense. Broadcast, match banner, PNG export, and site pages — what already landed in production.",
+      "Shipped ZoneBoard changes: local board JSON files, Shape tools, multi-ball, document header, broadcast, and PNG — past tense only.",
     descriptionJa:
-      "本番に入った ZoneBoard の変更を過去形で。配信、試合帯、PNG、公開ページ。",
+      "本番に入った ZoneBoard の変更。ローカル JSON、Shape、複数ボール、ドキュメントヘッダー、配信、PNG。過去形のみ。",
     ledeEn:
-      "This page lists changes that are already live. It is not a roadmap. Upcoming work stays elsewhere. Feedback still goes through Contact or the in-app form.",
+      "This page lists changes that are already live. It is not a roadmap. Upcoming work stays elsewhere. Feedback still goes through Contact or the in-app form. How to keep files: https://zoneboard.app/guide/#local-files",
     ledeJa:
-      "すでに本番に入った変更だけを載せます。ロードマップではありません。予定はここには書きません。フィードバックは Contact かアプリ内フォームから。",
+      "すでに本番に入った変更だけを載せます。ロードマップではありません。予定はここには書きません。フィードバックは Contact かアプリ内フォームから。ファイルの残し方は https://zoneboard.app/guide/#local-files",
+    contentUpdatedIso: "2026-11-06",
     sections: [
       {
         headingEn: "How we write this",

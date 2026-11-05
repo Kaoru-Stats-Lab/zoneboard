@@ -135,7 +135,7 @@ function guideShortcutSheetAside(): string {
   ).join("\n");
   return `<aside id="shortcut-sheet" class="site-share shortcut-sheet-promo" aria-labelledby="guide-shortcut-heading">
 <h2 id="guide-shortcut-heading">Print before you go live</h2>
-<p>Broadcast mode hides the tools. Keep this command table beside the keyboard — same shortcuts as ? / F1 in the editor.</p>
+<p>Broadcast mode hides the tools. Keep this command table beside the keyboard — same shortcuts as ? / F1 in the editor. File save steps stay in <a href="/guide/#local-files">Local Files</a>.</p>
 <p class="site-share__row">
 ${links}
 </p>
@@ -459,8 +459,19 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${LP_LOCALES.map((locale) => `  <url><loc>${landingUrl(locale, PUBLISHER.siteUrl)}</loc></url>`).join("\n")}
   <url><loc>${PUBLISHER.siteUrl}/board</loc></url>
-${SITE_PAGES.map((p) => `  <url><loc>${PUBLISHER.siteUrl}/${p.slug}/</loc><lastmod>${PUBLISHER.updatedIso}</lastmod></url>`).join("\n")}
-${LP_LOCALES.map((locale) => `  <url><loc>${PUBLISHER.siteUrl}${shortcutSheetPath(locale)}</loc><lastmod>${PUBLISHER.updatedIso}</lastmod></url>`).join("\n")}
+  <url><loc>${PUBLISHER.siteUrl}/files</loc><lastmod>${CHANGELOG.updatedAt}</lastmod></url>
+${SITE_PAGES.map((p) => {
+  const lastmod = p.contentUpdatedIso ?? PUBLISHER.updatedIso;
+  return `  <url><loc>${PUBLISHER.siteUrl}/${p.slug}/</loc><lastmod>${lastmod}</lastmod></url>`;
+}).join("\n")}
+${LP_LOCALES.map((locale) => {
+  // Shortcut sheets regenerated with this build when how-to keys change.
+  const sheetLast =
+    CHANGELOG.updatedAt > PUBLISHER.updatedIso
+      ? CHANGELOG.updatedAt
+      : PUBLISHER.updatedIso;
+  return `  <url><loc>${PUBLISHER.siteUrl}${shortcutSheetPath(locale)}</loc><lastmod>${sheetLast}</lastmod></url>`;
+}).join("\n")}
 </urlset>
 `;
 await writeFile(path.join(publicDir, "sitemap.xml"), sitemap);

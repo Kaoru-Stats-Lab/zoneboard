@@ -56,6 +56,7 @@ export function SettingsModal({
 }: Props) {
   const { openFeedback } = useFeedback();
   const fileRef = useRef<HTMLInputElement>(null);
+  const boardJsonImportRef = useRef<HTMLInputElement>(null);
   const [bakeCaption, setBakeCaption] = useState(false);
   const [bakeCredit, setBakeCredit] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
@@ -372,6 +373,74 @@ export function SettingsModal({
           <button type="button" className="active" onClick={onExport}>
             {t("exportPng")}
           </button>
+        </section>
+
+        <section>
+          <h3>{t("exportBoardJson")}</h3>
+          <p className="hint-muted">{t("exportBoardJsonHint")}</p>
+          <p className="hint-muted">{t("importBoardJsonHint")}</p>
+          <div className="drawer-stack-actions">
+            <button
+              type="button"
+              className="drawer-chrome-label"
+              title={t("exportBoardJson")}
+              onClick={() => {
+                if (!state.exportBoardJson()) {
+                  window.alert(t("exportBoardJsonErr"));
+                }
+              }}
+            >
+              {t("exportBoardJsonShort")}
+            </button>
+            <button
+              type="button"
+              className="drawer-chrome-label"
+              title={t("importBoardJson")}
+              onClick={() => boardJsonImportRef.current?.click()}
+            >
+              {t("importBoardJsonShort")}
+            </button>
+            <input
+              ref={boardJsonImportRef}
+              type="file"
+              accept=".json,.zoneboard.json,application/json"
+              className="sr-only"
+              aria-label={t("importBoardJson")}
+              onChange={async (e) => {
+                const file = e.target.files?.[0] ?? null;
+                e.target.value = "";
+                if (!file) return;
+                try {
+                  const text = await file.text();
+                  const err = state.importBoardJsonText(text, file.size);
+                  if (err) {
+                    const key =
+                      err === "format"
+                        ? "importBoardJsonErrFormat"
+                        : err === "version_new" || err === "version_bad"
+                          ? "importBoardJsonErrVersion"
+                          : err === "parse"
+                            ? "importBoardJsonErrParse"
+                            : err === "too_large"
+                              ? "importBoardJsonErrSize"
+                              : err === "structure"
+                                ? "importBoardJsonErrStructure"
+                                : err === "limit"
+                                  ? "importBoardJsonErrLimit"
+                                  : err === "quota"
+                                    ? "importBoardJsonErrQuota"
+                                    : "importBoardJsonErrUnknown";
+                    window.alert(t(key));
+                    return;
+                  }
+                  window.alert(t("importBoardJsonOk"));
+                  state.setSettingsOpen(false);
+                } catch {
+                  window.alert(t("importBoardJsonErrUnknown"));
+                }
+              }}
+            />
+          </div>
         </section>
 
         <section>

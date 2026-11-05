@@ -103,7 +103,9 @@
 <tbody>
 <tr><td class="shortcut-key"><kbd>Drag a selected piece</kbd></td><td>Tüm seçimi hareket ettir</td></tr>
 <tr><td class="shortcut-key"><kbd>Arrow / Shift+Arrow</kbd></td><td>Kalkındır (kısa / uzun)</td></tr>
-<tr><td class="shortcut-key"><kbd>R</kbd></td><td>Sadece yönü +45°</td></tr>
+<tr><td class="shortcut-key"><kbd>R</kbd></td><td>Yön +45°</td></tr>
+<tr><td class="shortcut-key"><kbd>Shift+R</kbd></td><td>Hücuma hizala</td></tr>
+<tr><td class="shortcut-key"><kbd>Ctrl/Cmd+Arrow</kbd></td><td>Aynı yöne çevir</td></tr>
 <tr><td class="shortcut-key"><kbd>Q / E</kbd></td><td>Şekli merkez etrafında döndür</td></tr>
 <tr><td class="shortcut-key"><kbd>- / =</kbd></td><td>Yaklaştır / uzaklaştır</td></tr>
 <tr><td class="shortcut-key"><kbd>Shift+H / Shift+V</kbd></td><td>Yatay çevir / Dikey çevir</td></tr>
@@ -124,7 +126,8 @@
 <tr><td class="shortcut-key"><kbd>Pen</kbd></td><td>Serbest çizgi</td></tr>
 <tr><td class="shortcut-key"><kbd>Link</kbd></td><td>Figür bağlantısı (izler)</td></tr>
 <tr><td class="shortcut-key"><kbd>Shift+Pen drag</kbd></td><td>A'dan B'ye düz çizgi</td></tr>
-<tr><td class="shortcut-key"><kbd>Zone + Shift</kbd></td><td>Daireye yakın bölge</td></tr>
+<tr><td class="shortcut-key"><kbd>Shape</kbd></td><td>Daire / dikdörtgen / üçgen</td></tr>
+<tr><td class="shortcut-key"><kbd>Ctrl/Cmd+C / V</kbd></td><td>Top veya şekli kopyala/yapıştır</td></tr>
 </tbody>
 </table>
 </section>
@@ -136,6 +139,19 @@
 <tr><td class="shortcut-key"><kbd>Ctrl/Cmd+Wheel</kbd></td><td>İmleç konumuna yakınlaştır</td></tr>
 <tr><td class="shortcut-key"><kbd>Space+Drag</kbd></td><td>Görünümü kaydır</td></tr>
 <tr><td class="shortcut-key"><kbd>Alt+Drag</kbd></td><td>Kaydır (alternatif)</td></tr>
+</tbody>
+</table>
+</section>
+<section class="shortcut-section">
+<h2>Dosyalar ve kaydet (menüler)</h2>
+<table class="shortcut-table">
+<thead><tr><th scope="col">Tuşlar</th><th scope="col">Eylem</th></tr></thead>
+<tbody>
+<tr><td class="shortcut-key"><kbd>Files (üst çubuk)</kbd></td><td>Local Files aç</td></tr>
+<tr><td class="shortcut-key"><kbd>Boards (üst çubuk)</kbd></td><td>Tahta listesi</td></tr>
+<tr><td class="shortcut-key"><kbd>Save / Save to folder</kbd></td><td>Header primary</td></tr>
+<tr><td class="shortcut-key"><kbd>More ⋯</kbd></td><td>Save as, Download, Close</td></tr>
+<tr><td class="shortcut-key"><kbd>Scenes chip</kbd></td><td>Open scenes panel</td></tr>
 </tbody>
 </table>
 </section>
@@ -193,7 +209,7 @@
 </aside>
 <script>
 (function () {
-  var map = {"en":{"policyHref":"/cookies/","title":"Privacy choices","copy":"Analytics and ads stay off until you choose. The board stays on this device.","reject":"Reject optional","analytics":"Allow analytics","ads":"Allow advertising","policyLabel":"Cookie policy","choices":"Cookie choices"},"de":{"policyHref":"/cookies/","title":"Datenschutz-Auswahl","copy":"Analyse und Werbung bleiben aus, bis du wählst. Das Board bleibt auf diesem Gerät.","reject":"Optional ablehnen","analytics":"Analyse erlauben","ads":"Werbung erlauben","policyLabel":"Cookie-Richtlinie","choices":"Cookie-Auswahl"},"es":{"policyHref":"/cookies/","title":"Opciones de privacidad","copy":"Análisis y anuncios permanecen desactivados hasta que elijas. El tablero se queda en este dispositivo.","reject":"Rechazar opcionales","analytics":"Permitir analítica","ads":"Permitir publicidad","policyLabel":"Política de cookies","choices":"Opciones de cookies"},"fr":{"policyHref":"/cookies/","title":"Choix de confidentialité","copy":"Analyses et publicités restent désactivées jusqu'à ton choix. Le tableau reste sur cet appareil.","reject":"Refuser l'optionnel","analytics":"Autoriser l'analyse","ads":"Autoriser la pub","policyLabel":"Politique cookies","choices":"Choix des cookies"},"it":{"policyHref":"/cookies/","title":"Scelte privacy","copy":"Analitica e annunci restano off finché non scegli. La lavagna resta su questo dispositivo.","reject":"Rifiuta opzionali","analytics":"Consenti analitica","ads":"Consenti pubblicità","policyLabel":"Policy cookie","choices":"Scelta cookie"},"pl":{"policyHref":"/cookies/","title":"Wybór prywatności","copy":"Analityka i reklamy są wyłączone, dopóki nie wybierzesz. Plansza zostaje na tym urządzeniu.","reject":"Odrzuć opcjonalne","analytics":"Zezwól na analitykę","ads":"Zezwól na reklamy","policyLabel":"Polityka cookies","choices":"Ustawienia cookies"},"pt":{"policyHref":"/cookies/","title":"Opções de privacidade","copy":"Análise e anúncios ficam desligados até você escolher. O quadro permanece neste dispositivo.","reject":"Rejeitar opcionais","analytics":"Permitir análise","ads":"Permitir publicidade","policyLabel":"Política de cookies","choices":"Opções de cookies"},"tr":{"policyHref":"/cookies/","title":"Gizlilik tercihleri","copy":"Analitik ve reklamlar seçene kadar kapalıdır. Tahta bu cihazda kalır.","reject":"İsteğe bağlıyı reddet","analytics":"Analitiğe izin ver","ads":"Reklama izin ver","policyLabel":"Çerez politikası","choices":"Çerez tercihleri"},"ja":{"policyHref":"/cookies/","title":"プライバシーの選択","copy":"計測と広告は、選ぶまでオフです。ボードはこの端末に残ります。","reject":"任意を拒否","analytics":"計測を許可","ads":"広告を許可","policyLabel":"Cookie ポリシー","choices":"Cookie の選択"}};
+  var map = {"en":{"policyHref":"/cookies/","title":"Privacy choices","copy":"Analytics and ads stay off until you choose. The board stays on this device.","reject":"Reject optional","analytics":"Allow analytics","ads":"Allow advertising","policyLabel":"Cookie policy","choices":"Cookie choices"},"de":{"policyHref":"/cookies/","title":"Datenschutz-Auswahl","copy":"Analyse und Werbung bleiben aus, bis du wählst. Das Board bleibt auf diesem Gerät.","reject":"Optional ablehnen","analytics":"Analyse erlauben","ads":"Werbung erlauben","policyLabel":"Cookie-Richtlinie","choices":"Cookie-Auswahl"},"es":{"policyHref":"/cookies/","title":"Opciones de privacidad","copy":"Análisis y anuncios permanecen desactivados hasta que elijas. El tablero se queda en este dispositivo.","reject":"Rechazar opcionales","analytics":"Permitir analítica","ads":"Permitir publicidad","policyLabel":"Política de cookies","choices":"Opciones de cookies"},"fr":{"policyHref":"/cookies/","title":"Choix de confidentialité","copy":"Analyses et publicités restent désactivées jusqu'à ton choix. Le tableau reste sur cet appareil.","reject":"Refuser l'optionnel","analytics":"Autoriser l'analyse","ads":"Autoriser la pub","policyLabel":"Politique cookies","choices":"Choix des cookies"},"it":{"policyHref":"/cookies/","title":"Scelte privacy","copy":"Analitica e annunci restano off finché non scegli. La lavagna resta su questo dispositivo.","reject":"Rifiuta opzionali","analytics":"Consenti analitica","ads":"Consenti pubblicità","policyLabel":"Policy cookie","choices":"Scelta cookie"},"pl":{"policyHref":"/cookies/","title":"Wybór prywatności","copy":"Analityka i reklamy są wyłączone, dopóki nie wybierzesz. Plansza zostaje na tym urządzeniu.","reject":"Odrzuć opcjonalne","analytics":"Zezwól na analitykę","ads":"Zezwól na reklamy","policyLabel":"Polityka cookies","choices":"Ustawienia cookies"},"pt":{"policyHref":"/cookies/","title":"Opções de privacidade","copy":"Análise e anúncios ficam desligados até você escolher. O quadro permanece neste dispositivo.","reject":"Rejeitar opcionais","analytics":"Permitir análise","ads":"Permitir publicidade","policyLabel":"Política de cookies","choices":"Opções de cookies"},"tr":{"policyHref":"/cookies/","title":"Gizlilik tercihleri","copy":"Analitik ve reklamlar seçene kadar kapalıdır. Tahta bu cihazda kalır.","reject":"İsteğe bağlıyı reddet","analytics":"Analitiğe izin ver","ads":"Reklama izin ver","policyLabel":"Çerez politikası","choices":"Çerez tercihleri"},"ja":{"policyHref":"/cookies/","title":"プライバシーの選択","copy":"計測と広告は、選ぶまでオフです。ボードはこの端末に残ります。","reject":"任意の Cookie を拒否","analytics":"計測を許可","ads":"広告を許可","policyLabel":"Cookie ポリシー","choices":"Cookie の選択"}};
   var pick = "en";
   var langs = navigator.languages || [navigator.language || "en"];
   for (var i = 0; i < langs.length; i++) {

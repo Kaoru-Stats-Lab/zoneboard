@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Updates — ZoneBoard</title>
-    <meta name="description" content="Shipped ZoneBoard changes in past tense. Broadcast, match banner, PNG export, and site pages — what already landed in production." />
+    <meta name="description" content="Shipped ZoneBoard changes: local board JSON files, Shape tools, multi-ball, document header, broadcast, and PNG — past tense only." />
     <link rel="canonical" href="https://zoneboard.app/updates/" />
     <link rel="alternate" hreflang="en" href="https://zoneboard.app/" />
     <link rel="alternate" hreflang="de" href="https://zoneboard.app/de/" />
@@ -19,7 +19,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ZoneBoard" />
     <meta property="og:title" content="Updates — ZoneBoard" />
-    <meta property="og:description" content="Shipped ZoneBoard changes in past tense. Broadcast, match banner, PNG export, and site pages — what already landed in production." />
+    <meta property="og:description" content="Shipped ZoneBoard changes: local board JSON files, Shape tools, multi-ball, document header, broadcast, and PNG — past tense only." />
     <meta property="og:url" content="https://zoneboard.app/updates/" />
     <meta property="og:locale" content="en_GB" />
     <meta property="og:image" content="https://zoneboard.app/brand/lockup-og.png" />
@@ -29,7 +29,7 @@
     <meta property="og:image:alt" content="ZoneBoard — football tactics board" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Updates — ZoneBoard" />
-    <meta name="twitter:description" content="Shipped ZoneBoard changes in past tense. Broadcast, match banner, PNG export, and site pages — what already landed in production." />
+    <meta name="twitter:description" content="Shipped ZoneBoard changes: local board JSON files, Shape tools, multi-ball, document header, broadcast, and PNG — past tense only." />
     <meta name="twitter:image" content="https://zoneboard.app/brand/lockup-og.png" />
     <meta name="twitter:image:alt" content="ZoneBoard — football tactics board" />
     <meta name="theme-color" content="#0c0d0e" />
@@ -63,12 +63,32 @@
     <main id="main" class="site-main">
       <article>
 <h1>Updates</h1>
-<p class="lede">This page lists changes that are already live. It is not a roadmap. Upcoming work stays elsewhere. Feedback still goes through Contact or the in-app form.</p>
+<p class="lede">This page lists changes that are already live. It is not a roadmap. Upcoming work stays elsewhere. Feedback still goes through Contact or the in-app form. How to keep files: <a href="https://zoneboard.app/guide/#local-files" rel="noopener noreferrer">https://zoneboard.app/guide/#local-files</a></p>
 <aside class="site-changelog" aria-labelledby="changelog-heading">
 <p class="site-changelog__policy">Shipped changes only, in past tense. Upcoming work stays off this page.</p>
-<p class="site-changelog__updated">Updated <time datetime="2026-08-31">2026-08-31</time></p>
+<p class="site-changelog__updated">Updated <time datetime="2026-11-06">2026-11-06</time></p>
 <h2 id="changelog-heading">Shipped timeline</h2>
 <ol class="site-changelog__list">
+<li class="site-changelog__item" data-type="feature">
+<p class="site-changelog__meta"><time datetime="2026-11-06">2026-11-06</time> · <span class="site-changelog__type">Feature</span></p>
+<h3 class="site-changelog__title">Shape tool: circle, rectangle, and triangle</h3>
+<p class="site-changelog__body">The rail tool formerly labelled Zone is Shape. Drag to place a circle, rectangle, or triangle for space and blocks. Aspect lock keeps a square when you need one. Arrange controls move shapes forward or back.</p>
+</li>
+<li class="site-changelog__item" data-type="feature">
+<p class="site-changelog__meta"><time datetime="2026-11-06">2026-11-06</time> · <span class="site-changelog__type">Feature</span></p>
+<h3 class="site-changelog__title">More than one ball on a scene</h3>
+<p class="site-changelog__body">A scene can hold several balls. Place with Ball, or copy and paste (Ctrl/Cmd+C / Ctrl/Cmd+V). Duplicate (Ctrl/Cmd+D) works on a selected ball. Snap to a player still works per ball.</p>
+</li>
+<li class="site-changelog__item" data-type="feature">
+<p class="site-changelog__meta"><time datetime="2026-11-06">2026-11-06</time> · <span class="site-changelog__type">Feature</span></p>
+<h3 class="site-changelog__title">Local board files: save, reopen, and edit your tactics</h3>
+<p class="site-changelog__body">You can keep football boards as JSON on your own device. Working boards still live in this browser (auto-save, with a store slot limit). Local files sit outside that limit: open them for a temporary File Session, or import a copy into working boards. Connect a folder when your browser supports it to Save into the original file or Save as a new one. Without folder access, Download starts a JSON download — that is not the same as a confirmed overwrite. New local board starts a file you have not saved yet. Unsaved leave warns you; a short session draft can restore recent edits in the same browser, but folder handles do not come back. Step-by-step: <a href="https://zoneboard.app/guide/#local-files" rel="noopener noreferrer">https://zoneboard.app/guide/#local-files</a></p>
+</li>
+<li class="site-changelog__item" data-type="improve">
+<p class="site-changelog__meta"><time datetime="2026-11-06">2026-11-06</time> · <span class="site-changelog__type">Improve</span></p>
+<h3 class="site-changelog__title">Document-first editor header</h3>
+<p class="site-changelog__body">The top bar shows the board name, where it lives (this browser or a local file), and save status. Boards opens the working-board list. Files opens Local Files. Scenes opens the scenes panel. Save, Save to folder, Retry, and Download sit in the header; Save as stays under More when a folder is connected.</p>
+</li>
 <li class="site-changelog__item" data-type="improve">
 <p class="site-changelog__meta"><time datetime="2026-08-31">2026-08-31</time> · <span class="site-changelog__type">Improve</span></p>
 <h3 class="site-changelog__title">Drawing tools return to Select after each action</h3>
@@ -177,7 +197,7 @@
 </aside>
 <script>
 (function () {
-  var map = {"en":{"policyHref":"/cookies/","title":"Privacy choices","copy":"Analytics and ads stay off until you choose. The board stays on this device.","reject":"Reject optional","analytics":"Allow analytics","ads":"Allow advertising","policyLabel":"Cookie policy","choices":"Cookie choices"},"de":{"policyHref":"/cookies/","title":"Datenschutz-Auswahl","copy":"Analyse und Werbung bleiben aus, bis du wählst. Das Board bleibt auf diesem Gerät.","reject":"Optional ablehnen","analytics":"Analyse erlauben","ads":"Werbung erlauben","policyLabel":"Cookie-Richtlinie","choices":"Cookie-Auswahl"},"es":{"policyHref":"/cookies/","title":"Opciones de privacidad","copy":"Análisis y anuncios permanecen desactivados hasta que elijas. El tablero se queda en este dispositivo.","reject":"Rechazar opcionales","analytics":"Permitir analítica","ads":"Permitir publicidad","policyLabel":"Política de cookies","choices":"Opciones de cookies"},"fr":{"policyHref":"/cookies/","title":"Choix de confidentialité","copy":"Analyses et publicités restent désactivées jusqu'à ton choix. Le tableau reste sur cet appareil.","reject":"Refuser l'optionnel","analytics":"Autoriser l'analyse","ads":"Autoriser la pub","policyLabel":"Politique cookies","choices":"Choix des cookies"},"it":{"policyHref":"/cookies/","title":"Scelte privacy","copy":"Analitica e annunci restano off finché non scegli. La lavagna resta su questo dispositivo.","reject":"Rifiuta opzionali","analytics":"Consenti analitica","ads":"Consenti pubblicità","policyLabel":"Policy cookie","choices":"Scelta cookie"},"pl":{"policyHref":"/cookies/","title":"Wybór prywatności","copy":"Analityka i reklamy są wyłączone, dopóki nie wybierzesz. Plansza zostaje na tym urządzeniu.","reject":"Odrzuć opcjonalne","analytics":"Zezwól na analitykę","ads":"Zezwól na reklamy","policyLabel":"Polityka cookies","choices":"Ustawienia cookies"},"pt":{"policyHref":"/cookies/","title":"Opções de privacidade","copy":"Análise e anúncios ficam desligados até você escolher. O quadro permanece neste dispositivo.","reject":"Rejeitar opcionais","analytics":"Permitir análise","ads":"Permitir publicidade","policyLabel":"Política de cookies","choices":"Opções de cookies"},"tr":{"policyHref":"/cookies/","title":"Gizlilik tercihleri","copy":"Analitik ve reklamlar seçene kadar kapalıdır. Tahta bu cihazda kalır.","reject":"İsteğe bağlıyı reddet","analytics":"Analitiğe izin ver","ads":"Reklama izin ver","policyLabel":"Çerez politikası","choices":"Çerez tercihleri"},"ja":{"policyHref":"/cookies/","title":"プライバシーの選択","copy":"計測と広告は、選ぶまでオフです。ボードはこの端末に残ります。","reject":"任意を拒否","analytics":"計測を許可","ads":"広告を許可","policyLabel":"Cookie ポリシー","choices":"Cookie の選択"}};
+  var map = {"en":{"policyHref":"/cookies/","title":"Privacy choices","copy":"Analytics and ads stay off until you choose. The board stays on this device.","reject":"Reject optional","analytics":"Allow analytics","ads":"Allow advertising","policyLabel":"Cookie policy","choices":"Cookie choices"},"de":{"policyHref":"/cookies/","title":"Datenschutz-Auswahl","copy":"Analyse und Werbung bleiben aus, bis du wählst. Das Board bleibt auf diesem Gerät.","reject":"Optional ablehnen","analytics":"Analyse erlauben","ads":"Werbung erlauben","policyLabel":"Cookie-Richtlinie","choices":"Cookie-Auswahl"},"es":{"policyHref":"/cookies/","title":"Opciones de privacidad","copy":"Análisis y anuncios permanecen desactivados hasta que elijas. El tablero se queda en este dispositivo.","reject":"Rechazar opcionales","analytics":"Permitir analítica","ads":"Permitir publicidad","policyLabel":"Política de cookies","choices":"Opciones de cookies"},"fr":{"policyHref":"/cookies/","title":"Choix de confidentialité","copy":"Analyses et publicités restent désactivées jusqu'à ton choix. Le tableau reste sur cet appareil.","reject":"Refuser l'optionnel","analytics":"Autoriser l'analyse","ads":"Autoriser la pub","policyLabel":"Politique cookies","choices":"Choix des cookies"},"it":{"policyHref":"/cookies/","title":"Scelte privacy","copy":"Analitica e annunci restano off finché non scegli. La lavagna resta su questo dispositivo.","reject":"Rifiuta opzionali","analytics":"Consenti analitica","ads":"Consenti pubblicità","policyLabel":"Policy cookie","choices":"Scelta cookie"},"pl":{"policyHref":"/cookies/","title":"Wybór prywatności","copy":"Analityka i reklamy są wyłączone, dopóki nie wybierzesz. Plansza zostaje na tym urządzeniu.","reject":"Odrzuć opcjonalne","analytics":"Zezwól na analitykę","ads":"Zezwól na reklamy","policyLabel":"Polityka cookies","choices":"Ustawienia cookies"},"pt":{"policyHref":"/cookies/","title":"Opções de privacidade","copy":"Análise e anúncios ficam desligados até você escolher. O quadro permanece neste dispositivo.","reject":"Rejeitar opcionais","analytics":"Permitir análise","ads":"Permitir publicidade","policyLabel":"Política de cookies","choices":"Opções de cookies"},"tr":{"policyHref":"/cookies/","title":"Gizlilik tercihleri","copy":"Analitik ve reklamlar seçene kadar kapalıdır. Tahta bu cihazda kalır.","reject":"İsteğe bağlıyı reddet","analytics":"Analitiğe izin ver","ads":"Reklama izin ver","policyLabel":"Çerez politikası","choices":"Çerez tercihleri"},"ja":{"policyHref":"/cookies/","title":"プライバシーの選択","copy":"計測と広告は、選ぶまでオフです。ボードはこの端末に残ります。","reject":"任意の Cookie を拒否","analytics":"計測を許可","ads":"広告を許可","policyLabel":"Cookie ポリシー","choices":"Cookie の選択"}};
   var pick = "en";
   var langs = navigator.languages || [navigator.language || "en"];
   for (var i = 0; i < langs.length; i++) {

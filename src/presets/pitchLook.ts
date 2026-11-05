@@ -77,7 +77,12 @@ export function resetAllScenesForOrientationChange(
       ...s,
       pieces: [],
       objects: [],
-      ball: { x: 0.5, y: 0.5 },
+      balls: s.balls.map((b) => ({
+        ...b,
+        x: 0.5,
+        y: 0.5,
+        attachedTo: null,
+      })),
       viewport: { ...emptyViewport },
     })),
   };

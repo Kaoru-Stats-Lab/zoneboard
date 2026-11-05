@@ -15,18 +15,7 @@ export function BoardSwitcher({ state, t }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [limitOpen, setLimitOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const board = state.board;
   const atLimit = state.store.boards.length >= maxBoards();
-
-  const currentIndex = board
-    ? state.store.boards.findIndex((b) => b.id === board.id)
-    : -1;
-  const currentLabel = board
-    ? boardDisplayName(
-        board,
-        defaultBoardTitle(currentIndex >= 0 ? currentIndex + 1 : 1, state.locale),
-      )
-    : t("boards");
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -44,7 +33,23 @@ export function BoardSwitcher({ state, t }: Props) {
     };
   }, [menuOpen]);
 
+  /** Leave File Session (with confirm) before mutating BoardStore selection. */
+  const leaveFileSessionIfNeeded = useCallback((): boolean => {
+    if (!state.isFileSession) return true;
+    return state.confirmDiscardFileSessionIfNeeded(t("fileSessionLeaveConfirm"));
+  }, [state, t]);
+
+  const selectBoard = useCallback(
+    (id: string) => {
+      if (!leaveFileSessionIfNeeded()) return;
+      state.setActiveBoard(id);
+      setMenuOpen(false);
+    },
+    [leaveFileSessionIfNeeded, state],
+  );
+
   const requestNew = useCallback(() => {
+    if (!leaveFileSessionIfNeeded()) return;
     if (!atLimit) {
       state.addBoard();
       setMenuOpen(false);
@@ -52,17 +57,19 @@ export function BoardSwitcher({ state, t }: Props) {
     }
     setMenuOpen(false);
     setLimitOpen(true);
-  }, [atLimit, state]);
+  }, [atLimit, leaveFileSessionIfNeeded, state]);
 
   const confirmReplace = useCallback(
     (replaceId: string) => {
+      if (!leaveFileSessionIfNeeded()) return;
       state.addBoardReplacing(replaceId);
       setLimitOpen(false);
     },
-    [state],
+    [leaveFileSessionIfNeeded, state],
   );
 
-  if (!board) return null;
+  // Always available (Store list), including during File Session.
+  if (state.store.boards.length === 0) return null;
 
   return (
     <>
@@ -75,7 +82,8 @@ export function BoardSwitcher({ state, t }: Props) {
           title={t("boardSwitcherLabel")}
           onClick={() => setMenuOpen((v) => !v)}
         >
-          <span className="board-switcher__label">{currentLabel}</span>
+          {/* Fixed label — do not repeat the current board name here. */}
+          <span className="board-switcher__label">{t("boardsMenuShort")}</span>
           <span className="board-switcher__chev" aria-hidden>
             ▾
           </span>
@@ -87,16 +95,15 @@ export function BoardSwitcher({ state, t }: Props) {
                 b,
                 defaultBoardTitle(i + 1, state.locale),
               );
-              const active = b.id === board.id;
+              // In File Session, no Store board is the "working" document.
+              const active =
+                !state.isFileSession && state.board?.id === b.id;
               return (
                 <li key={b.id} role="option" aria-selected={active}>
                   <button
                     type="button"
                     className={active ? "active" : ""}
-                    onClick={() => {
-                      state.setActiveBoard(b.id);
-                      setMenuOpen(false);
-                    }}
+                    onClick={() => selectBoard(b.id)}
                   >
                     {name}
                   </button>
@@ -131,6 +138,7 @@ export function useNewBoardFlow(state: AppState) {
   const atLimit = state.store.boards.length >= maxBoards();
 
   const requestNew = useCallback(() => {
+    if (state.isFileSession) return false;
     if (!atLimit) {
       state.addBoard();
       return true;

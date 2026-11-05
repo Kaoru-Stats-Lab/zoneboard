@@ -69,5 +69,27 @@
 /board    /board/index.html    200
 /board/   /board/index.html    200
 
+# Local Files dashboard (same SPA shell as /board — Group 6+).
+/files    /board/index.html    200
+/files/   /board/index.html    200
+/en/files /files/  301
+/en/files/ /files/  301
+/ja/files /files/?lang=ja   301
+/ja/files/ /files/?lang=ja  301
+/es/files /files/?lang=es   301
+/es/files/ /files/?lang=es  301
+/pt/files /files/?lang=pt   301
+/pt/files/ /files/?lang=pt  301
+/pl/files /files/?lang=pl   301
+/pl/files/ /files/?lang=pl  301
+/de/files /files/?lang=de   301
+/de/files/ /files/?lang=de  301
+/fr/files /files/?lang=fr   301
+/fr/files/ /files/?lang=fr  301
+/tr/files /files/?lang=tr   301
+/tr/files/ /files/?lang=tr  301
+/it/files /files/?lang=it   301
+/it/files/ /files/?lang=it  301
+
 # Maintenance: comment the two /board lines above and uncomment:
 # /*    /maintenance.html   200

@@ -76,9 +76,11 @@ function heroSceneAt(t: number, base: Scene, board: ReturnType<typeof createLpHe
   const objects = [];
   if (passDone) objects.push(lpHeroPassLine(board));
   if (dribbleDone) objects.push(lpHeroDribbleLine(board));
+  const ballPos = heroBallAt(t, base.pieces);
+  const ballId = base.balls[0]?.id ?? "lp-hero-ball";
   return {
     ...base,
-    ball: heroBallAt(t, base.pieces),
+    balls: [{ id: ballId, ...ballPos }],
     objects,
   };
 }
