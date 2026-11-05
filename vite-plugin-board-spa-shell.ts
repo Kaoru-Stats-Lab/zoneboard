@@ -11,6 +11,10 @@ import { applyLpDocumentMetaToHtml } from "./src/site/localeDocumentMeta";
  * `board/index.html` and locale LP shells with **locale-baked** OG /
  * canonical / hreflang (same SPA JS bundle) makes hard links and
  * crawler share cards work.
+ *
+ * `/files/` needs the same treatment: a `_redirects` 200 to
+ * `board/index.html` alone still 404s after CF’s trailing-slash 308
+ * (Preview: `/files/` → 404). Emit a real `files/index.html` shell.
  */
 export function boardSpaShellPlugin(): Plugin {
   return {
@@ -32,10 +36,12 @@ export function boardSpaShellPlugin(): Plugin {
         await writeFile(path.join(dir, "index.html"), html, "utf8");
       }
 
-      // /board/ is the editor SPA — English shell meta is fine
-      const boardDir = path.join(outDir, "board");
-      await mkdir(boardDir, { recursive: true });
-      await writeFile(path.join(boardDir, "index.html"), enHtml, "utf8");
+      // /board/ and /files/ share the editor SPA shell (React Router).
+      for (const spa of ["board", "files"] as const) {
+        const dir = path.join(outDir, spa);
+        await mkdir(dir, { recursive: true });
+        await writeFile(path.join(dir, "index.html"), enHtml, "utf8");
+      }
     },
   };
 }
