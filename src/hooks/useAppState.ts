@@ -77,6 +77,7 @@ import type {
   Piece,
   CardKind,
   GoalKind,
+  PitchOrientation,
   ScenePhase,
   ShapeKind,
   ShapeObject,
@@ -125,10 +126,8 @@ import {
 } from "../models/kits";
 import { formationPieces } from "../presets/formations";
 import {
-  boardToSoccerPitchLookPreset,
+  planSoccerPitchLookApply,
   resetAllScenesForOrientationChange,
-  soccerPitchLookPresetToBoardFields,
-  soccerPitchOrientationChanges,
   type SoccerPitchLookPreset,
 } from "../presets/pitchLook";
 import {
@@ -580,25 +579,34 @@ export function useAppState() {
     [persist, store],
   );
 
-  const addBoard = useCallback(() => {
-    if (fileSessionRef.current) return false;
-    if (store.boards.length >= maxBoards()) return false;
-    const b = createBoard(
-      board?.sport ?? "soccer",
-      defaultBoardTitle(store.boards.length + 1, locale),
-      locale,
-    );
-    history.current = [];
-    future.current = [];
-    persist({
-      boards: [...store.boards, b],
-      activeBoardId: b.id,
-    });
-    return true;
-  }, [board?.sport, locale, persist, store.boards]);
+  const addBoard = useCallback(
+    (opts?: { pitchOrientation?: PitchOrientation }) => {
+      if (fileSessionRef.current) return false;
+      if (store.boards.length >= maxBoards()) return false;
+      const b = createBoard(
+        board?.sport ?? "soccer",
+        defaultBoardTitle(store.boards.length + 1, locale),
+        locale,
+        opts?.pitchOrientation
+          ? { pitchOrientation: opts.pitchOrientation }
+          : undefined,
+      );
+      history.current = [];
+      future.current = [];
+      persist({
+        boards: [...store.boards, b],
+        activeBoardId: b.id,
+      });
+      return true;
+    },
+    [board?.sport, locale, persist, store.boards],
+  );
 
   const addBoardReplacing = useCallback(
-    (replaceId: string) => {
+    (
+      replaceId: string,
+      opts?: { pitchOrientation?: PitchOrientation },
+    ) => {
       if (fileSessionRef.current) return false;
       const remaining = store.boards.filter((b) => b.id !== replaceId);
       if (remaining.length !== store.boards.length - 1) return false;
@@ -606,6 +614,9 @@ export function useAppState() {
         board?.sport ?? "soccer",
         defaultBoardTitle(remaining.length + 1, locale),
         locale,
+        opts?.pitchOrientation
+          ? { pitchOrientation: opts.pitchOrientation }
+          : undefined,
       );
       history.current = [];
       future.current = [];
@@ -618,28 +629,31 @@ export function useAppState() {
     [board?.sport, locale, persist, store.boards],
   );
 
+  /**
+   * Soccer pitch look presets. Landscape ↔ portrait is blocked when any scene
+   * has pieces/objects or non-pristine balls/viewports (P0: no silent wipe).
+   */
   const applySoccerPitchLook = useCallback(
-    (preset: SoccerPitchLookPreset) => {
-      if (!board || board.sport !== "soccer") return;
-      const current = boardToSoccerPitchLookPreset(board);
-      if (current === preset) return;
-      const fields = soccerPitchLookPresetToBoardFields(preset);
-      const orientationChanges = soccerPitchOrientationChanges(board, preset);
+    (
+      preset: SoccerPitchLookPreset,
+    ): "applied" | "unchanged" | "blocked_orientation" => {
+      if (!board || board.sport !== "soccer") return "unchanged";
+      const plan = planSoccerPitchLookApply(board, preset);
+      if (plan.action === "noop") return "unchanged";
+      if (plan.action === "blocked_orientation") return "blocked_orientation";
       captureUndo();
-      if (orientationChanges) {
+      if (plan.action === "orientation_reset") {
         setSelectedPieceId(null);
         setSelectedObjectId(null);
         setSelectedBall(false);
+        updateBoard(
+          (b) => resetAllScenesForOrientationChange(b, plan.fields),
+          false,
+        );
+        return "applied";
       }
-      updateBoard((b) => {
-        if (orientationChanges) {
-          return resetAllScenesForOrientationChange(b, fields);
-        }
-        return {
-          ...b,
-          ...fields,
-        };
-      }, false);
+      updateBoard((b) => ({ ...b, ...plan.fields }), false);
+      return "applied";
     },
     [board, captureUndo, updateBoard],
   );
@@ -2333,39 +2347,45 @@ export function useAppState() {
    * Starts never-saved / dirty. Does not consume Store slot limits.
    * Caller must confirm discard of any existing dirty File Session first.
    */
-  const createNewLocalBoardFileSession = useCallback((): boolean => {
-    const nextBoard = createBoard(
-      "soccer",
-      defaultBoardTitle(1, locale),
-      locale,
-    );
-    history.current = [];
-    future.current = [];
-    setSelectedPieceId(null);
-    setSelectedObjectId(null);
-    setSelectedBall(false);
-    setLiveEventStack([]);
-    setPendingFileSessionRestore(null);
-    const openedAt = Date.now();
-    const baselineFinger = boardContentFingerprint(nextBoard);
-    const nextFs: FileSessionState = {
-      board: nextBoard,
-      sourceName: "untitled.zoneboard.json",
-      openedAt,
-      baselineFinger,
-      dirty: true,
-      neverSavedToFile: true,
-      draftSaveOk: true,
-      lastDownloadRequestedAt: null,
-      directorySource: null,
-      saveUi: "idle",
-      saveConflictCurrent: null,
-    };
-    fileSessionRef.current = nextFs;
-    setFileSession(nextFs);
-    scheduleFileSessionDraft(nextFs);
-    return true;
-  }, [locale, scheduleFileSessionDraft]);
+  const createNewLocalBoardFileSession = useCallback(
+    (opts?: { pitchOrientation?: PitchOrientation }): boolean => {
+      const nextBoard = createBoard(
+        "soccer",
+        defaultBoardTitle(1, locale),
+        locale,
+        opts?.pitchOrientation
+          ? { pitchOrientation: opts.pitchOrientation }
+          : undefined,
+      );
+      history.current = [];
+      future.current = [];
+      setSelectedPieceId(null);
+      setSelectedObjectId(null);
+      setSelectedBall(false);
+      setLiveEventStack([]);
+      setPendingFileSessionRestore(null);
+      const openedAt = Date.now();
+      const baselineFinger = boardContentFingerprint(nextBoard);
+      const nextFs: FileSessionState = {
+        board: nextBoard,
+        sourceName: "untitled.zoneboard.json",
+        openedAt,
+        baselineFinger,
+        dirty: true,
+        neverSavedToFile: true,
+        draftSaveOk: true,
+        lastDownloadRequestedAt: null,
+        directorySource: null,
+        saveUi: "idle",
+        saveConflictCurrent: null,
+      };
+      fileSessionRef.current = nextFs;
+      setFileSession(nextFs);
+      scheduleFileSessionDraft(nextFs);
+      return true;
+    },
+    [locale, scheduleFileSessionDraft],
+  );
 
   /** Discard File Session and return to Store Mode. Does not touch BoardStore. */
   const closeFileSession = useCallback((opts?: { discardDraft?: boolean }) => {
