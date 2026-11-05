@@ -1,4 +1,5 @@
 import type {
+  BallObject,
   BallState,
   BoardDocument,
   DrawObject,
@@ -11,6 +12,13 @@ import type {
 } from "./types";
 import { uid } from "./id";
 import { clampViewport, DEFAULT_VIEWPORT } from "../presets/viewport";
+import {
+  createBallObject,
+  normalizeSceneBalls,
+  rotateBallObject180,
+} from "./ballSanitize";
+import { swapShapeEndsPosition } from "./shapeSanitize";
+import { swapTextEndsPosition } from "./textSanitize";
 
 function rotateNorm180(n: number): number {
   return 1 - n;
@@ -24,14 +32,6 @@ function swapHideHalf(h: HideHalf): HideHalf {
   if (h === "left") return "right";
   if (h === "right") return "left";
   return "none";
-}
-
-function rotateBall180(ball: BallState): BallState {
-  return {
-    ...ball,
-    x: rotateNorm180(ball.x),
-    y: rotateNorm180(ball.y),
-  };
 }
 
 function rotatePiece180(p: Piece): Piece {
@@ -65,11 +65,12 @@ function rotateObject180(obj: DrawObject): DrawObject {
       y: rotateNorm180(obj.y + obj.h),
     };
   }
-  return {
-    ...obj,
-    x: rotateNorm180(obj.x),
-    y: rotateNorm180(obj.y),
-  };
+  if (obj.type === "shape") {
+    // AABB flip around pitch centre; keep rotationDeg (screen upright).
+    return swapShapeEndsPosition(obj);
+  }
+  // text — centre-based when boxed; never add 180° to rotationDeg (keep upright).
+  return swapTextEndsPosition(obj);
 }
 
 /**
@@ -80,7 +81,7 @@ export function swapSceneEnds(scene: Scene): Scene {
   return {
     ...scene,
     pieces: scene.pieces.map(rotatePiece180),
-    ball: rotateBall180(scene.ball),
+    balls: scene.balls.map(rotateBallObject180),
     objects: scene.objects.map(rotateObject180),
     hideHalf: swapHideHalf(scene.hideHalf),
   };
@@ -121,17 +122,29 @@ export function boardWithActiveViewport(board: BoardDocument): BoardDocument {
   return { ...board, viewport: activeViewport(board) };
 }
 
+/** Seed may pass legacy `ball` or canonical `balls`. */
+export type SceneSeed = {
+  pieces: Piece[];
+  objects: DrawObject[];
+  viewport?: Viewport;
+  balls?: BallObject[];
+  /** @deprecated Prefer balls */
+  ball?: BallState;
+};
+
 export function createScene(
   label: string,
   phase: ScenePhase = "custom",
-  base?: Pick<Scene, "pieces" | "ball" | "objects" | "viewport">,
+  base?: SceneSeed,
 ): Scene {
   return {
     id: uid(),
     label,
     phase,
     pieces: base ? structuredClone(base.pieces) : [],
-    ball: base ? { ...base.ball } : { x: 0.5, y: 0.5 },
+    balls: base
+      ? normalizeSceneBalls(base.balls, base.ball)
+      : [createBallObject()],
     objects: base ? structuredClone(base.objects) : [],
     hideHalf: "none",
     teamFocus: "both",

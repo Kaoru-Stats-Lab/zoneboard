@@ -104,7 +104,13 @@ export function createLpHeroData(): { board: BoardDocument; scene: Scene } {
     label: "",
     phase: "live",
     pieces,
-    ball: { ...ballStart, attachedTo: LP_HERO_PIECE.home8 },
+    balls: [
+      {
+        id: "lp-hero-ball",
+        ...ballStart,
+        attachedTo: LP_HERO_PIECE.home8,
+      },
+    ],
     objects: [],
     hideHalf: "none",
     teamFocus: "both",

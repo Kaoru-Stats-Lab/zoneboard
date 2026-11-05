@@ -18,13 +18,13 @@ export const SHORTCUT_SHEET_COPY: Record<Locale, ShortcutSheetCopy> = {
   en: {
     title: "Broadcast shortcut sheet",
     description:
-      "Printable keyboard reference for ZoneBoard broadcast mode — select, move, scenes, and on-air controls.",
+      "Printable ZoneBoard reference — keyboard for broadcast, plus where Save / Files live in the header. Full file steps in the Guide.",
     intro:
       "Print or save as PDF (Ctrl/Cmd+P). Keep it beside your keyboard during a show.",
     print: "Print / Save as PDF",
     board: "Open board",
     footnote:
-      "Rehearse before you go live. ? or F1 opens the full how-to in the editor.",
+      "Rehearse before you go live. ? or F1 opens the full how-to. Local Files steps: /guide/#local-files.",
     keysCol: "Keys",
     actionCol: "Action",
     otherLangs: "Other languages",
@@ -32,13 +32,13 @@ export const SHORTCUT_SHEET_COPY: Record<Locale, ShortcutSheetCopy> = {
   ja: {
     title: "配信コマンド表",
     description:
-      "ZoneBoard 配信モード用の印刷可能なキーボード早見表 — 選択・移動・局面・オンエア操作。",
+      "ZoneBoard の印刷用早見表 — 配信のキーボード操作と、ヘッダーの Save / Files の位置。ファイル手順の全文はガイドへ。",
     intro:
       "印刷または PDF 保存（Ctrl/Cmd+P）。配信デスクの横に置いて使えます。",
     print: "印刷 / PDF 保存",
     board: "ボードを開く",
     footnote:
-      "本番前に一度リハーサルしてください。エディタでは ? または F1 で全文の使い方を開けます。",
+      "本番前に一度リハーサルしてください。? または F1 で全文。Local Files は /guide/#local-files。",
     keysCol: "キー",
     actionCol: "操作",
     otherLangs: "他の言語",

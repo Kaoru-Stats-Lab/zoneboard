@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import type { PortableImportErrorCode } from "../boardio";
 import { scoreForTeam } from "../canvas/matchBanner";
 import {
   cardsForTeam,
@@ -70,17 +72,43 @@ function sceneLabelPhKey(sport: SportId): MessageKey {
   }
 }
 
+function importJsonErrorKey(code: PortableImportErrorCode): MessageKey {
+  switch (code) {
+    case "format":
+      return "importBoardJsonErrFormat";
+    case "version_new":
+    case "version_bad":
+      return "importBoardJsonErrVersion";
+    case "parse":
+      return "importBoardJsonErrParse";
+    case "too_large":
+      return "importBoardJsonErrSize";
+    case "structure":
+      return "importBoardJsonErrStructure";
+    case "limit":
+      return "importBoardJsonErrLimit";
+    case "quota":
+      return "importBoardJsonErrQuota";
+    default:
+      return "importBoardJsonErrUnknown";
+  }
+}
+
 type Props = {
   state: AppState;
   t: (k: MessageKey) => string;
+  /** Incremented by DocumentHeader Scene chip — reveal list + focus active scene. */
+  sceneRevealToken?: number;
 };
 
 type PanelTab = "match" | "scenes" | "roster";
 type TeamSide = "home" | "away";
 
-export function Drawer({ state, t }: Props) {
+export function Drawer({ state, t, sceneRevealToken = 0 }: Props) {
   const [prepOpen, setPrepOpen] = useState(false);
   const [tab, setTab] = useState<PanelTab>("scenes");
+  const sceneListRef = useRef<HTMLDivElement>(null);
+  const lastRevealToken = useRef(0);
   const [teamSide, setTeamSide] = useState<TeamSide>("home");
   const [rosterText, setRosterText] = useState({ home: "", away: "" });
   const [rosterDirty, setRosterDirty] = useState({ home: false, away: false });
@@ -100,8 +128,53 @@ export function Drawer({ state, t }: Props) {
     level: "error" | "warn";
     text: string;
   } | null>(null);
+  const [boardIoNotice, setBoardIoNotice] = useState<{
+    level: "ok" | "error";
+    text: string;
+  } | null>(null);
+  const importJsonInputRef = useRef<HTMLInputElement>(null);
 
   const newBoardFlow = useNewBoardFlow(state);
+
+  const onExportBoardJson = () => {
+    const ok = state.exportBoardJson();
+    setBoardIoNotice(
+      ok
+        ? null
+        : { level: "error", text: t("exportBoardJsonErr") },
+    );
+  };
+
+  const onImportBoardJsonFile = async (file: File | null) => {
+    if (!file) return;
+    if (
+      !state.confirmDiscardFileSessionIfNeeded(t("fileSessionLeaveConfirm"))
+    ) {
+      if (importJsonInputRef.current) importJsonInputRef.current.value = "";
+      return;
+    }
+    try {
+      const text = await file.text();
+      const err = state.importBoardJsonText(text, file.size);
+      if (err) {
+        setBoardIoNotice({
+          level: "error",
+          text: t(importJsonErrorKey(err)),
+        });
+        return;
+      }
+      setBoardIoNotice({ level: "ok", text: t("importBoardJsonOk") });
+      setPrepOpen(true);
+      setTab("match");
+    } catch {
+      setBoardIoNotice({
+        level: "error",
+        text: t("importBoardJsonErrUnknown"),
+      });
+    } finally {
+      if (importJsonInputRef.current) importJsonInputRef.current.value = "";
+    }
+  };
 
   const boardRoster = state.board?.roster;
   const homeXiKey = boardRoster?.home.starterNumbers.join(",") ?? "";
@@ -136,6 +209,25 @@ export function Drawer({ state, t }: Props) {
     setScenesNotice(null);
     setCaptureNotice(null);
   }, [state.scene?.id, state.captureImport?.phase]);
+
+  // Scene chip in DocumentHeader: open Scenes list and focus current chip (no edit focus).
+  useEffect(() => {
+    if (!sceneRevealToken || sceneRevealToken === lastRevealToken.current) return;
+    if (!state.drawerOpen || !state.scene) return;
+    lastRevealToken.current = sceneRevealToken;
+    setPrepOpen(false);
+    setTab("scenes");
+    const id = state.scene.id;
+    queueMicrotask(() => {
+      const safe = id.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      const el = sceneListRef.current?.querySelector(
+        `[data-scene-id="${safe}"]`,
+      ) as HTMLElement | null;
+      if (!el) return;
+      el.scrollIntoView({ block: "nearest", inline: "nearest" });
+      el.focus();
+    });
+  }, [sceneRevealToken, state.drawerOpen, state.scene]);
 
   if (!state.drawerOpen || state.broadcast || !state.board || !state.scene)
     return null;
@@ -177,7 +269,7 @@ export function Drawer({ state, t }: Props) {
   };
 
   return (
-    <aside className="drawer">
+    <aside className="drawer" id="zb-editor-drawer">
       <BoardLimitDialog
         open={newBoardFlow.limitOpen}
         state={state}
@@ -234,11 +326,11 @@ export function Drawer({ state, t }: Props) {
         </div>
       )}
 
-      <div className="drawer-body">
+      <div className="drawer-body" id="zb-editor-drawer-body">
         {(!prepOpen || tab === "scenes") && (
-          <section className="drawer-panel">
+          <section className="drawer-panel" aria-label={t("tabScenes")}>
             <p className="hint-muted">{t("scenesHint")}</p>
-            <div className="scene-chips">
+            <div className="scene-chips" ref={sceneListRef}>
               {board.scenes.map((s, i) => {
                 const hasNotes = Boolean(s.notes?.trim());
                 const label = s.label?.trim() ?? "";
@@ -251,6 +343,7 @@ export function Drawer({ state, t }: Props) {
                   <button
                     key={s.id}
                     type="button"
+                    data-scene-id={s.id}
                     className={[
                       "scene-chip",
                       s.id === scene.id ? "active" : "",
@@ -939,41 +1032,131 @@ export function Drawer({ state, t }: Props) {
 
         {prepOpen && tab === "match" && (
           <section className="drawer-panel">
-            <ul className="board-list">
-              {state.store.boards.map((b) => (
-                <li key={b.id}>
+            {!state.isFileSession && (
+              <ul className="board-list">
+                {state.store.boards.map((b) => (
+                  <li key={b.id}>
+                    <button
+                      type="button"
+                      className={b.id === board.id ? "active" : ""}
+                      onClick={() => state.setActiveBoard(b.id)}
+                    >
+                      {b.matchLabel || b.title || b.id.slice(0, 6)}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {state.isFileSession && state.fileSession && (
+              <p className="hint-muted" role="status">
+                {t("fileSessionBadge")}: {state.fileSession.sourceName}
+                {state.fileSession.dirty
+                  ? ` · ${t("fileSessionUnsaved")}`
+                  : ` · ${t("fileSessionSavedHint")}`}
+              </p>
+            )}
+            <div className="drawer-stack-actions">
+              {!state.isFileSession && (
+                <>
                   <button
                     type="button"
-                    className={b.id === board.id ? "active" : ""}
-                    onClick={() => state.setActiveBoard(b.id)}
+                    className="drawer-chrome-label"
+                    disabled={atLimit}
+                    title={atLimit ? t("boardLimit") : t("newBoard")}
+                    onClick={() => {
+                      newBoardFlow.requestNew();
+                    }}
                   >
-                    {b.matchLabel || b.title || b.id.slice(0, 6)}
+                    {t("newBoardShort")}
                   </button>
-                </li>
-              ))}
-            </ul>
-            <div className="row">
+                  <button
+                    type="button"
+                    className="drawer-chrome-label"
+                    title={t("deleteBoard")}
+                    onClick={() => state.deleteBoard(board.id)}
+                  >
+                    {t("deleteBoardShort")}
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 className="drawer-chrome-label"
-                disabled={atLimit}
-                title={atLimit ? t("boardLimit") : t("newBoard")}
-                onClick={() => {
-                  newBoardFlow.requestNew();
-                }}
+                title={
+                  state.isFileSession
+                    ? t("fileSessionDownloadHint")
+                    : t("exportBoardJsonHint")
+                }
+                onClick={onExportBoardJson}
               >
-                {t("newBoard")}
+                {state.isFileSession
+                  ? t("fileSessionDownloadShort")
+                  : t("exportBoardJsonShort")}
               </button>
-              <button
-                type="button"
+              {!state.isFileSession && (
+                <button
+                  type="button"
+                  className="drawer-chrome-label"
+                  title={
+                    atLimit
+                      ? t("importBoardJsonErrLimit")
+                      : t("importBoardJsonHint")
+                  }
+                  disabled={atLimit}
+                  onClick={() => importJsonInputRef.current?.click()}
+                >
+                  {t("importBoardJsonShort")}
+                </button>
+              )}
+              <Link
                 className="drawer-chrome-label"
-                title={t("deleteBoard")}
-                onClick={() => state.deleteBoard(board.id)}
+                to="/files"
+                title={t("filesLocalHint")}
               >
-                {t("deleteBoardShort")}
-              </button>
+                {t("filesLocalShort")}
+              </Link>
+              {state.isFileSession && (
+                <button
+                  type="button"
+                  className="drawer-chrome-label"
+                  title={t("fileSessionClose")}
+                  onClick={() => {
+                    if (state.fileSession?.dirty) {
+                      const ok = window.confirm(t("fileSessionLeaveConfirm"));
+                      if (!ok) return;
+                    }
+                    state.closeFileSession({ discardDraft: true });
+                  }}
+                >
+                  {t("fileSessionCloseShort")}
+                </button>
+              )}
+              <input
+                ref={importJsonInputRef}
+                type="file"
+                accept=".json,.zoneboard.json,application/json"
+                className="sr-only"
+                aria-label={t("importBoardJson")}
+                onChange={(e) =>
+                  void onImportBoardJsonFile(e.target.files?.[0] ?? null)
+                }
+              />
             </div>
-            {atLimit && <p className="hint">{t("boardLimit")}</p>}
+            {!state.isFileSession && atLimit && (
+              <p className="hint">{t("boardLimit")}</p>
+            )}
+            {boardIoNotice && (
+              <p
+                className={
+                  boardIoNotice.level === "ok"
+                    ? "drawer-inline-warn"
+                    : "drawer-inline-error"
+                }
+                role="status"
+              >
+                {boardIoNotice.text}
+              </p>
+            )}
 
             <label>
               {t("matchLabel")}

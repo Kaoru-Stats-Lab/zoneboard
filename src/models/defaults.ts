@@ -9,8 +9,12 @@ import type {
   Scene,
   SoccerPitchSurface,
   SportId,
+  TextObject,
   WatermarkSettings,
 } from "./types";
+import { isShapeKind, sanitizeShapeObject } from "./shapeSanitize";
+import { normalizeSceneBalls } from "./ballSanitize";
+import { sanitizeTextObject } from "./textSanitize";
 import {
   AWAY_COLOR,
   AWAY_GK_COLOR,
@@ -42,17 +46,38 @@ import { DEFAULT_MAX_SUBS } from "./matchStatus";
 import { createPkShootout, normalizePkShootout } from "./pkShootout";
 import { createScene } from "./scene";
 
-/** 旧直線 (x1,y1,x2,y2) → points[] */
+/** 旧直線 (x1,y1,x2,y2) → points[] · text / shape 属性をサニタイズ。Zone は無改変。 */
 function normalizeObjects(objects: DrawObject[]): DrawObject[] {
-  return objects.map((obj) => {
-    if (obj.type !== "line") return obj;
+  const out: DrawObject[] = [];
+  for (const obj of objects) {
+    if (obj.type === "text") {
+      out.push(sanitizeTextObject(obj as TextObject));
+      continue;
+    }
+    if (obj.type === "shape") {
+      // Unknown future kinds: keep row verbatim (do not coerce → rect).
+      if (!isShapeKind((obj as { kind?: unknown }).kind)) {
+        out.push(obj);
+        continue;
+      }
+      const shape = sanitizeShapeObject(obj);
+      if (shape) out.push(shape);
+      continue;
+    }
+    if (obj.type !== "line") {
+      out.push(obj);
+      continue;
+    }
     const legacy = obj as LineObject & {
       x1?: number;
       y1?: number;
       x2?: number;
       y2?: number;
     };
-    if (legacy.points?.length >= 2) return legacy;
+    if (legacy.points?.length >= 2) {
+      out.push(legacy);
+      continue;
+    }
     if (
       legacy.x1 != null &&
       legacy.y1 != null &&
@@ -60,17 +85,19 @@ function normalizeObjects(objects: DrawObject[]): DrawObject[] {
       legacy.y2 != null
     ) {
       const { x1, y1, x2, y2, ...rest } = legacy;
-      return {
+      out.push({
         ...rest,
         type: "line",
         points: [
           { x: x1, y: y1 },
           { x: x2, y: y2 },
         ],
-      };
+      });
+      continue;
     }
-    return { ...legacy, points: legacy.points ?? [] };
-  });
+    out.push({ ...legacy, points: legacy.points ?? [] });
+  }
+  return out;
 }
 
 export type CreateBoardOptions = {
@@ -166,7 +193,9 @@ export function defaultWatermark(): WatermarkSettings {
 
 type LegacyBoard = Omit<BoardDocument, "benchCount" | "scenes" | "activeSceneId"> & {
   pieces?: Scene["pieces"];
-  ball?: Scene["ball"];
+  /** Legacy single-ball field (pre multi-ball). */
+  ball?: { x: number; y: number; attachedTo?: string | null };
+  balls?: Scene["balls"];
   objects?: Scene["objects"];
   scenes?: Scene[];
   activeSceneId?: string;
@@ -209,30 +238,35 @@ export function migrateBoard(raw: LegacyBoard): BoardDocument {
           label: p.label ?? "",
           number: p.number ?? "",
         })),
-        ball: raw.ball ?? { x: 0.5, y: 0.5 },
+        ball: raw.ball,
+        balls: raw.balls,
         objects: normalizeObjects(raw.objects ?? []),
       },
     );
     scenes = [scene];
     activeSceneId = scene.id;
   } else {
-    scenes = scenes.map((s) => ({
-      ...s,
-      hideHalf: s.hideHalf ?? "none",
-      teamFocus: s.teamFocus ?? "both",
-      phase: s.phase ?? "custom",
-      label: s.label || defaultSceneName(1, raw.sport ?? "soccer"),
-      pieces: (s.pieces ?? []).map((p) => ({
-        ...p,
-        // タッチライン際はフルサイズに再分類（旧: 線外=即ベンチ）
-        role: roleFromPosition(p.x, p.y),
-        label: p.label ?? "",
-        number: p.number ?? "",
-      })),
-      ball: s.ball ?? { x: 0.5, y: 0.5 },
-      objects: normalizeObjects(s.objects ?? []),
-      notes: typeof s.notes === "string" ? s.notes : "",
-    }));
+    scenes = scenes.map((s) => {
+      const legacy = s as Scene & { ball?: unknown; balls?: unknown };
+      const { ball: _dropBall, ...rest } = legacy;
+      return {
+        ...rest,
+        hideHalf: rest.hideHalf ?? "none",
+        teamFocus: rest.teamFocus ?? "both",
+        phase: rest.phase ?? "custom",
+        label: rest.label || defaultSceneName(1, raw.sport ?? "soccer"),
+        pieces: (rest.pieces ?? []).map((p) => ({
+          ...p,
+          // タッチライン際はフルサイズに再分類（旧: 線外=即ベンチ）
+          role: roleFromPosition(p.x, p.y),
+          label: p.label ?? "",
+          number: p.number ?? "",
+        })),
+        balls: normalizeSceneBalls(legacy.balls, legacy.ball),
+        objects: normalizeObjects(rest.objects ?? []),
+        notes: typeof rest.notes === "string" ? rest.notes : "",
+      };
+    });
     if (!activeSceneId || !scenes.some((s) => s.id === activeSceneId)) {
       activeSceneId = scenes[0].id;
     }

@@ -1,13 +1,26 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { usesDarkPitchInk, textColorForBoard } from "../canvas/drawingInk";
 import { textFontStack } from "../presets/textStyle";
-import type { BoardDocument, TextFontId } from "../models/types";
+import type { BoardDocument, TextAlign, TextFontId } from "../models/types";
 
 type Props = {
   board: BoardDocument;
   left: number;
   top: number;
   fontSize: number;
+  /** CSS px — matches canvas text box width */
+  width: number;
+  lineHeight?: number;
+  /** When true, wrap like canvas (explicit width). Legacy = no wrap. */
+  wrap?: boolean;
+  /** Clockwise degrees (Canvas/CSS). Editing does not change rotation. */
+  rotationDeg?: number;
+  /** transform-origin X from overlay left (CSS px) — box centre */
+  originX?: number;
+  /** transform-origin Y from overlay top (CSS px) — box centre */
+  originY?: number;
+  /** Match canvas textAlign; default left */
+  align?: TextAlign;
   value: string;
   placeholder: string;
   color?: string;
@@ -23,6 +36,13 @@ export function CanvasTextEditor({
   left,
   top,
   fontSize,
+  width,
+  lineHeight = 1.25,
+  wrap = true,
+  rotationDeg = 0,
+  originX,
+  originY,
+  align = "left",
   value,
   placeholder,
   color,
@@ -48,6 +68,17 @@ export function CanvasTextEditor({
     el.select();
   }, []);
 
+  const syncHeight = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.max(fontSize * lineHeight, el.scrollHeight)}px`;
+  };
+
+  useLayoutEffect(() => {
+    syncHeight();
+  }, [value, width, fontSize, lineHeight, wrap]);
+
   useEffect(() => {
     const onDocDown = (e: MouseEvent) => {
       if (inputRef.current?.contains(e.target as Node)) return;
@@ -57,18 +88,47 @@ export function CanvasTextEditor({
     return () => document.removeEventListener("mousedown", onDocDown);
   }, [onCommit]);
 
+  // Font load can change metrics — remeasure once fonts are ready
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      try {
+        if (document.fonts?.ready) {
+          await document.fonts.ready;
+          if (!cancelled) syncHeight();
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [fontFamily, fontSize, stack]);
+
   return (
     <textarea
       ref={inputRef}
-      className={`canvas-text-editor${grass ? " canvas-text-editor--grass" : ""}`}
+      className={`canvas-text-editor${grass ? " canvas-text-editor--grass" : ""}${wrap ? "" : " canvas-text-editor--nowrap"}`}
       style={{
         left,
         top,
+        width,
         fontSize,
-        minWidth: Math.max(120, fontSize * 6),
-        minHeight: fontSize * 1.45,
+        lineHeight,
         color: ink,
         fontFamily: stack,
+        fontWeight: 600,
+        textAlign: align,
+        transform:
+          rotationDeg && Number.isFinite(rotationDeg)
+            ? `rotate(${rotationDeg}deg)`
+            : undefined,
+        transformOrigin:
+          originX != null && originY != null
+            ? `${originX}px ${originY}px`
+            : "center top",
       }}
       value={value}
       placeholder={placeholder}
@@ -77,17 +137,21 @@ export function CanvasTextEditor({
       aria-label={placeholder}
       onChange={(e) => {
         onChange(e.target.value);
-        e.target.style.height = "auto";
-        e.target.style.height = `${e.target.scrollHeight}px`;
+        requestAnimationFrame(syncHeight);
       }}
       onKeyDown={(e) => {
         if (e.key === "Escape") {
           e.preventDefault();
+          e.stopPropagation();
           onCancel();
           return;
         }
+        // IME: composition Enter must not commit
         if (e.key === "Enter" && !e.shiftKey) {
+          const ne = e.nativeEvent;
+          if (ne.isComposing || ne.keyCode === 229) return;
           e.preventDefault();
+          e.stopPropagation();
           onCommit(value);
         }
       }}

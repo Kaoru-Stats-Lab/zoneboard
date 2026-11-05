@@ -42,7 +42,12 @@ export type ToolId =
   | "link"
   | "text";
 
-export interface BallState {
+/**
+ * Pitch ball (Multi Ball v1).
+ * World pitch-norm. Optional attach follows a piece while that piece moves.
+ */
+export interface BallObject {
+  id: string;
   x: number;
   y: number;
   /**
@@ -52,6 +57,12 @@ export interface BallState {
    */
   attachedTo?: string | null;
 }
+
+/**
+ * @deprecated Use BallObject. Kept as a structural alias for capture drafts /
+ * legacy call sites that only need x/y/attachedTo.
+ */
+export type BallState = Pick<BallObject, "x" | "y" | "attachedTo">;
 
 /** 事前登録メンバー（ベンチ入り名簿）— Pro 選手セットと同じカラム */
 export interface RosterPlayer {
@@ -228,6 +239,49 @@ export interface ZoneObject {
   strokeColor: string;
 }
 
+/**
+ * Free-form pitch shape (circle / rect / triangle).
+ * Independent of legacy ZoneObject (axis-aligned hatched ellipse).
+ * x/y = top-left of AABB in world pitch-norm; w/h always positive.
+ * Geometric constraints (true circle, equilateral triangle) live in shared geometry (later groups).
+ */
+export type ShapeKind = "circle" | "rect" | "triangle";
+
+export interface ShapeObject {
+  id: string;
+  type: "shape";
+  kind: ShapeKind;
+  /** World pitch-norm. Top-left of the axis-aligned bounds box. */
+  x: number;
+  y: number;
+  /** Positive width in world pitch-norm (never signed like Zone). */
+  w: number;
+  /** Positive height in world pitch-norm. */
+  h: number;
+  /**
+   * Clockwise degrees in screen space (Canvas / CSS, y-down).
+   * Absent → 0. Pivot = shape centre (x + w/2, y + h/2).
+   */
+  rotationDeg?: number;
+  /**
+   * Opaque fill colour as #rrggbb (sanitized).
+   * Typically from TEXT_COLOR_PRESETS; custom hex allowed.
+   * 8-digit hex alpha is discarded — use fillOpacity for transparency.
+   */
+  fillColor: string;
+  /**
+   * Fill alpha in 0…1 (sole transparency channel).
+   * Default 0.3 ≡ UI “70% transparent”. Not a transparency percentage field.
+   * Outline always draws opaque regardless of this value.
+   */
+  fillOpacity: number;
+  /**
+   * Outline on/off. Absent → true.
+   * Stroke colour / width / opacity are derived at draw time (same as fill, opaque, board stroke scale).
+   */
+  strokeEnabled?: boolean;
+}
+
 export interface PenObject {
   id: string;
   type: "pen";
@@ -250,20 +304,41 @@ export interface LinkObject {
 
 export type TextFontId = "system" | "display" | "serif" | "mono";
 
+export type TextAlign = "left" | "center" | "right";
+
 export interface TextObject {
   id: string;
   type: "text";
+  /** World pitch-norm (0–1). Top-left of the text box. */
   x: number;
   y: number;
   text: string;
   color: string;
+  /** Fraction of pitch short side → CSS px at draw time */
   fontSize: number;
   fontFamily?: TextFontId;
+  /**
+   * Explicit box width in world pitch-norm.
+   * Absent → legacy single-line auto width (Group 2/3).
+   */
+  width?: number;
+  /**
+   * User min height in world pitch-norm.
+   * Display height is max(height, contentHeight); never clips text.
+   */
+  height?: number;
+  /**
+   * Clockwise degrees in screen space (Canvas / CSS, y-down).
+   * Absent → 0. Pivot = box centre.
+   */
+  rotationDeg?: number;
+  align?: TextAlign;
 }
 
 export type DrawObject =
   | LineObject
   | ZoneObject
+  | ShapeObject
   | PenObject
   | LinkObject
   | TextObject;
@@ -274,7 +349,11 @@ export interface Scene {
   label: string;
   phase: ScenePhase;
   pieces: Piece[];
-  ball: BallState;
+  /**
+   * Canonical multi-ball list. Always length ≥ 1 after migrate/normalize.
+   * Legacy single `ball` is converted on read (defaults.migrateBoard).
+   */
+  balls: BallObject[];
   objects: DrawObject[];
   /**
    * セットプレー用の駒非表示（レガシー）。

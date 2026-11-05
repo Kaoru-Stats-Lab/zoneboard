@@ -10,14 +10,18 @@ import {
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { toolColorForBoard } from "../canvas/drawingInk";
-import {
-  DEFAULT_TOOL_RAIL,
-  type ToolRailPosition,
-} from "../models/types";
+import { DEFAULT_TOOL_RAIL, type ToolRailPosition } from "../models/types";
 import { loadPrefs, savePrefs } from "../storage/persist";
 import { toolItemsForSport, toolMessageKey } from "./tools";
+import {
+  SHAPE_KIND_OPTIONS,
+  ShapeKindIcon,
+  shapeKindMessageKey,
+} from "./shapeToolUi";
 
 const STAGE_MARGIN = 8;
+const FLYOUT_MIN_WIDTH = 128;
+const SHAPE_MENU_ID = "tool-rail-shape-menu";
 
 type Props = {
   state: AppState;
@@ -69,12 +73,19 @@ function ratiosFromOffset(
 
 export function ToolRail({ state, t }: Props) {
   const railRef = useRef<HTMLDivElement>(null);
+  const shapeBtnRef = useRef<HTMLButtonElement>(null);
+  const flyoutRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<ToolRailPosition>(
     () => loadPrefs().toolRail ?? DEFAULT_TOOL_RAIL,
   );
   const [offset, setOffset] = useState<{ left: number; top: number } | null>(
     null,
   );
+  const [shapeFlyout, setShapeFlyout] = useState(false);
+  const [flyoutPlace, setFlyoutPlace] = useState<{
+    top: number;
+    side: "left" | "right";
+  }>({ top: 0, side: "right" });
   const dragRef = useRef<{
     pointerId: number;
     startX: number;
@@ -82,6 +93,59 @@ export function ToolRail({ state, t }: Props) {
     originLeft: number;
     originTop: number;
   } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!shapeFlyout) return;
+    const btn = shapeBtnRef.current;
+    const rail = railRef.current;
+    if (!btn || !rail) return;
+    const place = () => {
+      const b = btn.getBoundingClientRect();
+      const r = rail.getBoundingClientRect();
+      const spaceRight = window.innerWidth - r.right - 8;
+      const side: "left" | "right" =
+        spaceRight < FLYOUT_MIN_WIDTH + 6 ? "left" : "right";
+      const flyoutH = flyoutRef.current?.offsetHeight ?? 140;
+      let top = b.top - r.top;
+      const absBottom = r.top + top + flyoutH;
+      if (absBottom > window.innerHeight - 8) {
+        top = Math.max(0, top - (absBottom - (window.innerHeight - 8)));
+      }
+      if (r.top + top < 8) top = 8 - r.top;
+      setFlyoutPlace({ top, side });
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(rail);
+    window.addEventListener("resize", place);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", place);
+    };
+  }, [shapeFlyout, offset, pos]);
+
+  useEffect(() => {
+    if (!shapeFlyout) return;
+    const onDoc = (e: MouseEvent) => {
+      const node = e.target as Node;
+      if (shapeBtnRef.current?.contains(node)) return;
+      if (flyoutRef.current?.contains(node)) return;
+      setShapeFlyout(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      e.stopPropagation();
+      setShapeFlyout(false);
+      shapeBtnRef.current?.focus();
+    };
+    document.addEventListener("mousedown", onDoc);
+    window.addEventListener("keydown", onKey, true);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      window.removeEventListener("keydown", onKey, true);
+    };
+  }, [shapeFlyout]);
 
   const layoutRail = useCallback(() => {
     const rail = railRef.current;
@@ -157,11 +221,41 @@ export function ToolRail({ state, t }: Props) {
   const allTools = toolItemsForSport(state.board?.sport);
   const selectTool = allTools.find((tool) => tool.id === "select");
   const scrollTools = allTools.filter((tool) => tool.id !== "select");
-  const currentToolLabel = t(toolMessageKey(state.tool));
+  const shapeActive = state.tool === "zone";
+  const currentToolLabel = shapeActive
+    ? t(shapeKindMessageKey(state.shapeKind))
+    : t(toolMessageKey(state.tool));
+  const showAspectLock = shapeActive && state.shapeKind === "rect";
 
   const renderToolBtn = (tool: (typeof allTools)[number]) => {
     const color = toolColorForBoard(state.board, tool.id);
     const active = state.tool === tool.id;
+    if (tool.id === "zone") {
+      return (
+        <button
+          key={tool.id}
+          ref={shapeBtnRef}
+          type="button"
+          data-tool={tool.id}
+          className={`tool-rail-btn tool-rail-btn--shape${
+            shapeActive ? " active" : ""
+          }${shapeFlyout ? " flyout-open" : ""}`}
+          title={t("shapeToolHint")}
+          aria-expanded={shapeFlyout}
+          aria-haspopup="menu"
+          aria-controls={SHAPE_MENU_ID}
+          style={{ "--tool-color": color } as CSSProperties}
+          onClick={() => setShapeFlyout((v) => !v)}
+        >
+          <span className="tool-rail-shape-label">
+            {t(tool.short ?? tool.key)}
+          </span>
+          <span className="tool-rail-shape-chevron-mark" aria-hidden>
+            ›
+          </span>
+        </button>
+      );
+    }
     return (
       <button
         key={tool.id}
@@ -209,7 +303,22 @@ export function ToolRail({ state, t }: Props) {
         title={`${t("toolIndicator")}: ${currentToolLabel}`}
       >
         <span className="tool-rail-indicator-label">{t("toolIndicator")}</span>
-        <span className="tool-rail-indicator-value">{currentToolLabel}</span>
+        <div className="tool-rail-indicator-row">
+          <span className="tool-rail-indicator-value">{currentToolLabel}</span>
+          {showAspectLock ? (
+            <button
+              type="button"
+              className={`tool-rail-shape-aspect${
+                state.shapeAspectLock ? " active" : ""
+              }`}
+              title={t("shapeAspectLock")}
+              aria-pressed={state.shapeAspectLock}
+              onClick={() => state.setShapeAspectLock(!state.shapeAspectLock)}
+            >
+              {t("shapeAspectLockShort")}
+            </button>
+          ) : null}
+        </div>
       </div>
       {selectTool ? renderToolBtn(selectTool) : null}
       <div className="tool-rail-scroll">
@@ -232,6 +341,37 @@ export function ToolRail({ state, t }: Props) {
       >
         {t("undo")}
       </button>
+      {shapeFlyout ? (
+        <div
+          id={SHAPE_MENU_ID}
+          ref={flyoutRef}
+          className="tool-rail-shape-flyout"
+          role="menu"
+          aria-label={t("shapeKindMenu")}
+          data-side={flyoutPlace.side}
+          style={{ top: flyoutPlace.top }}
+        >
+          {SHAPE_KIND_OPTIONS.map(({ kind, key }) => (
+            <button
+              key={kind}
+              type="button"
+              role="menuitemradio"
+              className={`tool-rail-shape-kind${
+                state.shapeKind === kind ? " active" : ""
+              }`}
+              aria-checked={state.shapeKind === kind}
+              onClick={() => {
+                state.setShapeKind(kind);
+                state.setTool("zone");
+                setShapeFlyout(false);
+              }}
+            >
+              <ShapeKindIcon kind={kind} />
+              <span>{t(key)}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

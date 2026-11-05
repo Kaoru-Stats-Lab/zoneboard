@@ -14,8 +14,26 @@ import {
   hitTestPiece,
   hitTestPieceForSwap,
   hitTestPiecePointer,
+  hitTestTextObjectHandle,
+  hitTestShapeObjectHandle,
+  applyTextResize,
+  applyShapeResize,
+  computeTextGeometry,
+  computeShapeGeometry,
+  tightDisplayWorldBox,
+  previewShapeFromDrag,
+  shapeBoxFromDrag,
+  normalizeRotationDeg,
+  rotationDegFromDrag,
+  textResizeCursor,
+  shapeResizeCursor,
+  pointInTextBox,
+  pointInShape,
   pitchToWorld,
+  type TextHandleId,
+  type ShapeHandleId,
 } from "../canvas/drawBoard";
+import { fromNorm } from "../canvas/layout";
 import { outerFillForBoard } from "../canvas/drawPitch";
 import {
   BROADCAST_MATTE,
@@ -28,7 +46,14 @@ import { drawMatchBanner, matchBannerHeight } from "../canvas/matchBanner";
 import { activeViewport, boardWithActiveViewport } from "../models/scene";
 import { resolveLinkPoints } from "../models/pieceLink";
 import { smoothLinePath } from "../canvas/smoothPath";
-import { textOverlayRect } from "../canvas/textOverlayLayout";
+import {
+  textOverlayForObject,
+  textOverlayRect,
+} from "../canvas/textOverlayLayout";
+import {
+  TEXT_DEFAULT_FONT_SIZE,
+  placeNewTextBox,
+} from "../canvas/textGeometry";
 import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import type { BoardDocument, LineKind, Viewport } from "../models/types";
@@ -117,6 +142,8 @@ type TextEditSession = {
   worldX: number;
   worldY: number;
   fontSizeNorm: number;
+  /** Explicit width for new / boxed text (world). Legacy edit omits. */
+  worldWidth?: number;
   objectId?: string;
   draft: string;
   color?: string;
@@ -182,7 +209,7 @@ type DragState =
       id: string;
       recorded: boolean;
     }
-  | { mode: "ball"; recorded: boolean; boost: number }
+  | { mode: "ball"; id: string; recorded: boolean; boost: number }
   | {
       mode: "pan";
       lastClientX: number;
@@ -213,6 +240,16 @@ type DragState =
       y1: number;
     }
   | {
+      /** Create Shape via former Zone tool (CSS px drag). */
+      mode: "shape-create";
+      kind: "circle" | "rect" | "triangle";
+      x0: number;
+      y0: number;
+      x1: number;
+      y1: number;
+      lockAspect: boolean;
+    }
+  | {
       mode: "pen";
       x0: number;
       y0: number;
@@ -225,6 +262,65 @@ type DragState =
       id: string;
       lastX: number;
       lastY: number;
+      recorded: boolean;
+    }
+  | {
+      mode: "text-resize";
+      id: string;
+      handle: TextHandleId;
+      startX: number;
+      startY: number;
+      startW: number;
+      startH: number;
+      startRotationDeg: number;
+      pointerX: number;
+      pointerY: number;
+      recorded: boolean;
+    }
+  | {
+      mode: "text-rotate";
+      id: string;
+      /** CSS px box centre at drag start */
+      centerX: number;
+      centerY: number;
+      startRotationDeg: number;
+      /** CSS client pointer at drag start */
+      pointerX: number;
+      pointerY: number;
+      /** Live (possibly unnormalized) angle for badge */
+      liveDeg: number;
+      recorded: boolean;
+    }
+  | {
+      mode: "shape";
+      id: string;
+      lastX: number;
+      lastY: number;
+      recorded: boolean;
+    }
+  | {
+      mode: "shape-resize";
+      id: string;
+      handle: ShapeHandleId;
+      kind: "circle" | "rect" | "triangle";
+      startX: number;
+      startY: number;
+      startW: number;
+      startH: number;
+      startRotationDeg: number;
+      pointerX: number;
+      pointerY: number;
+      recorded: boolean;
+    }
+  | {
+      mode: "shape-rotate";
+      id: string;
+      centerX: number;
+      centerY: number;
+      startRotationDeg: number;
+      pointerX: number;
+      pointerY: number;
+      liveDeg: number;
       recorded: boolean;
     }
   | {
@@ -595,8 +691,10 @@ export function BoardCanvas({
       selectedPieceId: draggingPieceId ?? state.selectedPieceId,
       selectedPieceIds: selectedIdsRef.current,
       selectedObjectId: state.selectedObjectId,
-      selectedBall: d?.mode === "ball" ? true : state.selectedBall,
+      selectedBallId:
+        d?.mode === "ball" ? d.id : state.selectedBallId,
       selectionColor: state.selectionColor,
+      interactiveChrome: !state.broadcast,
       watermark: state.watermark,
       watermarkImage,
       outer,
@@ -606,7 +704,7 @@ export function BoardCanvas({
         d?.mode === "piece" || d?.mode === "piece-line"
           ? { pieceId: d.id, boost: d.boost }
           : d?.mode === "ball"
-            ? { ball: true, boost: d.boost }
+            ? { ballId: d.id, ball: true, boost: d.boost }
             : null,
       previewLine:
         (d?.mode === "line" || d?.mode === "piece-line") &&
@@ -616,6 +714,17 @@ export function BoardCanvas({
       previewZone:
         d?.mode === "zone"
           ? { x0: d.x0, y0: d.y0, x1: d.x1, y1: d.y1 }
+          : null,
+      previewShape:
+        d?.mode === "shape-create"
+          ? previewShapeFromDrag(
+              d.kind,
+              { x: d.x0, y: d.y0 },
+              { x: d.x1, y: d.y1 },
+              board,
+              pitch,
+              { lockAspect: d.lockAspect },
+            )
           : null,
       previewMarquee:
         d?.mode === "marquee"
@@ -635,6 +744,14 @@ export function BoardCanvas({
       })(),
       ballImage,
       editingTextId: textEdit?.objectId ?? null,
+      liveTextRotation:
+        d?.mode === "text-rotate"
+          ? { id: d.id, deg: d.liveDeg }
+          : null,
+      liveShapeRotation:
+        d?.mode === "shape-rotate"
+          ? { id: d.id, deg: d.liveDeg }
+          : null,
       captureUnderlay,
       draftPieces:
         cap?.phase === "place" ? cap.draftPieces : undefined,
@@ -681,7 +798,7 @@ export function BoardCanvas({
     state.selectedPieceId,
     state.selectedPieceIds,
     state.selectedObjectId,
-    state.selectedBall,
+    state.selectedBallId,
     state.selectionColor,
     state.watermark,
     watermarkImage,
@@ -756,13 +873,15 @@ export function BoardCanvas({
   const commitTextEdit = (value: string) => {
     const session = textEditRef.current;
     if (!session) return;
-    const trimmed = value.trim();
+    const trimmed = value.replace(/^\s+|\s+$/g, "");
     const fromTextTool = state.tool === "text";
     if (session.objectId) {
       state.updateText(session.objectId, trimmed);
       state.setSelectedObjectId(trimmed ? session.objectId : null);
     } else if (trimmed) {
-      state.addText(session.worldX, session.worldY, trimmed);
+      state.addText(session.worldX, session.worldY, trimmed, {
+        width: session.worldWidth,
+      });
     }
     setTextEdit(null);
     if (fromTextTool) state.setTool("select");
@@ -778,6 +897,7 @@ export function BoardCanvas({
     initial: string;
     objectId?: string;
     fontSizeNorm?: number;
+    worldWidth?: number;
     color?: string;
     fontFamily?: import("../models/types").TextFontId;
   }) => {
@@ -785,13 +905,37 @@ export function BoardCanvas({
     setTextEdit({
       worldX: opts.worldX,
       worldY: opts.worldY,
-      fontSizeNorm: opts.fontSizeNorm ?? 0.035,
+      fontSizeNorm: opts.fontSizeNorm ?? TEXT_DEFAULT_FONT_SIZE,
+      worldWidth: opts.worldWidth,
       objectId: opts.objectId,
       draft: opts.initial,
       color: opts.color,
       fontFamily: opts.fontFamily,
     });
   };
+
+  // Inspector / touch: open inline editor for selected text
+  useEffect(() => {
+    const id = state.textEditRequestId;
+    if (!id || !board || !scene) return;
+    const obj = scene.objects.find((o) => o.id === id && o.type === "text");
+    state.clearTextEditRequest();
+    if (!obj || obj.type !== "text") return;
+    state.setSelectedBall(false);
+    state.setSelectedPieceId(null);
+    state.setSelectedObjectId(obj.id);
+    openTextEdit({
+      worldX: obj.x,
+      worldY: obj.y,
+      initial: obj.text,
+      objectId: obj.id,
+      fontSizeNorm: obj.fontSize,
+      worldWidth: obj.width,
+      color: obj.color,
+      fontFamily: obj.fontFamily,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.textEditRequestId]);
 
   const objectAtEvent = (e: { clientX: number; clientY: number }) => {
     const canvas = canvasRef.current;
@@ -806,7 +950,7 @@ export function BoardCanvas({
     );
     const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
     if (!norm) return null;
-    return hitTestObject(board, scene, norm.x, norm.y);
+    return hitTestObject(board, scene, norm.x, norm.y, pitch);
   };
 
   /** ダブルクリックは移動操作と衝突しやすいのでトリプルクリック */
@@ -822,6 +966,38 @@ export function BoardCanvas({
 
   const onDoubleClick = (e: ReactMouseEvent) => {
     if (state.broadcast || state.tool !== "select" || viewLocked) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const { pitch } = resolveSurfaceLayout(
+      canvas.clientWidth,
+      canvas.clientHeight,
+      board,
+      view,
+      state.broadcast,
+      suppressMatchBanner,
+    );
+    const norm = toNorm(e.clientX, e.clientY, canvas, pitch);
+    if (!norm) return;
+    if (state.selectedObjectId) {
+      const selText = scene.objects.find(
+        (o) => o.id === state.selectedObjectId && o.type === "text",
+      );
+      if (
+        selText?.type === "text" &&
+        hitTestTextObjectHandle(selText, board, pitch, norm.x, norm.y)
+      ) {
+        return;
+      }
+      const selShape = scene.objects.find(
+        (o) => o.id === state.selectedObjectId && o.type === "shape",
+      );
+      if (
+        selShape?.type === "shape" &&
+        hitTestShapeObjectHandle(selShape, board, pitch, norm.x, norm.y)
+      ) {
+        return;
+      }
+    }
     const obj = objectAtEvent(e);
     if (obj?.type !== "text") return;
     e.preventDefault();
@@ -834,6 +1010,7 @@ export function BoardCanvas({
       initial: obj.text,
       objectId: obj.id,
       fontSizeNorm: obj.fontSize,
+      worldWidth: obj.width,
       color: obj.color,
       fontFamily: obj.fontFamily,
     });
@@ -895,7 +1072,14 @@ export function BoardCanvas({
       const draftScene = {
         ...scene,
         pieces: cap.draftPieces,
-        ball: cap.draftBall ?? scene.ball,
+        balls: cap.draftBall
+          ? [
+              {
+                id: scene.balls[0]?.id ?? "draft-ball",
+                ...cap.draftBall,
+              },
+            ]
+          : scene.balls,
       };
 
       if (state.tool === "ball") {
@@ -956,23 +1140,156 @@ export function BoardCanvas({
     }
 
     if (state.tool === "ball") {
-      state.moveBall(world.x, world.y, true);
-      state.setSelectedBall(true);
+      const targetId =
+        state.selectedBallId &&
+        scene.balls.some((b) => b.id === state.selectedBallId)
+          ? state.selectedBallId
+          : scene.balls[scene.balls.length - 1]?.id ??
+            scene.balls[0]?.id;
+      if (!targetId) return;
+      state.moveBall(targetId, world.x, world.y, true);
+      state.setSelectedBallId(targetId);
       state.setSelectedPieceId(null);
-      drag.current = { mode: "ball", recorded: true, boost: 1.2 };
+      state.setSelectedObjectId(null);
+      drag.current = {
+        mode: "ball",
+        id: targetId,
+        recorded: true,
+        boost: 1.2,
+      };
       canvas.setPointerCapture(e.pointerId);
       paint();
       return;
     }
 
     if (state.tool === "select") {
+      // Text / Shape handles beat piece/ball/object (selected object only)
+      if (
+        !state.broadcast &&
+        state.selectedObjectId &&
+        textEditRef.current?.objectId !== state.selectedObjectId
+      ) {
+        const selText = scene.objects.find(
+          (o) => o.id === state.selectedObjectId && o.type === "text",
+        );
+        if (selText?.type === "text") {
+          const handle = hitTestTextObjectHandle(
+            selText,
+            board,
+            pitch,
+            norm.x,
+            norm.y,
+          );
+          if (handle) {
+            const geom = computeTextGeometry(selText, board, pitch);
+            if (geom) {
+              e.preventDefault();
+              state.setSelectedBall(false);
+              state.setSelectedPieceId(null);
+              if (handle === "rotate") {
+                const rect = canvas.getBoundingClientRect();
+                drag.current = {
+                  mode: "text-rotate",
+                  id: selText.id,
+                  centerX: rect.left + geom.cx,
+                  centerY: rect.top + geom.cy,
+                  startRotationDeg: geom.rotationDeg,
+                  pointerX: e.clientX,
+                  pointerY: e.clientY,
+                  liveDeg: geom.rotationDeg,
+                  recorded: false,
+                };
+              } else {
+                drag.current = {
+                  mode: "text-resize",
+                  id: selText.id,
+                  handle,
+                  startX: geom.worldX,
+                  startY: geom.worldY,
+                  startW: geom.worldW,
+                  startH: geom.worldH,
+                  startRotationDeg: geom.rotationDeg,
+                  pointerX: world.x,
+                  pointerY: world.y,
+                  recorded: false,
+                };
+              }
+              canvas.setPointerCapture(e.pointerId);
+              bumpDragVisual();
+              return;
+            }
+          }
+        }
+        const selShape = scene.objects.find(
+          (o) => o.id === state.selectedObjectId && o.type === "shape",
+        );
+        if (selShape?.type === "shape") {
+          const handle = hitTestShapeObjectHandle(
+            selShape,
+            board,
+            pitch,
+            norm.x,
+            norm.y,
+          );
+          if (handle) {
+            const geom = computeShapeGeometry(selShape, board, pitch);
+            if (geom) {
+              e.preventDefault();
+              state.setSelectedBall(false);
+              state.setSelectedPieceId(null);
+              if (handle === "rotate") {
+                if (!geom.showRotateHandle) return;
+                const rect = canvas.getBoundingClientRect();
+                drag.current = {
+                  mode: "shape-rotate",
+                  id: selShape.id,
+                  centerX: rect.left + geom.cx,
+                  centerY: rect.top + geom.cy,
+                  startRotationDeg: geom.rotationDeg,
+                  pointerX: e.clientX,
+                  pointerY: e.clientY,
+                  liveDeg: geom.rotationDeg,
+                  recorded: false,
+                };
+              } else {
+                // Start from tight display box so letterboxed circle/triangle
+                // don't keep empty padding after the first resize.
+                const tight = tightDisplayWorldBox(geom, board);
+                drag.current = {
+                  mode: "shape-resize",
+                  id: selShape.id,
+                  handle,
+                  kind: selShape.kind,
+                  startX: tight.x,
+                  startY: tight.y,
+                  startW: tight.w,
+                  startH: tight.h,
+                  startRotationDeg: geom.rotationDeg,
+                  pointerX: world.x,
+                  pointerY: world.y,
+                  recorded: false,
+                };
+              }
+              canvas.setPointerCapture(e.pointerId);
+              bumpDragVisual();
+              return;
+            }
+          }
+        }
+      }
       // ボール → 駒 → 描画。ロゴ透かしは描画のみ（位置は Settings）
-      if (hitTestBall(board, scene, pitch, norm.x, norm.y)) {
+      const ballHit = hitTestBall(board, scene, pitch, norm.x, norm.y);
+      if (ballHit) {
         state.captureUndo();
-        state.setSelectedBall(true);
+        state.setSelectedBallId(ballHit.id);
         state.setSelectedPieceId(null);
         state.setSelectedObjectId(null);
-        drag.current = { mode: "ball", recorded: true, boost: 1.2 };
+        drag.current = {
+          mode: "ball",
+          id: ballHit.id,
+          recorded: true,
+          boost: 1.2,
+        };
         canvas.setPointerCapture(e.pointerId);
         paint();
         return;
@@ -1055,7 +1372,7 @@ export function BoardCanvas({
         paint();
         return;
       }
-      const obj = hitTestObject(board, scene, norm.x, norm.y);
+      const obj = hitTestObject(board, scene, norm.x, norm.y, pitch);
       if (obj) {
         state.setSelectedBall(false);
         state.setSelectedPieceId(null);
@@ -1063,6 +1380,16 @@ export function BoardCanvas({
         if (obj.type === "text") {
           drag.current = {
             mode: "text",
+            id: obj.id,
+            lastX: world.x,
+            lastY: world.y,
+            recorded: false,
+          };
+          canvas.setPointerCapture(e.pointerId);
+          bumpDragVisual();
+        } else if (obj.type === "shape") {
+          drag.current = {
+            mode: "shape",
             id: obj.id,
             lastX: world.x,
             lastY: world.y,
@@ -1166,12 +1493,111 @@ export function BoardCanvas({
     }
 
     if (state.tool === "zone") {
+      // Shape tool: edit selected / existing shapes first (PP / Slides),
+      // then drag empty pitch to create. Avoid forcing a Select round-trip.
+      if (!state.broadcast && state.selectedObjectId) {
+        const selShape = scene.objects.find(
+          (o) => o.id === state.selectedObjectId && o.type === "shape",
+        );
+        if (selShape?.type === "shape") {
+          const handle = hitTestShapeObjectHandle(
+            selShape,
+            board,
+            pitch,
+            norm.x,
+            norm.y,
+          );
+          if (handle) {
+            const geom = computeShapeGeometry(selShape, board, pitch);
+            if (geom) {
+              e.preventDefault();
+              state.setSelectedBall(false);
+              state.setSelectedPieceId(null);
+              if (handle === "rotate") {
+                if (!geom.showRotateHandle) return;
+                const rect = canvas.getBoundingClientRect();
+                drag.current = {
+                  mode: "shape-rotate",
+                  id: selShape.id,
+                  centerX: rect.left + geom.cx,
+                  centerY: rect.top + geom.cy,
+                  startRotationDeg: geom.rotationDeg,
+                  pointerX: e.clientX,
+                  pointerY: e.clientY,
+                  liveDeg: geom.rotationDeg,
+                  recorded: false,
+                };
+              } else {
+                const tight = tightDisplayWorldBox(geom, board);
+                drag.current = {
+                  mode: "shape-resize",
+                  id: selShape.id,
+                  handle,
+                  kind: selShape.kind,
+                  startX: tight.x,
+                  startY: tight.y,
+                  startW: tight.w,
+                  startH: tight.h,
+                  startRotationDeg: geom.rotationDeg,
+                  pointerX: world.x,
+                  pointerY: world.y,
+                  recorded: false,
+                };
+              }
+              canvas.setPointerCapture(e.pointerId);
+              bumpDragVisual();
+              return;
+            }
+          }
+          const geom = computeShapeGeometry(selShape, board, pitch);
+          if (geom && pointInShape(geom, norm.x, norm.y)) {
+            state.setSelectedBall(false);
+            state.setSelectedPieceId(null);
+            drag.current = {
+              mode: "shape",
+              id: selShape.id,
+              lastX: world.x,
+              lastY: world.y,
+              recorded: false,
+            };
+            canvas.setPointerCapture(e.pointerId);
+            bumpDragVisual();
+            return;
+          }
+        }
+      }
+      const hitShape = hitTestObject(board, scene, norm.x, norm.y, pitch);
+      if (hitShape?.type === "shape") {
+        state.setSelectedBall(false);
+        state.setSelectedPieceId(null);
+        state.setSelectedObjectId(hitShape.id);
+        drag.current = {
+          mode: "shape",
+          id: hitShape.id,
+          lastX: world.x,
+          lastY: world.y,
+          recorded: false,
+        };
+        canvas.setPointerCapture(e.pointerId);
+        bumpDragVisual();
+        return;
+      }
+      // Empty pitch → new shape (sticky tool). Clear selection so a follow-up
+      // drag cannot be mistaken for moving the previous create.
+      state.setSelectedBall(false);
+      state.setSelectedPieceId(null);
+      state.setSelectedObjectId(null);
+      const css = fromNorm(norm.x, norm.y, pitch);
+      const rectLock =
+        state.shapeKind === "rect" && state.shapeAspectLock;
       drag.current = {
-        mode: "zone",
-        x0: world.x,
-        y0: world.y,
-        x1: world.x,
-        y1: world.y,
+        mode: "shape-create",
+        kind: state.shapeKind,
+        x0: css.x,
+        y0: css.y,
+        x1: css.x,
+        y1: css.y,
+        lockAspect: e.shiftKey || rectLock,
       };
       canvas.setPointerCapture(e.pointerId);
       bumpDragVisual();
@@ -1229,13 +1655,109 @@ export function BoardCanvas({
 
     if (state.tool === "text") {
       e.preventDefault();
+      const placed = placeNewTextBox(world.x, world.y);
       openTextEdit({
-        worldX: world.x,
-        worldY: world.y,
+        worldX: placed.x,
+        worldY: placed.y,
+        worldWidth: placed.width,
         initial: "",
       });
       return;
     }
+  };
+
+  const setCanvasCursor = (cursor: string) => {
+    const canvas = canvasRef.current;
+    if (canvas) canvas.style.cursor = cursor;
+  };
+
+  const updateHoverCursor = (e: ReactPointerEvent) => {
+    if (state.broadcast || state.tool !== "select" || viewLocked) {
+      setCanvasCursor("");
+      return;
+    }
+    if (textEditRef.current) {
+      setCanvasCursor("text");
+      return;
+    }
+    const hit = getNorm(e);
+    if (!hit?.norm || !board || !scene) {
+      setCanvasCursor("");
+      return;
+    }
+    if (state.selectedObjectId) {
+      const selText = scene.objects.find(
+        (o) => o.id === state.selectedObjectId && o.type === "text",
+      );
+      if (selText?.type === "text") {
+        const handle = hitTestTextObjectHandle(
+          selText,
+          board,
+          hit.pitch,
+          hit.norm.x,
+          hit.norm.y,
+        );
+        if (handle === "rotate") {
+          setCanvasCursor("grab");
+          return;
+        }
+        if (handle) {
+          const geom = computeTextGeometry(selText, board, hit.pitch);
+          setCanvasCursor(
+            textResizeCursor(handle, geom?.rotationDeg ?? 0),
+          );
+          return;
+        }
+        const geom = computeTextGeometry(selText, board, hit.pitch);
+        if (
+          geom &&
+          pointInTextBox(geom, hit.norm.x, hit.norm.y, 0.004)
+        ) {
+          setCanvasCursor("move");
+          return;
+        }
+      }
+      const selShape = scene.objects.find(
+        (o) => o.id === state.selectedObjectId && o.type === "shape",
+      );
+      if (selShape?.type === "shape") {
+        const handle = hitTestShapeObjectHandle(
+          selShape,
+          board,
+          hit.pitch,
+          hit.norm.x,
+          hit.norm.y,
+        );
+        if (handle === "rotate") {
+          setCanvasCursor("grab");
+          return;
+        }
+        if (handle) {
+          const geom = computeShapeGeometry(selShape, board, hit.pitch);
+          setCanvasCursor(
+            shapeResizeCursor(handle, geom?.rotationDeg ?? 0),
+          );
+          return;
+        }
+        const geom = computeShapeGeometry(selShape, board, hit.pitch);
+        if (geom && pointInShape(geom, hit.norm.x, hit.norm.y)) {
+          setCanvasCursor("move");
+          return;
+        }
+      }
+    }
+    const obj = hitTestObject(
+      board,
+      scene,
+      hit.norm.x,
+      hit.norm.y,
+      hit.pitch,
+    );
+    if (obj?.type === "text" || obj?.type === "shape") {
+      setCanvasCursor("move");
+      return;
+    }
+    setCanvasCursor("");
   };
 
   const onPointerMove = (e: ReactPointerEvent) => {
@@ -1251,6 +1773,34 @@ export function BoardCanvas({
         bumpDragVisual();
       }
       return;
+    }
+
+    if (!drag.current) {
+      updateHoverCursor(e);
+    } else if (
+      drag.current.mode === "text-rotate" ||
+      drag.current.mode === "shape-rotate"
+    ) {
+      setCanvasCursor("grabbing");
+    } else if (drag.current.mode === "text-resize") {
+      setCanvasCursor(
+        textResizeCursor(
+          drag.current.handle,
+          drag.current.startRotationDeg,
+        ),
+      );
+    } else if (drag.current.mode === "shape-resize") {
+      setCanvasCursor(
+        shapeResizeCursor(
+          drag.current.handle,
+          drag.current.startRotationDeg,
+        ),
+      );
+    } else if (
+      drag.current.mode === "text" ||
+      drag.current.mode === "shape"
+    ) {
+      setCanvasCursor("move");
     }
 
     const d = drag.current;
@@ -1316,10 +1866,11 @@ export function BoardCanvas({
     }
 
     if (d.mode === "ball") {
-      const prev = scene.ball;
+      const prev = scene.balls.find((b) => b.id === d.id);
+      if (!prev) return;
       const dist = Math.hypot(world.x - prev.x, world.y - prev.y);
       if (dist > 0.003) d.boost = Math.min(1.32, 1.14 + dist * 10);
-      state.moveBall(world.x, world.y, !d.recorded);
+      state.moveBall(d.id, world.x, world.y, !d.recorded);
       d.recorded = true;
       bumpDragVisual();
       return;
@@ -1393,6 +1944,16 @@ export function BoardCanvas({
       return;
     }
 
+    if (d.mode === "shape-create") {
+      const css = fromNorm(hit.norm.x, hit.norm.y, hit.pitch);
+      d.x1 = css.x;
+      d.y1 = css.y;
+      d.lockAspect =
+        e.shiftKey || (d.kind === "rect" && state.shapeAspectLock);
+      bumpDragVisual();
+      return;
+    }
+
     if (d.mode === "text") {
       const textObj = scene.objects.find(
         (o) => o.id === d.id && o.type === "text",
@@ -1416,6 +1977,130 @@ export function BoardCanvas({
       return;
     }
 
+    if (d.mode === "shape") {
+      const shapeObj = scene.objects.find(
+        (o) => o.id === d.id && o.type === "shape",
+      );
+      if (shapeObj && shapeObj.type === "shape") {
+        const dx = world.x - d.lastX;
+        const dy = world.y - d.lastY;
+        if (Math.hypot(dx, dy) > 0.001) {
+          state.moveShape(
+            d.id,
+            shapeObj.x + dx,
+            shapeObj.y + dy,
+            !d.recorded,
+          );
+          d.recorded = true;
+          d.lastX = world.x;
+          d.lastY = world.y;
+          bumpDragVisual();
+        }
+      }
+      return;
+    }
+
+    if (d.mode === "text-resize") {
+      const next = applyTextResize(
+        {
+          x: d.startX,
+          y: d.startY,
+          width: d.startW,
+          height: d.startH,
+          rotationDeg: d.startRotationDeg,
+        },
+        d.handle,
+        world.x,
+        world.y,
+        { x: d.pointerX, y: d.pointerY },
+        board,
+        hit.pitch,
+      );
+      state.patchText(
+        d.id,
+        {
+          x: next.x,
+          y: next.y,
+          width: next.width,
+          height: next.height,
+        },
+        !d.recorded,
+      );
+      d.recorded = true;
+      bumpDragVisual();
+      return;
+    }
+
+    if (d.mode === "text-rotate") {
+      // Angles in CSS client space (isotropic) — matches Canvas rotate()
+      const live = rotationDegFromDrag(
+        { x: d.centerX, y: d.centerY },
+        { x: d.pointerX, y: d.pointerY },
+        { x: e.clientX, y: e.clientY },
+        d.startRotationDeg,
+        e.shiftKey,
+      );
+      d.liveDeg = live;
+      state.patchText(
+        d.id,
+        { rotationDeg: normalizeRotationDeg(live) },
+        !d.recorded,
+      );
+      d.recorded = true;
+      bumpDragVisual();
+      return;
+    }
+
+    if (d.mode === "shape-resize") {
+      const next = applyShapeResize(
+        {
+          x: d.startX,
+          y: d.startY,
+          w: d.startW,
+          h: d.startH,
+          rotationDeg: d.startRotationDeg,
+          kind: d.kind,
+        },
+        d.handle,
+        world.x,
+        world.y,
+        { x: d.pointerX, y: d.pointerY },
+        board,
+        hit.pitch,
+        {
+          lockAspect:
+            e.shiftKey || (d.kind === "rect" && state.shapeAspectLock),
+        },
+      );
+      state.patchShape(
+        d.id,
+        { x: next.x, y: next.y, w: next.w, h: next.h },
+        !d.recorded,
+      );
+      d.recorded = true;
+      bumpDragVisual();
+      return;
+    }
+
+    if (d.mode === "shape-rotate") {
+      const live = rotationDegFromDrag(
+        { x: d.centerX, y: d.centerY },
+        { x: d.pointerX, y: d.pointerY },
+        { x: e.clientX, y: e.clientY },
+        d.startRotationDeg,
+        e.shiftKey,
+      );
+      d.liveDeg = live;
+      state.patchShape(
+        d.id,
+        { rotationDeg: normalizeRotationDeg(live) },
+        !d.recorded,
+      );
+      d.recorded = true;
+      bumpDragVisual();
+      return;
+    }
+
     if (d.mode === "pen" && d.points) {
       if (d.straight) {
         d.points.length = 0;
@@ -1429,12 +2114,54 @@ export function BoardCanvas({
     }
   };
 
+  const onPointerCancel = (e: ReactPointerEvent) => {
+    const d = drag.current;
+    if (
+      d?.mode === "text-rotate" ||
+      d?.mode === "text-resize" ||
+      d?.mode === "shape-rotate" ||
+      d?.mode === "shape-resize" ||
+      d?.mode === "shape"
+    ) {
+      drag.current = null;
+      if (d.recorded) {
+        // Drop the history entry pushed on first move; restore pre-drag board
+        state.rollbackLastHistory();
+      }
+      bumpDragVisual();
+      try {
+        (e.target as Element)?.releasePointerCapture?.(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+    onPointerUp(e);
+  };
+
   const onPointerUp = (e: ReactPointerEvent) => {
     const d = drag.current;
     drag.current = null;
     if (d?.mode === "pan") setSpacePanning(false);
     bumpDragVisual();
     if (!d) return;
+    if (d.mode === "text-rotate") {
+      // Commit normalized angle (history already recorded on first move)
+      state.patchText(
+        d.id,
+        { rotationDeg: normalizeRotationDeg(d.liveDeg) },
+        false,
+      );
+      return;
+    }
+    if (d.mode === "shape-rotate") {
+      state.patchShape(
+        d.id,
+        { rotationDeg: normalizeRotationDeg(d.liveDeg) },
+        false,
+      );
+      return;
+    }
     const hit = getNorm(e);
     if (!hit?.norm) return;
     const world = pitchToWorld(hit.norm.x, hit.norm.y, board);
@@ -1458,7 +2185,7 @@ export function BoardCanvas({
 
     if (d.mode === "ball") {
       // 駒の近くにドロップするとくっつく（マルチ選択不要）
-      state.dropBall(world.x, world.y);
+      state.dropBall(d.id, world.x, world.y);
       return;
     }
 
@@ -1521,6 +2248,24 @@ export function BoardCanvas({
       if (w > 0.01 && h > 0.01) {
         state.addZone(x, y, w, h);
       }
+    } else if (d.mode === "shape-create") {
+      const css = fromNorm(hit.norm.x, hit.norm.y, hit.pitch);
+      const box = shapeBoxFromDrag(
+        d.kind,
+        { x: d.x0, y: d.y0 },
+        { x: css.x, y: css.y },
+        board,
+        hit.pitch,
+        {
+          lockAspect:
+            e.shiftKey ||
+            d.lockAspect ||
+            (d.kind === "rect" && state.shapeAspectLock),
+        },
+      );
+      if (box.w >= 0.01 && box.h >= 0.01) {
+        state.addShape(d.kind, box);
+      }
     } else if (d.mode === "pen" && d.points) {
       if (d.straight) {
         d.points.length = 0;
@@ -1539,18 +2284,39 @@ export function BoardCanvas({
   };
 
   const surface = boardSurfaceRef.current;
+  const editingObj =
+    textEdit?.objectId != null
+      ? scene.objects.find(
+          (o) => o.id === textEdit.objectId && o.type === "text",
+        )
+      : null;
   const textOverlay =
     textEdit && surface
-      ? textOverlayRect(
-          surface.clientWidth,
-          surface.clientHeight,
-          board,
-          view,
-          textEdit.worldX,
-          textEdit.worldY,
-          textEdit.fontSizeNorm,
-          state.broadcast,
-        )
+      ? editingObj && editingObj.type === "text"
+        ? textOverlayForObject(
+            surface.clientWidth,
+            surface.clientHeight,
+            board,
+            view,
+            {
+              ...editingObj,
+              text: textEdit.draft,
+              x: textEdit.worldX,
+              y: textEdit.worldY,
+            },
+            state.broadcast,
+          )
+        : textOverlayRect(
+            surface.clientWidth,
+            surface.clientHeight,
+            board,
+            view,
+            textEdit.worldX,
+            textEdit.worldY,
+            textEdit.fontSizeNorm,
+            state.broadcast,
+            textEdit.worldWidth,
+          )
       : null;
 
   return (
@@ -1572,7 +2338,7 @@ export function BoardCanvas({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerCancel={onPointerCancel}
         onClick={onClick}
         onDoubleClick={onDoubleClick}
         onContextMenu={onContextMenu}
@@ -1588,6 +2354,13 @@ export function BoardCanvas({
           left={textOverlay.left}
           top={textOverlay.top}
           fontSize={textOverlay.fontSize}
+          width={textOverlay.width}
+          lineHeight={textOverlay.lineHeight}
+          wrap={textOverlay.wrap}
+          rotationDeg={textOverlay.rotationDeg}
+          originX={textOverlay.originX}
+          originY={textOverlay.originY}
+          align={textOverlay.align}
           value={textEdit.draft}
           placeholder={t("textPlaceholder")}
           color={textEdit.color}

@@ -12,6 +12,8 @@ export const TEXT_FONT_STACKS: Record<TextFontId, string> = {
 export const TEXT_COLOR_PRESETS = [
   "#ffffff",
   "#fde047",
+  /** 白ピッチでも読める amber（Shape 既定） */
+  "#eab308",
   "#93c5fd",
   "#fdba74",
   "#f472b6",

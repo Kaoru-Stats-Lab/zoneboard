@@ -2,6 +2,7 @@ import { isPieceDrawn } from "../models/scene";
 import { resolveLinkPoints } from "../models/pieceLink";
 import { drawCaptureUnderlay } from "../capture/drawCaptureUnderlay";
 import type {
+  BallObject,
   BoardDocument,
   DrawObject,
   LineKind,
@@ -9,6 +10,7 @@ import type {
   MatchStatus,
   Piece,
   Scene,
+  ShapeObject,
   WatermarkSettings,
 } from "../models/types";
 import {
@@ -44,9 +46,28 @@ import {
   wavyPathFromPolyline,
 } from "./wavyPath";
 import { textFontStack } from "../presets/textStyle";
+import {
+  TEXT_HANDLE_VISUAL_PX,
+  TEXT_HANDLES,
+  TEXT_ROTATE_HANDLE_VISUAL_PX,
+  computeTextGeometry,
+  pointInTextBox,
+} from "./textGeometry";
+import {
+  SHAPE_DEFAULT_FILL_COLOR,
+  SHAPE_HANDLES,
+  SHAPE_HANDLE_VISUAL_PX,
+  SHAPE_ROTATE_HANDLE_VISUAL_PX,
+  computeShapeGeometry,
+  isShapeKind,
+  pointInShape,
+  shapeStealsHits,
+  type ShapeGeom,
+} from "./shapeGeometry";
 import { tracePenBezierPath } from "./smoothPath";
 import { pieceDiscipline, drawPieceCardMark } from "./matchCards";
-import { BASKET_HALF_START, effectivePitchOrientation } from "../presets/sports";
+import { worldToPitch } from "./pitchCoords";
+export { pitchToWorld, worldToPitch } from "./pitchCoords";
 import {
   drawPitchLanes,
   drawPitchMarkings,
@@ -195,75 +216,6 @@ function normPointInZoneEllipse(
   return dx * dx + dy * dy <= 1;
 }
 
-export function worldToPitch(
-  x: number,
-  y: number,
-  board: BoardDocument,
-): { x: number; y: number } | null {
-  // バッファ（サブ・ゴール裏・タッチ外）は常に表示
-  if (y < 0 || y > 1 || x < 0 || x > 1) return { x, y };
-  if (board.pitchView !== "half") {
-    return { x, y };
-  }
-  if (board.sport === "basketball") {
-    const start = BASKET_HALF_START;
-    const end = 1 - BASKET_HALF_START;
-    if (board.pitchFlipped) {
-      if (x < -0.02 || x > end + 0.02) return null;
-      return { x: Math.min(1, Math.max(0, x / end)), y };
-    }
-    if (x < start - 0.02 || x > 1.02) return null;
-    return {
-      x: Math.min(1, Math.max(0, (x - start) / (1 - start))),
-      y,
-    };
-  }
-  if (board.sport !== "soccer") {
-    return { x, y };
-  }
-  // 縦: 長さ＝y。ハーフは下半分（flip 時は上）
-  if (effectivePitchOrientation(board.sport, board.pitchOrientation) === "portrait") {
-    const visY = board.pitchFlipped ? (0.5 - y) * 2 : (y - 0.5) * 2;
-    if (visY < -0.02 || visY > 1.02) return null;
-    return { x, y: Math.min(1, Math.max(0, visY)) };
-  }
-  const visX = board.pitchFlipped ? (0.5 - x) * 2 : (x - 0.5) * 2;
-  if (visX < -0.02 || visX > 1.02) return null;
-  return { x: Math.min(1, Math.max(0, visX)), y };
-}
-
-export function pitchToWorld(
-  x: number,
-  y: number,
-  board: BoardDocument,
-): { x: number; y: number } {
-  if (y < 0 || y > 1 || x < 0 || x > 1) return { x, y };
-  if (board.pitchView !== "half") {
-    return { x, y };
-  }
-  if (board.sport === "basketball") {
-    const start = BASKET_HALF_START;
-    const end = 1 - BASKET_HALF_START;
-    if (board.pitchFlipped) {
-      return { x: x * end, y };
-    }
-    return { x: start + x * (1 - start), y };
-  }
-  if (board.sport !== "soccer") {
-    return { x, y };
-  }
-  if (effectivePitchOrientation(board.sport, board.pitchOrientation) === "portrait") {
-    if (board.pitchFlipped) {
-      return { x, y: 0.5 - y / 2 };
-    }
-    return { x, y: 0.5 + y / 2 };
-  }
-  if (board.pitchFlipped) {
-    return { x: 0.5 - x / 2, y };
-  }
-  return { x: 0.5 + x / 2, y };
-}
-
 /**
  * Match Piece Size は触らず、ズームで半径だけ抑える。
  * 画面上はフル画角と同程度の大きさ（ピッチ線だけ寄る）。
@@ -318,7 +270,10 @@ function linkStrokeWidth(
 
 export type DragVisual = {
   pieceId?: string;
+  /** @deprecated Prefer ballId */
   ball?: boolean;
+  /** Multi-ball: which ball is being dragged */
+  ballId?: string;
   /** 1 = 通常、ドラッグ中は 1.12〜1.2 */
   boost: number;
 };
@@ -332,8 +287,13 @@ export function drawBoard(
     selectedPieceId?: string | null;
     selectedPieceIds?: string[] | null;
     selectedObjectId?: string | null;
+    /** Selected ball id (multi-ball). */
+    selectedBallId?: string | null;
+    /** @deprecated Prefer selectedBallId */
     selectedBall?: boolean;
     selectionColor?: string;
+    /** false in Broadcast / export — no text resize handles */
+    interactiveChrome?: boolean;
     watermark?: WatermarkSettings | null;
     watermarkImage?: HTMLImageElement | null;
     outer?: PitchRect;
@@ -353,6 +313,8 @@ export function drawBoard(
       x1: number;
       y1: number;
     } | null;
+    /** Shape 作成ドラッグ中のプレビュー */
+    previewShape?: ShapeObject | null;
     /** セレクトツールの範囲選択 */
     previewMarquee?: {
       x0: number;
@@ -366,6 +328,10 @@ export function drawBoard(
     previewLink?: { x: number; y: number }[] | null;
     /** インライン編集中のテキスト（二重表示防止） */
     editingTextId?: string | null;
+    /** 回転ドラッグ中のライブ角度表示 */
+    liveTextRotation?: { id: string; deg: number } | null;
+    /** Shape 回転ドラッグ中のライブ角度表示 */
+    liveShapeRotation?: { id: string; deg: number } | null;
     /** 競技ボール画像。未ロード時は幾何フォールバック */
     ballImage?: HTMLImageElement | null;
     /** 局面取込 W04: ワープ済み実写下敷き（pitch ローカルサイズ） */
@@ -435,11 +401,21 @@ export function drawBoard(
   drawPitchMarkings(ctx, pitch, board);
 
   if (board.sport === "beach_soccer" && board.showShotCorridor) {
-    drawShotCorridor(ctx, pitch, scene.ball);
+    const corridorBall = scene.balls[0];
+    if (corridorBall) drawShotCorridor(ctx, pitch, corridorBall);
   }
 
+  const textChrome = opts.interactiveChrome !== false;
+  const liveRot = opts.liveTextRotation;
+  const liveShapeRot = opts.liveShapeRotation;
   for (const obj of scene.objects) {
     if (obj.type === "text" && obj.id === opts.editingTextId) continue;
+    const liveDeg =
+      liveRot && obj.type === "text" && obj.id === liveRot.id
+        ? liveRot.deg
+        : liveShapeRot && obj.type === "shape" && obj.id === liveShapeRot.id
+          ? liveShapeRot.deg
+          : null;
     drawObject(
       ctx,
       pitch,
@@ -448,6 +424,8 @@ export function drawBoard(
       obj,
       obj.id === opts.selectedObjectId,
       sel,
+      textChrome,
+      liveDeg,
     );
   }
 
@@ -468,11 +446,17 @@ export function drawBoard(
       },
       false,
       sel,
+      false,
     );
   }
 
   if (opts.previewZone) {
     drawZonePreview(ctx, pitch, board, opts.previewZone);
+  }
+
+  if (opts.previewShape && isShapeKind(opts.previewShape.kind)) {
+    const geom = computeShapeGeometry(opts.previewShape, board, pitch);
+    if (geom) drawShapeObject(ctx, pitch, geom, false, sel);
   }
 
   if (opts.previewPen && opts.previewPen.length >= 1) {
@@ -501,15 +485,20 @@ export function drawBoard(
     );
   }
 
-  if (scene.ball) {
-    const ballBoost = opts.dragVisual?.ball ? opts.dragVisual.boost : 1;
+  const selectedBallId =
+    opts.selectedBallId ??
+    (opts.selectedBall && scene.balls[0] ? scene.balls[0].id : null);
+  const dragBallId = opts.dragVisual?.ballId;
+  for (const ball of scene.balls) {
+    const dragging = dragBallId === ball.id;
+    const ballBoost = dragging ? (opts.dragVisual?.boost ?? 1) : 1;
     drawBall(
       ctx,
       pitch,
       board,
-      scene.ball,
+      ball,
       ballRadius(pitch, board) * ballBoost,
-      !!opts.selectedBall || !!opts.dragVisual?.ball,
+      ball.id === selectedBallId || dragging,
       ballBoost > 1,
       opts.ballImage ?? null,
     );
@@ -1207,6 +1196,8 @@ function drawObject(
   obj: DrawObject,
   selected: boolean,
   selectionColor: string,
+  textChrome = true,
+  liveRotationDeg: number | null = null,
 ) {
   if (obj.type === "line") {
     const raw = linePointsToPixels(obj.points, board, pitch);
@@ -1261,6 +1252,28 @@ function drawObject(
     return;
   }
 
+  if (obj.type === "shape") {
+    if (!isShapeKind(obj.kind)) return; // unknown future kind: keep data, skip draw
+    const drawObj =
+      liveRotationDeg != null && Number.isFinite(liveRotationDeg)
+        ? { ...obj, rotationDeg: liveRotationDeg }
+        : obj;
+    const geom = computeShapeGeometry(drawObj, board, pitch);
+    if (!geom) return;
+    if (selected && textChrome) {
+      drawShapeSelectionChrome(
+        ctx,
+        geom,
+        selectionColor,
+        liveRotationDeg != null && Number.isFinite(liveRotationDeg)
+          ? liveRotationDeg
+          : null,
+      );
+    }
+    drawShapeObject(ctx, pitch, geom, selected, selectionColor);
+    return;
+  }
+
   if (obj.type === "pen") {
     if (obj.points.length < 2) return;
     // 芝の白ハローは不要（白インク自体が読める。ハローは太く見えてホバーっぽい）
@@ -1294,35 +1307,155 @@ function drawObject(
   }
 
   if (obj.type === "text") {
-    const m = worldToPitch(obj.x, obj.y, board);
-    if (!m) return;
-    const p = fromNorm(m.x, m.y, pitch);
-    const size = Math.max(10, Math.min(pitch.w, pitch.h) * obj.fontSize);
+    const drawObj =
+      liveRotationDeg != null && Number.isFinite(liveRotationDeg)
+        ? { ...obj, rotationDeg: liveRotationDeg }
+        : obj;
+    const geom = computeTextGeometry(drawObj, board, pitch);
+    if (!geom) return;
+    const size = geom.fontPx;
     const stack = textFontStack(obj.fontFamily);
-    ctx.font = `600 ${size}px ${stack}`;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    const tw = ctx.measureText(obj.text).width || size * obj.text.length * 0.6;
-    if (selected) {
-      ctx.strokeStyle = selectionColor;
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 3]);
-      ctx.strokeRect(p.x - 3, p.y - 3, tw + 6, size + 6);
-      ctx.setLineDash([]);
-    }
     const ink = obj.color || textColorForBoard(board);
     const needsShadow =
       usesDarkPitchInk(board) && ink.toLowerCase() !== "#111111";
+
+    if (selected && textChrome) {
+      drawTextSelectionChrome(
+        ctx,
+        geom,
+        selectionColor,
+        liveRotationDeg != null && Number.isFinite(liveRotationDeg)
+          ? liveRotationDeg
+          : null,
+      );
+    }
+
+    ctx.save();
+    if (geom.rotationDeg) {
+      ctx.translate(geom.cx, geom.cy);
+      ctx.rotate((geom.rotationDeg * Math.PI) / 180);
+      ctx.translate(-geom.cx, -geom.cy);
+    }
+    ctx.font = `600 ${size}px ${stack}`;
+    ctx.textBaseline = "top";
+    ctx.textAlign = geom.align;
     if (needsShadow) {
       ctx.shadowColor = "rgba(0,0,0,0.55)";
       ctx.shadowBlur = Math.max(2, size * 0.08);
       ctx.shadowOffsetY = Math.max(1, size * 0.04);
     }
     ctx.fillStyle = ink;
-    ctx.fillText(obj.text, p.x, p.y);
-    ctx.shadowColor = "transparent";
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
+    for (const line of geom.lines) {
+      ctx.fillText(line.text, line.x, line.y);
+    }
+    ctx.restore();
+  }
+}
+
+function drawTextSelectionChrome(
+  ctx: CanvasRenderingContext2D,
+  geom: NonNullable<ReturnType<typeof computeTextGeometry>>,
+  selectionColor: string,
+  liveBadgeDeg: number | null,
+) {
+  const pad = 2;
+  const stemLen = Math.max(
+    TEXT_ROTATE_HANDLE_VISUAL_PX * 2,
+    Math.hypot(
+      geom.rotateHandle.x - geom.topMid.x,
+      geom.rotateHandle.y - geom.topMid.y,
+    ),
+  );
+  const rotLocal = { x: geom.cx, y: geom.py - stemLen };
+
+  ctx.save();
+  if (geom.rotationDeg) {
+    ctx.translate(geom.cx, geom.cy);
+    ctx.rotate((geom.rotationDeg * Math.PI) / 180);
+    ctx.translate(-geom.cx, -geom.cy);
+  }
+
+  ctx.strokeStyle = selectionColor;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 3]);
+  ctx.strokeRect(
+    geom.px - pad,
+    geom.py - pad,
+    geom.pw + pad * 2,
+    geom.ph + pad * 2,
+  );
+  ctx.setLineDash([]);
+
+  ctx.beginPath();
+  ctx.moveTo(geom.cx, geom.py);
+  ctx.lineTo(rotLocal.x, rotLocal.y);
+  ctx.strokeStyle = selectionColor;
+  ctx.lineWidth = 1.25;
+  ctx.stroke();
+
+  const hs = TEXT_HANDLE_VISUAL_PX;
+  for (const id of TEXT_HANDLES) {
+    const lx =
+      id === "n" || id === "s"
+        ? geom.cx
+        : id === "ne" || id === "e" || id === "se"
+          ? geom.px + geom.pw
+          : geom.px;
+    const ly =
+      id === "w" || id === "e"
+        ? geom.cy
+        : id === "sw" || id === "s" || id === "se"
+          ? geom.py + geom.ph
+          : geom.py;
+    ctx.fillStyle = "#f3f3f1";
+    ctx.strokeStyle = selectionColor;
+    ctx.lineWidth = 1.25;
+    ctx.fillRect(lx - hs, ly - hs, hs * 2, hs * 2);
+    ctx.strokeRect(lx - hs, ly - hs, hs * 2, hs * 2);
+  }
+
+  const rr = TEXT_ROTATE_HANDLE_VISUAL_PX;
+  ctx.beginPath();
+  ctx.arc(rotLocal.x, rotLocal.y, rr, 0, Math.PI * 2);
+  ctx.fillStyle = "#f3f3f1";
+  ctx.fill();
+  ctx.strokeStyle = selectionColor;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(rotLocal.x, rotLocal.y, rr * 0.45, -Math.PI * 0.7, Math.PI * 0.4);
+  ctx.strokeStyle = selectionColor;
+  ctx.lineWidth = 1.25;
+  ctx.stroke();
+
+  ctx.restore();
+
+  if (liveBadgeDeg != null && Number.isFinite(liveBadgeDeg)) {
+    const label = `${Math.round(liveBadgeDeg)}°`;
+    ctx.save();
+    ctx.font = `600 11px ${UI_FONT_STACK}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    const bx = geom.rotateHandle.x;
+    const by = geom.rotateHandle.y - TEXT_ROTATE_HANDLE_VISUAL_PX - 6;
+    const tw = ctx.measureText(label).width;
+    const padX = 5;
+    const padY = 3;
+    const rx = bx - tw / 2 - padX;
+    const ry = by - 11 - padY;
+    const rw = tw + padX * 2;
+    const rh = 14 + padY;
+    ctx.fillStyle = "rgba(17,17,17,0.78)";
+    if (typeof ctx.roundRect === "function") {
+      ctx.beginPath();
+      ctx.roundRect(rx, ry, rw, rh, 3);
+      ctx.fill();
+    } else {
+      ctx.fillRect(rx, ry, rw, rh);
+    }
+    ctx.fillStyle = "#f3f3f1";
+    ctx.fillText(label, bx, by);
+    ctx.restore();
   }
 }
 
@@ -1483,6 +1616,195 @@ function drawPenPreview(
 
 function lwOnPitch(pitch: PitchRect, base: number): number {
   return Math.max(base, Math.min(pitch.w, pitch.h) * 0.0035);
+}
+
+/** Light fills (e.g. #fde047) need a darker rim on white / light pitches. */
+function shapeOutlineColor(fill: string): string {
+  if (relativeLuminance(fill) <= 0.55) return fill;
+  const m = /^#([0-9a-f]{6})$/i.exec(fill.trim());
+  if (!m) return "#92400e";
+  const n = parseInt(m[1], 16);
+  const r = Math.round(((n >> 16) & 255) * 0.52);
+  const g = Math.round(((n >> 8) & 255) * 0.52);
+  const b = Math.round((n & 255) * 0.52);
+  const h = (v: number) => v.toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
+/**
+ * Shape fill + opaque outline. Shared geom from shapeGeometry (draw ≡ hit).
+ * Fill uses fillOpacity; stroke always globalAlpha 1 (selection or darkened fill).
+ */
+function drawShapeObject(
+  ctx: CanvasRenderingContext2D,
+  pitch: PitchRect,
+  geom: ShapeGeom,
+  selected: boolean,
+  selectionColor: string,
+) {
+  const strokeOn = geom.strokeEnabled;
+  const lw = selected
+    ? Math.max(2.5, lwOnPitch(pitch, 2))
+    : Math.max(1.5, lwOnPitch(pitch, 1.5));
+  const fill = geom.fillColor || SHAPE_DEFAULT_FILL_COLOR;
+  const opacity = Number.isFinite(geom.fillOpacity)
+    ? Math.min(1, Math.max(0, geom.fillOpacity))
+    : 0.45;
+
+  ctx.save();
+  ctx.translate(geom.cx, geom.cy);
+  if (geom.rotationDeg) {
+    ctx.rotate((geom.rotationDeg * Math.PI) / 180);
+  }
+
+  const path = () => {
+    ctx.beginPath();
+    if (geom.kind === "circle") {
+      ctx.arc(0, 0, geom.radiusPx, 0, Math.PI * 2);
+    } else if (geom.kind === "rect") {
+      ctx.rect(-geom.pw / 2, -geom.ph / 2, geom.pw, geom.ph);
+    } else {
+      const [a, b, c] = geom.localVerts;
+      if (!a || !b || !c) return;
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.lineTo(c.x, c.y);
+      ctx.closePath();
+    }
+  };
+
+  path();
+  if (opacity > 0) {
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+
+  if (strokeOn) {
+    path();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = selected ? selectionColor : shapeOutlineColor(fill);
+    ctx.lineWidth = lw;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+/** Editor-only selection frame + handles. Not drawn in Broadcast / PNG. */
+function drawShapeSelectionChrome(
+  ctx: CanvasRenderingContext2D,
+  geom: ShapeGeom,
+  selectionColor: string,
+  liveBadgeDeg: number | null,
+) {
+  const pad = 2;
+  const stemLen = Math.max(
+    SHAPE_ROTATE_HANDLE_VISUAL_PX * 2,
+    Math.hypot(
+      geom.rotateHandle.x - geom.topMid.x,
+      geom.rotateHandle.y - geom.topMid.y,
+    ),
+  );
+  const rotLocal = { x: geom.cx, y: geom.framePy - stemLen };
+
+  ctx.save();
+  if (geom.rotationDeg) {
+    ctx.translate(geom.cx, geom.cy);
+    ctx.rotate((geom.rotationDeg * Math.PI) / 180);
+    ctx.translate(-geom.cx, -geom.cy);
+  }
+
+  ctx.strokeStyle = selectionColor;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 3]);
+  ctx.strokeRect(
+    geom.framePx - pad,
+    geom.framePy - pad,
+    geom.framePw + pad * 2,
+    geom.framePh + pad * 2,
+  );
+  ctx.setLineDash([]);
+
+  const hs = SHAPE_HANDLE_VISUAL_PX;
+  for (const id of SHAPE_HANDLES) {
+    const lx =
+      id === "n" || id === "s"
+        ? geom.cx
+        : id === "ne" || id === "e" || id === "se"
+          ? geom.framePx + geom.framePw
+          : geom.framePx;
+    const ly =
+      id === "w" || id === "e"
+        ? geom.cy
+        : id === "sw" || id === "s" || id === "se"
+          ? geom.framePy + geom.framePh
+          : geom.framePy;
+    ctx.fillStyle = "#f3f3f1";
+    ctx.strokeStyle = selectionColor;
+    ctx.lineWidth = 1.25;
+    ctx.fillRect(lx - hs, ly - hs, hs * 2, hs * 2);
+    ctx.strokeRect(lx - hs, ly - hs, hs * 2, hs * 2);
+  }
+
+  if (geom.showRotateHandle) {
+    ctx.beginPath();
+    ctx.moveTo(geom.cx, geom.framePy);
+    ctx.lineTo(rotLocal.x, rotLocal.y);
+    ctx.strokeStyle = selectionColor;
+    ctx.lineWidth = 1.25;
+    ctx.stroke();
+
+    const rr = SHAPE_ROTATE_HANDLE_VISUAL_PX;
+    ctx.beginPath();
+    ctx.arc(rotLocal.x, rotLocal.y, rr, 0, Math.PI * 2);
+    ctx.fillStyle = "#f3f3f1";
+    ctx.fill();
+    ctx.strokeStyle = selectionColor;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(rotLocal.x, rotLocal.y, rr * 0.45, -Math.PI * 0.7, Math.PI * 0.4);
+    ctx.strokeStyle = selectionColor;
+    ctx.lineWidth = 1.25;
+    ctx.stroke();
+  }
+
+  ctx.restore();
+
+  if (
+    liveBadgeDeg != null &&
+    Number.isFinite(liveBadgeDeg) &&
+    geom.showRotateHandle
+  ) {
+    const label = `${Math.round(liveBadgeDeg)}°`;
+    ctx.save();
+    ctx.font = `600 11px ${UI_FONT_STACK}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    const bx = geom.rotateHandle.x;
+    const by = geom.rotateHandle.y - SHAPE_ROTATE_HANDLE_VISUAL_PX - 6;
+    const tw = ctx.measureText(label).width;
+    const padX = 5;
+    const padY = 3;
+    const rx = bx - tw / 2 - padX;
+    const ry = by - 11 - padY;
+    const rw = tw + padX * 2;
+    const rh = 14 + padY;
+    ctx.fillStyle = "rgba(17,17,17,0.78)";
+    if (typeof ctx.roundRect === "function") {
+      ctx.beginPath();
+      ctx.roundRect(rx, ry, rw, rh, 3);
+      ctx.fill();
+    } else {
+      ctx.fillRect(rx, ry, rw, rh);
+    }
+    ctx.fillStyle = "#f3f3f1";
+    ctx.fillText(label, bx, by);
+    ctx.restore();
+  }
 }
 
 function strokeLineByKind(
@@ -1740,10 +2062,11 @@ function distToSegment(
 
 /** 描画オブジェクトのヒット（後から描いたもの優先） */
 export function hitTestObject(
-  _board: BoardDocument,
+  board: BoardDocument,
   scene: Scene,
   normX: number,
   normY: number,
+  pitch?: PitchRect,
 ): DrawObject | null {
   const threshold = 0.025 * pointerHitSlop();
   for (let i = scene.objects.length - 1; i >= 0; i--) {
@@ -1762,6 +2085,11 @@ export function hitTestObject(
     } else if (obj.type === "zone") {
       const threshold = 0.025 * pointerHitSlop();
       if (normPointInZoneEllipse(normX, normY, obj, threshold)) return obj;
+    } else if (obj.type === "shape") {
+      if (!isShapeKind(obj.kind) || !pitch) continue;
+      if (!shapeStealsHits(obj)) continue;
+      const geom = computeShapeGeometry(obj, board, pitch);
+      if (geom && pointInShape(geom, normX, normY)) return obj;
     } else if (obj.type === "pen") {
       const penThreshold = threshold * 1.2;
       for (let j = 1; j < obj.points.length; j++) {
@@ -1784,20 +2112,63 @@ export function hitTestObject(
         }
       }
     } else if (obj.type === "text") {
-      const w = Math.max(0.06, obj.text.length * 0.02);
-      const h = Math.max(0.04, obj.fontSize * 1.2);
-      if (
-        normX >= obj.x &&
-        normX <= obj.x + w &&
-        normY >= obj.y &&
-        normY <= obj.y + h
-      ) {
-        return obj;
+      if (pitch) {
+        const geom = computeTextGeometry(obj, board, pitch);
+        if (geom && pointInTextBox(geom, normX, normY, 0.004 * pointerHitSlop())) {
+          return obj;
+        }
+      } else {
+        // Fallback without pitch (legacy callers): world AABB approx
+        const w = Math.max(
+          0.06,
+          obj.width ?? obj.text.length * 0.02,
+        );
+        const h = Math.max(0.04, obj.height ?? obj.fontSize * 1.2);
+        if (
+          normX >= obj.x &&
+          normX <= obj.x + w &&
+          normY >= obj.y &&
+          normY <= obj.y + h
+        ) {
+          return obj;
+        }
       }
     }
   }
   return null;
 }
+
+export {
+  computeTextGeometry,
+  hitTestTextHandle,
+  hitTestTextObjectHandle,
+  applyTextResize,
+  normalizeRotationDeg,
+  rotationDegFromDrag,
+  textRotationDeg,
+  textResizeCursor,
+  pointInTextBox,
+  TEXT_BOX_MIN_W,
+  TEXT_BOX_MIN_H,
+  type TextHandleId,
+  type TextInteractionHandle,
+  type TextBoxGeom,
+} from "./textGeometry";
+
+export {
+  computeShapeGeometry,
+  hitTestShapeHandle,
+  hitTestShapeObjectHandle,
+  applyShapeResize,
+  tightDisplayWorldBox,
+  pointInShape,
+  shapeResizeCursor,
+  previewShapeFromDrag,
+  shapeBoxFromDrag,
+  type ShapeHandleId,
+  type ShapeInteractionHandle,
+  type ShapeGeom,
+} from "./shapeGeometry";
 
 function legacyLinePoints(obj: DrawObject): { x: number; y: number }[] {
   if (obj.type !== "line") return [];
@@ -2198,18 +2569,25 @@ export function hitTestPieceFacing(
   return hit?.action === "rotate" ? hit.piece : null;
 }
 
+/**
+ * Hit-test balls (array end = top / preferred when overlapping).
+ * Returns the ball under the pointer, or null.
+ */
 export function hitTestBall(
   board: BoardDocument,
   scene: Scene,
   pitch: PitchRect,
   normX: number,
   normY: number,
-): boolean {
-  if (!scene.ball) return false;
-  const m = worldToPitch(scene.ball.x, scene.ball.y, board);
-  if (!m) return false;
+): BallObject | null {
   const r = ballRadius(pitch, board);
   const rn = (r / Math.min(pitch.w, pitch.h)) * 1.4 * pointerHitSlop();
-  return Math.hypot(m.x - normX, m.y - normY) <= rn;
+  for (let i = scene.balls.length - 1; i >= 0; i--) {
+    const ball = scene.balls[i]!;
+    const m = worldToPitch(ball.x, ball.y, board);
+    if (!m) continue;
+    if (Math.hypot(m.x - normX, m.y - normY) <= rn) return ball;
+  }
+  return null;
 }
 

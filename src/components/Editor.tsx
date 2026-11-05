@@ -10,37 +10,21 @@ import type { AppState } from "../hooks/useAppState";
 import type { MessageKey } from "../i18n/messages";
 import { toolMessageKey } from "./tools";
 import { messages } from "../i18n/messages";
-import type { SportId } from "../models/types";
 import { facingFromArrowKeys } from "../models/pieceFacing";
-
-function sceneLabelPhKey(sport: SportId | undefined): MessageKey {
-  switch (sport) {
-    case "basketball":
-      return "sceneLabelPhBasket";
-    case "futsal":
-      return "sceneLabelPhFutsal";
-    case "beach_soccer":
-      return "sceneLabelPhBeach";
-    case "volleyball":
-      return "sceneLabelPhVolley";
-    default:
-      return "sceneLabelPhSoccer";
-  }
-}
-import { Link } from "react-router-dom";
 import { BoardCanvas } from "./BoardCanvas";
-import { BrandLockup } from "./BrandMark";
-import { BoardSwitcher } from "./BoardSwitcher";
 import { BroadcastToolMenu } from "./BroadcastToolMenu";
+import { DocumentHeader } from "./DocumentHeader";
 import { Drawer } from "./Drawer";
 import { LiveMatchControls } from "./LiveMatchControls";
 import { ExportPreviewFrame } from "./ExportPreviewFrame";
 import { PieceInspector } from "./PieceInspector";
+import { ShapeInspector } from "./ShapeInspector";
 import { TextInspector } from "./TextInspector";
 import { SettingsModal } from "./SettingsModal";
 import { HowToModal } from "./HowToModal";
 import { ToolRail } from "./ToolRail";
 import { CaptureCalibOverlay } from "./CaptureCalibOverlay";
+import { FileSessionRestorePrompt } from "./FileSessionBar";
 import { maxScenes } from "../lib/plan";
 import { isCaptureImportEnabled } from "../lib/captureImportGate";
 import { useFeedback } from "./FeedbackProvider";
@@ -62,6 +46,7 @@ export function Editor({ state }: Props) {
   const [exportStageAspect, setExportStageAspect] = useState(16 / 9);
   const [windowFocused, setWindowFocused] = useState(true);
   const [howToOpen, setHowToOpen] = useState(false);
+  const [sceneRevealToken, setSceneRevealToken] = useState(0);
   const [inlineBanner, setInlineBanner] = useState<string | null>(null);
   /** Ctrl/Cmd+矢印の同時押し（斜め向き） */
   const facingArrowKeysRef = useRef(new Set<string>());
@@ -82,6 +67,19 @@ export function Editor({ state }: Props) {
       setExportCropAnchor({ x: 0.5, y: 0.5 });
     }
   }, [state.settingsOpen]);
+
+  /** Assistive leave warning — draft in sessionStorage is the soft recovery path. */
+  useEffect(() => {
+    if (state.broadcast || !state.isFileSession || !state.fileSession?.dirty) {
+      return;
+    }
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [state.broadcast, state.isFileSession, state.fileSession?.dirty]);
 
   useEffect(() => {
     if (!state.broadcast) {
@@ -135,10 +133,17 @@ export function Editor({ state }: Props) {
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
+        if (state.isFileSession) {
+          if (!state.downloadFileSessionJson()) {
+            setInlineBanner(t("exportBoardJsonErr"));
+          }
+          return;
+        }
         state.flushSave();
         return;
       }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !e.shiftKey) {
+        if (typing) return;
         e.preventDefault();
         state.undo();
         return;
@@ -148,6 +153,7 @@ export function Editor({ state }: Props) {
         (e.key.toLowerCase() === "y" ||
           (e.key.toLowerCase() === "z" && e.shiftKey))
       ) {
+        if (typing) return;
         e.preventDefault();
         state.redo();
         return;
@@ -172,6 +178,7 @@ export function Editor({ state }: Props) {
       }
 
       if (e.key === "Escape") {
+        if (typing) return;
         if (howToOpen) {
           setHowToOpen(false);
           return;
@@ -222,8 +229,8 @@ export function Editor({ state }: Props) {
         (e.key === "Delete" || e.key === "Backspace") &&
         hasBoardSelection
       ) {
-        if (typing && e.key === "Backspace") {
-          // 入力中の文字削除は邪魔しない
+        if (typing) {
+          // テキスト編集中は駒/オブジェクト削除を起こさない
           return;
         }
         e.preventDefault();
@@ -248,9 +255,46 @@ export function Editor({ state }: Props) {
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
-        if (state.selectedPieceIds.length === 0) return;
+        if (typing || e.isComposing) return;
+        const shapeSelected =
+          !!state.selectedObjectId &&
+          state.scene?.objects.some(
+            (o) => o.id === state.selectedObjectId && o.type === "shape",
+          );
+        if (
+          state.selectedPieceIds.length === 0 &&
+          !shapeSelected &&
+          !state.selectedBallId
+        ) {
+          return;
+        }
         e.preventDefault();
         state.duplicateSelected();
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c") {
+        if (typing || e.isComposing) return;
+        if (state.copySelectedBall()) {
+          e.preventDefault();
+          return;
+        }
+        if (state.copySelectedShape()) {
+          e.preventDefault();
+        }
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
+        if (typing || e.isComposing) return;
+        // Prefer in-app Shape/Ball paste; else leave alone (capture / browser).
+        if (state.hasBallClipboard() && state.pasteBall()) {
+          e.preventDefault();
+          return;
+        }
+        if (state.hasShapeClipboard() && state.pasteShape()) {
+          e.preventDefault();
+        }
         return;
       }
 
@@ -494,7 +538,16 @@ export function Editor({ state }: Props) {
     });
   };
 
-  const toolLabel = t(toolMessageKey(state.tool));
+  const toolLabel =
+    state.tool === "zone"
+      ? t(
+          state.shapeKind === "circle"
+            ? "shapeCircle"
+            : state.shapeKind === "triangle"
+              ? "shapeTriangle"
+              : "shapeRect",
+        )
+      : t(toolMessageKey(state.tool));
 
   const sceneFullLabel = state.scene?.label?.trim() ?? "";
   const sceneIndex =
@@ -513,91 +566,18 @@ export function Editor({ state }: Props) {
 
   return (
     <div className={`editor${state.broadcast ? " is-broadcast" : ""}`}>
+      <FileSessionRestorePrompt state={state} t={t} />
       {!state.broadcast && (
-        <header className="topbar">
-          <div className="topbar-left">
-            <Link className="topbar-brand" to="/" aria-label={t("brand")}>
-              <BrandLockup
-                className="topbar-lockup"
-                markClassName="topbar-mark"
-                variant="mark"
-                scheme="color"
-                on="dark"
-                word={t("brand")}
-              />
-            </Link>
-            <button
-              type="button"
-              className={state.drawerOpen ? "active" : ""}
-              onClick={() => state.setDrawerOpen(!state.drawerOpen)}
-            >
-              {t("drawer")}
-            </button>
-            <BoardSwitcher state={state} t={t} />
-          </div>
-          {!state.drawerOpen ? (
-            <input
-              className="title-input"
-              value={state.scene?.label ?? ""}
-              onChange={(e) =>
-                state.updateScene(
-                  (s) => ({ ...s, label: e.target.value }),
-                  false,
-                )
-              }
-              aria-label={t("sceneLabel")}
-              placeholder={t(sceneLabelPhKey(state.board?.sport))}
-            />
-          ) : (
-            <div className="topbar-title-gap" aria-hidden />
-          )}
-          <div className="topbar-right">
-            {isCaptureImportEnabled() && state.captureImport && (
-              <button
-                type="button"
-                className="topbar-capture-cancel"
-                title={t("captureImportCancel")}
-                onClick={() => state.clearCaptureImport()}
-              >
-                {t("captureImportCancelShort")}
-              </button>
-            )}
-            <div className="topbar-meta">
-              <button
-                type="button"
-                className="topbar-icon-btn"
-                title={t("howTo")}
-                aria-label={t("howTo")}
-                onClick={() => setHowToOpen(true)}
-              >
-                ?
-              </button>
-              <button
-                type="button"
-                className="topbar-icon-btn"
-                title={t("settings")}
-                aria-label={t("settings")}
-                onClick={() => state.setSettingsOpen(true)}
-              >
-                ⚙
-              </button>
-              <button
-                type="button"
-                className="topbar-fb"
-                onClick={() => openFeedback("editor")}
-              >
-                {t("feedbackOpen")}
-              </button>
-            </div>
-            <button
-              type="button"
-              className="broadcast-btn"
-              onClick={state.enterBroadcast}
-            >
-              {t("broadcast")}
-            </button>
-          </div>
-        </header>
+        <DocumentHeader
+          state={state}
+          t={t}
+          onOpenHowTo={() => setHowToOpen(true)}
+          onOpenFeedback={() => openFeedback("editor")}
+          onRevealActiveScene={() => {
+            state.setDrawerOpen(true);
+            setSceneRevealToken((n) => n + 1);
+          }}
+        />
       )}
 
       <div
@@ -647,6 +627,7 @@ export function Editor({ state }: Props) {
           <ToolRail state={state} t={t} />
           <PieceInspector state={state} t={t} />
           <TextInspector state={state} t={t} />
+          <ShapeInspector state={state} t={t} />
           {state.broadcast && !windowFocused && (
             <div className="broadcast-focus-hint" role="status">
               {t("broadcastFocusHint")}
@@ -711,7 +692,11 @@ export function Editor({ state }: Props) {
             </div>
           )}
         </div>
-        <Drawer state={state} t={t} />
+        <Drawer
+          state={state}
+          t={t}
+          sceneRevealToken={sceneRevealToken}
+        />
       </div>
 
       <HowToModal

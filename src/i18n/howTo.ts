@@ -69,15 +69,16 @@ const ja: HowToDoc = {
       heading: "準備で描く",
       paragraphs: [
         "配信前にパス・ラン・ペン・リンクを引くなら、ツールレールを使います。パスはボールの道（クロス・シュート含む）。ランは走る動き。ドリブルはボールを運ぶ人です。",
-        "ペンはパスでもランでもない自由な線です。ブロックの線、チャネルの境界など。Shift を押したままドラッグすると直線になります。丸や囲みは Shift なしの自由描きです。リンクは駒をクリックしてつなぎ、駒を動かしても線が追従します。",
+        "Shape は円・四角・三角。空間やブロック用です。ペンはパスでもランでもない自由な線です。Shift を押したままドラッグすると直線になります。リンクは駒をクリックしてつなぎ、駒を動かしても線が追従します。ボールは複数置けます。選んだボールや Shape は Ctrl/Cmd+C / V でコピーできます。",
       ],
       keys: [
         { combo: "パス", meaning: "ボールの道" },
         { combo: "ラン / ドリブル", meaning: "走り／運び" },
+        { combo: "Shape", meaning: "円・四角・三角" },
         { combo: "ペン", meaning: "自由な線" },
         { combo: "リンク", meaning: "駒どうしのリンク" },
         { combo: "Shift+ペンドラッグ", meaning: "始点–終点の直線" },
-        { combo: "Zone + Shift", meaning: "正円に近いゾーン" },
+        { combo: "Ctrl/Cmd+C / V", meaning: "ボールまたは Shape をコピー" },
       ],
     },
     {
@@ -89,6 +90,19 @@ const ja: HowToDoc = {
         { combo: "Ctrl/Cmd+Wheel", meaning: "カーソル位置でズーム" },
         { combo: "Space+Drag", meaning: "画角をパン" },
         { combo: "Alt+Drag", meaning: "画角をパン（代替）" },
+      ],
+    },
+    {
+      heading: "ファイルと保存（メニュー）",
+      paragraphs: [
+        "保存に Ctrl+S はありません。ヘッダーの Save / Save to folder、または More の Save as / Download を使います。手順の長い版は公開ガイドの Local Files 章です。",
+      ],
+      keys: [
+        { combo: "Files（ヘッダー）", meaning: "Local Files を開く" },
+        { combo: "Boards（ヘッダー）", meaning: "作業ボード一覧" },
+        { combo: "Save / Save to folder", meaning: "ヘッダーの主ボタン" },
+        { combo: "More ⋯", meaning: "Save as・Download・閉じる" },
+        { combo: "Scenes チップ", meaning: "Scenes パネルを開く" },
       ],
     },
     {
@@ -163,16 +177,17 @@ const en: HowToDoc = {
     {
       heading: "Draw before the stream",
       paragraphs: [
-        "Before the stream, use the tool rail for Pass, Run, Pen, and Link. Pass is the ball path — pass, cross, or shot. Run is off-ball movement. Dribble is a player carrying the ball.",
-        "Pen is a free line that is not Pass or Run — a block line or a channel edge. Hold Shift while dragging Pen for a straight line. Circles and loops stay freehand without Shift. Link connects pieces; the line follows when you move them.",
+        "Before the stream, use the tool rail for Pass, Run, Pen, Link, and Shape. Pass is the ball path — pass, cross, or shot. Run is off-ball movement. Dribble is a player carrying the ball.",
+        "Shape places a circle, rectangle, or triangle for space and blocks. Pen is a free line that is not Pass or Run. Hold Shift while dragging Pen for a straight line. Link connects pieces; the line follows when you move them. A scene can hold several balls — copy or paste with Ctrl/Cmd+C / V on a selected ball or shape.",
       ],
       keys: [
         { combo: "Pass", meaning: "Ball path (dashed)" },
         { combo: "Run / Dribble", meaning: "Run or dribble" },
+        { combo: "Shape", meaning: "Circle / rectangle / triangle" },
         { combo: "Pen", meaning: "Freehand line" },
         { combo: "Link", meaning: "Piece link (follows)" },
         { combo: "Shift+Pen drag", meaning: "Straight line A to B" },
-        { combo: "Zone + Shift", meaning: "Near-circular zone" },
+        { combo: "Ctrl/Cmd+C / V", meaning: "Copy/paste ball or shape" },
       ],
     },
     {
@@ -184,6 +199,19 @@ const en: HowToDoc = {
         { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom at cursor" },
         { combo: "Space+Drag", meaning: "Pan the view" },
         { combo: "Alt+Drag", meaning: "Pan (alternate)" },
+      ],
+    },
+    {
+      heading: "Files and save (menus)",
+      paragraphs: [
+        "There is no Ctrl+S. Use Save or Save to folder in the header, or Save as / Download under More. Full steps: public Guide → Local Files.",
+      ],
+      keys: [
+        { combo: "Files (header)", meaning: "Open Local Files" },
+        { combo: "Boards (header)", meaning: "Working boards list" },
+        { combo: "Save / Save to folder", meaning: "Header primary when shown" },
+        { combo: "More ⋯", meaning: "Save as, Download, Close" },
+        { combo: "Scenes chip", meaning: "Open scenes panel" },
       ],
     },
     {
@@ -266,7 +294,8 @@ const es: HowToDoc = {
         { combo: "Lápiz", meaning: "Línea a mano alzada" },
         { combo: "Enlace", meaning: "Une fichas (las sigue)" },
         { combo: "Shift+Lápiz", meaning: "Línea recta A a B" },
-        { combo: "Zona + Shift", meaning: "Zona casi circular" },
+        { combo: "Shape", meaning: "Círculo / rectángulo / triángulo" },
+        { combo: "Ctrl/Cmd+C / V", meaning: "Copiar/pegar balón o forma" },
       ],
     },
     {
@@ -278,6 +307,19 @@ const es: HowToDoc = {
         { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom en el cursor" },
         { combo: "Space+Drag", meaning: "Mover la cámara" },
         { combo: "Alt+Drag", meaning: "Mover la cámara (alternativa)" },
+      ],
+    },
+    {
+      heading: "Archivos y guardar (menús)",
+      paragraphs: [
+        "No hay Ctrl+S. Usa Guardar / Guardar en carpeta en la cabecera, o Guardar como / Descargar en Más. Guía pública: Local Files.",
+      ],
+      keys: [
+        { combo: "Files (cabecera)", meaning: "Abrir Local Files" },
+        { combo: "Boards (cabecera)", meaning: "Lista de tableros" },
+        { combo: "Save / Save to folder", meaning: "Header primary" },
+        { combo: "More ⋯", meaning: "Save as, Download, Close" },
+        { combo: "Scenes chip", meaning: "Open scenes panel" },
       ],
     },
     {
@@ -360,7 +402,8 @@ const pt: HowToDoc = {
         { combo: "Pen", meaning: "Linha à mão livre" },
         { combo: "Link", meaning: "Vínculo entre peças (segue)" },
         { combo: "Shift+Pen drag", meaning: "Linha reta A para B" },
-        { combo: "Zone + Shift", meaning: "Zona quase circular" },
+        { combo: "Shape", meaning: "Círculo / retângulo / triângulo" },
+        { combo: "Ctrl/Cmd+C / V", meaning: "Copiar/colar bola ou forma" },
       ],
     },
     {
@@ -372,6 +415,19 @@ const pt: HowToDoc = {
         { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom no cursor" },
         { combo: "Space+Drag", meaning: "Mover a câmera" },
         { combo: "Alt+Drag", meaning: "Mover a câmera (alternativa)" },
+      ],
+    },
+    {
+      heading: "Arquivos e salvar (menus)",
+      paragraphs: [
+        "Não há Ctrl+S. Use Save / Save to folder no cabeçalho, ou Save as / Download em More. Guia: Local Files.",
+      ],
+      keys: [
+        { combo: "Files (cabeçalho)", meaning: "Abrir Local Files" },
+        { combo: "Boards (cabeçalho)", meaning: "Lista de quadros" },
+        { combo: "Save / Save to folder", meaning: "Header primary" },
+        { combo: "More ⋯", meaning: "Save as, Download, Close" },
+        { combo: "Scenes chip", meaning: "Open scenes panel" },
       ],
     },
     {
@@ -454,7 +510,8 @@ const pl: HowToDoc = {
         { combo: "Pen", meaning: "Linia swobodna" },
         { combo: "Link", meaning: "Połączenie figurek (podąża)" },
         { combo: "Shift+Pen drag", meaning: "Prosta linia A do B" },
-        { combo: "Zone + Shift", meaning: "Strefa bliska koła" },
+        { combo: "Shape", meaning: "Koło / prostokąt / trójkąt" },
+        { combo: "Ctrl/Cmd+C / V", meaning: "Kopiuj/wklej piłkę lub kształt" },
       ],
     },
     {
@@ -466,6 +523,19 @@ const pl: HowToDoc = {
         { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom w miejscu kursora" },
         { combo: "Space+Drag", meaning: "Przesuń widok" },
         { combo: "Alt+Drag", meaning: "Przesuń widok (alternatywa)" },
+      ],
+    },
+    {
+      heading: "Pliki i zapis (menu)",
+      paragraphs: [
+        "Nie ma Ctrl+S. Użyj Save / Save to folder w nagłówku albo Save as / Download w More. Przewodnik: Local Files.",
+      ],
+      keys: [
+        { combo: "Files (nagłówek)", meaning: "Otwórz Local Files" },
+        { combo: "Boards (nagłówek)", meaning: "Lista plansz" },
+        { combo: "Save / Save to folder", meaning: "Header primary" },
+        { combo: "More ⋯", meaning: "Save as, Download, Close" },
+        { combo: "Scenes chip", meaning: "Open scenes panel" },
       ],
     },
     {
@@ -548,7 +618,8 @@ const de: HowToDoc = {
         { combo: "Pen", meaning: "Freihandlinie" },
         { combo: "Link", meaning: "Figuren verbinden (folgt)" },
         { combo: "Shift+Pen drag", meaning: "Gerade Linie A nach B" },
-        { combo: "Zone + Shift", meaning: "Kreisförmige Zone" },
+        { combo: "Shape", meaning: "Kreis / Rechteck / Dreieck" },
+        { combo: "Ctrl/Cmd+C / V", meaning: "Ball oder Shape kopieren/einfügen" },
       ],
     },
     {
@@ -560,6 +631,19 @@ const de: HowToDoc = {
         { combo: "Ctrl/Cmd+Wheel", meaning: "Zum Mauszeiger zoomen" },
         { combo: "Space+Drag", meaning: "Ansicht verschieben" },
         { combo: "Alt+Drag", meaning: "Ansicht verschieben (Alternativ)" },
+      ],
+    },
+    {
+      heading: "Dateien und Speichern (Menüs)",
+      paragraphs: [
+        "Es gibt kein Strg+S. Nutze Speichern / In Ordner in der Kopfzeile oder Save as / Download unter Mehr. Guide: Local Files.",
+      ],
+      keys: [
+        { combo: "Files (Kopfzeile)", meaning: "Local Files öffnen" },
+        { combo: "Boards (Kopfzeile)", meaning: "Board-Liste" },
+        { combo: "Save / Save to folder", meaning: "Header primary" },
+        { combo: "More ⋯", meaning: "Save as, Download, Close" },
+        { combo: "Scenes chip", meaning: "Open scenes panel" },
       ],
     },
     {
@@ -642,7 +726,8 @@ const fr: HowToDoc = {
         { combo: "Pen", meaning: "Ligne libre" },
         { combo: "Link", meaning: "Lien entre figurines (suit le mouvement)" },
         { combo: "Shift+Pen drag", meaning: "Ligne droite A vers B" },
-        { combo: "Zone + Shift", meaning: "Zone quasi-circulaire" },
+        { combo: "Shape", meaning: "Cercle / rectangle / triangle" },
+        { combo: "Ctrl/Cmd+C / V", meaning: "Copier/coller ballon ou forme" },
       ],
     },
     {
@@ -654,6 +739,19 @@ const fr: HowToDoc = {
         { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom sur le curseur" },
         { combo: "Space+Drag", meaning: "Déplacer la caméra" },
         { combo: "Alt+Drag", meaning: "Déplacer la caméra (alternatif)" },
+      ],
+    },
+    {
+      heading: "Fichiers et enregistrement (menus)",
+      paragraphs: [
+        "Pas de Ctrl+S. Utilise Enregistrer / Dossier dans l'en-tête, ou Enregistrer sous / Télécharger dans Plus. Guide : Local Files.",
+      ],
+      keys: [
+        { combo: "Files (en-tête)", meaning: "Ouvrir Local Files" },
+        { combo: "Boards (en-tête)", meaning: "Liste des tableaux" },
+        { combo: "Save / Save to folder", meaning: "Header primary" },
+        { combo: "More ⋯", meaning: "Save as, Download, Close" },
+        { combo: "Scenes chip", meaning: "Open scenes panel" },
       ],
     },
     {
@@ -736,7 +834,8 @@ const tr: HowToDoc = {
         { combo: "Pen", meaning: "Serbest çizgi" },
         { combo: "Link", meaning: "Figür bağlantısı (izler)" },
         { combo: "Shift+Pen drag", meaning: "A'dan B'ye düz çizgi" },
-        { combo: "Zone + Shift", meaning: "Daireye yakın bölge" },
+        { combo: "Shape", meaning: "Daire / dikdörtgen / üçgen" },
+        { combo: "Ctrl/Cmd+C / V", meaning: "Top veya şekli kopyala/yapıştır" },
       ],
     },
     {
@@ -748,6 +847,19 @@ const tr: HowToDoc = {
         { combo: "Ctrl/Cmd+Wheel", meaning: "İmleç konumuna yakınlaştır" },
         { combo: "Space+Drag", meaning: "Görünümü kaydır" },
         { combo: "Alt+Drag", meaning: "Kaydır (alternatif)" },
+      ],
+    },
+    {
+      heading: "Dosyalar ve kaydet (menüler)",
+      paragraphs: [
+        "Ctrl+S yok. Üst çubukta Save / Save to folder veya More içinde Save as / Download kullan. Rehber: Local Files.",
+      ],
+      keys: [
+        { combo: "Files (üst çubuk)", meaning: "Local Files aç" },
+        { combo: "Boards (üst çubuk)", meaning: "Tahta listesi" },
+        { combo: "Save / Save to folder", meaning: "Header primary" },
+        { combo: "More ⋯", meaning: "Save as, Download, Close" },
+        { combo: "Scenes chip", meaning: "Open scenes panel" },
       ],
     },
     {
@@ -830,7 +942,8 @@ const it: HowToDoc = {
         { combo: "Pen", meaning: "Linea a mano libera" },
         { combo: "Link", meaning: "Collegamento pezzi (segue)" },
         { combo: "Shift+Pen drag", meaning: "Linea dritta da A a B" },
-        { combo: "Zone + Shift", meaning: "Zona quasi circolare" },
+        { combo: "Shape", meaning: "Cerchio / rettangolo / triangolo" },
+        { combo: "Ctrl/Cmd+C / V", meaning: "Copia/incolla palla o forma" },
       ],
     },
     {
@@ -842,6 +955,19 @@ const it: HowToDoc = {
         { combo: "Ctrl/Cmd+Wheel", meaning: "Zoom sul cursore" },
         { combo: "Space+Drag", meaning: "Sposta la vista" },
         { combo: "Alt+Drag", meaning: "Sposta la vista (alternativa)" },
+      ],
+    },
+    {
+      heading: "File e salvataggio (menu)",
+      paragraphs: [
+        "Non c'è Ctrl+S. Usa Save / Save to folder nell'intestazione, oppure Save as / Download in More. Guida: Local Files.",
+      ],
+      keys: [
+        { combo: "Files (intestazione)", meaning: "Apri Local Files" },
+        { combo: "Boards (intestazione)", meaning: "Elenco lavagne" },
+        { combo: "Save / Save to folder", meaning: "Header primary" },
+        { combo: "More ⋯", meaning: "Save as, Download, Close" },
+        { combo: "Scenes chip", meaning: "Open scenes panel" },
       ],
     },
     {

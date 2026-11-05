@@ -2,6 +2,10 @@
  * Public shipped changelog (SUGUDASU-style).
  * Only past-tense, user-facing changes. No roadmap / no internal tickets.
  * Edit here → `npm run site:pages` writes `/updates/`.
+ *
+ * Deploy gate: entries dated 2026-11-06 require shipping the Local Files
+ * app route (`/files` rewrite + SPA) with this site build. Do not publish
+ * these entries alone while https://zoneboard.app/files still 404s.
  */
 export type ChangelogType = "feature" | "fix" | "improve";
 
@@ -14,11 +18,39 @@ export type ChangelogEntry = {
 };
 
 export const CHANGELOG = {
-  updatedAt: "2026-08-31",
+  updatedAt: "2026-11-06",
   /** One-line policy shown on /updates */
   policyEn:
     "Shipped changes only, in past tense. Upcoming work stays off this page.",
   entries: [
+    {
+      id: "local-board-files-20261106",
+      date: "2026-11-06",
+      type: "feature",
+      title: "Local board files: save, reopen, and edit your tactics",
+      body: "You can keep football boards as JSON on your own device. Working boards still live in this browser (auto-save, with a store slot limit). Local files sit outside that limit: open them for a temporary File Session, or import a copy into working boards. Connect a folder when your browser supports it to Save into the original file or Save as a new one. Without folder access, Download starts a JSON download — that is not the same as a confirmed overwrite. New local board starts a file you have not saved yet. Unsaved leave warns you; a short session draft can restore recent edits in the same browser, but folder handles do not come back. Step-by-step: https://zoneboard.app/guide/#local-files",
+    },
+    {
+      id: "document-first-header-20261106",
+      date: "2026-11-06",
+      type: "improve",
+      title: "Document-first editor header",
+      body: "The top bar shows the board name, where it lives (this browser or a local file), and save status. Boards opens the working-board list. Files opens Local Files. Scenes opens the scenes panel. Save, Save to folder, Retry, and Download sit in the header; Save as stays under More when a folder is connected.",
+    },
+    {
+      id: "shape-tools-20261106",
+      date: "2026-11-06",
+      type: "feature",
+      title: "Shape tool: circle, rectangle, and triangle",
+      body: "The rail tool formerly labelled Zone is Shape. Drag to place a circle, rectangle, or triangle for space and blocks. Aspect lock keeps a square when you need one. Arrange controls move shapes forward or back.",
+    },
+    {
+      id: "multi-ball-20261106",
+      date: "2026-11-06",
+      type: "feature",
+      title: "More than one ball on a scene",
+      body: "A scene can hold several balls. Place with Ball, or copy and paste (Ctrl/Cmd+C / Ctrl/Cmd+V). Duplicate (Ctrl/Cmd+D) works on a selected ball. Snap to a player still works per ball.",
+    },
     {
       id: "portrait-viewport-presets-20260831",
       date: "2026-08-31",

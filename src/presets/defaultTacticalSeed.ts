@@ -9,14 +9,23 @@ import { uid } from "../models/id";
 import type { KitPalette } from "../models/kits";
 import { colorForKit, defaultKitPalette } from "../models/kits";
 import type {
+  BallState,
   BoardDocument,
   DrawObject,
   Piece,
-  Scene,
   SportId,
+  Viewport,
 } from "../models/types";
 import { defaultFacingForTeam } from "../models/pieceFacing";
 import { DEFAULT_VIEWPORT } from "./viewport";
+
+/** Seed shape accepted by createScene (legacy `ball` OK). */
+type TacticalSeed = {
+  pieces: Piece[];
+  ball: BallState;
+  objects: DrawObject[];
+  viewport?: Viewport;
+};
 
 type Spot = {
   x: number;
@@ -69,10 +78,7 @@ function line(
  * #8 holds → pass to #10; #7 runs into the channel. Away presses the lane.
  * No GK, no bench, most of the pitch empty.
  */
-function soccerSeed(kits: KitPalette): Pick<
-  Scene,
-  "pieces" | "ball" | "objects" | "viewport"
-> {
+function soccerSeed(kits: KitPalette): TacticalSeed {
   const spots: Spot[] = [
     { team: "home", number: "8", x: 0.36, y: 0.52 },
     { team: "home", number: "10", x: 0.5, y: 0.34 },
@@ -116,7 +122,7 @@ function soccerSeed(kits: KitPalette): Pick<
 function fiveASideSeed(
   sport: "futsal" | "beach_soccer",
   kits: KitPalette,
-): Pick<Scene, "pieces" | "ball" | "objects" | "viewport"> {
+): TacticalSeed {
   const spots: Spot[] = [
     { team: "home", number: "8", x: 0.34, y: 0.5 },
     { team: "home", number: "9", x: 0.52, y: 0.36 },
@@ -153,10 +159,7 @@ function fiveASideSeed(
 }
 
 /** Basketball half: drive / kick-out moment, not a full 5v5 set. */
-function basketballSeed(kits: KitPalette): Pick<
-  Scene,
-  "pieces" | "ball" | "objects" | "viewport"
-> {
+function basketballSeed(kits: KitPalette): TacticalSeed {
   const spots: Spot[] = [
     { team: "home", number: "1", x: 0.68, y: 0.5 },
     { team: "home", number: "3", x: 0.82, y: 0.22 },
@@ -193,10 +196,7 @@ function basketballSeed(kits: KitPalette): Pick<
 }
 
 /** Volleyball: serve-receive / set moment — few pieces, empty court. */
-function volleyballSeed(kits: KitPalette): Pick<
-  Scene,
-  "pieces" | "ball" | "objects" | "viewport"
-> {
+function volleyballSeed(kits: KitPalette): TacticalSeed {
   const spots: Spot[] = [
     { team: "home", number: "1", x: 0.28, y: 0.55 },
     { team: "home", number: "2", x: 0.38, y: 0.28 },
@@ -236,7 +236,7 @@ function volleyballSeed(kits: KitPalette): Pick<
 export function defaultTacticalSeed(
   sport: SportId = "soccer",
   kits: KitPalette = defaultKitPalette(),
-): Pick<Scene, "pieces" | "ball" | "objects" | "viewport"> {
+): TacticalSeed {
   if (sport === "soccer") return soccerSeed(kits);
   if (sport === "futsal" || sport === "beach_soccer") {
     return fiveASideSeed(sport, kits);
